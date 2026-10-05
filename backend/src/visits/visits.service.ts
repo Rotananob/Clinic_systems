@@ -134,6 +134,9 @@ export class VisitsService {
       diagnosis: string;
       notes?: string;
       doctorId?: string;
+      physicalExam?: string;
+      assessment?: string;
+      treatmentPlan?: string;
       createConsultationInvoice?: boolean;
     },
   ) {
@@ -151,7 +154,28 @@ export class VisitsService {
         },
       });
 
-      // 2. Generate Consultation Fee Invoice if requested and not yet generated
+      // 2. Upsert comprehensive clinical medical record
+      if (data.physicalExam || data.assessment || data.treatmentPlan || data.notes) {
+        await tx.medicalRecord.upsert({
+          where: { visitId: id },
+          create: {
+            visitId: id,
+            patientId: visit.patientId,
+            physicalExam: data.physicalExam,
+            assessment: data.assessment,
+            treatmentPlan: data.treatmentPlan,
+            notes: data.notes,
+          },
+          update: {
+            physicalExam: data.physicalExam,
+            assessment: data.assessment,
+            treatmentPlan: data.treatmentPlan,
+            notes: data.notes,
+          },
+        });
+      }
+
+      // 3. Generate Consultation Fee Invoice if requested and not yet generated
       if (data.createConsultationInvoice !== false) {
         const existingInvoice = await tx.invoice.findFirst({
           where: { visitId: id },

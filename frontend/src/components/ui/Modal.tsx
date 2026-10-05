@@ -8,6 +8,7 @@ interface ModalProps {
   onClose: () => void;
   title: string;
   subtitle?: string;
+  description?: string;
   children: React.ReactNode;
   maxWidth?: string;
 }
@@ -17,9 +18,11 @@ export const Modal: React.FC<ModalProps> = ({
   onClose,
   title,
   subtitle,
+  description,
   children,
   maxWidth = 'max-w-xl',
 }) => {
+  const sub = subtitle || description;
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -49,7 +52,7 @@ export const Modal: React.FC<ModalProps> = ({
         <div className="flex items-center justify-between p-4 md:p-5 border-b border-slate-100">
           <div>
             <h2 className="text-lg font-semibold text-slate-900 leading-tight">{title}</h2>
-            {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
+            {sub && <p className="text-xs text-slate-500 mt-0.5">{sub}</p>}
           </div>
           <button
             onClick={onClose}

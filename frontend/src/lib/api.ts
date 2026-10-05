@@ -102,7 +102,18 @@ class ApiClient {
         method: 'PATCH',
         body: JSON.stringify(data),
       }),
-    complete: (id: string, data: { diagnosis: string; notes?: string; doctorId?: string }) =>
+    complete: (
+      id: string,
+      data: {
+        diagnosis: string;
+        notes?: string;
+        doctorId?: string;
+        physicalExam?: string;
+        assessment?: string;
+        treatmentPlan?: string;
+        createConsultationInvoice?: boolean;
+      },
+    ) =>
       this.request<any>(`/visits/${id}/complete`, {
         method: 'PATCH',
         body: JSON.stringify(data),
@@ -127,8 +138,21 @@ class ApiClient {
       }),
   };
 
-  // Payments (KHQR Engine)
+  // Users & Staff
+  users = {
+    getDoctors: () => this.request<any[]>('/users/doctors'),
+  };
+
+  // Payments & Invoices (KHQR Engine)
   payments = {
+    listInvoices: (params?: { status?: string; patientId?: string }) => {
+      const sp = new URLSearchParams();
+      if (params?.status) sp.append('status', params.status);
+      if (params?.patientId) sp.append('patientId', params.patientId);
+      const query = sp.toString() ? `?${sp.toString()}` : '';
+      return this.request<any[]>(`/payments/invoices${query}`);
+    },
+    getInvoice: (id: string) => this.request<any>(`/payments/invoices/${id}`),
     generateQr: (invoiceId: string) =>
       this.request<any>('/payments/generate-qr', {
         method: 'POST',

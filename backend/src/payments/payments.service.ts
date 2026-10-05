@@ -193,4 +193,64 @@ export class PaymentsService {
       currency: txn.currency,
     };
   }
+
+  async findAllInvoices(params?: { status?: InvoiceStatus; patientId?: string }) {
+    return this.prisma.invoice.findMany({
+      where: {
+        ...(params?.status ? { status: params.status } : {}),
+        ...(params?.patientId ? { patientId: params.patientId } : {}),
+      },
+      include: {
+        patient: {
+          select: {
+            id: true,
+            patientCode: true,
+            nameEn: true,
+            nameKh: true,
+            phone: true,
+          },
+        },
+        visit: {
+          select: {
+            id: true,
+            visitCode: true,
+            reason: true,
+          },
+        },
+        transactions: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async findInvoiceById(id: string) {
+    const invoice = await this.prisma.invoice.findUnique({
+      where: { id },
+      include: {
+        patient: true,
+        visit: {
+          include: {
+            doctor: {
+              select: { id: true, fullNameEn: true, fullNameKh: true },
+            },
+          },
+        },
+        cashier: {
+          select: { id: true, fullNameEn: true, fullNameKh: true },
+        },
+        transactions: {
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    });
+
+    if (!invoice) {
+      throw new NotFoundException(`Invoice with ID ${id} not found`);
+    }
+
+    return invoice;
+  }
 }

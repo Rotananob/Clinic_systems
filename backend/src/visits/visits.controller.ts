@@ -44,7 +44,7 @@ export class VisitsController {
     return this.visitsService.updateVitals(id, vitalsDto);
   }
 
-  @ApiOperation({ summary: 'Complete consultation with diagnosis, notes, and invoice trigger' })
+  @ApiOperation({ summary: 'Complete consultation with diagnosis, notes, medical record, and invoice trigger' })
   @Patch(':id/complete')
   completeVisit(
     @Param('id') id: string,
@@ -53,6 +53,9 @@ export class VisitsController {
       diagnosis: string;
       notes?: string;
       doctorId?: string;
+      physicalExam?: string;
+      assessment?: string;
+      treatmentPlan?: string;
       createConsultationInvoice?: boolean;
     },
   ) {
