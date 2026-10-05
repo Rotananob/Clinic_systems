@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import * as path from 'path';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
 import { PatientsModule } from './patients/patients.module';
 import { VisitsModule } from './visits/visits.module';
 import { PrescriptionsModule } from './prescriptions/prescriptions.module';
@@ -21,6 +22,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
     }),
     PrismaModule,
     AuthModule,
+    UsersModule,
     PatientsModule,
     VisitsModule,
     PrescriptionsModule,

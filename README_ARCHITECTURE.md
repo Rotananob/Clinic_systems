@@ -8,41 +8,34 @@ Enterprise-grade Clinic Patient Management System engineered for medical clinics
 
 ---
 
-## 2. Implemented Phases (Iterations 1: Phases 1 - 3)
+## 2. Completed Phases
 
-### Phase 1: Repository Setup and Monorepo Architecture
-- Clean monorepo workspace configuration (`backend` + `frontend`).
-- Root configuration with `.gitignore`, `.env.example`, `.env`.
-- Strict TypeScript configuration across workspaces.
-- Monochromatic, zero-emoji medical design system enforced.
+### Iteration 1: Phases 1 - 3
+- **Phase 1: Repository Setup and Monorepo Architecture**: Clean workspace setup, `.env.example`, `.env`, `.gitignore`.
+- **Phase 2: Database and Prisma Architecture**: Full PostgreSQL normalized schema, seed script with Admin, Doctor, Receptionist, Cashier, test patients, test prescriptions, paid invoices.
+- **Phase 3: NestJS Backend Core and REST API Modules**: Modular backend with Prisma, Auth, Patients, Visits, Prescriptions, Payments (powered by real `khqr-helper`), Dashboard, and Swagger `/api/docs`.
 
-### Phase 2: Database and Prisma Architecture
-- Production PostgreSQL database schema with Prisma ORM:
-  - **`User` & `Role`**: RBAC with ADMIN, DOCTOR, RECEPTIONIST, CASHIER, PHARMACIST.
-  - **`Patient`**: Demographics, medical identifiers, allergy registry, emergency contacts, indexed search fields.
-  - **`Visit`**: Clinical encounter tracking, vital signs registry, diagnosis, consultation fee.
-  - **`MedicalRecord`**: Physical exam findings, clinical assessment, treatment plan.
-  - **`Prescription` & `PrescriptionItem`**: Multi-item medication prescribing with dosage, frequency, duration, quantity, unit pricing.
-  - **`Invoice`**: Clinical billing supporting consultation and medication line items.
-  - **`PaymentTransaction`**: Real KHQR transaction tracking with MD5 hash, dynamic QR payload, deeplink matrix.
-  - **`FollowUp`**: Appointment scheduling and continuity of care.
-  - **`AuditLog`**: Financial and medical record audit compliance logs.
-- Realistic database seed script (`backend/prisma/seed.ts`).
-
-### Phase 3: NestJS Backend Core and REST API Modules
-- **Modular Architecture**:
-  - `PrismaModule`: Global database access layer.
-  - `AuthModule`: Secure JWT authentication, bcrypt password hashing, `JwtAuthGuard`, `RolesGuard`.
-  - `PatientsModule`: Duplicate detection engine (phone/national ID), search with pagination, full Patient 360 lookup.
-  - `VisitsModule`: Patient check-in, vital signs update, consultation completion with automated fee invoicing.
-  - `PrescriptionsModule`: Multi-item prescription issuance, pharmacy dispensing workflow with automatic billing invoice generation.
-  - `PaymentsModule`: Powered by `khqr-helper` (pay-helper) for dynamic Tag 01=12 KHQR synthesis, ABA/Bakong deeplinking, and instant settlement.
-  - `DashboardModule`: Real-time queue metrics, today visits, and live KHQR/Cash revenue reporting.
-- **OpenAPI / Swagger**: Live interactive API documentation at `/api/docs`.
+### Iteration 2: Phases 4 - 6
+- **Phase 4: Authentication & Role-Based Access Control (RBAC)**:
+  - User and Staff Management module (`UsersModule`, `UsersService`, `UsersController`) with `@Roles(Role.ADMIN)` protection.
+  - Doctor listing endpoint (`/api/users/doctors`) for clinic reception and consultation assignment.
+  - Password management endpoint (`/api/auth/change-password`).
+  - Active status toggle for staff security.
+- **Phase 5: Next.js Frontend Clinical Foundation & Design System**:
+  - Medical SaaS monochromatic aesthetic with zero emojis (Lucide icons only).
+  - Responsive Mobile Navigation Dock for native mobile app feel.
+  - Desktop clinical sidebar navigation.
+  - Centralized authenticated API client (`api.ts`) and `AuthContext` with JWT persistence.
+  - Responsive App Shell, Navbar, and Modal / Drawer component.
+- **Phase 6: Patient Management & Duplicate Prevention UX**:
+  - Live debounced patient search by Patient Code, Name (EN/KH), and Phone number.
+  - Patient table with gender, blood type, phone, and allergy warnings.
+  - Patient registration slide-up bottom sheet / modal.
+  - Real-time duplicate patient detection with warning banner for identical phone or national ID before submission.
 
 ---
 
-## 3. Next Queued Iteration (Phases 4 - 6)
-- **Phase 4**: Advanced RBAC fine-grained permission guards and audit trails.
-- **Phase 5**: Next.js Frontend Foundation & Design System (monochromatic clinical UI, mobile navigation dock, bottom drawer sheets).
-- **Phase 6**: Patient Registration & Duplicate Prevention UX.
+## 3. Next Queued Iteration (Phases 7 - 9)
+- **Phase 7**: Patient 360 Comprehensive Timeline & Clinical Profile View.
+- **Phase 8**: Visits & Medical Records UI (Vital Signs tracker, physical exam form, clinical diagnosis).
+- **Phase 9**: Prescriptions & Pharmacy Dispensing UI with real-time KHQR Checkout Integration.
