@@ -1,0 +1,31 @@
+{
+  "name": "clinic-patient-management",
+  "version": "1.0.0",
+  "description": "Production-grade Clinic Patient Management System with Next.js, NestJS, Prisma, and KHQR Payment Engine",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev:backend": "npm run start:dev --workspace=backend",
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "build:backend": "npm run build --workspace=backend",
+    "build:frontend": "npm run build --workspace=frontend",
+    "build": "npm run build:backend && npm run build:frontend",
+    "db:generate": "npm run prisma:generate --workspace=backend",
+    "db:push": "npm run prisma:push --workspace=backend",
+    "db:seed": "npm run prisma:seed --workspace=backend",
+    "test:backend": "npm run test --workspace=backend"
+  },
+  "keywords": [
+    "clinic",
+    "patient-management",
+    "nestjs",
+    "nextjs",
+    "prisma",
+    "khqr"
+  ],
+  "author": "Rotananob",
+  "license": "UNLICENSED"
+}

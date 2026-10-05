@@ -1,0 +1,292 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  DOCTOR
+  RECEPTIONIST
+  CASHIER
+  PHARMACIST
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum VisitStatus {
+  WAITING
+  IN_CONSULTATION
+  COMPLETED
+  CANCELLED
+}
+
+enum PrescriptionStatus {
+  PENDING
+  DISPENSED
+  CANCELLED
+}
+
+enum InvoiceStatus {
+  UNPAID
+  PENDING
+  PAID
+  REFUNDED
+}
+
+enum PaymentMethod {
+  KHQR
+  CASH
+  CARD
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  EXPIRED
+}
+
+enum FollowUpStatus {
+  SCHEDULED
+  COMPLETED
+  MISSED
+  CANCELLED
+}
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  email        String   @unique
+  passwordHash String
+  fullNameEn   String
+  fullNameKh   String?
+  role         Role     @default(RECEPTIONIST)
+  phone        String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  doctorVisits      Visit[]            @relation("DoctorVisits")
+  doctorPrescriptions Prescription[]   @relation("DoctorPrescriptions")
+  doctorFollowUps   FollowUp[]         @relation("DoctorFollowUps")
+  cashierInvoices   Invoice[]          @relation("CashierInvoices")
+  auditLogs         AuditLog[]
+
+  @@map("users")
+}
+
+model Patient {
+  id                    String    @id @default(uuid()) @db.Uuid
+  patientCode           String    @unique
+  nameEn                String
+  nameKh                String?
+  gender                Gender
+  dob                   DateTime?
+  phone                 String
+  nationalId            String?
+  address               String?
+  bloodType             String?
+  allergies             String?
+  emergencyContactName  String?
+  emergencyContactPhone String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  visits          Visit[]
+  medicalRecords  MedicalRecord[]
+  prescriptions   Prescription[]
+  invoices        Invoice[]
+  followUps       FollowUp[]
+
+  @@index([phone])
+  @@index([nameEn])
+  @@index([patientCode])
+  @@map("patients")
+}
+
+model Visit {
+  id              String      @id @default(uuid()) @db.Uuid
+  visitCode       String      @unique
+  patientId       String      @db.Uuid
+  doctorId        String?     @db.Uuid
+  reason          String?
+  symptoms        String?
+  bloodPressure   String?     // e.g. "120/80"
+  heartRate       Int?        // bpm
+  temperature     Decimal?    @db.Decimal(4, 1) // Celsius, e.g. 36.8
+  weightKg        Decimal?    @db.Decimal(5, 2)
+  heightCm        Decimal?    @db.Decimal(5, 2)
+  diagnosis       String?
+  notes           String?
+  status          VisitStatus @default(WAITING)
+  consultationFee Decimal     @default(5.00) @db.Decimal(10, 2)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  patient         Patient        @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor          User?          @relation("DoctorVisits", fields: [doctorId], references: [id])
+  medicalRecord   MedicalRecord?
+  prescriptions   Prescription[]
+  invoices        Invoice[]
+  followUps       FollowUp[]
+
+  @@index([patientId])
+  @@index([doctorId])
+  @@index([status])
+  @@map("visits")
+}
+
+model MedicalRecord {
+  id            String   @id @default(uuid()) @db.Uuid
+  visitId       String   @unique @db.Uuid
+  patientId     String   @db.Uuid
+  physicalExam  String?
+  assessment    String?
+  treatmentPlan String?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  visit         Visit    @relation(fields: [visitId], references: [id], onDelete: Cascade)
+  patient       Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
+  @@map("medical_records")
+}
+
+model Prescription {
+  id               String             @id @default(uuid()) @db.Uuid
+  prescriptionCode String             @unique
+  visitId          String             @db.Uuid
+  patientId        String             @db.Uuid
+  doctorId         String             @db.Uuid
+  status           PrescriptionStatus @default(PENDING)
+  totalAmount      Decimal            @default(0.00) @db.Decimal(10, 2)
+  notes            String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  visit            Visit              @relation(fields: [visitId], references: [id], onDelete: Cascade)
+  patient          Patient            @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor           User               @relation("DoctorPrescriptions", fields: [doctorId], references: [id])
+  items            PrescriptionItem[]
+
+  @@index([visitId])
+  @@index([patientId])
+  @@map("prescriptions")
+}
+
+model PrescriptionItem {
+  id             String       @id @default(uuid()) @db.Uuid
+  prescriptionId String       @db.Uuid
+  medicineName   String
+  dosage         String       // e.g. "500mg"
+  frequency      String       // e.g. "3 times daily after food"
+  duration       String       // e.g. "5 days"
+  quantity       Int          @default(1)
+  unitPrice      Decimal      @default(0.00) @db.Decimal(10, 2)
+  subtotal       Decimal      @default(0.00) @db.Decimal(10, 2)
+  instructions   String?
+  createdAt      DateTime     @default(now())
+
+  prescription   Prescription @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
+
+  @@index([prescriptionId])
+  @@map("prescription_items")
+}
+
+model Invoice {
+  id            String        @id @default(uuid()) @db.Uuid
+  invoiceNumber String        @unique
+  visitId       String?       @db.Uuid
+  patientId     String        @db.Uuid
+  totalAmount   Decimal       @db.Decimal(10, 2)
+  discount      Decimal       @default(0.00) @db.Decimal(10, 2)
+  payableAmount Decimal       @db.Decimal(10, 2)
+  currency      String        @default("USD") // USD or KHR
+  status        InvoiceStatus @default(UNPAID)
+  paymentMethod PaymentMethod @default(KHQR)
+  cashierId     String?       @db.Uuid
+  paidAt        DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  visit         Visit?               @relation(fields: [visitId], references: [id])
+  patient       Patient              @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  cashier       User?                @relation("CashierInvoices", fields: [cashierId], references: [id])
+  transactions  PaymentTransaction[]
+
+  @@index([patientId])
+  @@index([status])
+  @@map("invoices")
+}
+
+model PaymentTransaction {
+  id          String        @id @default(uuid()) @db.Uuid
+  invoiceId   String        @db.Uuid
+  tranId      String        @unique
+  qrString    String        @db.Text
+  md5         String
+  currency    String        @default("USD")
+  amount      Decimal       @db.Decimal(10, 2)
+  status      PaymentStatus @default(PENDING)
+  paywayLink  String?       @db.Text
+  deeplinkUrl String?       @db.Text
+  metadata    Json?
+  verifiedAt  DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  invoice     Invoice       @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@index([md5])
+  @@index([status])
+  @@map("payment_transactions")
+}
+
+model FollowUp {
+  id            String         @id @default(uuid()) @db.Uuid
+  patientId     String         @db.Uuid
+  doctorId      String         @db.Uuid
+  visitId       String?        @db.Uuid
+  scheduledDate DateTime
+  reason        String
+  status        FollowUpStatus @default(SCHEDULED)
+  notes         String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  patient       Patient        @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor        User           @relation("DoctorFollowUps", fields: [doctorId], references: [id])
+  visit         Visit?         @relation(fields: [visitId], references: [id])
+
+  @@index([patientId])
+  @@index([scheduledDate])
+  @@map("follow_ups")
+}
+
+model AuditLog {
+  id        BigInt   @id @default(autoincrement())
+  userId    String?  @db.Uuid
+  action    String
+  entity    String
+  entityId  String?
+  ipAddress String?
+  userAgent String?
+  details   Json?
+  createdAt DateTime @default(now())
+
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([entity])
+  @@map("audit_logs")
+}
