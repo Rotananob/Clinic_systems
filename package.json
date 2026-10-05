@@ -3,20 +3,14 @@
   "version": "1.0.0",
   "description": "Production-grade Clinic Patient Management System with Next.js, NestJS, Prisma, and KHQR Payment Engine",
   "private": true,
-  "workspaces": [
-    "backend",
-    "frontend"
-  ],
   "scripts": {
-    "dev:backend": "npm run start:dev --workspace=backend",
-    "dev:frontend": "npm run dev --workspace=frontend",
-    "build:backend": "npm run build --workspace=backend",
-    "build:frontend": "npm run build --workspace=frontend",
-    "build": "npm run build:backend && npm run build:frontend",
-    "db:generate": "npm run prisma:generate --workspace=backend",
-    "db:push": "npm run prisma:push --workspace=backend",
-    "db:seed": "npm run prisma:seed --workspace=backend",
-    "test:backend": "npm run test --workspace=backend"
+    "dev:backend": "npm --prefix backend run start:dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build:backend": "npm --prefix backend run build",
+    "build:frontend": "npm --prefix frontend run build",
+    "db:generate": "npm --prefix backend run prisma:generate",
+    "db:push": "npm --prefix backend run prisma:push",
+    "db:seed": "npm --prefix backend run prisma:seed"
   },
   "keywords": [
     "clinic",
