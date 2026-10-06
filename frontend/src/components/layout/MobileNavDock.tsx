@@ -5,15 +5,18 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Users, Calendar, Pill, CreditCard } from 'lucide-react';
 
+import { useTranslation } from '../../context/I18nContext';
+
 export const MobileNavDock: React.FC = () => {
   const pathname = usePathname();
+  const { t } = useTranslation();
 
   const navItems = [
-    { label: 'Overview', href: '/', icon: LayoutDashboard },
-    { label: 'Patients', href: '/patients', icon: Users },
-    { label: 'Queue', href: '/visits', icon: Calendar },
-    { label: 'Pharmacy', href: '/prescriptions', icon: Pill },
-    { label: 'Billing', href: '/billing', icon: CreditCard },
+    { label: t.nav.dashboard, href: '/', icon: LayoutDashboard },
+    { label: t.nav.patients, href: '/patients', icon: Users },
+    { label: t.nav.visits, href: '/visits', icon: Calendar },
+    { label: t.nav.prescriptions, href: '/prescriptions', icon: Pill },
+    { label: t.nav.billing, href: '/billing', icon: CreditCard },
   ];
 
   return (

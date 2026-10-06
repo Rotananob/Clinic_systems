@@ -1,8 +1,9 @@
 'use client';
 
 import React from 'react';
-import { Stethoscope, User, LogOut, Globe } from 'lucide-react';
+import { Stethoscope, User, LogOut } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { LanguageSwitcher } from '../common/LanguageSwitcher';
 import Link from 'next/link';
 
 export const Navbar: React.FC = () => {
@@ -21,11 +22,8 @@ export const Navbar: React.FC = () => {
           </div>
         </Link>
 
-        <div className="flex items-center gap-4">
-          <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded bg-slate-100 text-xs font-medium text-slate-600">
-            <Globe className="w-3.5 h-3.5 text-slate-400" />
-            <span>KH / EN</span>
-          </div>
+        <div className="flex items-center gap-3">
+          <LanguageSwitcher />
 
           {user ? (
             <div className="flex items-center gap-3">

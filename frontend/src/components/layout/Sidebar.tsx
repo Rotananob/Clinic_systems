@@ -5,23 +5,25 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Users, Calendar, Pill, CreditCard, ShieldCheck, CalendarDays, FolderOpen } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useTranslation } from '../../context/I18nContext';
 
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   const navItems = [
-    { label: 'Clinic Dashboard', href: '/', icon: LayoutDashboard },
-    { label: 'Patient Registry', href: '/patients', icon: Users },
-    { label: 'Active Queue & Visits', href: '/visits', icon: Calendar },
-    { label: 'Pharmacy & Dispensing', href: '/prescriptions', icon: Pill },
-    { label: 'Invoices & KHQR', href: '/billing', icon: CreditCard },
-    { label: 'Follow-Ups & Recalls', href: '/follow-ups', icon: CalendarDays },
-    { label: 'Documents & Lab Files', href: '/documents', icon: FolderOpen },
+    { label: t.nav.dashboard, href: '/', icon: LayoutDashboard },
+    { label: t.nav.patients, href: '/patients', icon: Users },
+    { label: t.nav.visits, href: '/visits', icon: Calendar },
+    { label: t.nav.prescriptions, href: '/prescriptions', icon: Pill },
+    { label: t.nav.billing, href: '/billing', icon: CreditCard },
+    { label: t.nav.followUps, href: '/follow-ups', icon: CalendarDays },
+    { label: t.nav.documents, href: '/documents', icon: FolderOpen },
   ];
 
   if (user?.role === 'ADMIN') {
-    navItems.push({ label: 'Staff Management', href: '/staff', icon: ShieldCheck });
+    navItems.push({ label: t.nav.staff, href: '/staff', icon: ShieldCheck });
   }
 
   return (
