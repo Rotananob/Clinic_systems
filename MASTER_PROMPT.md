@@ -1379,6 +1379,26 @@ This section defines mandatory architectural constraints and user-experience sta
    - CRITICAL PLATFORM RULE: Do NOT attempt to create a standard BotFather bot to listen to ABA Bank notification bots in a group! Telegram platform policy strictly blocks bot-to-bot messaging; custom bot webhooks will receive ZERO messages from the bank bot.
    - Strictly use the native Telegram MTProto User Client (`TelegramMtprotoListener` from `pay-helper`). Authenticated via real Telegram user session (`npx auth-telegram`), it intercepts 100% of ABA alerts in real-time without public webhooks, domains, or port forwarding.
 
+5. ZERO DEDICATED ANDROID PHONES / TASKER / MACDROID RULE (CRITICAL):
+   - STRICTLY FORBIDDEN: Do NOT write instructions or invent architecture requiring a dedicated Android phone on a 24/7 charger running Tasker, MacroDroid, or Notification Forwarders! That is a fragile, outdated hack.
+   - ABA Bank sends official alerts directly to Telegram channels/groups. With `pay-helper`'s native MTProto client, your backend daemon intercepts alerts in <50ms with zero extra hardware.
+
+6. Mandatory Checkout UI/UX Architecture & Layout Rules:
+   - Trigger Button: Starts with a clean "Pay Now" button; clicking it reveals the checkout modal.
+   - Top Section: 1-Tap Bank Deeplinks (ABA Mobile, Bakong, Wing, ACLEDA).
+     - Desktop Lock: Deeplinks are locked/disabled on Desktop with the clear notice: "Please scan the QR code below using your mobile banking app".
+     - Mobile: Deeplinks are active. Tapping immediately pauses external status polling (0 calls, waits for MTProto push).
+   - Bottom Section: Authentic QR Code Card.
+     - Displays customizable Clinic / Store Name (`ROTANA CLINIC / គ្លីនិក រតនា`).
+     - Formatted Amount & Currency.
+     - Download QR button allowing patients to save image to gallery.
+     - Inter-Bank Notice: Small text note reminding patients that scanning from non-ABA banks (ACLEDA, Wing, Canadia...) may take 3-4 seconds longer for settlement verification.
+
+7. Strict 3-Minute Hard Limit & Anti-Reload State Preservation:
+   - All checkout sessions enforce a strict hard limit of 180 seconds (3 minutes max).
+   - Live countdown timer: `03:00` down to `00:00`. Once expired, QR dims and locks.
+   - Anti-Reload & Safari State Preservation: Stores active session in `sessionStorage` with `beforeunload` warning safeguard so switching tabs or leaving Safari to pay in ABA Mobile does NOT cause the QR code or payment state to be lost.
+
 --------------------------------------------------
 45.2 HUMAN-CRAFTED CLINICAL UI/UX & MOBILE-APP DESIGN STANDARDS
 --------------------------------------------------

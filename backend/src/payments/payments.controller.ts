@@ -1,7 +1,7 @@
 import { Controller, Post, Get, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { PaymentsService } from './payments.service';
-import { GenerateInvoiceQrDto, SettlePaymentDto } from './dto/generate-qr.dto';
+import { GenerateInvoiceQrDto, SettlePaymentDto, CreateQuickInvoiceDto } from './dto/generate-qr.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { InvoiceStatus } from '@prisma/client';
 
@@ -44,5 +44,11 @@ export class PaymentsController {
   @Get('status/:tranId')
   checkStatus(@Param('tranId') tranId: string) {
     return this.paymentsService.checkStatus(tranId);
+  }
+
+  @ApiOperation({ summary: 'Create quick patient invoice for instant laptop screen KHQR scan' })
+  @Post('quick-invoice')
+  createQuickInvoice(@Body() dto: CreateQuickInvoiceDto) {
+    return this.paymentsService.createQuickInvoice(dto);
   }
 }

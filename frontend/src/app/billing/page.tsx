@@ -19,6 +19,9 @@ import {
   Activity,
   Receipt,
   ShieldCheck,
+  Plus,
+  X,
+  UserPlus,
 } from 'lucide-react';
 
 export default function BillingPage() {
@@ -28,6 +31,18 @@ export default function BillingPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'UNPAID' | 'PENDING' | 'PAID'>('ALL');
+
+  // Quick Invoice Creation Modal
+  const [isQuickModalOpen, setIsQuickModalOpen] = useState(false);
+  const [quickLoading, setQuickLoading] = useState(false);
+  const [quickForm, setQuickForm] = useState({
+    nameEn: '',
+    nameKh: '',
+    phone: '',
+    amount: '',
+    currency: 'USD',
+    reason: 'សេវាពិនិត្យ និងព្យាបាល (Consultation & Care)',
+  });
 
   // KHQR modal
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
@@ -48,6 +63,51 @@ export default function BillingPage() {
   useEffect(() => {
     fetchInvoices();
   }, [statusFilter]);
+
+  const handleCreateQuickInvoice = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!quickForm.nameEn.trim() || !quickForm.amount) {
+      alert(isKm ? 'សូមបញ្ចូលឈ្មោះអ្នកជំងឺ និងចំនួនទឹកប្រាក់' : 'Please enter patient name and amount');
+      return;
+    }
+    const amt = parseFloat(quickForm.amount);
+    if (isNaN(amt) || amt <= 0) {
+      alert(isKm ? 'ចំនួនទឹកប្រាក់មិនត្រឹមត្រូវ' : 'Invalid amount');
+      return;
+    }
+
+    setQuickLoading(true);
+    try {
+      const createdInvoice = await api.payments.createQuickInvoice({
+        nameEn: quickForm.nameEn.trim(),
+        nameKh: quickForm.nameKh.trim() || undefined,
+        phone: quickForm.phone.trim() || undefined,
+        amount: amt,
+        currency: quickForm.currency,
+        reason: quickForm.reason.trim() || undefined,
+      });
+
+      setQuickForm({
+        nameEn: '',
+        nameKh: '',
+        phone: '',
+        amount: '',
+        currency: 'USD',
+        reason: 'សេវាពិនិត្យ និងព្យាបាល (Consultation & Care)',
+      });
+      setIsQuickModalOpen(false);
+      fetchInvoices();
+
+      // Immediately show KHQR on screen for patient to scan
+      setSelectedInvoice(createdInvoice);
+      setIsCheckoutOpen(true);
+    } catch (err: any) {
+      console.error('Failed to create quick invoice', err);
+      alert(err?.message || 'Failed to create invoice');
+    } finally {
+      setQuickLoading(false);
+    }
+  };
 
   const filteredInvoices = useMemo(() => {
     if (!searchQuery.trim()) return invoices;
@@ -94,6 +154,14 @@ export default function BillingPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsQuickModalOpen(true)}
+            className="px-3.5 py-2 bg-teal-700 hover:bg-teal-800 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5"
+          >
+            <Plus className="w-4 h-4" />
+            <span>{isKm ? 'បង្កើតវិក្កយបត្រថ្មី (Add & Pay)' : 'Create Invoice & Scan'}</span>
+          </button>
           <button
             onClick={fetchInvoices}
             className="p-2 text-slate-500 hover:text-slate-700 bg-white border border-slate-200 rounded-lg shadow-sm transition-colors text-xs"
@@ -276,6 +344,161 @@ export default function BillingPage() {
           </div>
         )}
       </div>
+
+      {/* Quick Add Patient & Charge Modal */}
+      {isQuickModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-teal-50 border border-teal-200 text-teal-800 flex items-center justify-center">
+                  <UserPlus className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">
+                    {isKm ? 'បង្កើតវិក្កយបត្រ និងស្កេន KHQR' : 'Quick Invoice & KHQR Scan'}
+                  </h3>
+                  <p className="text-[11px] text-slate-500">
+                    {isKm
+                      ? 'បញ្ចូលព័ត៌មានអ្នកជំងឺដើម្បីបង្កើត QR Code លើអេក្រង់ Laptop ភ្លាមៗ'
+                      : 'Input patient & charge to show scannable QR on laptop screen'}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsQuickModalOpen(false)}
+                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <form onSubmit={handleCreateQuickInvoice} className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  {isKm ? 'ឈ្មោះអ្នកជំងឺ (ជាអក្សរឡាតាំង) *' : 'Patient Name (English) *'}
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder={isKm ? 'ឧ. Sok Dara' : 'e.g. Sok Dara'}
+                  value={quickForm.nameEn}
+                  onChange={(e) => setQuickForm({ ...quickForm, nameEn: e.target.value })}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-teal-700 focus:bg-white"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    {isKm ? 'ឈ្មោះជាភាសាខ្មែរ (បើមាន)' : 'Name (Khmer, Optional)'}
+                  </label>
+                  <input
+                    type="text"
+                    placeholder={isKm ? 'ឧ. សុខ ដារ៉ា' : 'e.g. សុខ ដារ៉ា'}
+                    value={quickForm.nameKh}
+                    onChange={(e) => setQuickForm({ ...quickForm, nameKh: e.target.value })}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-teal-700 focus:bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    {isKm ? 'លេខទូរស័ព្ទ (បើមាន)' : 'Phone Number (Optional)'}
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="012 345 678"
+                    value={quickForm.phone}
+                    onChange={(e) => setQuickForm({ ...quickForm, phone: e.target.value })}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-teal-700 focus:bg-white"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    {isKm ? 'ចំនួនទឹកប្រាក់ទូទាត់ *' : 'Amount to Charge *'}
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-2 text-xs font-bold text-slate-400">$</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0.01"
+                      required
+                      placeholder="10.00"
+                      value={quickForm.amount}
+                      onChange={(e) => setQuickForm({ ...quickForm, amount: e.target.value })}
+                      className="w-full pl-7 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-1 focus:ring-teal-700 focus:bg-white"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    {isKm ? 'រូបិយប័ណ្ណ' : 'Currency'}
+                  </label>
+                  <select
+                    value={quickForm.currency}
+                    onChange={(e) => setQuickForm({ ...quickForm, currency: e.target.value })}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono focus:outline-none focus:ring-1 focus:ring-teal-700 focus:bg-white"
+                  >
+                    <option value="USD">USD ($)</option>
+                    <option value="KHR">KHR (៛)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  {isKm ? 'មូលហេតុ ឬសេវាកម្ម' : 'Service / Care Reason'}
+                </label>
+                <input
+                  type="text"
+                  placeholder={isKm ? 'សេវាពិនិត្យ និងព្យាបាល' : 'General Consultation & Care'}
+                  value={quickForm.reason}
+                  onChange={(e) => setQuickForm({ ...quickForm, reason: e.target.value })}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-teal-700 focus:bg-white"
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="pt-2 flex items-center justify-end gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setIsQuickModalOpen(false)}
+                  disabled={quickLoading}
+                  className="px-4 py-2 text-xs font-medium text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+                >
+                  {isKm ? 'បោះបង់' : 'Cancel'}
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={quickLoading}
+                  className="px-4 py-2 bg-teal-700 hover:bg-teal-800 disabled:opacity-50 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors flex items-center gap-1.5"
+                >
+                  {quickLoading ? (
+                    <>
+                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>{isKm ? 'កំពុងបង្កើត...' : 'Creating...'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <QrCode className="w-4 h-4" />
+                      <span>{isKm ? 'បង្កើត & បង្ហាញ QR Code ស្កេន' : 'Create & Show QR Code'}</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* KHQR Checkout Modal */}
       {selectedInvoice && (

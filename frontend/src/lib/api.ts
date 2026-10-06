@@ -165,6 +165,18 @@ class ApiClient {
       }),
     checkStatus: (tranId: string) =>
       this.request<any>(`/payments/status/${tranId}`),
+    createQuickInvoice: (data: {
+      nameEn: string;
+      nameKh?: string;
+      phone?: string;
+      amount: number;
+      currency?: string;
+      reason?: string;
+    }) =>
+      this.request<any>('/payments/quick-invoice', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
   };
 
   // Follow-ups & Recalls

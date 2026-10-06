@@ -145,7 +145,7 @@ export class PaymentsService {
       currency,
       deeplinks,
       patient: invoice.patient,
-      expiresInSeconds: 300,
+      expiresInSeconds: 180, // Strict 3-minute hard limit (180s)
     };
   }
 
@@ -390,6 +390,69 @@ export class PaymentsService {
     if (!invoice) {
       throw new NotFoundException(`Invoice with ID ${id} not found`);
     }
+
+    return invoice;
+  }
+
+  async createQuickInvoice(dto: {
+    nameEn: string;
+    nameKh?: string;
+    phone?: string;
+    amount: number;
+    currency?: string;
+    reason?: string;
+  }) {
+    const year = new Date().getFullYear();
+    const phone = dto.phone?.trim() || `012${Math.floor(100000 + Math.random() * 900000)}`;
+    const currency = (dto.currency as 'USD' | 'KHR') || 'USD';
+    const amount = Number(dto.amount);
+
+    // 1. Find or create patient
+    let patient = await this.prisma.patient.findFirst({
+      where: {
+        OR: [
+          { phone },
+          { nameEn: { equals: dto.nameEn.trim(), mode: 'insensitive' } },
+        ],
+      },
+    });
+
+    if (!patient) {
+      const patientCount = await this.prisma.patient.count();
+      const patientCode = `PAT-${year}-${(patientCount + 1).toString().padStart(4, '0')}`;
+      patient = await this.prisma.patient.create({
+        data: {
+          patientCode,
+          nameEn: dto.nameEn.trim(),
+          nameKh: dto.nameKh?.trim() || null,
+          gender: 'MALE',
+          phone,
+        },
+      });
+    }
+
+    // 2. Generate unique invoice number
+    const invoiceCount = await this.prisma.invoice.count();
+    const invoiceNumber = `INV-${year}-${(invoiceCount + 1).toString().padStart(4, '0')}`;
+
+    // 3. Create Invoice
+    const invoice = await this.prisma.invoice.create({
+      data: {
+        invoiceNumber,
+        patientId: patient.id,
+        totalAmount: amount,
+        payableAmount: amount,
+        discount: 0,
+        currency,
+        status: InvoiceStatus.UNPAID,
+        paymentMethod: PaymentMethod.KHQR,
+      },
+      include: {
+        patient: {
+          select: { id: true, patientCode: true, nameEn: true, nameKh: true, phone: true },
+        },
+      },
+    });
 
     return invoice;
   }
