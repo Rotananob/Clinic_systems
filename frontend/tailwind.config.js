@@ -7,6 +7,10 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Inter', 'Kantumruy Pro', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        khmer: ['Kantumruy Pro', 'sans-serif'],
+      },
       colors: {
         clinical: {
           50: '#f0fdfa',

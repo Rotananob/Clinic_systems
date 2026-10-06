@@ -48,8 +48,17 @@ export class PaymentsService {
       billNumber: invoice.invoiceNumber,
     });
 
+    const paywayLink =
+      this.configService.get<string>('PAYWAY_PAYMENT_URL') ||
+      'https://link.payway.com.kh/ABAPAYCK539089j';
+
     // Build universal mobile deep links (ABA Mobile, Bakong, etc.)
     const deeplinks = khqr.buildBankDeeplinks(khqrResult.qrString);
+    if (deeplinks.aba) {
+      deeplinks.aba.paywayLink = paywayLink;
+    }
+    (deeplinks as any).paywayUrl = paywayLink;
+
     const tranId = `TXN-${invoice.invoiceNumber}-${Date.now()}`;
 
     // Atomically persist transaction in database
@@ -64,10 +73,11 @@ export class PaymentsService {
           currency,
           amount: invoice.payableAmount,
           status: PaymentStatus.PENDING,
-          paywayLink: `https://link.payway.com.kh/khqr?md5=${khqrResult.md5}`,
-          deeplinkUrl: deeplinks.aba.android || deeplinks.aba.ios,
+          paywayLink,
+          deeplinkUrl: paywayLink,
           metadata: {
             deeplinks,
+            paywayUrl: paywayLink,
             generatedAt: new Date().toISOString(),
           },
         },
@@ -90,10 +100,14 @@ export class PaymentsService {
       invoiceNumber: invoice.invoiceNumber,
       tranId: transaction.tranId,
       qrString: transaction.qrString,
+      paywayLink,
       md5: transaction.md5,
       amount,
       currency,
-      deeplinks,
+      deeplinks: {
+        ...deeplinks,
+        paywayUrl: paywayLink,
+      },
       patient: invoice.patient,
       expiresInSeconds: 300, // 5 minutes validity
     };
