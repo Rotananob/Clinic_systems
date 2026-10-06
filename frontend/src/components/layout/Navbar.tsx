@@ -1,13 +1,18 @@
 'use client';
 
 import React from 'react';
-import { Stethoscope, User, LogOut } from 'lucide-react';
+import { Stethoscope, User, LogOut, QrCode } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { LanguageSwitcher } from '../common/LanguageSwitcher';
 import Link from 'next/link';
 
 export const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <header className="sticky top-0 z-30 bg-white border-b border-slate-200">
@@ -23,9 +28,17 @@ export const Navbar: React.FC = () => {
         </Link>
 
         <div className="flex items-center gap-3">
+          <Link
+            href="/billing"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 text-xs font-semibold transition-colors shadow-xs"
+          >
+            <QrCode className="w-3.5 h-3.5 text-teal-700" />
+            <span className="hidden sm:inline">បង់ប្រាក់ KHQR / Billing</span>
+            <span className="sm:hidden">KHQR</span>
+          </Link>
           <LanguageSwitcher />
 
-          {user ? (
+          {mounted && user ? (
             <div className="flex items-center gap-3">
               <div className="text-right hidden sm:block">
                 <div className="text-sm font-medium text-slate-900">{user.fullNameEn}</div>

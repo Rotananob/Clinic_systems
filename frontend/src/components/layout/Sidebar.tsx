@@ -11,6 +11,11 @@ export const Sidebar: React.FC = () => {
   const pathname = usePathname();
   const { user } = useAuth();
   const { t } = useTranslation();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const navItems = [
     { label: t.nav.dashboard, href: '/', icon: LayoutDashboard },
@@ -22,7 +27,7 @@ export const Sidebar: React.FC = () => {
     { label: t.nav.documents, href: '/documents', icon: FolderOpen },
   ];
 
-  if (user?.role === 'ADMIN') {
+  if (mounted && user?.role === 'ADMIN') {
     navItems.push({ label: t.nav.staff, href: '/staff', icon: ShieldCheck });
   }
 

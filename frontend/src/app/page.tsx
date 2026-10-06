@@ -80,6 +80,13 @@ export default function DashboardPage() {
             <span>Register Patient</span>
           </button>
           <Link
+            href="/billing"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold transition-colors shadow-sm"
+          >
+            <CreditCard className="w-4 h-4" />
+            <span>បង់ប្រាក់ KHQR (Billing)</span>
+          </Link>
+          <Link
             href="/visits"
             className="inline-flex items-center gap-1.5 px-3.5 py-2 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-medium transition-colors"
           >
