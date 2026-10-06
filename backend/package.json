@@ -12,7 +12,7 @@
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
     "prisma:seed": "tsx prisma/seed.ts",
-    "test": "echo \"Backend tests completed successfully\""
+    "test": "node --experimental-strip-types --test test/*.test.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.3.3",

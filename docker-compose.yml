@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: clinic_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgressqlsmosnas}
+      POSTGRES_DB: ${POSTGRES_DB:-clinic_systems}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - clinic_network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: clinic_backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgressqlsmosnas}@postgres:5432/${POSTGRES_DB:-clinic_systems}?schema=public
+      PORT: 4000
+      NODE_ENV: production
+      JWT_SECRET: ${JWT_SECRET:-rotana_clinic_super_secure_jwt_secret_key_2026}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      BAKONG_ACCOUNT_ID: ${BAKONG_ACCOUNT_ID:-rotana_clinic@aba}
+      BAKONG_MERCHANT_NAME: ${BAKONG_MERCHANT_NAME:-Rotana Clinic}
+      BAKONG_MERCHANT_CITY: ${BAKONG_MERCHANT_CITY:-Phnom Penh}
+      BAKONG_CURRENCY: ${BAKONG_CURRENCY:-USD}
+    ports:
+      - "4000:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - clinic_network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: clinic_frontend
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4000/api}
+      PORT: 3000
+      NODE_ENV: production
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - clinic_network
+
+volumes:
+  pgdata:
+    driver: local
+
+networks:
+  clinic_network:
+    driver: bridge
