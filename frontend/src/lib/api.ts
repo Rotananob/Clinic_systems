@@ -165,6 +165,16 @@ class ApiClient {
       }),
     checkStatus: (tranId: string) =>
       this.request<any>(`/payments/status/${tranId}`),
+    generateQuickQr: (data: {
+      amount: number;
+      currency?: 'USD' | 'KHR';
+      billNumber?: string;
+      patientName?: string;
+    }) =>
+      this.request<any>('/payments/quick-qr', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
   };
 
   // Follow-ups & Recalls

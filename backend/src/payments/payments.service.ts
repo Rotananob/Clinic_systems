@@ -113,6 +113,60 @@ export class PaymentsService {
     };
   }
 
+  async generateQuickKhqr(dto: {
+    amount: number;
+    currency?: 'USD' | 'KHR';
+    billNumber?: string;
+    patientName?: string;
+  }) {
+    const bakongId = this.configService.get<string>('BAKONG_ACCOUNT_ID') || 'rotana_clinic@aba';
+    const merchantName = this.configService.get<string>('BAKONG_MERCHANT_NAME') || 'Rotana Clinic';
+    const merchantCity = this.configService.get<string>('BAKONG_MERCHANT_CITY') || 'Phnom Penh';
+    const paywayLink =
+      this.configService.get<string>('PAYWAY_PAYMENT_URL') ||
+      'https://link.payway.com.kh/ABAPAYCK539089j';
+
+    const amount = Number(dto.amount);
+    const currency = dto.currency || 'USD';
+    const billNumber = dto.billNumber || `QUICK-${Date.now().toString().slice(-6)}`;
+
+    // Build EMVCo dynamic QR via pay-helper
+    const khqrResult = khqr.buildKhqr({
+      bakongId,
+      merchantName,
+      merchantCity,
+      amount,
+      currency,
+      billNumber,
+    });
+
+    const deeplinks = khqr.buildBankDeeplinks(khqrResult.qrString);
+    if (deeplinks.aba) {
+      deeplinks.aba.paywayLink = paywayLink;
+    }
+    (deeplinks as any).paywayUrl = paywayLink;
+
+    const tranId = `TXN-${billNumber}-${Date.now()}`;
+
+    return {
+      success: true,
+      tranId,
+      billNumber,
+      amount,
+      currency,
+      qrString: khqrResult.qrString,
+      md5: khqrResult.md5,
+      paywayLink,
+      deeplinks: {
+        ...deeplinks,
+        paywayUrl: paywayLink,
+      },
+      patientName: dto.patientName || 'Walk-in Patient',
+      createdAt: new Date().toISOString(),
+      expiresInSeconds: 300,
+    };
+  }
+
   async settleTransaction(tranId: string, cashierId?: string) {
     const txn = await this.prisma.paymentTransaction.findUnique({
       where: { tranId },

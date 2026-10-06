@@ -1,7 +1,7 @@
 import { Controller, Post, Get, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { PaymentsService } from './payments.service';
-import { GenerateInvoiceQrDto, SettlePaymentDto } from './dto/generate-qr.dto';
+import { GenerateInvoiceQrDto, SettlePaymentDto, QuickKhqrDto } from './dto/generate-qr.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { InvoiceStatus } from '@prisma/client';
 
@@ -9,6 +9,12 @@ import { InvoiceStatus } from '@prisma/client';
 @Controller('payments')
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
+
+  @ApiOperation({ summary: 'Generate instant dynamic KHQR for live cashier counter scanning' })
+  @Post('quick-qr')
+  generateQuickQr(@Body() dto: QuickKhqrDto) {
+    return this.paymentsService.generateQuickKhqr(dto);
+  }
 
   @ApiOperation({ summary: 'List all clinic invoices with status and patient filter' })
   @ApiBearerAuth()
