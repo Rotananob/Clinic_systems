@@ -1372,8 +1372,12 @@ This section defines mandatory architectural constraints and user-experience sta
 3. Technical Execution:
    - In-Memory Dynamic Tag 01=12 KHQR generation locking the exact bill amount (Tag 54) so patients cannot alter the price.
    - Instant mobile deep linking for ABA Mobile and Bakong (`deeplinks.aba.ios`, `deeplinks.aba.android`).
-   - Real-time settlement verification via Telegram MTProto / Webhook push listener (<0.3s confirmation).
+   - Real-time settlement verification via Telegram MTProto User Client (`TelegramMtprotoListener`) (<0.3s confirmation).
    - Strict `verifySettlement()` checks preventing floating-point drift and duplicate charge reconciliation.
+
+4. Telegram Settlement Architecture (Why MTProto User Client is Mandatory):
+   - CRITICAL PLATFORM RULE: Do NOT attempt to create a standard BotFather bot to listen to ABA Bank notification bots in a group! Telegram platform policy strictly blocks bot-to-bot messaging; custom bot webhooks will receive ZERO messages from the bank bot.
+   - Strictly use the native Telegram MTProto User Client (`TelegramMtprotoListener` from `pay-helper`). Authenticated via real Telegram user session (`npx auth-telegram`), it intercepts 100% of ABA alerts in real-time without public webhooks, domains, or port forwarding.
 
 --------------------------------------------------
 45.2 HUMAN-CRAFTED CLINICAL UI/UX & MOBILE-APP DESIGN STANDARDS
