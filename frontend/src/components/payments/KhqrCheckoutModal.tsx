@@ -64,12 +64,13 @@ export function KhqrCheckoutModal({
     expiresInSeconds: number;
   } | null>(null);
 
-  const [activeTab, setActiveTab] = useState<'PAYWAY' | 'KHQR'>('PAYWAY');
+  const [activeTab, setActiveTab] = useState<'KHQR' | 'PAYWAY'>('KHQR');
   const [copied, setCopied] = useState(false);
   const [settled, setSettled] = useState(false);
   const [settling, setSettling] = useState(false);
   const [countdown, setCountdown] = useState(300);
   const pollTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const consecutiveErrorsRef = useRef<number>(0);
 
   const activeInvoiceId = invoiceId || invoice?.id;
   const paywayLiveUrl = qrData?.paywayLink || 'https://link.payway.com.kh/ABAPAYCK539089j';
@@ -80,7 +81,8 @@ export function KhqrCheckoutModal({
       setSettled(false);
       setError(null);
       setCountdown(300);
-      setActiveTab('PAYWAY');
+      setActiveTab('KHQR');
+      consecutiveErrorsRef.current = 0;
       generateKhqr(activeInvoiceId);
     } else {
       clearPolling();
@@ -115,7 +117,7 @@ export function KhqrCheckoutModal({
         deeplinks: res.deeplinks,
         expiresInSeconds: res.expiresInSeconds || 300,
       });
-      // Start 1.5s background settlement poller
+      // Start polite 3.0s background settlement poller (anti-spam)
       startPolling(res.tranId);
     } catch (err: any) {
       setError(err.message || 'Failed to generate dynamic KHQR payment code');
@@ -129,13 +131,18 @@ export function KhqrCheckoutModal({
     pollTimerRef.current = setInterval(async () => {
       try {
         const statusRes = await api.payments.checkStatus(tranId);
+        consecutiveErrorsRef.current = 0;
         if (statusRes.status === 'SUCCESS' || statusRes.invoiceStatus === 'PAID') {
           handleSuccess();
         }
       } catch (err) {
-        // Polling error silently tolerated
+        consecutiveErrorsRef.current += 1;
+        // Circuit breaker: if 4 consecutive failures, pause polling to prevent spamming
+        if (consecutiveErrorsRef.current >= 4) {
+          clearPolling();
+        }
       }
-    }, 1500);
+    }, 3000);
   };
 
   // Instant App-Switch Wakeup (when patient returns to browser from ABA Mobile)

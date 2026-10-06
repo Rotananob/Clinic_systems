@@ -1,18 +1,37 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { InvoiceStatus, PaymentStatus, PaymentMethod } from '@prisma/client';
 
-// Load the production khqr-helper engine (pay-helper)
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const khqr = require('D:/WEB Development/Rotana-payway-bridge/KhqrDeeplink-headless-bridge/packages/khqr-helper/dist/index.cjs');
+const khqrHelper = require('D:/WEB Development/Rotana-payway-bridge/KhqrDeeplink-headless-bridge/packages/khqr-helper/dist/index.cjs');
+const { KhqrGateway, verifySettlement, buildKhqr, buildBankDeeplinks, computeMd5 } = khqrHelper;
 
 @Injectable()
 export class PaymentsService {
+  private readonly logger = new Logger(PaymentsService.name);
+  private gatewayInstance: any = null;
+  private statusCheckCache = new Map<string, { timestamp: number; result: any }>();
+
   constructor(
     private prisma: PrismaService,
     private configService: ConfigService,
   ) {}
+
+  private getGateway(): any {
+    const paywayUrl =
+      this.configService.get<string>('PAYWAY_PAYMENT_URL') ||
+      'https://link.payway.com.kh/ABAPAYCK539089j';
+
+    if (!this.gatewayInstance) {
+      this.gatewayInstance = new KhqrGateway({
+        checkoutUrl: paywayUrl,
+        timeoutMs: 15000,
+        sessionCacheTtlMs: 300000, // 5 minutes cache to prevent hitting ABA checkout page repeatedly
+      });
+    }
+    return this.gatewayInstance;
+  }
 
   async generateInvoiceKhqr(invoiceId: string) {
     const invoice = await this.prisma.invoice.findUnique({
@@ -32,44 +51,64 @@ export class PaymentsService {
       throw new BadRequestException('This invoice is already settled/paid.');
     }
 
+    const paywayLink =
+      this.configService.get<string>('PAYWAY_PAYMENT_URL') ||
+      'https://link.payway.com.kh/ABAPAYCK539089j';
     const bakongId = this.configService.get<string>('BAKONG_ACCOUNT_ID') || 'rotana_clinic@aba';
     const merchantName = this.configService.get<string>('BAKONG_MERCHANT_NAME') || 'Rotana Clinic';
     const merchantCity = this.configService.get<string>('BAKONG_MERCHANT_CITY') || 'Phnom Penh';
     const amount = Number(invoice.payableAmount);
     const currency = (invoice.currency as 'USD' | 'KHR') || 'USD';
 
-    // Generate Tag 01=12 Dynamic KHQR string using khqr-helper
-    const khqrResult = khqr.buildKhqr({
-      bakongId,
-      merchantName,
-      merchantCity,
-      amount,
-      currency,
-      billNumber: invoice.invoiceNumber,
-    });
+    let qrString: string;
+    let tranId: string;
+    let deeplinks: any;
+    let md5: string = '';
 
-    const paywayLink =
-      this.configService.get<string>('PAYWAY_PAYMENT_URL') ||
-      'https://link.payway.com.kh/ABAPAYCK539089j';
+    // Step 1: Use pay-helper KhqrGateway to generate official live registered KHQR
+    try {
+      const gateway = this.getGateway();
+      const gatewayInvoice = await gateway.createInvoice({
+        amount,
+        currency,
+        checkoutUrl: paywayLink,
+      });
 
-    // Build universal mobile deep links (ABA Mobile, Bakong, etc.)
-    const deeplinks = khqr.buildBankDeeplinks(khqrResult.qrString);
-    if (deeplinks.aba) {
+      qrString = gatewayInvoice.qrString;
+      tranId = String(gatewayInvoice.tranId);
+      deeplinks = gatewayInvoice.deeplinks || buildBankDeeplinks(qrString);
+      md5 = computeMd5 ? computeMd5(qrString) : '';
+      this.logger.log(`Live registered KHQR generated for invoice ${invoice.invoiceNumber}. TranID: ${tranId}`);
+    } catch (err: any) {
+      // Fallback: If network or timeout occurs, generate strict in-memory Tag 01=12 Dynamic KHQR
+      this.logger.warn(`KhqrGateway live generation failed (${err.message}). Using local Tag 01=12 dynamic fallback.`);
+      const localResult = buildKhqr({
+        bakongId,
+        merchantName,
+        merchantCity,
+        amount,
+        currency,
+        billNumber: invoice.invoiceNumber,
+      });
+      qrString = localResult.qrString;
+      tranId = `TXN-${invoice.invoiceNumber}-${Date.now()}`;
+      md5 = localResult.md5;
+      deeplinks = buildBankDeeplinks(qrString);
+    }
+
+    if (deeplinks?.aba) {
       deeplinks.aba.paywayLink = paywayLink;
     }
-    (deeplinks as any).paywayUrl = paywayLink;
-
-    const tranId = `TXN-${invoice.invoiceNumber}-${Date.now()}`;
+    deeplinks.paywayUrl = paywayLink;
 
     // Atomically persist transaction in database
     const transaction = await this.prisma.$transaction(async (tx) => {
-      // Create payment transaction
       const txn = await tx.paymentTransaction.create({
         data: {
           invoiceId: invoice.id,
           tranId,
-          qrString: khqrResult.qrString,
-          md5: khqrResult.md5,
+          qrString,
+          md5,
           currency,
           amount: invoice.payableAmount,
           status: PaymentStatus.PENDING,
@@ -78,12 +117,12 @@ export class PaymentsService {
           metadata: {
             deeplinks,
             paywayUrl: paywayLink,
+            billNumber: invoice.invoiceNumber,
             generatedAt: new Date().toISOString(),
           },
         },
       });
 
-      // Update invoice status to PENDING
       await tx.invoice.update({
         where: { id: invoice.id },
         data: {
@@ -104,65 +143,8 @@ export class PaymentsService {
       md5: transaction.md5,
       amount,
       currency,
-      deeplinks: {
-        ...deeplinks,
-        paywayUrl: paywayLink,
-      },
+      deeplinks,
       patient: invoice.patient,
-      expiresInSeconds: 300, // 5 minutes validity
-    };
-  }
-
-  async generateQuickKhqr(dto: {
-    amount: number;
-    currency?: 'USD' | 'KHR';
-    billNumber?: string;
-    patientName?: string;
-  }) {
-    const bakongId = this.configService.get<string>('BAKONG_ACCOUNT_ID') || 'rotana_clinic@aba';
-    const merchantName = this.configService.get<string>('BAKONG_MERCHANT_NAME') || 'Rotana Clinic';
-    const merchantCity = this.configService.get<string>('BAKONG_MERCHANT_CITY') || 'Phnom Penh';
-    const paywayLink =
-      this.configService.get<string>('PAYWAY_PAYMENT_URL') ||
-      'https://link.payway.com.kh/ABAPAYCK539089j';
-
-    const amount = Number(dto.amount);
-    const currency = dto.currency || 'USD';
-    const billNumber = dto.billNumber || `QUICK-${Date.now().toString().slice(-6)}`;
-
-    // Build EMVCo dynamic QR via pay-helper
-    const khqrResult = khqr.buildKhqr({
-      bakongId,
-      merchantName,
-      merchantCity,
-      amount,
-      currency,
-      billNumber,
-    });
-
-    const deeplinks = khqr.buildBankDeeplinks(khqrResult.qrString);
-    if (deeplinks.aba) {
-      deeplinks.aba.paywayLink = paywayLink;
-    }
-    (deeplinks as any).paywayUrl = paywayLink;
-
-    const tranId = `TXN-${billNumber}-${Date.now()}`;
-
-    return {
-      success: true,
-      tranId,
-      billNumber,
-      amount,
-      currency,
-      qrString: khqrResult.qrString,
-      md5: khqrResult.md5,
-      paywayLink,
-      deeplinks: {
-        ...deeplinks,
-        paywayUrl: paywayLink,
-      },
-      patientName: dto.patientName || 'Walk-in Patient',
-      createdAt: new Date().toISOString(),
       expiresInSeconds: 300,
     };
   }
@@ -252,7 +234,95 @@ export class PaymentsService {
       throw new NotFoundException(`Transaction ${tranId} not found`);
     }
 
-    return {
+    // 1. If already settled, return immediately without touching external URL
+    if (txn.status === PaymentStatus.SUCCESS || txn.invoice.status === InvoiceStatus.PAID) {
+      return {
+        tranId: txn.tranId,
+        status: 'SUCCESS',
+        invoiceStatus: InvoiceStatus.PAID,
+        verifiedAt: txn.verifiedAt,
+        amount: Number(txn.amount),
+        currency: txn.currency,
+      };
+    }
+
+    // 2. Strict anti-spam rate limiter: if checked in the last 2500ms, return cached response
+    const now = Date.now();
+    const cached = this.statusCheckCache.get(tranId);
+    if (cached && now - cached.timestamp < 2500) {
+      return cached.result;
+    }
+
+    const paywayLink =
+      this.configService.get<string>('PAYWAY_PAYMENT_URL') ||
+      txn.paywayLink ||
+      'https://link.payway.com.kh/ABAPAYCK539089j';
+
+    // 3. If transaction is a real numeric gateway tranId, check live status via KhqrGateway
+    const isGatewayTranId = /^\d+$/.test(tranId);
+
+    if (isGatewayTranId) {
+      try {
+        const gateway = this.getGateway();
+        const gatewayStatus = await gateway.checkStatus({
+          tranId,
+          checkoutUrl: paywayLink,
+        });
+
+        if (gatewayStatus.status === 'PAID') {
+          // Reconcile and verify settlement using pay-helper verifySettlement
+          const verification = verifySettlement({
+            expectedAmount: Number(txn.amount),
+            expectedCurrency: txn.currency as 'USD' | 'KHR',
+            expectedBillNumber: txn.invoice.invoiceNumber,
+            paidAmount: Number(txn.amount),
+            paidCurrency: txn.currency as 'USD' | 'KHR',
+            paidBillNumber: txn.invoice.invoiceNumber,
+          });
+
+          if (verification.verified) {
+            await this.settleTransaction(tranId);
+            const successResult = {
+              tranId: txn.tranId,
+              status: 'SUCCESS',
+              invoiceStatus: InvoiceStatus.PAID,
+              verifiedAt: new Date(),
+              amount: Number(txn.amount),
+              currency: txn.currency,
+            };
+            this.statusCheckCache.set(tranId, { timestamp: now, result: successResult });
+            return successResult;
+          }
+        }
+
+        const pendingResult = {
+          tranId: txn.tranId,
+          status: 'PENDING',
+          invoiceStatus: txn.invoice.status,
+          verifiedAt: null,
+          amount: Number(txn.amount),
+          currency: txn.currency,
+        };
+        this.statusCheckCache.set(tranId, { timestamp: now, result: pendingResult });
+        return pendingResult;
+      } catch (err: any) {
+        // Anti-spam error guard: if check fails or network blips, cool down for 4000ms
+        this.logger.warn(`Gateway status query for ${tranId} cooled down: ${err.message}`);
+        const coolDownResult = {
+          tranId: txn.tranId,
+          status: 'PENDING',
+          invoiceStatus: txn.invoice.status,
+          verifiedAt: null,
+          amount: Number(txn.amount),
+          currency: txn.currency,
+        };
+        this.statusCheckCache.set(tranId, { timestamp: now + 1500, result: coolDownResult });
+        return coolDownResult;
+      }
+    }
+
+    // Default for local transactions
+    const defaultPending = {
       tranId: txn.tranId,
       status: txn.status,
       invoiceStatus: txn.invoice.status,
@@ -260,6 +330,8 @@ export class PaymentsService {
       amount: Number(txn.amount),
       currency: txn.currency,
     };
+    this.statusCheckCache.set(tranId, { timestamp: now, result: defaultPending });
+    return defaultPending;
   }
 
   async findAllInvoices(params?: { status?: InvoiceStatus; patientId?: string }) {

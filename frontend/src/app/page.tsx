@@ -24,7 +24,6 @@ import {
   ArrowUpRight,
 } from 'lucide-react';
 import { RegisterPatientDrawer } from '../components/patients/RegisterPatientDrawer';
-import { QuickKhqrTerminal } from '../components/dashboard/QuickKhqrTerminal';
 
 export default function DashboardPage() {
   const [metrics, setMetrics] = useState<any>(null);
@@ -185,9 +184,6 @@ export default function DashboardPage() {
           <FileText className="w-5 h-5 text-slate-400" />
         </div>
       </div>
-
-      {/* Live KHQR POS Terminal powered by pay-helper */}
-      <QuickKhqrTerminal />
 
       {/* Clinical Operations & Activity Feed */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

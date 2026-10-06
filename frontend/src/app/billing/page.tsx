@@ -4,6 +4,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { api } from '../../lib/api';
 import Link from 'next/link';
 import { KhqrCheckoutModal } from '../../components/payments/KhqrCheckoutModal';
+import { useTranslation } from '../../context/I18nContext';
 import {
   CreditCard,
   Search,
@@ -21,6 +22,8 @@ import {
 } from 'lucide-react';
 
 export default function BillingPage() {
+  const { locale } = useTranslation();
+  const isKm = locale === 'km';
   const [invoices, setInvoices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -251,7 +254,7 @@ export default function BillingPage() {
                       className="px-3.5 py-1.5 bg-teal-700 hover:bg-teal-800 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5"
                     >
                       <QrCode className="w-3.5 h-3.5" />
-                      <span>Pay with KHQR</span>
+                      <span>{isKm ? 'បង់ប្រាក់ KHQR' : 'Pay with KHQR'}</span>
                     </button>
                   ) : (
                     <button
@@ -260,7 +263,7 @@ export default function BillingPage() {
                       className="px-3 py-1.5 bg-slate-100 text-slate-500 rounded-lg text-xs font-medium flex items-center gap-1 cursor-default"
                     >
                       <Receipt className="w-3.5 h-3.5 text-slate-400" />
-                      <span>Settled</span>
+                      <span>{isKm ? 'បានទូទាត់' : 'Settled'}</span>
                     </button>
                   )}
                 </div>
