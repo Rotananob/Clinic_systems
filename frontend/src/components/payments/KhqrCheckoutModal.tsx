@@ -9,15 +9,14 @@ import {
   CheckCircle2,
   AlertCircle,
   RefreshCw,
-  ExternalLink,
-  ShieldCheck,
-  Building,
   Clock,
   Copy,
   Check,
   Download,
-  ArrowLeft,
   Smartphone,
+  ShieldCheck,
+  CreditCard,
+  ExternalLink,
 } from 'lucide-react';
 
 interface KhqrCheckoutModalProps {
@@ -52,12 +51,15 @@ export function KhqrCheckoutModal({
   const { locale } = useTranslation();
   const isKm = locale === 'km';
 
-  // Wizard state: SELECT_METHOD -> PAYMENT_VIEW
-  const [step, setStep] = useState<'SELECT_METHOD' | 'PAYMENT_VIEW'>('SELECT_METHOD');
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethodType>('aba');
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [copiedCode, setCopiedCode] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [settled, setSettled] = useState(false);
+  const [settling, setSettling] = useState(false);
+  const [countdown, setCountdown] = useState(300);
+
   const [qrData, setQrData] = useState<{
     qrString: string;
     tranId: string;
@@ -65,26 +67,81 @@ export function KhqrCheckoutModal({
     amount: number;
     currency: string;
     invoiceNumber: string;
-    paywayLink?: string;
+    paywayLink: string;
     deeplinks?: any;
     expiresInSeconds: number;
   } | null>(null);
 
-  const [copied, setCopied] = useState(false);
-  const [settled, setSettled] = useState(false);
-  const [settling, setSettling] = useState(false);
-  const [countdown, setCountdown] = useState(300);
   const pollTimerRef = useRef<NodeJS.Timeout | null>(null);
   const consecutiveErrorsRef = useRef<number>(0);
 
   const activeInvoiceId = invoiceId || invoice?.id;
   const paywayLiveUrl = qrData?.paywayLink || 'https://link.payway.com.kh/ABAPAYCK539089j';
 
-  // Reset modal state on open
+  const clearPolling = () => {
+    if (pollTimerRef.current) {
+      clearInterval(pollTimerRef.current);
+      pollTimerRef.current = null;
+    }
+  };
+
+  const handleSuccess = () => {
+    clearPolling();
+    setSettled(true);
+    setSettling(false);
+    if (onPaymentSuccess) onPaymentSuccess();
+    if (onSuccess) onSuccess();
+  };
+
+  // Start polling every 3 seconds politely without spamming bank URLs
+  const startPolling = (tranId: string) => {
+    clearPolling();
+    pollTimerRef.current = setInterval(async () => {
+      try {
+        const statusRes = await api.payments.checkStatus(tranId);
+        consecutiveErrorsRef.current = 0;
+        if (statusRes.status === 'SUCCESS' || statusRes.invoiceStatus === 'PAID') {
+          handleSuccess();
+        }
+      } catch {
+        consecutiveErrorsRef.current += 1;
+        if (consecutiveErrorsRef.current >= 4) {
+          clearPolling();
+        }
+      }
+    }, 3000);
+  };
+
+  const generateKhqr = async (id: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await api.payments.generateQr(id);
+      const data = {
+        qrString: res.qrString,
+        tranId: res.tranId,
+        md5: res.md5 || '',
+        amount: res.amount,
+        currency: res.currency,
+        invoiceNumber: res.invoiceNumber,
+        paywayLink: res.paywayLink || 'https://link.payway.com.kh/ABAPAYCK539089j',
+        deeplinks: res.deeplinks,
+        expiresInSeconds: res.expiresInSeconds || 300,
+      };
+      setQrData(data);
+      setCountdown(data.expiresInSeconds);
+      if (data.tranId) {
+        startPolling(data.tranId);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to generate dynamic KHQR payment code');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (isOpen && activeInvoiceId) {
-      setStep('SELECT_METHOD');
-      setSelectedMethod('aba');
       setSettled(false);
       setError(null);
       setCountdown(300);
@@ -100,103 +157,26 @@ export function KhqrCheckoutModal({
     };
   }, [isOpen, activeInvoiceId]);
 
-  const clearPolling = () => {
-    if (pollTimerRef.current) {
-      clearInterval(pollTimerRef.current);
-      pollTimerRef.current = null;
-    }
-  };
-
-  const generateKhqr = async (id: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await api.payments.generateQr(id);
-      setQrData({
-        qrString: res.qrString,
-        tranId: res.tranId,
-        md5: res.md5,
-        amount: res.amount,
-        currency: res.currency,
-        invoiceNumber: res.invoiceNumber,
-        paywayLink: res.paywayLink || 'https://link.payway.com.kh/ABAPAYCK539089j',
-        deeplinks: res.deeplinks,
-        expiresInSeconds: res.expiresInSeconds || 300,
-      });
-    } catch (err: any) {
-      setError(err.message || 'Failed to generate dynamic KHQR payment code');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Start polling only when staff enters the PAYMENT_VIEW
-  const startPolling = (tranId: string) => {
-    clearPolling();
-    pollTimerRef.current = setInterval(async () => {
-      try {
-        const statusRes = await api.payments.checkStatus(tranId);
-        consecutiveErrorsRef.current = 0;
-        if (statusRes.status === 'SUCCESS' || statusRes.invoiceStatus === 'PAID') {
-          handleSuccess();
-        }
-      } catch (err) {
-        consecutiveErrorsRef.current += 1;
-        // Circuit breaker: pause if 4 consecutive failures
-        if (consecutiveErrorsRef.current >= 4) {
+  // Countdown timer
+  useEffect(() => {
+    if (!qrData || settled) return;
+    const interval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
           clearPolling();
+          return 0;
         }
-      }
-    }, 3000);
-  };
-
-  // Proceed from Method Selector to Payment View
-  const handleProceedToPayment = () => {
-    setStep('PAYMENT_VIEW');
-    if (qrData?.tranId) {
-      startPolling(qrData.tranId);
-    }
-
-    // If ABA Pay selected on mobile, attempt opening deeplink directly
-    if (selectedMethod === 'aba' && qrData?.deeplinks?.aba) {
-      triggerAbaDeeplink();
-    }
-  };
-
-  const triggerAbaDeeplink = () => {
-    if (!qrData) return;
-    const isMobile = typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
-
-    if (isMobile) {
-      const targetUrl = isAndroid
-        ? (qrData.deeplinks?.aba?.android || paywayLiveUrl)
-        : (qrData.deeplinks?.aba?.ios || paywayLiveUrl);
-      window.location.href = targetUrl;
-    } else {
-      window.open(paywayLiveUrl, '_blank');
-    }
-  };
-
-  const triggerBakongDeeplink = () => {
-    if (!qrData) return;
-    const isMobile = typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
-
-    if (isMobile) {
-      const targetUrl = isAndroid
-        ? (qrData.deeplinks?.bakong?.android || `bakong://open?qr=${encodeURIComponent(qrData.qrString)}`)
-        : (qrData.deeplinks?.bakong?.ios || `bakong://open?qr=${encodeURIComponent(qrData.qrString)}`);
-      window.location.href = targetUrl;
-    } else {
-      window.open(paywayLiveUrl, '_blank');
-    }
-  };
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [qrData, settled]);
 
   // Instant App-Switch Wakeup
   useEffect(() => {
     const handleVisibilityOrFocus = async () => {
-      if (isOpen && step === 'PAYMENT_VIEW' && qrData?.tranId && !settled) {
+      if (isOpen && qrData?.tranId && !settled) {
         try {
           const statusRes = await api.payments.checkStatus(qrData.tranId);
           if (statusRes.status === 'SUCCESS' || statusRes.invoiceStatus === 'PAID') {
@@ -215,58 +195,55 @@ export function KhqrCheckoutModal({
       window.removeEventListener('focus', handleVisibilityOrFocus);
       document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
     };
-  }, [isOpen, step, qrData, settled]);
+  }, [isOpen, qrData, settled]);
 
-  // Countdown
-  useEffect(() => {
-    if (!qrData || settled || step !== 'PAYMENT_VIEW') return;
-    const interval = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          clearPolling();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [qrData, settled, step]);
+  // Multi-Bank Deeplink Generators matching KhqrDeeplink-headless-bridge
+  const getAbaDeeplink = (qrString: string) => {
+    const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
+    if (isAndroid) {
+      return `intent://ababank.com?type=payway&qrcode=${encodeURIComponent(qrString)}#Intent;scheme=abamobilebank;package=com.paygo24.ibank;end;`;
+    }
+    return `abamobilebank://ababank.com?type=payway&qrcode=${encodeURIComponent(qrString)}`;
+  };
 
-  const handleCopyLink = () => {
+  const getBakongDeeplink = (qrString: string) => {
+    const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
+    if (isAndroid) {
+      return `intent://open?qr=${encodeURIComponent(qrString)}#Intent;scheme=bakong;package=kh.gov.nbc.bakong;S.browser_fallback_url=https://play.google.com/store/apps/details?id=kh.gov.nbc.bakong;end;`;
+    }
+    return `bakong://open?qr=${encodeURIComponent(qrString)}`;
+  };
+
+  const getAcledaDeeplink = (qrString: string) => {
+    const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
+    if (isAndroid) {
+      return `intent://#Intent;scheme=acledamobile;package=com.acledabank.mobile;S.qr_code=${encodeURIComponent(qrString)};S.browser_fallback_url=https://play.google.com/store/apps/details?id=com.acledabank.mobile;end;`;
+    }
+    return `acledamobile://open?qr=${encodeURIComponent(qrString)}`;
+  };
+
+  const getWingDeeplink = (qrString: string) => {
+    const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
+    if (isAndroid) {
+      return `intent://#Intent;scheme=wingbank;package=com.wingmoney.wingapp;action=android.intent.action.VIEW;S.browser_fallback_url=https://play.google.com/store/apps/details?id=com.wingmoney.wingapp;end;`;
+    }
+    return `wingbank://open?qr=${encodeURIComponent(qrString)}`;
+  };
+
+  const copyToClipboard = (text: string, isLink = false) => {
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      navigator.clipboard.writeText(paywayLiveUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      navigator.clipboard.writeText(text);
+      if (isLink) {
+        setCopiedLink(true);
+        setTimeout(() => setCopiedLink(false), 2500);
+      } else {
+        setCopiedCode(true);
+        setTimeout(() => setCopiedCode(false), 2500);
+      }
     }
   };
 
-  // Manual Instant Settlement (0.3s)
-  const handleInstantSettle = async () => {
-    if (!qrData?.tranId) return;
-    setSettling(true);
-    try {
-      await api.payments.settle(qrData.tranId);
-      handleSuccess();
-    } catch (err: any) {
-      setError(err.message || 'Failed to settle transaction');
-    } finally {
-      setSettling(false);
-    }
-  };
-
-  const handleSuccess = () => {
-    clearPolling();
-    setSettled(true);
-    if (onPaymentSuccess) {
-      onPaymentSuccess();
-    }
-    if (onSuccess) {
-      onSuccess();
-    }
-  };
-
-  // Download high-resolution PNG image with clinic name embedded
+  // Download high-resolution PNG with embedded clinic branding
   const handleDownloadQrImage = () => {
     if (!qrData) return;
     const svg = document.getElementById('rotana-khqr-svg');
@@ -345,9 +322,22 @@ export function KhqrCheckoutModal({
     };
   };
 
+  // Instant Manual Settlement (0.3s)
+  const handleInstantSettle = async () => {
+    if (!qrData?.tranId) return;
+    setSettling(true);
+    try {
+      await api.payments.settle(qrData.tranId);
+      handleSuccess();
+    } catch (err: any) {
+      setError(err.message || 'Settlement failed');
+      setSettling(false);
+    }
+  };
+
   if (!activeInvoiceId) return null;
 
-  const invoiceNumber = invoice?.invoiceNumber || qrData?.invoiceNumber || 'Processing...';
+  const invoiceNumber = invoice?.invoiceNumber || qrData?.invoiceNumber || 'INV-2026';
   const currency = invoice?.currency || qrData?.currency || 'USD';
   const rawAmount = invoice?.payableAmount ?? qrData?.amount ?? 0;
   const formattedAmount = `${currency === 'KHR' ? '៛' : '$'}${Number(rawAmount).toFixed(2)}`;
@@ -360,18 +350,16 @@ export function KhqrCheckoutModal({
       title={
         settled
           ? (isKm ? 'ការទូទាត់ជោគជ័យ' : 'Payment Settled')
-          : step === 'SELECT_METHOD'
-          ? (isKm ? 'ជ្រើសរើសវិធីសាស្ត្រទូទាត់' : 'Select payment method')
-          : (isKm ? 'ស្កេនទូទាត់ KHQR / ABA Pay' : 'Scan KHQR / ABA Pay')
+          : (isKm ? 'ស្កេនទូទាត់ KHQR / Mobile Banking' : 'Scan KHQR / Mobile Banking')
       }
       description={`Invoice: ${invoiceNumber} • ${formattedAmount}`}
     >
-      <div className="space-y-4">
+      <div className="space-y-4 max-h-[82vh] overflow-y-auto px-1 py-0.5">
         {loading && (
           <div className="py-12 text-center text-slate-500">
             <div className="w-8 h-8 border-2 border-teal-700 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
             <p className="text-xs">
-              {isKm ? 'កំពុងបង្កើតកូដទូទាត់ KHQR និងតំណភ្ជាប់ ABA...' : 'Synthesizing Tag 01=12 KHQR and ABA PayWay link...'}
+              {isKm ? 'កំពុងបង្កើតកូដទូទាត់ KHQR និងតំណភ្ជាប់ ABA...' : 'Generating official KHQR and payment links...'}
             </p>
           </div>
         )}
@@ -380,7 +368,7 @@ export function KhqrCheckoutModal({
           <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-lg flex items-start gap-2.5 text-xs text-rose-800">
             <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
             <div className="flex-1">
-              <span className="font-semibold">{isKm ? 'សេចក្តីជូនដំណឹងទូទាត់:' : 'Payment Notice:'}</span>
+              <span className="font-semibold">{isKm ? 'សេចក្តីជូនដំណឹង:' : 'Notice:'}</span>
               <p className="mt-0.5">{error}</p>
               <button
                 type="button"
@@ -419,7 +407,7 @@ export function KhqrCheckoutModal({
               <div className="flex justify-between">
                 <span className="text-slate-400">Method:</span>
                 <span className="font-medium text-slate-800">
-                  {selectedMethod === 'aba' ? 'ABA Pay (Live Deeplink)' : 'Bakong KHQR Bridge'}
+                  {selectedMethod === 'aba' ? 'ABA Pay' : 'Bakong KHQR Bridge'}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -437,338 +425,312 @@ export function KhqrCheckoutModal({
           </div>
         ) : (
           !loading && qrData && (
-            <>
-              {/* STEP 1: EXACT REPLICA OF USER SCREENSHOT (Select payment method) */}
-              {step === 'SELECT_METHOD' && (
-                <div className="space-y-4">
-                  <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
-                    {/* Method List */}
-                    <div className="divide-y divide-slate-100">
-                      {/* 1. ABA Pay */}
-                      <label
-                        className={`flex items-center justify-between p-3.5 cursor-pointer hover:bg-slate-50/80 transition-colors ${
-                          selectedMethod === 'aba' ? 'bg-cyan-50/40' : ''
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="text-xs font-semibold text-slate-800">ABA Pay</span>
-                          <div className="w-12 h-6 rounded bg-[#005F86] text-white flex flex-col items-center justify-center font-bold leading-none select-none px-1 shadow-xs">
-                            <span className="text-[8px] tracking-tight">ABA</span>
-                            <span className="text-[6.5px] font-semibold tracking-wider text-cyan-200">PAY</span>
-                          </div>
-                        </div>
-                        <input
-                          type="radio"
-                          name="payment_method"
-                          value="aba"
-                          checked={selectedMethod === 'aba'}
-                          onChange={() => setSelectedMethod('aba')}
-                          className="w-4 h-4 text-cyan-700 border-slate-300 focus:ring-cyan-600"
-                        />
-                      </label>
+            <div className="space-y-4">
+              {/* Payment Methods Bar (Tabs matching user design) */}
+              <div className="bg-slate-100 p-1 rounded-xl flex items-center gap-1 text-[11px] font-semibold text-slate-600">
+                <button
+                  type="button"
+                  onClick={() => setSelectedMethod('aba')}
+                  className={`flex-1 py-1.5 px-2 rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                    selectedMethod === 'aba'
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'hover:text-slate-900'
+                  }`}
+                >
+                  <span className="w-2 h-2 rounded-full bg-[#005F86]" />
+                  <span>ABA Pay</span>
+                </button>
 
-                      {/* 2. Credit Card */}
-                      <label
-                        className={`flex items-center justify-between p-3.5 cursor-pointer hover:bg-slate-50/80 transition-colors ${
-                          selectedMethod === 'card' ? 'bg-cyan-50/40' : ''
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <span className="text-xs font-semibold text-slate-800">Credit Card</span>
-                          <div className="flex items-center gap-1 select-none">
-                            <div className="h-5 px-1 bg-white border border-slate-200 rounded flex items-center justify-center">
-                              <span className="font-black italic text-[9px] text-[#1A1F71] tracking-tighter">VISA</span>
-                            </div>
-                            <div className="h-5 w-7 bg-white border border-slate-200 rounded flex items-center justify-center">
-                              <div className="flex items-center -space-x-1">
-                                <div className="w-3 h-3 rounded-full bg-[#EB001B] opacity-90" />
-                                <div className="w-3 h-3 rounded-full bg-[#F79E1B] opacity-90" />
-                              </div>
-                            </div>
-                            <div className="h-5 px-1 bg-white border border-slate-200 rounded flex items-center justify-center">
-                              <span className="font-extrabold text-[7.5px] text-[#007b83]">UnionPay</span>
-                            </div>
-                          </div>
-                        </div>
-                        <input
-                          type="radio"
-                          name="payment_method"
-                          value="card"
-                          checked={selectedMethod === 'card'}
-                          onChange={() => setSelectedMethod('card')}
-                          className="w-4 h-4 text-cyan-700 border-slate-300 focus:ring-cyan-600"
-                        />
-                      </label>
+                <button
+                  type="button"
+                  onClick={() => setSelectedMethod('khqr')}
+                  className={`flex-1 py-1.5 px-2 rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                    selectedMethod === 'khqr'
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'hover:text-slate-900'
+                  }`}
+                >
+                  <span className="w-2 h-2 rounded-full bg-[#E1251B]" />
+                  <span>KHQR</span>
+                </button>
 
-                      {/* 3. KHQR */}
-                      <label
-                        className={`flex items-center justify-between p-3.5 cursor-pointer hover:bg-slate-50/80 transition-colors ${
-                          selectedMethod === 'khqr' ? 'bg-cyan-50/40' : ''
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="text-xs font-semibold text-slate-800">KHQR</span>
-                          <div className="w-12 h-6 rounded bg-[#E1251B] text-white flex items-center justify-center font-black text-[9px] tracking-wide select-none shadow-xs">
-                            <span>KHQR</span>
-                          </div>
-                        </div>
-                        <input
-                          type="radio"
-                          name="payment_method"
-                          value="khqr"
-                          checked={selectedMethod === 'khqr'}
-                          onChange={() => setSelectedMethod('khqr')}
-                          className="w-4 h-4 text-cyan-700 border-slate-300 focus:ring-cyan-600"
-                        />
-                      </label>
+                <button
+                  type="button"
+                  onClick={() => setSelectedMethod('card')}
+                  className={`flex-1 py-1.5 px-2 rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                    selectedMethod === 'card'
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'hover:text-slate-900'
+                  }`}
+                >
+                  <CreditCard className="w-3 h-3 text-slate-500" />
+                  <span>Cards</span>
+                </button>
 
-                      {/* 4. WeChat */}
-                      <label
-                        className={`flex items-center justify-between p-3.5 cursor-pointer hover:bg-slate-50/80 transition-colors ${
-                          selectedMethod === 'wechat' ? 'bg-cyan-50/40' : ''
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="text-xs font-semibold text-slate-800">WeChat</span>
-                          <div className="w-11 h-6 rounded bg-[#07C160] text-white flex items-center justify-center select-none shadow-xs">
-                            <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                              <path d="M9.5 4C5.36 4 2 6.91 2 10.5c0 2.05 1.07 3.88 2.76 5.08L4 18l3.05-1.22c.76.22 1.58.34 2.45.34.24 0 .47-.01.71-.03-.23-.52-.37-1.09-.37-1.69 0-3.31 3.13-6 7-6 .18 0 .36.01.54.02C16.5 6.07 13.3 4 9.5 4zm-2.25 4.5c.69 0 1.25.56 1.25 1.25S7.94 11 7.25 11 6 10.44 6 9.75 6.56 8.5 7.25 8.5zm4.5 0c.69 0 1.25.56 1.25 1.25S12.44 11 11.75 11 10.5 10.44 10.5 9.75 11.06 8.5 11.75 8.5zm4.75 4.5c-3.31 0-6 2.24-6 5s2.69 5 6 5c.7 0 1.36-.1 1.97-.27L21 23.5l-.65-1.95c1.35-.96 2.15-2.35 2.15-3.85 0-2.76-2.69-5-6-5zm-2 3c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm4 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1z" />
-                            </svg>
-                          </div>
-                        </div>
-                        <input
-                          type="radio"
-                          name="payment_method"
-                          value="wechat"
-                          checked={selectedMethod === 'wechat'}
-                          onChange={() => setSelectedMethod('wechat')}
-                          className="w-4 h-4 text-cyan-700 border-slate-300 focus:ring-cyan-600"
-                        />
-                      </label>
+                <button
+                  type="button"
+                  onClick={() => setSelectedMethod('wechat')}
+                  className={`flex-1 py-1.5 px-2 rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                    selectedMethod === 'wechat'
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'hover:text-slate-900'
+                  }`}
+                >
+                  <span>WeChat</span>
+                </button>
 
-                      {/* 5. Alipay */}
-                      <label
-                        className={`flex items-center justify-between p-3.5 cursor-pointer hover:bg-slate-50/80 transition-colors ${
-                          selectedMethod === 'alipay' ? 'bg-cyan-50/40' : ''
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="text-xs font-semibold text-slate-800">Alipay</span>
-                          <div className="w-11 h-6 rounded bg-[#1677FF] text-white flex items-center justify-center select-none shadow-xs font-bold text-xs">
-                            <span>支</span>
-                          </div>
-                        </div>
-                        <input
-                          type="radio"
-                          name="payment_method"
-                          value="alipay"
-                          checked={selectedMethod === 'alipay'}
-                          onChange={() => setSelectedMethod('alipay')}
-                          className="w-4 h-4 text-cyan-700 border-slate-300 focus:ring-cyan-600"
-                        />
-                      </label>
-                    </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedMethod('alipay')}
+                  className={`flex-1 py-1.5 px-2 rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                    selectedMethod === 'alipay'
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'hover:text-slate-900'
+                  }`}
+                >
+                  <span>Alipay</span>
+                </button>
+              </div>
+
+              {/* AUTHENTIC BAKONG KHQR STANDEE CARD (WITH CLINIC NAME EMBEDDED) */}
+              <div
+                id="rotana-khqr-card-container"
+                className="bg-white border-2 border-red-600 rounded-2xl overflow-hidden shadow-md max-w-[290px] mx-auto text-slate-900"
+              >
+                {/* Red Top Header */}
+                <div className="bg-[#E1251B] text-white py-1.5 px-3 flex items-center justify-between">
+                  <div className="flex items-center gap-1 font-bold tracking-wider text-xs">
+                    <span className="bg-white text-[#E1251B] font-black text-[9px] px-1 py-0.5 rounded shadow-xs">
+                      KHQR
+                    </span>
+                    <span className="text-[11px]">BAKONG</span>
+                  </div>
+                  <span className="text-[9px] uppercase font-semibold tracking-wider opacity-90">
+                    Tag 01=12
+                  </span>
+                </div>
+
+                {/* CLINIC BRANDING HEADER (DISPLAYED DIRECTLY IN THE CARD) */}
+                <div className="pt-2 pb-1.5 px-3 text-center border-b border-slate-100 bg-slate-50/70">
+                  <div className="text-xs font-extrabold uppercase tracking-tight text-slate-900">
+                    ROTANA CLINIC
+                  </div>
+                  <div className="text-[11px] font-bold text-teal-800">
+                    គ្លីនិក រតនា
+                  </div>
+                  <div className="text-[9px] text-slate-400 mt-0.5">
+                    Phnom Penh, Cambodia
+                  </div>
+                </div>
+
+                {/* QR Code Matrix */}
+                <div className="p-3 bg-white flex flex-col items-center justify-center">
+                  <div className="p-1.5 bg-white border border-slate-200 rounded-xl shadow-inner inline-block">
+                    <QRCodeSVG
+                      id="rotana-khqr-svg"
+                      value={qrData.qrString}
+                      size={180}
+                      level="M"
+                      includeMargin={true}
+                    />
                   </div>
 
-                  <p className="text-[11px] text-slate-400 text-center">
-                    By proceeding you accept the Terms of use and Privacy policy
-                  </p>
+                  {/* Amount & Bill details */}
+                  <div className="mt-2 text-center w-full">
+                    <div className="text-xl font-black font-mono text-slate-900 tracking-tight">
+                      {formattedAmount}
+                    </div>
+                    <div className="text-[10px] font-medium text-slate-500 mt-0.5">
+                      <span>#{invoiceNumber}</span>
+                      {patientName && <span className="ml-1">• {patientName}</span>}
+                    </div>
+                  </div>
+                </div>
 
-                  {/* PROCEED TO PAYMENT BUTTON (Matching screenshot) */}
+                {/* Bottom Strip */}
+                <div className="bg-slate-900 text-white py-1 px-2 text-center text-[9px] tracking-wide font-medium">
+                  ស្កេនទូទាត់ជាមួយ App ធនាគារគ្រប់ប្រភេទ (ABA, Bakong)
+                </div>
+              </div>
+
+              {/* ACTION BUTTONS: COPY KHQR & DOWNLOAD PNG */}
+              <div className="flex items-center justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => copyToClipboard(qrData.qrString, false)}
+                  className="py-1.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1.5 border border-slate-200 shadow-2xs"
+                >
+                  {copiedCode ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-emerald-600" />
+                      <span className="text-emerald-700">{isKm ? 'បានចម្លង' : 'Copied'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5 text-slate-500" />
+                      <span>{isKm ? 'ចម្លងកូដ KHQR' : 'Copy KHQR'}</span>
+                    </>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleDownloadQrImage}
+                  className="py-1.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1.5 border border-slate-200 shadow-2xs"
+                >
+                  <Download className="w-3.5 h-3.5 text-slate-500" />
+                  <span>{isKm ? 'រក្សាទុករូប QR' : 'Save QR Image'}</span>
+                </button>
+              </div>
+
+              {/* MULTI-BANK SELECTOR GRID (Matching KhqrDeeplink-headless-bridge) */}
+              <div className="space-y-2 pt-1 border-t border-slate-100">
+                <div className="text-[11px] font-semibold text-slate-600 flex items-center gap-1">
+                  <Smartphone className="w-3.5 h-3.5 text-teal-700" />
+                  <span>{isKm ? 'ជ្រើសរើស App ធនាគារដើម្បីបង់ប្រាក់ផ្ទាល់ (Deeplink):' : 'Select Banking App (Deeplink):'}</span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  {/* 1. ABA Mobile */}
+                  <a
+                    href={getAbaDeeplink(qrData.qrString)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-2 p-2.5 rounded-xl border border-blue-200 bg-gradient-to-r from-[#00529C] to-[#003d73] text-white shadow-2xs hover:opacity-95 transition-all"
+                  >
+                    <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center font-black text-[10px] shrink-0">
+                      ABA
+                    </div>
+                    <div className="text-left overflow-hidden">
+                      <div className="text-xs font-bold leading-tight truncate">ABA Mobile</div>
+                      <div className="text-[10px] text-blue-100/90 leading-tight">បង់ភ្លាមៗ</div>
+                    </div>
+                  </a>
+
+                  {/* 2. Bakong App */}
+                  <a
+                    href={getBakongDeeplink(qrData.qrString)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-2 p-2.5 rounded-xl border border-red-200 bg-gradient-to-r from-[#E12228] to-[#b81419] text-white shadow-2xs hover:opacity-95 transition-all"
+                  >
+                    <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center font-black text-[9px] shrink-0">
+                      KHQR
+                    </div>
+                    <div className="text-left overflow-hidden">
+                      <div className="text-xs font-bold leading-tight truncate">Bakong App</div>
+                      <div className="text-[10px] text-red-100 leading-tight">បាគង</div>
+                    </div>
+                  </a>
+
+                  {/* 3. ACLEDA Mobile */}
+                  <a
+                    href={getAcledaDeeplink(qrData.qrString)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-2 p-2.5 rounded-xl border border-[#D4AF37]/30 bg-gradient-to-r from-[#0B3B60] to-[#082942] text-white shadow-2xs hover:opacity-95 transition-all"
+                  >
+                    <div className="w-7 h-7 rounded-lg bg-[#D4AF37]/20 border border-[#D4AF37]/40 flex items-center justify-center font-black text-[10px] text-[#F5D77F] shrink-0">
+                      ACL
+                    </div>
+                    <div className="text-left overflow-hidden">
+                      <div className="text-xs font-bold leading-tight truncate">ACLEDA Mobile</div>
+                      <div className="text-[10px] text-[#F5D77F]/90 leading-tight">អេស៊ីលីដា</div>
+                    </div>
+                  </a>
+
+                  {/* 4. Wing Bank */}
+                  <a
+                    href={getWingDeeplink(qrData.qrString)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-2 p-2.5 rounded-xl border border-lime-300 bg-gradient-to-r from-[#78BE20] to-[#5a9413] text-white shadow-2xs hover:opacity-95 transition-all"
+                  >
+                    <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center font-black text-[9px] shrink-0">
+                      WING
+                    </div>
+                    <div className="text-left overflow-hidden">
+                      <div className="text-xs font-bold leading-tight truncate">Wing Bank</div>
+                      <div className="text-[10px] text-lime-100 leading-tight">វីង</div>
+                    </div>
+                  </a>
+                </div>
+
+                {/* Direct PayWay Link Copy */}
+                <div className="flex items-center gap-1.5 pt-1">
+                  <input
+                    type="text"
+                    readOnly
+                    value={paywayLiveUrl}
+                    className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-[11px] text-slate-600 font-mono select-all focus:outline-none"
+                  />
                   <button
                     type="button"
-                    onClick={handleProceedToPayment}
-                    className="w-full py-3 bg-black hover:bg-slate-900 text-white font-bold rounded-lg text-xs tracking-wide shadow-sm transition-all"
+                    onClick={() => copyToClipboard(paywayLiveUrl, true)}
+                    className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium transition flex items-center gap-1 shrink-0 border border-slate-200"
                   >
-                    Proceed to Payment
-                  </button>
-                </div>
-              )}
-
-              {/* STEP 2: PAYMENT QR & DEEPLINK TEST VIEW */}
-              {step === 'PAYMENT_VIEW' && (
-                <div className="space-y-4">
-                  {/* Back button */}
-                  <div className="flex items-center justify-between">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        clearPolling();
-                        setStep('SELECT_METHOD');
-                      }}
-                      className="inline-flex items-center gap-1 text-xs text-slate-600 hover:text-slate-900 font-medium"
-                    >
-                      <ArrowLeft className="w-3.5 h-3.5" />
-                      <span>{isKm ? 'ប្តូរវិធីសាស្ត្រទូទាត់' : 'Change method'}</span>
-                    </button>
-                    <span className="text-[11px] uppercase tracking-wider font-semibold text-slate-500">
-                      Method: {selectedMethod.toUpperCase()}
-                    </span>
-                  </div>
-
-                  {/* AUTHENTIC BAKONG KHQR STANDEE CARD (WITH CLINIC NAME EMBEDDED) */}
-                  <div
-                    id="rotana-khqr-card-container"
-                    className="bg-white border-2 border-red-600 rounded-2xl overflow-hidden shadow-md max-w-[310px] mx-auto text-slate-900"
-                  >
-                    {/* Red Top Header */}
-                    <div className="bg-[#E1251B] text-white py-2 px-3 flex items-center justify-between">
-                      <div className="flex items-center gap-1.5 font-bold tracking-wider text-xs">
-                        <span className="bg-white text-[#E1251B] font-black text-[10px] px-1.5 py-0.5 rounded shadow-xs">
-                          KHQR
-                        </span>
-                        <span>BAKONG</span>
-                      </div>
-                      <span className="text-[10px] uppercase font-semibold tracking-wider opacity-90">
-                        Tag 01=12
-                      </span>
-                    </div>
-
-                    {/* CLINIC BRANDING HEADER (DISPLAYED DIRECTLY IN THE CARD) */}
-                    <div className="pt-2.5 pb-2 px-3 text-center border-b border-slate-100 bg-slate-50/60">
-                      <div className="text-sm font-extrabold uppercase tracking-tight text-slate-900">
-                        ROTANA CLINIC
-                      </div>
-                      <div className="text-xs font-bold text-teal-800">
-                        គ្លីនិក រតនា
-                      </div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">
-                        Medical Center & Polyclinic
-                      </div>
-                    </div>
-
-                    {/* QR Code Matrix with Quiet Zone */}
-                    <div className="p-3.5 bg-white flex flex-col items-center justify-center">
-                      <div className="p-2 bg-white border border-slate-200 rounded-xl shadow-inner inline-block">
-                        <QRCodeSVG
-                          id="rotana-khqr-svg"
-                          value={qrData.qrString}
-                          size={195}
-                          level="M"
-                          includeMargin={true}
-                        />
-                      </div>
-
-                      {/* Amount & Invoice Info on the Card */}
-                      <div className="mt-2.5 text-center w-full">
-                        <div className="text-2xl font-black font-mono text-slate-900 tracking-tight">
-                          {formattedAmount}
-                        </div>
-                        <div className="text-[11px] font-medium text-slate-500 mt-0.5">
-                          <span>#{invoiceNumber}</span>
-                          {patientName && <span className="ml-1">• {patientName}</span>}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Bottom Strip */}
-                    <div className="bg-slate-900 text-white py-1.5 px-3 text-center text-[10px] tracking-wide font-medium">
-                      ស្កេនទូទាត់ជាមួយ App ធនាគារគ្រប់ប្រភេទ (ABA, Bakong)
-                    </div>
-                  </div>
-
-                  {/* DEEPLINK ACTIONS & CONTROLS */}
-                  <div className="space-y-2">
-                    {/* If ABA Pay method selected */}
-                    {selectedMethod === 'aba' ? (
-                      <div className="space-y-2">
-                        <button
-                          type="button"
-                          onClick={triggerAbaDeeplink}
-                          className="w-full py-2.5 px-3 bg-[#005F86] hover:bg-[#004e6e] text-white rounded-lg text-xs font-semibold shadow-sm transition flex items-center justify-center gap-2"
-                        >
-                          <Smartphone className="w-4 h-4" />
-                          <span>
-                            {isKm ? 'បើកដំណើរការ ABA Mobile (Test Deeplink)' : 'Open in ABA Mobile (Test Deeplink)'}
-                          </span>
-                        </button>
-
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="text"
-                            readOnly
-                            value={paywayLiveUrl}
-                            className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-[11px] text-slate-600 font-mono select-all focus:outline-none"
-                          />
-                          <button
-                            type="button"
-                            onClick={handleCopyLink}
-                            className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium transition flex items-center gap-1 shrink-0"
-                          >
-                            {copied ? (
-                              <>
-                                <Check className="w-3.5 h-3.5 text-emerald-600" />
-                                <span className="text-emerald-700">{isKm ? 'បានចម្លង' : 'Copied'}</span>
-                              </>
-                            ) : (
-                              <>
-                                <Copy className="w-3.5 h-3.5" />
-                                <span>{isKm ? 'ចម្លង' : 'Copy'}</span>
-                              </>
-                            )}
-                          </button>
-                        </div>
-                      </div>
+                    {copiedLink ? (
+                      <>
+                        <Check className="w-3 h-3 text-emerald-600" />
+                        <span className="text-emerald-700">{isKm ? 'បានចម្លង' : 'Copied'}</span>
+                      </>
                     ) : (
-                      /* KHQR or other methods */
-                      <div className="grid grid-cols-2 gap-2">
-                        <button
-                          type="button"
-                          onClick={handleDownloadQrImage}
-                          className="py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1.5 border border-slate-200"
-                        >
-                          <Download className="w-3.5 h-3.5 text-slate-600" />
-                          <span>{isKm ? 'រក្សាទុករូប QR' : 'Save QR Image'}</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={triggerBakongDeeplink}
-                          className="py-2 px-3 bg-[#E1251B] hover:bg-[#c91f16] text-white rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1.5 shadow-sm"
-                        >
-                          <ExternalLink className="w-3.5 h-3.5" />
-                          <span>Bakong App</span>
-                        </button>
-                      </div>
+                      <>
+                        <Copy className="w-3 h-3 text-slate-500" />
+                        <span>{isKm ? 'តំណភ្ជាប់ PayWay' : 'Copy Link'}</span>
+                      </>
                     )}
-
-                    {/* Countdown and poller status */}
-                    <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
-                      <span className="flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                        <span>{isKm ? 'កំពុងរង់ចាំការទូទាត់...' : 'Listening for payment...'}</span>
-                      </span>
-                      <span className="flex items-center gap-1 font-mono text-slate-400">
-                        <Clock className="w-3 h-3 text-slate-400" />
-                        <span>
-                          {Math.floor(countdown / 60)}:{(countdown % 60).toString().padStart(2, '0')}
-                        </span>
-                      </span>
-                    </div>
-
-                    {/* Instant verification button (0.3s) */}
-                    <button
-                      type="button"
-                      onClick={handleInstantSettle}
-                      disabled={settling}
-                      className="w-full py-2 bg-teal-700 hover:bg-teal-800 disabled:bg-slate-300 text-white rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 shadow-sm"
-                    >
-                      {settling ? (
-                        <>
-                          <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          <span>{isKm ? 'កំពុងផ្ទៀងផ្ទាត់ (0.3s)...' : 'Verifying (0.3s)...'}</span>
-                        </>
-                      ) : (
-                        <>
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          <span>{isKm ? 'ផ្ទៀងផ្ទាត់ការទូទាត់ឥឡូវនេះ (0.3s)' : 'Verify Settlement Now (0.3s)'}</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
+                  </button>
+                  <a
+                    href={paywayLiveUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="p-1.5 text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg border border-slate-200"
+                    title="Open PayWay Link in browser"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
                 </div>
-              )}
-            </>
+              </div>
+
+              {/* Status Poller & Countdown Banner */}
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-2.5 flex items-center justify-between text-[11px] text-slate-600">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>
+                    {isKm
+                      ? 'ប្រព័ន្ធកំពុងរង់ចាំការទូទាត់រៀងរាល់ 3s...'
+                      : 'Listening for settlement confirmation (3s)...'}
+                  </span>
+                </span>
+                <span className="flex items-center gap-1 font-mono text-slate-500 font-semibold">
+                  <Clock className="w-3.5 h-3.5 text-slate-400" />
+                  <span>
+                    {Math.floor(countdown / 60)}:{(countdown % 60).toString().padStart(2, '0')}
+                  </span>
+                </span>
+              </div>
+
+              {/* Instant Verification Button for Cashier */}
+              <button
+                type="button"
+                onClick={handleInstantSettle}
+                disabled={settling}
+                className="w-full py-2 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 shadow-xs"
+              >
+                {settling ? (
+                  <>
+                    <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>{isKm ? 'កំពុងផ្ទៀងផ្ទាត់ (0.3s)...' : 'Verifying (0.3s)...'}</span>
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck className="w-3.5 h-3.5 text-teal-400" />
+                    <span>{isKm ? 'ផ្ទៀងផ្ទាត់ការទូទាត់ភ្លាមៗ (0.3s)' : 'Instant Verify Settlement (0.3s)'}</span>
+                  </>
+                )}
+              </button>
+            </div>
           )
         )}
       </div>
