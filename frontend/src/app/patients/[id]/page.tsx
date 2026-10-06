@@ -20,6 +20,8 @@ import {
   FileText,
   MapPin,
   HeartPulse,
+  CalendarDays,
+  FolderOpen,
 } from 'lucide-react';
 import { KhqrCheckoutModal } from '../../../components/payments/KhqrCheckoutModal';
 
@@ -29,7 +31,7 @@ export default function Patient360Page() {
   const patientId = params?.id as string;
 
   const [patient, setPatient] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<'visits' | 'prescriptions' | 'invoices'>('visits');
+  const [activeTab, setActiveTab] = useState<'visits' | 'prescriptions' | 'invoices' | 'followups' | 'documents'>('visits');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -84,6 +86,8 @@ export default function Patient360Page() {
   const visits = patient.visits || [];
   const invoices = patient.invoices || [];
   const prescriptions = visits.flatMap((v: any) => v.prescriptions || []);
+  const followUps = patient.followUps || [];
+  const documents = patient.documents || [];
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-12">
@@ -168,10 +172,10 @@ export default function Patient360Page() {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-200 gap-6 text-sm font-medium">
+      <div className="flex border-b border-slate-200 gap-6 text-sm font-medium overflow-x-auto pb-1 sm:pb-0">
         <button
           onClick={() => setActiveTab('visits')}
-          className={`pb-3 flex items-center gap-2 transition-colors relative ${
+          className={`pb-3 flex items-center gap-2 whitespace-nowrap transition-colors relative ${
             activeTab === 'visits'
               ? 'text-teal-700 border-b-2 border-teal-700'
               : 'text-slate-500 hover:text-slate-900'
@@ -182,7 +186,7 @@ export default function Patient360Page() {
         </button>
         <button
           onClick={() => setActiveTab('prescriptions')}
-          className={`pb-3 flex items-center gap-2 transition-colors relative ${
+          className={`pb-3 flex items-center gap-2 whitespace-nowrap transition-colors relative ${
             activeTab === 'prescriptions'
               ? 'text-teal-700 border-b-2 border-teal-700'
               : 'text-slate-500 hover:text-slate-900'
@@ -193,7 +197,7 @@ export default function Patient360Page() {
         </button>
         <button
           onClick={() => setActiveTab('invoices')}
-          className={`pb-3 flex items-center gap-2 transition-colors relative ${
+          className={`pb-3 flex items-center gap-2 whitespace-nowrap transition-colors relative ${
             activeTab === 'invoices'
               ? 'text-teal-700 border-b-2 border-teal-700'
               : 'text-slate-500 hover:text-slate-900'
@@ -201,6 +205,28 @@ export default function Patient360Page() {
         >
           <CreditCard className="w-4 h-4" />
           <span>Invoices & Payments ({invoices.length})</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('followups')}
+          className={`pb-3 flex items-center gap-2 whitespace-nowrap transition-colors relative ${
+            activeTab === 'followups'
+              ? 'text-teal-700 border-b-2 border-teal-700'
+              : 'text-slate-500 hover:text-slate-900'
+          }`}
+        >
+          <CalendarDays className="w-4 h-4" />
+          <span>Follow-Ups ({followUps.length})</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('documents')}
+          className={`pb-3 flex items-center gap-2 whitespace-nowrap transition-colors relative ${
+            activeTab === 'documents'
+              ? 'text-teal-700 border-b-2 border-teal-700'
+              : 'text-slate-500 hover:text-slate-900'
+          }`}
+        >
+          <FolderOpen className="w-4 h-4" />
+          <span>Documents ({documents.length})</span>
         </button>
       </div>
 
@@ -376,6 +402,87 @@ export default function Patient360Page() {
                 </div>
               </div>
             ))
+          )}
+        </div>
+      )}
+
+      {/* Tab 4: Follow-Ups */}
+      {activeTab === 'followups' && (
+        <div className="space-y-4">
+          {followUps.length === 0 ? (
+            <div className="p-8 text-center bg-white rounded-xl border border-slate-200 text-slate-400 text-xs">
+              No follow-up appointments scheduled for this patient.
+            </div>
+          ) : (
+            followUps.map((f: any) => (
+              <div
+                key={f.id}
+                className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex items-center justify-between"
+              >
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-xs text-slate-900">{f.reason}</span>
+                    <span
+                      className={`px-2 py-0.5 rounded text-[11px] font-medium ${
+                        f.status === 'COMPLETED'
+                          ? 'bg-emerald-50 text-emerald-700'
+                          : f.status === 'SCHEDULED'
+                          ? 'bg-teal-50 text-teal-700'
+                          : 'bg-slate-100 text-slate-600'
+                      }`}
+                    >
+                      {f.status}
+                    </span>
+                  </div>
+                  <div className="text-xs text-slate-500 mt-1">
+                    Scheduled for:{' '}
+                    <strong className="text-slate-700 font-mono">
+                      {new Date(f.scheduledDate).toLocaleString()}
+                    </strong>
+                    {f.doctor && <span> • Attending: Dr. {f.doctor.fullNameEn}</span>}
+                  </div>
+                  {f.notes && <div className="text-[11px] text-slate-400 mt-1 italic">{f.notes}</div>}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {/* Tab 5: Documents */}
+      {activeTab === 'documents' && (
+        <div className="space-y-4">
+          {documents.length === 0 ? (
+            <div className="p-8 text-center bg-white rounded-xl border border-slate-200 text-slate-400 text-xs">
+              No clinical attachments or lab reports archived for this patient.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {documents.map((d: any) => (
+                <div
+                  key={d.id}
+                  className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex items-center justify-between"
+                >
+                  <div>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-semibold uppercase bg-teal-50 text-teal-800 border border-teal-100">
+                      {d.category.replace('_', ' ')}
+                    </span>
+                    <div className="font-semibold text-xs text-slate-900 mt-1.5">{d.title}</div>
+                    <div className="text-[11px] text-slate-400 font-mono mt-0.5">
+                      {d.fileName} ({Math.round(d.fileSize / 1024)} KB)
+                    </div>
+                  </div>
+                  <a
+                    href={d.fileUrl}
+                    download={d.fileName}
+                    className="p-2 text-teal-700 hover:bg-teal-50 rounded-lg text-xs font-medium border border-teal-200"
+                    title="Download document"
+                  >
+                    Download
+                  </a>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       )}

@@ -167,6 +167,59 @@ class ApiClient {
       this.request<any>(`/payments/status/${tranId}`),
   };
 
+  // Follow-ups & Recalls
+  followUps = {
+    list: (params?: {
+      status?: string;
+      patientId?: string;
+      doctorId?: string;
+      fromDate?: string;
+      toDate?: string;
+    }) => {
+      const sp = new URLSearchParams();
+      if (params?.status) sp.append('status', params.status);
+      if (params?.patientId) sp.append('patientId', params.patientId);
+      if (params?.doctorId) sp.append('doctorId', params.doctorId);
+      if (params?.fromDate) sp.append('fromDate', params.fromDate);
+      if (params?.toDate) sp.append('toDate', params.toDate);
+      const query = sp.toString() ? `?${sp.toString()}` : '';
+      return this.request<any[]>(`/follow-ups${query}`);
+    },
+    get: (id: string) => this.request<any>(`/follow-ups/${id}`),
+    create: (data: any) =>
+      this.request<any>('/follow-ups', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    update: (id: string, data: any) =>
+      this.request<any>(`/follow-ups/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }),
+  };
+
+  // Documents & Lab Attachments
+  documents = {
+    list: (params?: { patientId?: string; category?: string; visitId?: string }) => {
+      const sp = new URLSearchParams();
+      if (params?.patientId) sp.append('patientId', params.patientId);
+      if (params?.category) sp.append('category', params.category);
+      if (params?.visitId) sp.append('visitId', params.visitId);
+      const query = sp.toString() ? `?${sp.toString()}` : '';
+      return this.request<any[]>(`/documents${query}`);
+    },
+    get: (id: string) => this.request<any>(`/documents/${id}`),
+    create: (data: any) =>
+      this.request<any>('/documents', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    remove: (id: string) =>
+      this.request<any>(`/documents/${id}`, {
+        method: 'DELETE',
+      }),
+  };
+
   // Dashboard
   dashboard = {
     getMetrics: () => this.request<any>('/dashboard/metrics'),

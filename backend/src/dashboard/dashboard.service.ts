@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { VisitStatus, PrescriptionStatus, InvoiceStatus } from '@prisma/client';
+import { VisitStatus, PrescriptionStatus, InvoiceStatus, FollowUpStatus } from '@prisma/client';
 
 @Injectable()
 export class DashboardService {
@@ -13,6 +13,10 @@ export class DashboardService {
     const endOfToday = new Date();
     endOfToday.setHours(23, 59, 59, 999);
 
+    const next7Days = new Date();
+    next7Days.setDate(next7Days.getDate() + 7);
+    next7Days.setHours(23, 59, 59, 999);
+
     const [
       totalPatients,
       todayVisitsCount,
@@ -20,7 +24,13 @@ export class DashboardService {
       inConsultationVisitsCount,
       completedVisitsToday,
       pendingPrescriptionsCount,
+      dispensedPrescriptionsCount,
       todayPaidInvoices,
+      todayFollowUpsCount,
+      upcoming7DaysFollowUpsCount,
+      totalDocumentsCount,
+      recentVisits,
+      recentInvoices,
     ] = await Promise.all([
       this.prisma.patient.count(),
       this.prisma.visit.count({
@@ -43,6 +53,9 @@ export class DashboardService {
       this.prisma.prescription.count({
         where: { status: PrescriptionStatus.PENDING },
       }),
+      this.prisma.prescription.count({
+        where: { status: PrescriptionStatus.DISPENSED },
+      }),
       this.prisma.invoice.findMany({
         where: {
           status: InvoiceStatus.PAID,
@@ -51,6 +64,34 @@ export class DashboardService {
         select: {
           payableAmount: true,
           currency: true,
+        },
+      }),
+      this.prisma.followUp.count({
+        where: {
+          status: FollowUpStatus.SCHEDULED,
+          scheduledDate: { gte: startOfToday, lte: endOfToday },
+        },
+      }),
+      this.prisma.followUp.count({
+        where: {
+          status: FollowUpStatus.SCHEDULED,
+          scheduledDate: { gte: startOfToday, lte: next7Days },
+        },
+      }),
+      this.prisma.document.count(),
+      this.prisma.visit.findMany({
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          patient: { select: { nameEn: true, patientCode: true } },
+          doctor: { select: { fullNameEn: true } },
+        },
+      }),
+      this.prisma.invoice.findMany({
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          patient: { select: { nameEn: true } },
         },
       }),
     ]);
@@ -73,11 +114,23 @@ export class DashboardService {
       },
       pharmacy: {
         pendingPrescriptions: pendingPrescriptionsCount,
+        dispensedTotal: dispensedPrescriptionsCount,
+      },
+      followUps: {
+        todayScheduled: todayFollowUpsCount,
+        upcoming7Days: upcoming7DaysFollowUpsCount,
+      },
+      documents: {
+        total: totalDocumentsCount,
       },
       revenueToday: {
         usd: revenueUsd,
         khr: revenueKhr,
         paidInvoicesCount: todayPaidInvoices.length,
+      },
+      recentActivity: {
+        visits: recentVisits,
+        invoices: recentInvoices,
       },
     };
   }

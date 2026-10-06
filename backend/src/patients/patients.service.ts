@@ -142,6 +142,9 @@ export class PatientsService {
             },
           },
         },
+        documents: {
+          orderBy: { createdAt: 'desc' },
+        },
       },
     });
 

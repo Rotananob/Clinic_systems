@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, Calendar, Pill, CreditCard, ShieldCheck } from 'lucide-react';
+import { LayoutDashboard, Users, Calendar, Pill, CreditCard, ShieldCheck, CalendarDays, FolderOpen } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export const Sidebar: React.FC = () => {
@@ -15,7 +15,9 @@ export const Sidebar: React.FC = () => {
     { label: 'Patient Registry', href: '/patients', icon: Users },
     { label: 'Active Queue & Visits', href: '/visits', icon: Calendar },
     { label: 'Pharmacy & Dispensing', href: '/prescriptions', icon: Pill },
-    { label: 'Invoices & KHQR Settlement', href: '/billing', icon: CreditCard },
+    { label: 'Invoices & KHQR', href: '/billing', icon: CreditCard },
+    { label: 'Follow-Ups & Recalls', href: '/follow-ups', icon: CalendarDays },
+    { label: 'Documents & Lab Files', href: '/documents', icon: FolderOpen },
   ];
 
   if (user?.role === 'ADMIN') {

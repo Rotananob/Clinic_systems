@@ -73,11 +73,12 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  doctorVisits      Visit[]            @relation("DoctorVisits")
-  doctorPrescriptions Prescription[]   @relation("DoctorPrescriptions")
-  doctorFollowUps   FollowUp[]         @relation("DoctorFollowUps")
-  cashierInvoices   Invoice[]          @relation("CashierInvoices")
-  auditLogs         AuditLog[]
+  doctorVisits        Visit[]          @relation("DoctorVisits")
+  doctorPrescriptions Prescription[] @relation("DoctorPrescriptions")
+  doctorFollowUps     FollowUp[]       @relation("DoctorFollowUps")
+  cashierInvoices     Invoice[]        @relation("CashierInvoices")
+  uploadedDocuments   Document[]       @relation("UploadedDocuments")
+  auditLogs           AuditLog[]
 
   @@map("users")
 }
@@ -99,11 +100,12 @@ model Patient {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
-  visits          Visit[]
-  medicalRecords  MedicalRecord[]
-  prescriptions   Prescription[]
-  invoices        Invoice[]
-  followUps       FollowUp[]
+  visits         Visit[]
+  medicalRecords MedicalRecord[]
+  prescriptions  Prescription[]
+  invoices       Invoice[]
+  followUps      FollowUp[]
+  documents      Document[]
 
   @@index([phone])
   @@index([nameEn])
@@ -130,12 +132,13 @@ model Visit {
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
-  patient         Patient        @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  doctor          User?          @relation("DoctorVisits", fields: [doctorId], references: [id])
-  medicalRecord   MedicalRecord?
-  prescriptions   Prescription[]
-  invoices        Invoice[]
-  followUps       FollowUp[]
+  patient       Patient        @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor        User?          @relation("DoctorVisits", fields: [doctorId], references: [id])
+  medicalRecord MedicalRecord?
+  prescriptions Prescription[]
+  invoices      Invoice[]
+  followUps     FollowUp[]
+  documents     Document[]
 
   @@index([patientId])
   @@index([doctorId])
@@ -289,4 +292,28 @@ model AuditLog {
   @@index([userId])
   @@index([entity])
   @@map("audit_logs")
+}
+
+model Document {
+  id           String   @id @default(uuid()) @db.Uuid
+  patientId    String   @db.Uuid
+  visitId      String?  @db.Uuid
+  title        String
+  category     String   @default("LAB_REPORT") // LAB_REPORT, RADIOLOGY, REFERRAL, CERTIFICATE, OTHER
+  fileType     String   // application/pdf, image/png, image/jpeg, etc.
+  fileName     String
+  fileSize     Int      // bytes
+  fileUrl      String   @db.Text
+  notes        String?
+  uploadedById String?  @db.Uuid
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  patient    Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  visit      Visit?   @relation(fields: [visitId], references: [id])
+  uploadedBy User?    @relation("UploadedDocuments", fields: [uploadedById], references: [id])
+
+  @@index([patientId])
+  @@index([category])
+  @@map("documents")
 }
