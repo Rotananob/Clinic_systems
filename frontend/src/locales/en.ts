@@ -8,6 +8,7 @@ export const en = {
     followUps: 'Follow-Ups & Recalls',
     documents: 'Documents & Lab Files',
     staff: 'Staff Management',
+    settings: 'Clinic Settings',
     logout: 'Sign Out',
   },
   common: {

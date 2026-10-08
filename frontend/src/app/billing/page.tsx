@@ -28,6 +28,8 @@ import {
   Printer,
   Sparkles,
   Calendar,
+  Edit3,
+  FileText,
 } from 'lucide-react';
 
 const servicePresets = [
@@ -71,6 +73,49 @@ export default function BillingPage() {
   // Official Receipt modal
   const [receiptInvoice, setReceiptInvoice] = useState<any>(null);
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
+
+  // Edit & Correct Invoice modal
+  const [editingInvoice, setEditingInvoice] = useState<any>(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
+  const [editForm, setEditForm] = useState({
+    status: 'PENDING',
+    payableAmount: '',
+    paymentMethod: 'KHQR',
+    notes: '',
+  });
+
+  const handleOpenEdit = (inv: any) => {
+    setEditingInvoice(inv);
+    setEditForm({
+      status: inv.status,
+      payableAmount: Number(inv.payableAmount).toFixed(2),
+      paymentMethod: inv.paymentMethod || 'KHQR',
+      notes: '',
+    });
+    setIsEditOpen(true);
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingInvoice) return;
+    setEditLoading(true);
+    try {
+      await api.payments.updateInvoice(editingInvoice.id, {
+        status: editForm.status,
+        payableAmount: parseFloat(editForm.payableAmount),
+        paymentMethod: editForm.paymentMethod,
+        notes: editForm.notes,
+      });
+      setIsEditOpen(false);
+      setEditingInvoice(null);
+      await fetchInvoices();
+    } catch (err: any) {
+      alert(err.message || 'Failed to update invoice');
+    } finally {
+      setEditLoading(false);
+    }
+  };
 
   const fetchInvoices = async () => {
     setLoading(true);
@@ -234,14 +279,19 @@ export default function BillingPage() {
 
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-500">Payment Engine Engine</span>
-            <ShieldCheck className="w-4 h-4 text-teal-600" />
+            <span className="text-xs font-medium text-slate-500">
+              {isKm ? 'សរុបវិក្កយបត្រទាំងអស់' : 'Total Invoices Issued'}
+            </span>
+            <FileText className="w-4 h-4 text-teal-700" />
           </div>
-          <div className="text-sm font-bold text-slate-900 mt-2 flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-500" />
-            <span>pay-helper (Tag 01=12)</span>
+          <div className="text-2xl font-bold text-slate-900 mt-2 font-mono">
+            {summary.paidCount + summary.unpaidCount}
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">ABA Mobile & Bakong Real-Time Settlement</div>
+          <div className="text-[11px] text-slate-400 mt-1">
+            {isKm
+              ? `ទូទាត់រួច: ${summary.paidCount} | រង់ចាំ: ${summary.unpaidCount}`
+              : `Settled: ${summary.paidCount} | Pending: ${summary.unpaidCount}`}
+          </div>
         </div>
       </div>
 
@@ -403,6 +453,16 @@ export default function BillingPage() {
                         <Banknote className="w-3.5 h-3.5 text-amber-600" />
                         <span>{isKm ? 'ប្រាក់សុទ្ធ' : 'Cash'}</span>
                       </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEdit(inv)}
+                        className="px-2.5 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 rounded-lg text-xs font-medium transition-colors flex items-center gap-1"
+                        title={isKm ? 'កែប្រែស្ថានភាព ឬទឹកប្រាក់' : 'Edit Invoice'}
+                      >
+                        <Edit3 className="w-3.5 h-3.5 text-slate-500" />
+                        <span>{isKm ? 'កែប្រែ' : 'Edit'}</span>
+                      </button>
                     </div>
                   ) : (
                     <div className="flex items-center gap-1.5">
@@ -430,6 +490,16 @@ export default function BillingPage() {
                       >
                         <Printer className="w-3.5 h-3.5 text-teal-700" />
                         <span>{isKm ? 'បង្កាន់ដៃ' : 'Receipt'}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEdit(inv)}
+                        className="px-2.5 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 rounded-lg text-xs font-medium transition-colors flex items-center gap-1"
+                        title={isKm ? 'កែប្រែស្ថានភាព (កែពី Paid មកវិញ)' : 'Edit / Revert Invoice'}
+                      >
+                        <Edit3 className="w-3.5 h-3.5 text-slate-500" />
+                        <span>{isKm ? 'កែប្រែ' : 'Edit'}</span>
                       </button>
                     </div>
                   )}
@@ -673,6 +743,135 @@ export default function BillingPage() {
             setReceiptInvoice(null);
           }}
         />
+      )}
+
+      {/* Edit Invoice Modal */}
+      {isEditOpen && editingInvoice && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-150">
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-teal-50 border border-teal-200 text-teal-800 flex items-center justify-center">
+                  <Edit3 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">
+                    {isKm ? 'កែសម្រួលវិក្កយបត្រ' : 'Edit Invoice Details'}
+                  </h3>
+                  <p className="text-[11px] text-slate-500 font-mono">
+                    {editingInvoice.invoiceNumber} - {editingInvoice.patient?.nameEn || 'Patient'}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsEditOpen(false);
+                  setEditingInvoice(null);
+                }}
+                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEdit} className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  {isKm ? 'ស្ថានភាពវិក្កយបត្រ (Invoice Status)' : 'Invoice Status'}
+                </label>
+                <select
+                  value={editForm.status}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, status: e.target.value }))}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-teal-700 focus:bg-white"
+                >
+                  <option value="PENDING">{isKm ? 'PENDING (រង់ចាំការទូទាត់)' : 'PENDING (Awaiting Payment)'}</option>
+                  <option value="UNPAID">{isKm ? 'UNPAID (មិនទាន់បង់)' : 'UNPAID (Unpaid)'}</option>
+                  <option value="PAID">{isKm ? 'PAID (បានទូទាត់រួច)' : 'PAID (Settled)'}</option>
+                </select>
+                {editingInvoice.status === 'PAID' && editForm.status !== 'PAID' && (
+                  <div className="mt-2 p-2.5 bg-amber-50 border border-amber-200 rounded-lg text-[11px] text-amber-800 flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                    <span>
+                      {isKm
+                        ? 'ការប្ដូរពី PAID មក PENDING នឹងកែប្រែស្ថានភាពប្រតិបត្តិការ និងសម្អាតកាលបរិច្ឆេទបង់ប្រាក់ដោយស្វ័យប្រវត្តិ។'
+                        : 'Reverting from PAID to PENDING will reset transaction status and clear settlement timestamp.'}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  {isKm ? 'ចំនួនទឹកប្រាក់ត្រូវបង់' : 'Payable Amount'} ({editingInvoice.currency || 'USD'})
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  value={editForm.payableAmount}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, payableAmount: e.target.value }))}
+                  required
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono font-medium focus:outline-none focus:ring-1 focus:ring-teal-700 focus:bg-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  {isKm ? 'វិធីសាស្ត្រទូទាត់' : 'Payment Method'}
+                </label>
+                <select
+                  value={editForm.paymentMethod}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, paymentMethod: e.target.value }))}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-teal-700 focus:bg-white"
+                >
+                  <option value="KHQR">KHQR (Dynamic Tag 01=12)</option>
+                  <option value="CASH">CASH (ប្រាក់សុទ្ធ)</option>
+                  <option value="BANK_TRANSFER">BANK TRANSFER (ផ្ទេរផ្ទាល់)</option>
+                  <option value="CARD">POS / CARD</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  {isKm ? 'មូលហេតុ ឬចំណាំបុគ្គលិក (Staff Notes / Audit)' : 'Staff Notes / Audit Log'}
+                </label>
+                <input
+                  type="text"
+                  placeholder={
+                    isKm
+                      ? 'ឧ. ច្រឡំចុច Paid, បញ្ចុះតម្លៃបន្ថែម...'
+                      : 'e.g. Accidental click, discount adjustment...'
+                  }
+                  value={editForm.notes}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, notes: e.target.value }))}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-teal-700 focus:bg-white"
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsEditOpen(false);
+                    setEditingInvoice(null);
+                  }}
+                  className="px-4 py-2 text-xs font-medium text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
+                >
+                  {isKm ? 'បោះបង់' : 'Cancel'}
+                </button>
+                <button
+                  type="submit"
+                  disabled={editLoading}
+                  className="px-4 py-2 bg-teal-700 hover:bg-teal-800 text-white rounded-lg text-xs font-semibold transition-colors disabled:opacity-50 flex items-center gap-1.5"
+                >
+                  {editLoading && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+                  <span>{isKm ? 'រក្សាទុកការកែប្រែ' : 'Save Changes'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );

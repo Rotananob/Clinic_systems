@@ -205,6 +205,14 @@ class ApiClient {
         method: 'POST',
         body: JSON.stringify({ invoiceId, amountTendered }),
       }),
+    updateInvoice: (
+      id: string,
+      data: { status?: string; payableAmount?: number; paymentMethod?: string; notes?: string },
+    ) =>
+      this.request<any>(`/payments/invoices/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }),
   };
 
   // Follow-ups & Recalls

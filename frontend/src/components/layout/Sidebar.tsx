@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, Calendar, Pill, CreditCard, ShieldCheck, CalendarDays, FolderOpen } from 'lucide-react';
+import { LayoutDashboard, Users, Calendar, Pill, CreditCard, ShieldCheck, CalendarDays, FolderOpen, Settings } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from '../../context/I18nContext';
 
@@ -30,6 +30,8 @@ export const Sidebar: React.FC = () => {
   if (mounted && user?.role === 'ADMIN') {
     navItems.push({ label: t.nav.staff, href: '/staff', icon: ShieldCheck });
   }
+
+  navItems.push({ label: t.nav.settings, href: '/settings', icon: Settings });
 
   return (
     <aside className="hidden md:flex flex-col w-64 border-r border-slate-200 bg-white min-h-[calc(100vh-4rem)] p-4">

@@ -1,5 +1,6 @@
-import { IsNotEmpty, IsUUID, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { IsNotEmpty, IsUUID, IsNumber, IsOptional, IsString, Min, IsEnum } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { InvoiceStatus } from '@prisma/client';
 
 export class GenerateInvoiceQrDto {
   @ApiProperty({ example: 'b5a2b1b3-4f3e-4b21-a1e1-85db2d6e3f22' })
@@ -45,4 +46,27 @@ export class CreateQuickInvoiceDto {
   @IsString()
   @IsOptional()
   reason?: string;
+}
+
+export class UpdateInvoiceDto {
+  @ApiPropertyOptional({ enum: InvoiceStatus, example: 'PENDING' })
+  @IsEnum(InvoiceStatus)
+  @IsOptional()
+  status?: InvoiceStatus;
+
+  @ApiPropertyOptional({ example: 25.0 })
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  payableAmount?: number;
+
+  @ApiPropertyOptional({ example: 'KHQR' })
+  @IsString()
+  @IsOptional()
+  paymentMethod?: string;
+
+  @ApiPropertyOptional({ example: 'Staff corrected payment status' })
+  @IsString()
+  @IsOptional()
+  notes?: string;
 }

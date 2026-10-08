@@ -1,7 +1,7 @@
-import { Controller, Post, Get, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { PaymentsService } from './payments.service';
-import { GenerateInvoiceQrDto, SettlePaymentDto, CreateQuickInvoiceDto } from './dto/generate-qr.dto';
+import { GenerateInvoiceQrDto, SettlePaymentDto, CreateQuickInvoiceDto, UpdateInvoiceDto } from './dto/generate-qr.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { InvoiceStatus } from '@prisma/client';
 
@@ -56,6 +56,17 @@ export class PaymentsController {
   @Post('settle-cash')
   settleCash(@Body() dto: { invoiceId: string; amountTendered: number }) {
     return this.paymentsService.settleCash(dto.invoiceId, dto.amountTendered);
+  }
+
+  @ApiOperation({ summary: 'Update or correct invoice status and details' })
+  @Patch('invoices/:id')
+  updateInvoice(
+    @Param('id') id: string,
+    @Body() dto: UpdateInvoiceDto,
+    @Request() req: any,
+  ) {
+    const userId = req.user?.id;
+    return this.paymentsService.updateInvoice(id, dto, userId);
   }
 }
 

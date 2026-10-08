@@ -207,6 +207,13 @@ export function KhqrCheckoutModal({
       setQrData(data);
       setCountdown(expiresIn);
 
+      // If the invoice is already settled, show success screen immediately without polling
+      if (res.alreadyPaid || res.status === 'PAID' || (invoice as any)?.status === 'PAID') {
+        setSettled(true);
+        clearPolling();
+        return;
+      }
+
       // Save to sessionStorage for Anti-Reload & tab-switch recovery
       if (storageKey) {
         try {

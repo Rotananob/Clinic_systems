@@ -8,6 +8,7 @@ export const km = {
     followUps: 'ការណាត់ជួប និងតាមដាន',
     documents: 'ឯកសារ និងលទ្ធផលតេស្ត',
     staff: 'គ្រប់គ្រងបុគ្គលិក',
+    settings: 'ការកំណត់ប្រព័ន្ធ',
     logout: 'ចាកចេញពីប្រព័ន្ធ',
   },
   common: {

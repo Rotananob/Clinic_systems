@@ -77,7 +77,28 @@ export class PaymentsService {
     }
 
     if (invoice.status === InvoiceStatus.PAID) {
-      throw new BadRequestException('This invoice is already settled/paid.');
+      const existingSuccessTx = await this.prisma.paymentTransaction.findFirst({
+        where: { invoiceId: invoice.id, status: PaymentStatus.SUCCESS },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      const meta = (existingSuccessTx?.metadata as any) || {};
+      return {
+        success: true,
+        alreadyPaid: true,
+        status: 'PAID',
+        invoiceNumber: invoice.invoiceNumber,
+        tranId: existingSuccessTx?.tranId || `PAID-${invoice.invoiceNumber}`,
+        qrString: existingSuccessTx?.qrString || '',
+        paywayLink: existingSuccessTx?.paywayLink || '',
+        md5: existingSuccessTx?.md5 || '',
+        amount: Number(invoice.payableAmount),
+        currency: invoice.currency,
+        deeplinks: meta.deeplinks || (existingSuccessTx?.qrString ? buildBankDeeplinks(existingSuccessTx.qrString) : null),
+        patient: invoice.patient,
+        paidAt: invoice.paidAt,
+        expiresInSeconds: 0,
+      };
     }
 
     // Strict pay-helper rule: Check if an active 3-minute (180s) session already exists for this invoice
@@ -656,6 +677,66 @@ export class PaymentsService {
       amountTendered: tendered,
       changeDue,
     };
+  }
+
+  async updateInvoice(id: string, dto: any, userId?: string) {
+    const invoice = await this.prisma.invoice.findUnique({
+      where: { id },
+      include: { transactions: true, patient: true },
+    });
+
+    if (!invoice) {
+      throw new NotFoundException(`Invoice with ID ${id} not found`);
+    }
+
+    const data: any = {};
+    if (dto.payableAmount !== undefined && dto.payableAmount !== null) {
+      data.payableAmount = Number(dto.payableAmount);
+      data.totalAmount = Number(dto.payableAmount);
+    }
+    if (dto.paymentMethod) {
+      data.paymentMethod = dto.paymentMethod;
+    }
+    if (dto.status) {
+      data.status = dto.status;
+      if (dto.status === InvoiceStatus.PAID) {
+        data.paidAt = invoice.paidAt || new Date();
+      } else {
+        data.paidAt = null;
+        // If staff marked PAID by mistake, revert status and transactions
+        await this.prisma.paymentTransaction.updateMany({
+          where: { invoiceId: invoice.id, status: PaymentStatus.SUCCESS },
+          data: { status: PaymentStatus.PENDING },
+        });
+      }
+    }
+
+    const updated = await this.prisma.invoice.update({
+      where: { id },
+      data,
+      include: { patient: true, visit: true, transactions: true },
+    });
+
+    try {
+      await this.prisma.auditLog.create({
+        data: {
+          userId: userId || null,
+          action: 'INVOICE_EDITED_BY_STAFF',
+          entity: 'INVOICE',
+          entityId: id,
+          details: {
+            previousStatus: invoice.status,
+            newStatus: updated.status,
+            previousAmount: Number(invoice.payableAmount),
+            newAmount: Number(updated.payableAmount),
+            notes: dto.notes || 'Staff updated invoice status or amount',
+          },
+        },
+      });
+    } catch {}
+
+    this.logger.log(`Invoice ${invoice.invoiceNumber} updated by staff. Status: ${invoice.status} -> ${updated.status}`);
+    return updated;
   }
 }
 
