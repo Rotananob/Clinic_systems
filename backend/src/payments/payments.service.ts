@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, BadRequestException, Logger } from '@nes
 import { PrismaService } from '../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { InvoiceStatus, PaymentStatus, PaymentMethod } from '@prisma/client';
+import { PaywayDirectService } from './payway-direct.service';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const khqrHelper = require('D:/WEB Development/Rotana-payway-bridge/KhqrDeeplink-headless-bridge/packages/khqr-helper/dist/index.cjs');
@@ -16,6 +17,7 @@ export class PaymentsService {
   constructor(
     private prisma: PrismaService,
     private configService: ConfigService,
+    private paywayDirectService: PaywayDirectService,
   ) {}
 
   private getGateway(): any {
@@ -98,36 +100,58 @@ export class PaymentsService {
     let tranId: string;
     let deeplinks: any;
     let md5: string = '';
+    let gatewayMeta: Record<string, any> = {};
 
-    // Step 1: Use pay-helper KhqrGateway to generate official live registered KHQR
+    // Step 1: Use PaywayDirectService with Cloudflare session clearance spoofing (__cf_bm)
     try {
-      const gateway = this.getGateway();
-      const gatewayInvoice = await gateway.createInvoice({
+      const directInvoice = await this.paywayDirectService.createInvoice({
         amount,
         currency,
         checkoutUrl: paywayLink,
       });
 
-      qrString = gatewayInvoice.qrString;
-      tranId = String(gatewayInvoice.tranId);
-      deeplinks = gatewayInvoice.deeplinks || buildBankDeeplinks(qrString);
-      md5 = computeMd5 ? computeMd5(qrString) : '';
-      this.logger.log(`Live registered KHQR generated for invoice ${invoice.invoiceNumber}. TranID: ${tranId}`);
-    } catch (err: any) {
-      // Fallback: If network or timeout occurs, generate strict in-memory Tag 01=12 Dynamic KHQR
-      this.logger.warn(`KhqrGateway live generation failed (${err.message}). Using local Tag 01=12 dynamic fallback.`);
-      const localResult = buildKhqr({
-        bakongId,
-        merchantName,
-        merchantCity,
-        amount,
-        currency,
-        billNumber: invoice.invoiceNumber,
-      });
-      qrString = localResult.qrString;
-      tranId = `TXN-${invoice.invoiceNumber}-${Date.now()}`;
-      md5 = localResult.md5;
+      qrString = directInvoice.qrString;
+      tranId = directInvoice.tranId;
       deeplinks = buildBankDeeplinks(qrString);
+      md5 = computeMd5 ? computeMd5(qrString) : '';
+      gatewayMeta = {
+        clientId: directInvoice.clientId,
+        token: directInvoice.token,
+        requestTime: directInvoice.requestTime,
+        cookieHeader: directInvoice.cookieHeader,
+      };
+      this.logger.log(`Live registered KHQR generated via Direct PayWay session spoofing. TranID: ${tranId}`);
+    } catch (directErr: any) {
+      this.logger.warn(`PaywayDirectService live generation failed (${directErr.message}). Falling back to KhqrGateway.`);
+      try {
+        const gateway = this.getGateway();
+        const gatewayInvoice = await gateway.createInvoice({
+          amount,
+          currency,
+          checkoutUrl: paywayLink,
+        });
+
+        qrString = gatewayInvoice.qrString;
+        tranId = String(gatewayInvoice.tranId);
+        deeplinks = gatewayInvoice.deeplinks || buildBankDeeplinks(qrString);
+        md5 = computeMd5 ? computeMd5(qrString) : '';
+        this.logger.log(`Live registered KHQR generated via KhqrGateway fallback. TranID: ${tranId}`);
+      } catch (err: any) {
+        // Fallback: If network or timeout occurs, generate strict in-memory Tag 01=12 Dynamic KHQR
+        this.logger.warn(`KhqrGateway live generation failed (${err.message}). Using local Tag 01=12 dynamic fallback.`);
+        const localResult = buildKhqr({
+          bakongId,
+          merchantName,
+          merchantCity,
+          amount,
+          currency,
+          billNumber: invoice.invoiceNumber,
+        });
+        qrString = localResult.qrString;
+        tranId = `TXN-${invoice.invoiceNumber}-${Date.now()}`;
+        md5 = localResult.md5;
+        deeplinks = buildBankDeeplinks(qrString);
+      }
     }
 
     if (deeplinks?.aba) {
@@ -153,6 +177,7 @@ export class PaymentsService {
             paywayUrl: paywayLink,
             billNumber: invoice.invoiceNumber,
             generatedAt: new Date().toISOString(),
+            ...gatewayMeta,
           },
         },
       });
@@ -292,18 +317,41 @@ export class PaymentsService {
       txn.paywayLink ||
       'https://link.payway.com.kh/ABAPAYCK539089j';
 
-    // 3. If transaction is a real numeric gateway tranId, check live status via KhqrGateway
+    // 3. If transaction is a real numeric gateway tranId, check live status
     const isGatewayTranId = /^\d+$/.test(tranId);
 
     if (isGatewayTranId) {
       try {
-        const gateway = this.getGateway();
-        const gatewayStatus = await gateway.checkStatus({
-          tranId,
-          checkoutUrl: paywayLink,
-        });
+        const meta = (txn.metadata as any) || {};
+        let isPaid = false;
 
-        if (gatewayStatus.status === 'PAID') {
+        // Priority 1: Check via Direct PayWay Service using harvested __cf_bm cookie and token
+        if (meta.clientId && meta.requestTime) {
+          const directResult = await this.paywayDirectService.checkPaymentStatus({
+            tranId,
+            clientId: meta.clientId,
+            token: meta.token,
+            requestTime: meta.requestTime,
+            cookieHeader: meta.cookieHeader,
+            checkoutUrl: paywayLink,
+          });
+
+          if (directResult.status === 'PAID') {
+            isPaid = true;
+          }
+        } else {
+          // Priority 2: Fallback to KhqrGateway for legacy transactions
+          const gateway = this.getGateway();
+          const gatewayStatus = await gateway.checkStatus({
+            tranId,
+            checkoutUrl: paywayLink,
+          });
+          if (gatewayStatus.status === 'PAID') {
+            isPaid = true;
+          }
+        }
+
+        if (isPaid) {
           // Reconcile and verify settlement using pay-helper verifySettlement
           const verification = verifySettlement({
             expectedAmount: Number(txn.amount),
