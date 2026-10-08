@@ -140,10 +140,7 @@ class ApiClient {
       }),
   };
 
-  // Users & Staff
-  users = {
-    getDoctors: () => this.request<any[]>('/users/doctors'),
-  };
+
 
   // Payments & Invoices (KHQR Engine)
   payments = {
@@ -254,6 +251,31 @@ class ApiClient {
     remove: (id: string) =>
       this.request<any>(`/documents/${id}`, {
         method: 'DELETE',
+      }),
+  };
+
+  // Users & Staff Management
+  users = {
+    getDoctors: () => this.request<any[]>('/users/doctors'),
+    list: (role?: string) => {
+      const query = role ? `?role=${role}` : '';
+      return this.request<any[]>(`/users${query}`);
+    },
+    create: (data: {
+      email: string;
+      password: string;
+      fullNameEn: string;
+      fullNameKh?: string;
+      role: string;
+      phone?: string;
+    }) =>
+      this.request<any>('/users', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    toggleActive: (id: string) =>
+      this.request<any>(`/users/${id}/toggle-active`, {
+        method: 'PATCH',
       }),
   };
 
