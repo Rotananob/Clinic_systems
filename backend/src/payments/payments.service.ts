@@ -4,8 +4,35 @@ import { ConfigService } from '@nestjs/config';
 import { InvoiceStatus, PaymentStatus, PaymentMethod } from '@prisma/client';
 import { PaywayDirectService } from './payway-direct.service';
 
+import * as path from 'path';
+import * as fs from 'fs';
+
+function loadKhqrHelper(): any {
+  const candidates = [
+    path.resolve(__dirname, '../../vendor/khqr-helper/index.cjs'),
+    path.resolve(__dirname, '../../../vendor/khqr-helper/index.cjs'),
+    path.resolve(process.cwd(), 'vendor/khqr-helper/index.cjs'),
+    path.resolve(process.cwd(), 'dist/vendor/khqr-helper/index.cjs'),
+    'D:/WEB Development/Rotana-payway-bridge/KhqrDeeplink-headless-bridge/packages/khqr-helper/dist/index.cjs',
+  ];
+  for (const candidate of candidates) {
+    try {
+      if (fs.existsSync(candidate)) {
+        return require(candidate);
+      }
+    } catch {
+      // Continue to next candidate
+    }
+  }
+  try {
+    return require('D:/WEB Development/Rotana-payway-bridge/KhqrDeeplink-headless-bridge/packages/khqr-helper/dist/index.cjs');
+  } catch {
+    return {};
+  }
+}
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const khqrHelper = require('D:/WEB Development/Rotana-payway-bridge/KhqrDeeplink-headless-bridge/packages/khqr-helper/dist/index.cjs');
+const khqrHelper = loadKhqrHelper();
 const { KhqrGateway, verifySettlement, buildKhqr, buildBankDeeplinks, computeMd5 } = khqrHelper;
 
 @Injectable()
