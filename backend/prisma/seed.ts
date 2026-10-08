@@ -65,7 +65,21 @@ async function main() {
     },
   });
 
-  console.log('Seeded Users: Admin, Doctor, Receptionist, Cashier');
+  const pharmacist = await prisma.user.upsert({
+    where: { email: 'pharmacy@clinic.com' },
+    update: {},
+    create: {
+      email: 'pharmacy@clinic.com',
+      passwordHash,
+      fullNameEn: 'Srun Vichheka',
+      fullNameKh: 'កញ្ញា ស្រ៊ុន វិច្ឆិកា',
+      role: Role.PHARMACIST,
+      phone: '089443322',
+      isActive: true,
+    },
+  });
+
+  console.log('Seeded Users: Admin, Doctor, Receptionist, Cashier, Pharmacist');
 
   // 2. Seed Realistic Sample Patients
   const patient1 = await prisma.patient.upsert({
