@@ -177,6 +177,11 @@ class ApiClient {
         method: 'POST',
         body: JSON.stringify(data),
       }),
+    settleCash: (invoiceId: string, amountTendered: number) =>
+      this.request<any>('/payments/settle-cash', {
+        method: 'POST',
+        body: JSON.stringify({ invoiceId, amountTendered }),
+      }),
   };
 
   // Follow-ups & Recalls

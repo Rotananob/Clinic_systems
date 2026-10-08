@@ -18,7 +18,14 @@ import {
   CreditCard,
   ExternalLink,
   Lock,
+  Printer,
+  Volume2,
+  VolumeX,
+  Maximize2,
+  Minimize2,
 } from 'lucide-react';
+import { playPaymentSuccessChime } from '../../lib/chime';
+import { ClinicReceiptModal } from './ClinicReceiptModal';
 
 interface KhqrCheckoutModalProps {
   isOpen: boolean;
@@ -64,6 +71,9 @@ export function KhqrCheckoutModal({
   const [settled, setSettled] = useState(false);
   const [settling, setSettling] = useState(false);
   const [countdown, setCountdown] = useState(180); // Strict 3-minute hard limit (180s)
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [isCustomerDisplay, setIsCustomerDisplay] = useState(false);
+  const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
   const [qrData, setQrData] = useState<{
@@ -80,6 +90,8 @@ export function KhqrCheckoutModal({
   } | null>(null);
 
   const pollTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const isPollingRef = useRef<boolean>(false);
+  const activeRequestRef = useRef<number>(0);
   const consecutiveErrorsRef = useRef<number>(0);
   const activeInvoiceId = invoiceId || invoice?.id;
   const paywayLiveUrl = qrData?.paywayLink || 'https://link.payway.com.kh/ABAPAYCK539089j';
@@ -97,8 +109,9 @@ export function KhqrCheckoutModal({
   }, []);
 
   const clearPolling = () => {
+    isPollingRef.current = false;
     if (pollTimerRef.current) {
-      clearInterval(pollTimerRef.current);
+      clearTimeout(pollTimerRef.current);
       pollTimerRef.current = null;
     }
   };
@@ -107,6 +120,9 @@ export function KhqrCheckoutModal({
     clearPolling();
     setSettled(true);
     setSettling(false);
+    if (soundEnabled) {
+      playPaymentSuccessChime();
+    }
     if (storageKey) {
       try { sessionStorage.removeItem(storageKey); } catch {}
     }
@@ -114,26 +130,37 @@ export function KhqrCheckoutModal({
     if (onSuccess) onSuccess();
   };
 
-  // Start polling every 3 seconds politely without spamming bank URLs
+  // Safe polite polling with recursive setTimeout (4s interval) to prevent request overlapping or server spam
   const startPolling = (tranId: string) => {
     clearPolling();
-    pollTimerRef.current = setInterval(async () => {
+    isPollingRef.current = true;
+
+    const poll = async () => {
+      if (!isPollingRef.current) return;
       try {
         const statusRes = await api.payments.checkStatus(tranId);
         consecutiveErrorsRef.current = 0;
         if (statusRes.status === 'SUCCESS' || statusRes.invoiceStatus === 'PAID') {
           handleSuccess();
+          return;
         }
       } catch {
         consecutiveErrorsRef.current += 1;
         if (consecutiveErrorsRef.current >= 4) {
           clearPolling();
+          return;
         }
       }
-    }, 3000);
+
+      if (isPollingRef.current) {
+        pollTimerRef.current = setTimeout(poll, 4000);
+      }
+    };
+
+    pollTimerRef.current = setTimeout(poll, 4000);
   };
 
-  const generateKhqr = async (id: string) => {
+  const generateKhqr = async (id: string, requestId = ++activeRequestRef.current) => {
     // 1. Check Anti-Reload Cache in sessionStorage first
     if (storageKey) {
       try {
@@ -142,6 +169,7 @@ export function KhqrCheckoutModal({
           const cached = JSON.parse(cachedRaw);
           const now = Date.now();
           if (cached.expiresAt && cached.expiresAt > now) {
+            if (requestId !== activeRequestRef.current) return;
             const remaining = Math.max(0, Math.floor((cached.expiresAt - now) / 1000));
             setQrData(cached);
             setCountdown(remaining);
@@ -156,6 +184,11 @@ export function KhqrCheckoutModal({
     setError(null);
     try {
       const res = await api.payments.generateQr(id);
+      if (requestId !== activeRequestRef.current) {
+        // Obsolete request from prior mount; ignore to prevent duplicate pollers
+        return;
+      }
+
       const expiresAt = Date.now() + (180 * 1000); // Strict 3-minute hard limit (180s)
       const data = {
         qrString: res.qrString,
@@ -184,19 +217,24 @@ export function KhqrCheckoutModal({
         startPolling(data.tranId);
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to generate dynamic KHQR payment code');
+      if (requestId === activeRequestRef.current) {
+        setError(err.message || 'Failed to generate dynamic KHQR payment code');
+      }
     } finally {
-      setLoading(false);
+      if (requestId === activeRequestRef.current) {
+        setLoading(false);
+      }
     }
   };
 
   useEffect(() => {
+    const currentReq = ++activeRequestRef.current;
     if (isOpen && activeInvoiceId) {
       setSettled(false);
       setError(null);
       setCountdown(180);
       consecutiveErrorsRef.current = 0;
-      generateKhqr(activeInvoiceId);
+      generateKhqr(activeInvoiceId, currentReq);
     } else {
       clearPolling();
       setQrData(null);
@@ -354,18 +392,61 @@ export function KhqrCheckoutModal({
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={
-        settled
-          ? (isKm ? 'ការទូទាត់ជោគជ័យ' : 'Payment Settled')
-          : (isKm ? 'ស្កេនទូទាត់ KHQR / Mobile Banking' : 'Scan KHQR / Mobile Banking')
-      }
-      description={`Invoice: ${invoiceNumber} • ${formattedAmount}`}
-    >
-      <div className="space-y-4 max-h-[82vh] overflow-y-auto px-1 py-0.5">
-        {loading && (
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title={
+          settled
+            ? (isKm ? 'ការទូទាត់ជោគជ័យ' : 'Payment Settled')
+            : (isKm ? 'ស្កេនទូទាត់ KHQR / Mobile Banking' : 'Scan KHQR / Mobile Banking')
+        }
+        description={`Invoice: ${invoiceNumber} • ${formattedAmount}`}
+      >
+        <div className="space-y-4 max-h-[82vh] overflow-y-auto px-1 py-0.5">
+          {/* Top Control Bar: Sound & Customer Display Mode */}
+          {!settled && qrData && !loading && (
+            <div className="flex items-center justify-between bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl text-xs text-slate-600">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSoundEnabled(!soundEnabled)}
+                  className={`p-1.5 rounded-lg border flex items-center gap-1 transition-colors ${
+                    soundEnabled
+                      ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                      : 'bg-slate-100 border-slate-200 text-slate-400'
+                  }`}
+                  title={soundEnabled ? 'Chime sound enabled' : 'Chime sound muted'}
+                >
+                  {soundEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
+                  <span className="text-[11px] font-medium">
+                    {soundEnabled ? (isKm ? 'សំឡេងបើក' : 'Sound ON') : (isKm ? 'បិទសំឡេង' : 'Muted')}
+                  </span>
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsCustomerDisplay(!isCustomerDisplay)}
+                  className={`px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-colors ${
+                    isCustomerDisplay
+                      ? 'bg-teal-700 text-white border-teal-700 shadow-xs'
+                      : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100'
+                  }`}
+                >
+                  {isCustomerDisplay ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+                  <span>
+                    {isCustomerDisplay
+                      ? (isKm ? 'របៀបធម្មតា' : 'Standard View')
+                      : (isKm ? 'បង្ហាញអ្នកជំងឺស្កេន' : 'Customer Display')}
+                  </span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {loading && (
           <div className="py-12 text-center text-slate-500">
             <div className="w-8 h-8 border-2 border-teal-700 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
             <p className="text-xs">
@@ -425,13 +506,23 @@ export function KhqrCheckoutModal({
                 <span className="font-semibold text-emerald-700">Settled (PAID)</span>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={onClose}
-              className="w-full py-2.5 bg-teal-700 hover:bg-teal-800 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors"
-            >
-              {isKm ? 'រួចរាល់ និងបិទ' : 'Done & Close'}
-            </button>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowReceiptModal(true)}
+                className="py-2.5 px-3 bg-teal-700 hover:bg-teal-800 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center justify-center gap-1.5"
+              >
+                <Printer className="w-4 h-4" />
+                <span>{isKm ? 'បោះពុម្ពបង្កាន់ដៃផ្លូវការ' : 'Print Official Receipt'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className="py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-colors"
+              >
+                {isKm ? 'រួចរាល់ និងបិទ' : 'Done & Close'}
+              </button>
+            </div>
           </div>
         ) : (
           !loading && qrData && (
@@ -499,7 +590,8 @@ export function KhqrCheckoutModal({
               </div>
 
               {/* 1. TOP SECTION: MULTI-BANK DEEPLINKS (Mobile Active / Desktop Locked) */}
-              <div className="space-y-2 pt-1 border-t border-slate-100">
+              {!isCustomerDisplay && (
+                <div className="space-y-2 pt-1 border-t border-slate-100">
                 <div className="text-[11px] font-semibold text-slate-600 flex items-center justify-between">
                   <div className="flex items-center gap-1">
                     <Smartphone className="w-3.5 h-3.5 text-teal-700" />
@@ -516,7 +608,7 @@ export function KhqrCheckoutModal({
                 {/* Desktop Advisory Banner */}
                 {!isMobile && (
                   <div className="p-2 bg-slate-100 border border-slate-200 rounded-lg text-[11px] text-slate-600 text-center leading-relaxed">
-                    🖥️ <strong>កុំព្យូទ័រ Desktop:</strong> សូមស្កេនរូប QR ខាងក្រោមតាម App ធនាគារលើទូរស័ព្ទដៃរបស់លោកអ្នក (Deeplinks ត្រូវបានចាក់សោរលើ Desktop)
+                    <strong>កុំព្យូទ័រ Laptop / Desktop:</strong> សូមស្កេនរូប QR ខាងក្រោមតាម App ធនាគារលើទូរស័ព្ទដៃរបស់លោកអ្នក (Deeplinks ត្រូវបានចាក់សោរលើ Desktop)
                   </div>
                 )}
 
@@ -590,63 +682,69 @@ export function KhqrCheckoutModal({
                   </a>
                 </div>
               </div>
+            )}
 
-              {/* 2. BOTTOM SECTION: AUTHENTIC BAKONG KHQR STANDEE CARD */}
-              <div
-                id="rotana-khqr-card-container"
-                className={`bg-white border-2 border-red-600 rounded-2xl overflow-hidden shadow-md max-w-[290px] mx-auto text-slate-900 transition-opacity ${
-                  countdown <= 0 ? 'opacity-40 grayscale' : ''
-                }`}
-              >
-                {/* Red Top Header */}
-                <div className="bg-[#E1251B] text-white py-1.5 px-3 flex items-center justify-between">
-                  <div className="flex items-center gap-1 font-bold tracking-wider text-xs">
-                    <span className="bg-white text-[#E1251B] font-black text-[9px] px-1 py-0.5 rounded shadow-xs">
-                      KHQR
-                    </span>
-                    <span className="text-[11px]">BAKONG</span>
-                  </div>
-                  <span className="text-[9px] uppercase font-semibold tracking-wider opacity-90">
-                    Tag 01=12
+            {/* 2. BOTTOM SECTION: AUTHENTIC BAKONG KHQR STANDEE CARD */}
+            <div
+              id="rotana-khqr-card-container"
+              className={`bg-white border-2 border-red-600 rounded-2xl overflow-hidden shadow-md mx-auto text-slate-900 transition-all ${
+                isCustomerDisplay ? 'max-w-[340px]' : 'max-w-[290px]'
+              } ${countdown <= 0 ? 'opacity-40 grayscale' : ''}`}
+            >
+              {/* Red Top Header */}
+              <div className="bg-[#E1251B] text-white py-1.5 px-3 flex items-center justify-between">
+                <div className="flex items-center gap-1 font-bold tracking-wider text-xs">
+                  <span className="bg-white text-[#E1251B] font-black text-[9px] px-1 py-0.5 rounded shadow-xs">
+                    KHQR
                   </span>
+                  <span className="text-[11px]">BAKONG</span>
+                </div>
+                <span className="text-[9px] uppercase font-semibold tracking-wider opacity-90">
+                  Tag 01=12
+                </span>
+              </div>
+
+              {/* CLINIC BRANDING HEADER (CUSTOMIZABLE STORE / CLINIC NAME) */}
+              <div className="pt-2 pb-1.5 px-3 text-center border-b border-slate-100 bg-slate-50/70">
+                <div className="text-xs font-extrabold uppercase tracking-tight text-slate-900">
+                  {clinicName}
+                </div>
+                <div className="text-[11px] font-bold text-teal-800">
+                  {clinicNameKh}
+                </div>
+                <div className="text-[9px] text-slate-400 mt-0.5">
+                  Phnom Penh, Cambodia
+                </div>
+              </div>
+
+              {/* QR Code Matrix */}
+              <div className="p-3 bg-white flex flex-col items-center justify-center">
+                <div className="p-2 bg-white border border-slate-200 rounded-xl shadow-inner inline-block">
+                  <QRCodeSVG
+                    id="rotana-khqr-svg"
+                    value={qrData.qrString}
+                    size={isCustomerDisplay ? 240 : 180}
+                    level="M"
+                    includeMargin={true}
+                  />
                 </div>
 
-                {/* CLINIC BRANDING HEADER (CUSTOMIZABLE STORE / CLINIC NAME) */}
-                <div className="pt-2 pb-1.5 px-3 text-center border-b border-slate-100 bg-slate-50/70">
-                  <div className="text-xs font-extrabold uppercase tracking-tight text-slate-900">
-                    {clinicName}
+                {/* Amount & Bill details */}
+                <div className="mt-2 text-center w-full space-y-0.5">
+                  <div className="text-2xl font-black font-mono text-slate-900 tracking-tight">
+                    {formattedAmount}
                   </div>
-                  <div className="text-[11px] font-bold text-teal-800">
-                    {clinicNameKh}
-                  </div>
-                  <div className="text-[9px] text-slate-400 mt-0.5">
-                    Phnom Penh, Cambodia
-                  </div>
-                </div>
-
-                {/* QR Code Matrix */}
-                <div className="p-3 bg-white flex flex-col items-center justify-center">
-                  <div className="p-1.5 bg-white border border-slate-200 rounded-xl shadow-inner inline-block">
-                    <QRCodeSVG
-                      id="rotana-khqr-svg"
-                      value={qrData.qrString}
-                      size={180}
-                      level="M"
-                      includeMargin={true}
-                    />
-                  </div>
-
-                  {/* Amount & Bill details */}
-                  <div className="mt-2 text-center w-full">
-                    <div className="text-xl font-black font-mono text-slate-900 tracking-tight">
-                      {formattedAmount}
+                  {qrData.currency === 'USD' && (
+                    <div className="text-xs font-semibold text-slate-600 font-mono">
+                      ≈ {Math.round(Number(qrData.amount) * 4100).toLocaleString()} KHR
                     </div>
-                    <div className="text-[10px] font-medium text-slate-500 mt-0.5">
-                      <span>#{invoiceNumber}</span>
-                      {patientName && <span className="ml-1">• {patientName}</span>}
-                    </div>
+                  )}
+                  <div className="text-[10px] font-medium text-slate-500 pt-0.5">
+                    <span>#{invoiceNumber}</span>
+                    {patientName && <span className="ml-1">• {patientName}</span>}
                   </div>
                 </div>
+              </div>
 
                 {/* Bottom Strip */}
                 <div className="bg-slate-900 text-white py-1 px-2 text-center text-[9px] tracking-wide font-medium">
@@ -754,5 +852,20 @@ export function KhqrCheckoutModal({
         )}
       </div>
     </Modal>
+
+    {/* Official Clinic Receipt Modal */}
+    <ClinicReceiptModal
+      isOpen={showReceiptModal}
+      onClose={() => setShowReceiptModal(false)}
+      invoice={
+        invoice || {
+          ...qrData,
+          payableAmount: qrData?.amount,
+          status: 'PAID',
+          transactions: qrData?.tranId ? [{ tranId: qrData.tranId }] : [],
+        }
+      }
+    />
+  </>
   );
 }

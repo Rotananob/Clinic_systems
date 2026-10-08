@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { en } from '../src/locales/en.ts';
-import { km } from '../src/locales/km.ts';
+import { en } from '../src/locales/en';
+import { km } from '../src/locales/km';
 
 function getNestedKeys(obj: Record<string, any>, prefix = ''): string[] {
   let keys: string[] = [];

@@ -34,6 +34,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Skip payment and real-time status endpoints - direct network only
+  if (url.pathname.includes('/api/payments')) {
+    return;
+  }
+
   // API calls: Network-First with cache fallback
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(

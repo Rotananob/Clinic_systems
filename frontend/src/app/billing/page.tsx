@@ -4,6 +4,8 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { api } from '../../lib/api';
 import Link from 'next/link';
 import { KhqrCheckoutModal } from '../../components/payments/KhqrCheckoutModal';
+import { ClinicReceiptModal } from '../../components/payments/ClinicReceiptModal';
+import { CashPaymentModal } from '../../components/payments/CashPaymentModal';
 import { useTranslation } from '../../context/I18nContext';
 import {
   CreditCard,
@@ -22,7 +24,20 @@ import {
   Plus,
   X,
   UserPlus,
+  Banknote,
+  Printer,
+  Sparkles,
+  Calendar,
 } from 'lucide-react';
+
+const servicePresets = [
+  { labelKm: 'ពិនិត្យទូទៅ', labelEn: 'General Consultation', amount: '10.00' },
+  { labelKm: 'ពិគ្រោះ + ចេញថ្នាំ', labelEn: 'Consult & Prescription', amount: '15.00' },
+  { labelKm: 'អេកូសាស្ត្រ', labelEn: 'Ultrasound Scan', amount: '25.00' },
+  { labelKm: 'ពិនិត្យឈាម Lab', labelEn: 'Blood & Lab Analysis', amount: '20.00' },
+  { labelKm: 'ចាក់ថ្នាំ/របួស', labelEn: 'Injection & Wound Care', amount: '8.00' },
+  { labelKm: 'សេវាធ្មេញ', labelEn: 'Dental Treatment', amount: '30.00' },
+];
 
 export default function BillingPage() {
   const { locale } = useTranslation();
@@ -31,6 +46,7 @@ export default function BillingPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'UNPAID' | 'PENDING' | 'PAID'>('ALL');
+  const [timeFilter, setTimeFilter] = useState<'ALL' | 'TODAY' | 'MONTH'>('ALL');
 
   // Quick Invoice Creation Modal
   const [isQuickModalOpen, setIsQuickModalOpen] = useState(false);
@@ -47,6 +63,14 @@ export default function BillingPage() {
   // KHQR modal
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+
+  // Cash payment modal
+  const [cashInvoice, setCashInvoice] = useState<any>(null);
+  const [isCashOpen, setIsCashOpen] = useState(false);
+
+  // Official Receipt modal
+  const [receiptInvoice, setReceiptInvoice] = useState<any>(null);
+  const [isReceiptOpen, setIsReceiptOpen] = useState(false);
 
   const fetchInvoices = async () => {
     setLoading(true);
@@ -110,16 +134,28 @@ export default function BillingPage() {
   };
 
   const filteredInvoices = useMemo(() => {
-    if (!searchQuery.trim()) return invoices;
+    let list = invoices;
+    if (timeFilter === 'TODAY') {
+      const today = new Date().toDateString();
+      list = list.filter((inv) => new Date(inv.createdAt).toDateString() === today);
+    } else if (timeFilter === 'MONTH') {
+      const now = new Date();
+      list = list.filter((inv) => {
+        const d = new Date(inv.createdAt);
+        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+      });
+    }
+
+    if (!searchQuery.trim()) return list;
     const q = searchQuery.toLowerCase();
-    return invoices.filter((inv) => {
+    return list.filter((inv) => {
       const invNum = inv.invoiceNumber?.toLowerCase() || '';
       const pNameEn = inv.patient?.nameEn?.toLowerCase() || '';
       const pNameKh = inv.patient?.nameKh?.toLowerCase() || '';
       const pCode = inv.patient?.patientCode?.toLowerCase() || '';
       return invNum.includes(q) || pNameEn.includes(q) || pNameKh.includes(q) || pCode.includes(q);
     });
-  }, [invoices, searchQuery]);
+  }, [invoices, searchQuery, timeFilter]);
 
   // Financial summary
   const summary = useMemo(() => {
@@ -222,20 +258,49 @@ export default function BillingPage() {
           />
         </div>
 
-        <div className="flex items-center gap-1.5 w-full sm:w-auto">
-          {(['ALL', 'UNPAID', 'PENDING', 'PAID'] as const).map((st) => (
-            <button
-              key={st}
-              onClick={() => setStatusFilter(st)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                statusFilter === st
-                  ? 'bg-slate-900 text-white'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              {st}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          {/* Time Range Filter */}
+          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg text-xs">
+            <span className="text-[10px] text-slate-400 font-semibold px-1 uppercase flex items-center gap-0.5">
+              <Calendar className="w-3 h-3" />
+            </span>
+            {(
+              [
+                { id: 'ALL', labelKm: 'ទាំងអស់', labelEn: 'All Time' },
+                { id: 'TODAY', labelKm: 'ថ្ងៃនេះ', labelEn: 'Today' },
+                { id: 'MONTH', labelKm: 'ខែនេះ', labelEn: 'Month' },
+              ] as const
+            ).map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setTimeFilter(t.id)}
+                className={`px-2 py-1 rounded-md text-[11px] font-semibold transition-colors ${
+                  timeFilter === t.id
+                    ? 'bg-white text-teal-800 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                {isKm ? t.labelKm : t.labelEn}
+              </button>
+            ))}
+          </div>
+
+          {/* Status Filter */}
+          <div className="flex items-center gap-1">
+            {(['ALL', 'UNPAID', 'PENDING', 'PAID'] as const).map((st) => (
+              <button
+                key={st}
+                onClick={() => setStatusFilter(st)}
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  statusFilter === st
+                    ? 'bg-slate-900 text-white'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                {st}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -314,29 +379,59 @@ export default function BillingPage() {
                   </span>
 
                   {inv.status !== 'PAID' ? (
-                    <button
-                      onClick={() => {
-                        setSelectedInvoice(inv);
-                        setIsCheckoutOpen(true);
-                      }}
-                      className="px-3.5 py-1.5 bg-teal-700 hover:bg-teal-800 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5"
-                    >
-                      <QrCode className="w-3.5 h-3.5" />
-                      <span>{isKm ? 'បង់ប្រាក់ KHQR' : 'Pay with KHQR'}</span>
-                    </button>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => {
+                          setSelectedInvoice(inv);
+                          setIsCheckoutOpen(true);
+                        }}
+                        className="px-3 py-1.5 bg-teal-700 hover:bg-teal-800 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors flex items-center gap-1"
+                      >
+                        <QrCode className="w-3.5 h-3.5" />
+                        <span>{isKm ? 'បង់ KHQR' : 'KHQR'}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCashInvoice(inv);
+                          setIsCashOpen(true);
+                        }}
+                        className="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1"
+                        title={isKm ? 'ទទួលប្រាក់សុទ្ធ' : 'Collect Cash'}
+                      >
+                        <Banknote className="w-3.5 h-3.5 text-amber-600" />
+                        <span>{isKm ? 'ប្រាក់សុទ្ធ' : 'Cash'}</span>
+                      </button>
+                    </div>
                   ) : (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedInvoice(inv);
-                        setIsCheckoutOpen(true);
-                      }}
-                      className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium flex items-center gap-1 transition-colors"
-                      title="View QR Code"
-                    >
-                      <Receipt className="w-3.5 h-3.5 text-slate-500" />
-                      <span>{isKm ? 'បានទូទាត់ (មើល QR)' : 'Settled (View QR)'}</span>
-                    </button>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedInvoice(inv);
+                          setIsCheckoutOpen(true);
+                        }}
+                        className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium flex items-center gap-1 transition-colors"
+                        title="View QR Code"
+                      >
+                        <Receipt className="w-3.5 h-3.5 text-slate-500" />
+                        <span>{isKm ? 'មើល QR' : 'QR Code'}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setReceiptInvoice(inv);
+                          setIsReceiptOpen(true);
+                        }}
+                        className="px-3 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors"
+                        title={isKm ? 'បោះពុម្ពបង្កាន់ដៃផ្លូវការ' : 'Print Official Receipt'}
+                      >
+                        <Printer className="w-3.5 h-3.5 text-teal-700" />
+                        <span>{isKm ? 'បង្កាន់ដៃ' : 'Receipt'}</span>
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>
@@ -415,6 +510,37 @@ export default function BillingPage() {
                     onChange={(e) => setQuickForm({ ...quickForm, phone: e.target.value })}
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-teal-700 focus:bg-white"
                   />
+                </div>
+              </div>
+
+              {/* Clinical Quick Presets */}
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-500 mb-1.5 flex items-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5 text-teal-600" />
+                  <span>{isKm ? 'កញ្ចប់សេវារហ័ស (Quick Presets):' : 'Quick Service Presets:'}</span>
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                  {servicePresets.map((p, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() =>
+                        setQuickForm({
+                          ...quickForm,
+                          amount: p.amount,
+                          reason: isKm ? p.labelKm : p.labelEn,
+                        })
+                      }
+                      className="p-2 text-left rounded-lg border border-slate-200 bg-slate-50 hover:bg-teal-50 hover:border-teal-300 transition-colors"
+                    >
+                      <div className="text-xs font-bold text-slate-800 truncate">
+                        {isKm ? p.labelKm : p.labelEn}
+                      </div>
+                      <div className="text-[11px] font-mono font-semibold text-teal-700 mt-0.5">
+                        ${p.amount}
+                      </div>
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -514,6 +640,37 @@ export default function BillingPage() {
             setIsCheckoutOpen(false);
             setSelectedInvoice(null);
             fetchInvoices();
+          }}
+        />
+      )}
+
+      {/* Cash Payment Modal */}
+      {cashInvoice && (
+        <CashPaymentModal
+          isOpen={isCashOpen}
+          invoice={cashInvoice}
+          onClose={() => {
+            setIsCashOpen(false);
+            setCashInvoice(null);
+          }}
+          onSuccess={(settledInv) => {
+            setIsCashOpen(false);
+            setCashInvoice(null);
+            fetchInvoices();
+            setReceiptInvoice(settledInv);
+            setIsReceiptOpen(true);
+          }}
+        />
+      )}
+
+      {/* Official Clinic Receipt Modal */}
+      {receiptInvoice && (
+        <ClinicReceiptModal
+          isOpen={isReceiptOpen}
+          invoice={receiptInvoice}
+          onClose={() => {
+            setIsReceiptOpen(false);
+            setReceiptInvoice(null);
           }}
         />
       )}

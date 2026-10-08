@@ -246,10 +246,10 @@ export class PaymentsService {
       };
     }
 
-    // 2. Strict anti-spam rate limiter: if checked in the last 2500ms, return cached response
+    // 2. Strict anti-spam rate limiter: if checked in the last 3500ms, return cached response
     const now = Date.now();
     const cached = this.statusCheckCache.get(tranId);
-    if (cached && now - cached.timestamp < 2500) {
+    if (cached && now - cached.timestamp < 3500) {
       return cached.result;
     }
 
@@ -456,4 +456,97 @@ export class PaymentsService {
 
     return invoice;
   }
+
+  async settleCash(invoiceId: string, amountTendered: number, cashierId?: string) {
+    const invoice = await this.prisma.invoice.findUnique({
+      where: { id: invoiceId },
+      include: {
+        patient: true,
+      },
+    });
+
+    if (!invoice) {
+      throw new NotFoundException(`Invoice with ID ${invoiceId} not found`);
+    }
+
+    if (invoice.status === InvoiceStatus.PAID) {
+      throw new BadRequestException('This invoice is already settled/paid.');
+    }
+
+    const payable = Number(invoice.payableAmount);
+    const tendered = Number(amountTendered);
+    if (tendered < payable) {
+      throw new BadRequestException(
+        `Amount tendered ($${tendered.toFixed(2)}) is less than total payable ($${payable.toFixed(2)}).`,
+      );
+    }
+
+    const changeDue = Math.max(0, tendered - payable);
+    const now = new Date();
+    const tranId = `CASH-${invoice.invoiceNumber}-${Date.now().toString().slice(-6)}`;
+
+    const result = await this.prisma.$transaction(async (tx) => {
+      const transaction = await tx.paymentTransaction.create({
+        data: {
+          invoiceId: invoice.id,
+          tranId,
+          qrString: 'CASH_PAYMENT',
+          md5: 'CASH',
+          currency: invoice.currency,
+          amount: invoice.payableAmount,
+          status: PaymentStatus.SUCCESS,
+          verifiedAt: now,
+          metadata: {
+            paymentMethod: 'CASH',
+            amountTendered: tendered,
+            changeDue,
+          },
+        },
+      });
+
+      const updatedInvoice = await tx.invoice.update({
+        where: { id: invoice.id },
+        data: {
+          status: InvoiceStatus.PAID,
+          paymentMethod: PaymentMethod.CASH,
+          paidAt: now,
+          cashierId: cashierId || null,
+        },
+        include: {
+          patient: true,
+          transactions: {
+            orderBy: { createdAt: 'desc' },
+            take: 1,
+          },
+        },
+      });
+
+      await tx.auditLog.create({
+        data: {
+          userId: cashierId || null,
+          action: 'CASH_PAYMENT_SETTLED',
+          entity: 'INVOICE',
+          entityId: invoice.id,
+          details: {
+            tranId,
+            payableAmount: payable,
+            amountTendered: tendered,
+            changeDue,
+            settledAt: now.toISOString(),
+          },
+        },
+      });
+
+      return { transaction, invoice: updatedInvoice };
+    });
+
+    return {
+      success: true,
+      message: 'Cash payment settled successfully.',
+      invoice: result.invoice,
+      amountTendered: tendered,
+      changeDue,
+    };
+  }
 }
+

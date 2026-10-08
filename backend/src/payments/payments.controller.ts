@@ -51,4 +51,11 @@ export class PaymentsController {
   createQuickInvoice(@Body() dto: CreateQuickInvoiceDto) {
     return this.paymentsService.createQuickInvoice(dto);
   }
+
+  @ApiOperation({ summary: 'Settle invoice via cash collection with change calculation' })
+  @Post('settle-cash')
+  settleCash(@Body() dto: { invoiceId: string; amountTendered: number }) {
+    return this.paymentsService.settleCash(dto.invoiceId, dto.amountTendered);
+  }
 }
+
