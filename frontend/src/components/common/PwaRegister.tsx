@@ -8,7 +8,19 @@ export const PwaRegister = () => {
   const [isInstallable, setIsInstallable] = useState(false);
 
   useEffect(() => {
-    // Register Service Worker
+    // In development mode, unregister Service Worker to prevent stale cache and network duplicates
+    if (process.env.NODE_ENV === 'development') {
+      if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then((registrations) => {
+          for (const reg of registrations) {
+            reg.unregister();
+          }
+        });
+      }
+      return;
+    }
+
+    // Register Service Worker in production
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
       navigator.serviceWorker
         .register('/sw.js')

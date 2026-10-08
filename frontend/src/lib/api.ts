@@ -1,6 +1,8 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
 class ApiClient {
+  private inFlightPromises = new Map<string, Promise<any>>();
+
   private getToken(): string | null {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('clinic_access_token');
@@ -153,18 +155,36 @@ class ApiClient {
       return this.request<any[]>(`/payments/invoices${query}`);
     },
     getInvoice: (id: string) => this.request<any>(`/payments/invoices/${id}`),
-    generateQr: (invoiceId: string) =>
-      this.request<any>('/payments/generate-qr', {
+    generateQr: (invoiceId: string) => {
+      const key = `generate-qr:${invoiceId}`;
+      if (this.inFlightPromises.has(key)) {
+        return this.inFlightPromises.get(key)!;
+      }
+      const promise = this.request<any>('/payments/generate-qr', {
         method: 'POST',
         body: JSON.stringify({ invoiceId }),
-      }),
+      }).finally(() => {
+        this.inFlightPromises.delete(key);
+      });
+      this.inFlightPromises.set(key, promise);
+      return promise;
+    },
     settle: (tranId: string) =>
       this.request<any>('/payments/settle', {
         method: 'POST',
         body: JSON.stringify({ tranId }),
       }),
-    checkStatus: (tranId: string) =>
-      this.request<any>(`/payments/status/${tranId}`),
+    checkStatus: (tranId: string) => {
+      const key = `status:${tranId}`;
+      if (this.inFlightPromises.has(key)) {
+        return this.inFlightPromises.get(key)!;
+      }
+      const promise = this.request<any>(`/payments/status/${tranId}`).finally(() => {
+        this.inFlightPromises.delete(key);
+      });
+      this.inFlightPromises.set(key, promise);
+      return promise;
+    },
     createQuickInvoice: (data: {
       nameEn: string;
       nameKh?: string;

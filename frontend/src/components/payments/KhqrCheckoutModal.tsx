@@ -189,7 +189,8 @@ export function KhqrCheckoutModal({
         return;
       }
 
-      const expiresAt = Date.now() + (180 * 1000); // Strict 3-minute hard limit (180s)
+      const expiresIn = typeof res.expiresInSeconds === 'number' ? Math.max(0, res.expiresInSeconds) : 180;
+      const expiresAt = Date.now() + (expiresIn * 1000); // Strict 3-minute hard limit (180s)
       const data = {
         qrString: res.qrString,
         tranId: res.tranId,
@@ -199,12 +200,12 @@ export function KhqrCheckoutModal({
         invoiceNumber: res.invoiceNumber,
         paywayLink: res.paywayLink || 'https://link.payway.com.kh/ABAPAYCK539089j',
         deeplinks: res.deeplinks,
-        expiresInSeconds: 180,
+        expiresInSeconds: expiresIn,
         expiresAt,
       };
 
       setQrData(data);
-      setCountdown(180);
+      setCountdown(expiresIn);
 
       // Save to sessionStorage for Anti-Reload & tab-switch recovery
       if (storageKey) {
@@ -719,14 +720,39 @@ export function KhqrCheckoutModal({
 
               {/* QR Code Matrix */}
               <div className="p-3 bg-white flex flex-col items-center justify-center">
-                <div className="p-2 bg-white border border-slate-200 rounded-xl shadow-inner inline-block">
+                <div className="relative p-2 bg-white border border-slate-200 rounded-xl shadow-inner inline-block">
                   <QRCodeSVG
                     id="rotana-khqr-svg"
                     value={qrData.qrString}
                     size={isCustomerDisplay ? 240 : 180}
                     level="M"
                     includeMargin={true}
+                    className={countdown <= 0 ? 'opacity-10 blur-[2px]' : ''}
                   />
+                  {countdown <= 0 && (
+                    <div className="absolute inset-0 bg-white/95 backdrop-blur-xs flex flex-col items-center justify-center p-3 rounded-xl text-center space-y-2">
+                      <Clock className="w-8 h-8 text-rose-500 animate-pulse" />
+                      <div className="text-xs font-bold text-rose-700">
+                        {isKm ? 'កូដ QR ផុតកំណត់ (3 នាទី)' : 'QR Expired (3-min rule)'}
+                      </div>
+                      <p className="text-[10px] text-slate-500 max-w-[140px] leading-tight">
+                        {isKm ? 'ដើម្បីសុវត្ថិភាព សូមបង្កើតកូដទូទាត់ថ្មី' : 'For security, please generate a new QR'}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (storageKey) {
+                            try { sessionStorage.removeItem(storageKey); } catch {}
+                          }
+                          if (activeInvoiceId) generateKhqr(activeInvoiceId, ++activeRequestRef.current);
+                        }}
+                        className="px-3 py-1.5 bg-teal-700 hover:bg-teal-800 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center gap-1"
+                      >
+                        <RefreshCw className="w-3 h-3" />
+                        <span>{isKm ? 'បង្កើតកូដថ្មី' : 'Renew QR'}</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Amount & Bill details */}

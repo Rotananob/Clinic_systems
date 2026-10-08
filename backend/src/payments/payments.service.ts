@@ -51,6 +51,40 @@ export class PaymentsService {
       throw new BadRequestException('This invoice is already settled/paid.');
     }
 
+    // Strict pay-helper rule: Check if an active 3-minute (180s) session already exists for this invoice
+    const existingTx = await this.prisma.paymentTransaction.findFirst({
+      where: {
+        invoiceId: invoice.id,
+        status: PaymentStatus.PENDING,
+        createdAt: {
+          gte: new Date(Date.now() - 180 * 1000),
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (existingTx) {
+      const elapsedSeconds = Math.floor((Date.now() - existingTx.createdAt.getTime()) / 1000);
+      const remainingSeconds = Math.max(0, 180 - elapsedSeconds);
+      if (remainingSeconds > 5) {
+        const meta = (existingTx.metadata as any) || {};
+        this.logger.log(`Reusing active 3-minute KHQR session for invoice ${invoice.invoiceNumber}. TranID: ${existingTx.tranId}, Remaining: ${remainingSeconds}s`);
+        return {
+          success: true,
+          invoiceNumber: invoice.invoiceNumber,
+          tranId: existingTx.tranId,
+          qrString: existingTx.qrString,
+          paywayLink: existingTx.paywayLink,
+          md5: existingTx.md5,
+          amount: Number(existingTx.amount),
+          currency: existingTx.currency,
+          deeplinks: meta.deeplinks || buildBankDeeplinks(existingTx.qrString),
+          patient: invoice.patient,
+          expiresInSeconds: remainingSeconds,
+        };
+      }
+    }
+
     const paywayLink =
       this.configService.get<string>('PAYWAY_PAYMENT_URL') ||
       'https://link.payway.com.kh/ABAPAYCK539089j';
