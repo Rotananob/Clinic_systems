@@ -18,11 +18,12 @@ async function bootstrap() {
     next();
   });
 
-  // Enable CORS
+  // Enable CORS with 24-hour preflight cache
   app.enableCors({
     origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
+    maxAge: 86400,
   });
 
   // Global API Prefix
