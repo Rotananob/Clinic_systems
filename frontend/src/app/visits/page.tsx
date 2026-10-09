@@ -232,7 +232,7 @@ export default function VisitsPage() {
             {filteredVisits.map((v, idx) => (
               <div
                 key={v.id}
-                className="p-4 hover:bg-slate-50/70 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4"
+                className="p-4 hover:bg-slate-50/80 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4 card-hover"
               >
                 {/* Left: Patient and Visit identity */}
                 <div className="space-y-1.5">
@@ -299,7 +299,7 @@ export default function VisitsPage() {
                 {/* Right: Status and Actions */}
                 <div className="flex flex-wrap items-center justify-between md:justify-end gap-2.5 sm:gap-3 w-full md:w-auto pt-2 md:pt-0 border-t md:border-t-0 border-slate-100 shrink-0">
                   <span
-                    className={`px-2.5 py-1 rounded-full text-[11px] font-semibold tracking-wide uppercase ${
+                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold tracking-wide uppercase ${
                       v.status === 'COMPLETED'
                         ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                         : v.status === 'IN_CONSULTATION'
@@ -307,6 +307,15 @@ export default function VisitsPage() {
                         : 'bg-amber-50 text-amber-700 border border-amber-200'
                     }`}
                   >
+                    {v.status === 'WAITING' && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse inline-block" />
+                    )}
+                    {v.status === 'IN_CONSULTATION' && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse inline-block" />
+                    )}
+                    {v.status === 'COMPLETED' && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+                    )}
                     {v.status.replace('_', ' ')}
                   </span>
 

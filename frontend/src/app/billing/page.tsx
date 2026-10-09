@@ -226,19 +226,28 @@ export default function BillingPage() {
     let pendingAmount = 0;
     let unpaidCount = 0;
     let paidCount = 0;
+    let todayRevenue = 0;
+    let todayPaidCount = 0;
+
+    const todayStr = new Date().toDateString();
 
     invoices.forEach((inv) => {
       const amt = Number(inv.payableAmount) || 0;
+      const isToday = new Date(inv.createdAt).toDateString() === todayStr;
       if (inv.status === 'PAID') {
         totalRevenue += amt;
         paidCount++;
+        if (isToday) {
+          todayRevenue += amt;
+          todayPaidCount++;
+        }
       } else {
         pendingAmount += amt;
         unpaidCount++;
       }
     });
 
-    return { totalRevenue, pendingAmount, unpaidCount, paidCount };
+    return { totalRevenue, pendingAmount, unpaidCount, paidCount, todayRevenue, todayPaidCount };
   }, [invoices]);
 
   return (
@@ -272,43 +281,76 @@ export default function BillingPage() {
       </div>
 
       {/* Financial Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-sm card-hover relative overflow-hidden">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-500">Total Settled Revenue</span>
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <span className="text-xs font-medium text-slate-500">
+              {isKm ? 'ចំណូលទូទាត់រួចសរុប' : 'Total Settled Revenue'}
+            </span>
+            <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <CheckCircle2 className="w-4 h-4" />
+            </div>
           </div>
           <div className="text-2xl font-bold text-emerald-800 mt-2 font-mono">
             ${summary.totalRevenue.toFixed(2)}
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">{summary.paidCount} settled transactions</div>
+          <div className="flex items-center justify-between text-[11px] text-slate-500 mt-1.5 pt-1.5 border-t border-slate-100">
+            <span>≈ {Math.round(summary.totalRevenue * 4100).toLocaleString()} ៛</span>
+            <span className="text-emerald-700 font-semibold">{summary.paidCount} txns</span>
+          </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-sm card-hover relative overflow-hidden">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-500">Unsettled / Pending Due</span>
-            <Clock className="w-4 h-4 text-amber-500" />
+            <span className="text-xs font-medium text-slate-500">
+              {isKm ? 'ចំណូលថ្ងៃនេះ (Today)' : "Today's Settled"}
+            </span>
+            <div className="w-7 h-7 rounded-lg bg-teal-50 text-teal-700 flex items-center justify-center">
+              <DollarSign className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="text-2xl font-bold text-teal-900 mt-2 font-mono">
+            ${summary.todayRevenue.toFixed(2)}
+          </div>
+          <div className="flex items-center justify-between text-[11px] text-slate-500 mt-1.5 pt-1.5 border-t border-slate-100">
+            <span>≈ {Math.round(summary.todayRevenue * 4100).toLocaleString()} ៛</span>
+            <span className="text-teal-700 font-semibold">{summary.todayPaidCount} today</span>
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-sm card-hover relative overflow-hidden">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-slate-500">
+              {isKm ? 'រង់ចាំទូទាត់ (Pending)' : 'Unsettled / Pending'}
+            </span>
+            <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+              <Clock className="w-4 h-4" />
+            </div>
           </div>
           <div className="text-2xl font-bold text-amber-800 mt-2 font-mono">
             ${summary.pendingAmount.toFixed(2)}
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">{summary.unpaidCount} unpaid invoices</div>
+          <div className="flex items-center justify-between text-[11px] text-slate-500 mt-1.5 pt-1.5 border-t border-slate-100">
+            <span>≈ {Math.round(summary.pendingAmount * 4100).toLocaleString()} ៛</span>
+            <span className="text-amber-700 font-semibold">{summary.unpaidCount} unpaid</span>
+          </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-sm card-hover relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-slate-500">
-              {isKm ? 'សរុបវិក្កយបត្រទាំងអស់' : 'Total Invoices Issued'}
+              {isKm ? 'អត្រាប្តូរប្រាក់ & KHQR' : 'Settlement Desk & Rate'}
             </span>
-            <FileText className="w-4 h-4 text-teal-700" />
+            <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+              <QrCode className="w-4 h-4" />
+            </div>
           </div>
-          <div className="text-2xl font-bold text-slate-900 mt-2 font-mono">
-            {summary.paidCount + summary.unpaidCount}
+          <div className="text-base font-bold text-slate-900 mt-2 flex items-center gap-1.5">
+            <span className="font-mono text-teal-800 text-lg">1 USD = 4,100 KHR</span>
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">
-            {isKm
-              ? `ទូទាត់រួច: ${summary.paidCount} | រង់ចាំ: ${summary.unpaidCount}`
-              : `Settled: ${summary.paidCount} | Pending: ${summary.unpaidCount}`}
+          <div className="flex items-center justify-between text-[11px] text-slate-500 mt-1.5 pt-1.5 border-t border-slate-100">
+            <span className="text-emerald-700 font-medium">Tag 01=12 Dynamic</span>
+            <span className="font-mono text-slate-600">Bakong & ABA</span>
           </div>
         </div>
       </div>
@@ -389,7 +431,7 @@ export default function BillingPage() {
             {filteredInvoices.map((inv) => (
               <div
                 key={inv.id}
-                className="p-4 hover:bg-slate-50/70 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4"
+                className="p-4 hover:bg-slate-50/80 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4 card-hover"
               >
                 {/* Left info */}
                 <div className="space-y-1">
@@ -431,18 +473,28 @@ export default function BillingPage() {
                     <div className="text-base font-bold text-slate-900">
                       {inv.currency === 'KHR' ? '៛' : '$'}{Number(inv.payableAmount).toFixed(2)}
                     </div>
-                    <div className="text-[10px] text-slate-400 uppercase tracking-wider">{inv.paymentMethod}</div>
+                    <div className="text-[11px] text-slate-500">
+                      {inv.currency === 'KHR'
+                        ? `≈ $${(Number(inv.payableAmount) / 4100).toFixed(2)}`
+                        : `≈ ${Math.round(Number(inv.payableAmount) * 4100).toLocaleString()} ៛`}
+                    </div>
                   </div>
 
                   <span
-                    className={`px-2.5 py-1 rounded-full text-[11px] font-semibold tracking-wide uppercase ${
+                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold tracking-wide uppercase ${
                       inv.status === 'PAID'
                         ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                         : inv.status === 'PENDING'
-                        ? 'bg-cyan-50 text-cyan-700 border border-cyan-200'
-                        : 'bg-amber-50 text-amber-700 border border-amber-200'
+                        ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                        : 'bg-rose-50 text-rose-700 border border-rose-200'
                     }`}
                   >
+                    {inv.status === 'PENDING' && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse inline-block" />
+                    )}
+                    {inv.status === 'PAID' && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+                    )}
                     {inv.status}
                   </span>
 

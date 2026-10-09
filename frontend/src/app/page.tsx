@@ -56,29 +56,50 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-teal-500/5 to-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
+        
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
               {t.dashboard.commandTitle}
             </h1>
-            <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+            <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               {t.dashboard.liveSync}
             </span>
           </div>
-          <p className="text-xs text-slate-500 mt-0.5">
-            {t.dashboard.subtitle}
-          </p>
+          <div className="flex items-center gap-2 text-xs text-slate-500 mt-1">
+            <span>{t.dashboard.subtitle}</span>
+            <span>•</span>
+            <span className="font-medium text-slate-700 font-sans">
+              {new Date().toLocaleDateString(locale === 'km' ? 'km-KH' : 'en-US', {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+              })}
+            </span>
+          </div>
         </div>
 
-        <div className="flex items-center flex-wrap gap-2">
+        <div className="flex items-center flex-wrap gap-2 z-10">
           <button
             onClick={fetchMetrics}
-            className="p-2 text-slate-500 hover:text-slate-700 bg-white border border-slate-200 rounded-xl shadow-xs transition-colors text-xs"
+            className="p-2 text-slate-600 hover:text-slate-900 bg-white border border-slate-200 hover:border-slate-300 rounded-xl shadow-2xs transition-colors text-xs"
             title={t.common.refresh}
           >
             <RefreshCw className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('open-command-palette'))}
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-xl text-xs font-semibold transition-colors shadow-2xs"
+            title="Search Commands (Ctrl+K)"
+          >
+            <span>Command</span>
+            <kbd className="px-1.5 py-0.2 text-[10px] font-mono bg-white rounded border border-slate-200">
+              Ctrl K
+            </kbd>
           </button>
           <button
             onClick={() => setIsRegisterOpen(true)}
@@ -107,59 +128,76 @@ export default function DashboardPage() {
       {/* KPI Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {/* Waiting */}
-        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-2xs">
+        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-2xs card-hover relative overflow-hidden group">
+          <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-amber-500/10 rounded-full blur-xl group-hover:scale-125 transition-transform pointer-events-none" />
           <div className="flex items-center justify-between text-slate-500 mb-2">
-            <span className="text-xs font-medium">{t.dashboard.waitingQueue}</span>
-            <Clock className="w-4 h-4 text-amber-500" />
+            <span className="text-xs font-semibold text-slate-700">{t.dashboard.waitingQueue}</span>
+            <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+              <Clock className="w-4 h-4" />
+            </div>
           </div>
-          <div className="text-2xl font-bold text-slate-900 font-mono">
+          <div className="text-2xl sm:text-3xl font-black text-slate-900 font-mono tracking-tight">
             {metrics ? metrics.queueStatus?.waiting : '0'}
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">
-            {isKm ? 'រង់ចាំវាស់ Vitals & ពិគ្រោះ' : 'Awaiting triage & consultation'}
+          <p className="text-[11px] text-amber-700 font-medium mt-1">
+            {isKm ? 'រង់ចាំវាស់ Vitals & ពិគ្រោះ (~11 នាទី)' : 'Awaiting triage & consultation (~11m)'}
           </p>
         </div>
 
         {/* In Consultation */}
-        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-2xs">
+        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-2xs card-hover relative overflow-hidden group">
+          <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-teal-500/10 rounded-full blur-xl group-hover:scale-125 transition-transform pointer-events-none" />
           <div className="flex items-center justify-between text-slate-500 mb-2">
-            <span className="text-xs font-medium">{t.dashboard.inConsultation}</span>
-            <Stethoscope className="w-4 h-4 text-teal-600" />
+            <span className="text-xs font-semibold text-slate-700">{t.dashboard.inConsultation}</span>
+            <div className="w-7 h-7 rounded-lg bg-teal-50 text-teal-700 flex items-center justify-center">
+              <Stethoscope className="w-4 h-4" />
+            </div>
           </div>
-          <div className="text-2xl font-bold text-teal-800 font-mono">
+          <div className="text-2xl sm:text-3xl font-black text-teal-800 font-mono tracking-tight">
             {metrics ? metrics.queueStatus?.inConsultation : '0'}
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">
+          <p className="text-[11px] text-teal-700 font-medium mt-1">
             {isKm ? 'វេជ្ជបណ្ឌិតកំពុងពិនិត្យព្យាបាល' : 'Active physician encounters'}
           </p>
         </div>
 
         {/* Completed Today */}
-        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-2xs">
+        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-2xs card-hover relative overflow-hidden group">
+          <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-emerald-500/10 rounded-full blur-xl group-hover:scale-125 transition-transform pointer-events-none" />
           <div className="flex items-center justify-between text-slate-500 mb-2">
-            <span className="text-xs font-medium">{t.dashboard.finishedConsultations}</span>
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <span className="text-xs font-semibold text-slate-700">{t.dashboard.finishedConsultations}</span>
+            <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
+              <CheckCircle2 className="w-4 h-4" />
+            </div>
           </div>
-          <div className="text-2xl font-bold text-emerald-800 font-mono">
+          <div className="text-2xl sm:text-3xl font-black text-emerald-800 font-mono tracking-tight">
             {metrics ? metrics.queueStatus?.completedToday : '0'}
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">
+          <p className="text-[11px] text-emerald-700 font-medium mt-1">
             {isKm ? 'វត្តមានពិគ្រោះថ្ងៃនេះ' : 'Today outpatient encounters'}
           </p>
         </div>
 
         {/* KHQR Revenue Settled */}
-        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-2xs">
+        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-2xs card-hover relative overflow-hidden group">
+          <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-emerald-500/10 rounded-full blur-xl group-hover:scale-125 transition-transform pointer-events-none" />
           <div className="flex items-center justify-between text-slate-500 mb-2">
-            <span className="text-xs font-medium">{t.dashboard.khqrRevenue}</span>
-            <CreditCard className="w-4 h-4 text-emerald-600" />
+            <span className="text-xs font-semibold text-slate-700">{t.dashboard.khqrRevenue}</span>
+            <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
+              <CreditCard className="w-4 h-4" />
+            </div>
           </div>
-          <div className="text-2xl font-bold text-slate-900 font-mono">
+          <div className="text-2xl sm:text-3xl font-black text-slate-900 font-mono tracking-tight">
             ${metrics ? Number(metrics.revenueToday?.usd || 0).toFixed(2) : '0.00'}
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">
-            {metrics ? metrics.revenueToday?.paidInvoicesCount : '0'} {isKm ? 'ប្រតិបត្តិការទូទាត់' : 'verified settlements'}
-          </p>
+          <div className="text-[11px] text-slate-400 mt-1 flex items-center justify-between">
+            <span className="font-mono text-emerald-700 font-semibold">
+              ≈ {Math.round((Number(metrics?.revenueToday?.usd) || 0) * 4100).toLocaleString()} ៛
+            </span>
+            <span>
+              {metrics ? metrics.revenueToday?.paidInvoicesCount : '0'} {isKm ? 'វិក្កយបត្រ' : 'bills'}
+            </span>
+          </div>
         </div>
       </div>
 

@@ -826,7 +826,7 @@ export function KhqrCheckoutModal({
 
               {/* QR Code Matrix */}
               <div className="p-3 bg-white flex flex-col items-center justify-center">
-                <div className="relative p-2 bg-white border border-slate-200 rounded-xl shadow-inner inline-block">
+                <div className="relative p-2 bg-white border border-slate-200 rounded-xl shadow-inner inline-block overflow-hidden">
                   <QRCodeSVG
                     id="rotana-khqr-svg"
                     value={qrData.qrString}
@@ -835,6 +835,11 @@ export function KhqrCheckoutModal({
                     includeMargin={true}
                     className={countdown <= 0 ? 'opacity-10 blur-[2px]' : ''}
                   />
+                  {countdown > 0 && (
+                    <div className="absolute inset-x-2 pointer-events-none overflow-hidden h-[90%] top-[5%]">
+                      <div className="w-full h-0.5 bg-gradient-to-r from-transparent via-teal-500 to-transparent shadow-[0_0_10px_rgba(20,184,166,0.9)] animate-laser-scan relative" />
+                    </div>
+                  )}
                   {countdown <= 0 && (
                     <div className="absolute inset-0 bg-white/95 backdrop-blur-xs flex flex-col items-center justify-center p-3 rounded-xl text-center space-y-2">
                       <Clock className="w-8 h-8 text-rose-500 animate-pulse" />

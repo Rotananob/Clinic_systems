@@ -226,10 +226,15 @@ export default function QueuePage() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded-md bg-amber-400 text-slate-900 text-[10px] font-bold font-mono uppercase tracking-wide">
-                    {t.queue.calling}
+                  <span className="px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-900 text-[10px] font-bold font-mono uppercase tracking-wide flex items-center gap-1.5 shadow-xs">
+                    <span className="flex items-center gap-0.5">
+                      <span className="w-1 h-2 bg-slate-900 rounded-full animate-bounce [animation-delay:0ms]" />
+                      <span className="w-1 h-3 bg-slate-900 rounded-full animate-bounce [animation-delay:150ms]" />
+                      <span className="w-1 h-1.5 bg-slate-900 rounded-full animate-bounce [animation-delay:300ms]" />
+                    </span>
+                    <span>{t.queue.calling}</span>
                   </span>
-                  <span className="text-xs text-teal-100 font-mono">
+                  <span className="text-xs text-teal-100 font-mono font-semibold bg-white/10 px-2 py-0.5 rounded">
                     {activeCall.patientCode}
                   </span>
                 </div>

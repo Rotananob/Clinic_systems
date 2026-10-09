@@ -62,3 +62,40 @@ html, body {
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* Modern Clinical UI Enhancements */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.card-hover {
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px -6px rgba(15, 23, 42, 0.08), 0 6px 12px -4px rgba(15, 23, 42, 0.03);
+}
+
+@keyframes laserScan {
+  0% { top: 4%; opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { top: 96%; opacity: 0; }
+}
+
+.animate-laser-scan {
+  animation: laserScan 2.4s ease-in-out infinite;
+}
+
+@keyframes subtlePulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.04); opacity: 0.85; }
+}
+
+.animate-pulse-subtle {
+  animation: subtlePulse 2.5s ease-in-out infinite;
+}
+

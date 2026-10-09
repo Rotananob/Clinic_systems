@@ -8,6 +8,7 @@ import { Sidebar } from './Sidebar';
 import { MobileNavDock } from './MobileNavDock';
 import { OfflineSyncBanner } from '../common/OfflineSyncBanner';
 import { PwaRegister } from '../common/PwaRegister';
+import { CommandPalette } from '../common/CommandPalette';
 
 export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
@@ -24,6 +25,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
           </div>
           <MobileNavDock />
           <PwaRegister />
+          <CommandPalette />
         </div>
       </I18nProvider>
     </AuthProvider>

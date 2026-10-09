@@ -25,6 +25,51 @@ import {
 } from 'lucide-react';
 import { KhqrCheckoutModal } from '../../../components/payments/KhqrCheckoutModal';
 
+function getBloodPressureBadge(bp?: string) {
+  if (!bp || !bp.includes('/')) return null;
+  const parts = bp.split('/');
+  const systolic = parseInt(parts[0], 10);
+  const diastolic = parseInt(parts[1], 10);
+  if (isNaN(systolic) || isNaN(diastolic)) return null;
+
+  if (systolic < 120 && diastolic < 80) {
+    return { label: 'Normal BP', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
+  } else if (systolic <= 129 && diastolic < 80) {
+    return { label: 'Elevated BP', color: 'bg-amber-50 text-amber-700 border-amber-200' };
+  } else if (systolic <= 139 || diastolic <= 89) {
+    return { label: 'Stage 1 HTN', color: 'bg-orange-50 text-orange-700 border-orange-200' };
+  } else {
+    return { label: 'Stage 2 HTN', color: 'bg-rose-50 text-rose-700 border-rose-200' };
+  }
+}
+
+function getTemperatureBadge(temp?: number | string) {
+  if (!temp) return null;
+  const num = typeof temp === 'number' ? temp : parseFloat(temp);
+  if (isNaN(num)) return null;
+  if (num >= 38.0) {
+    return { label: 'High Fever', color: 'bg-rose-50 text-rose-700 border-rose-200' };
+  } else if (num >= 37.5) {
+    return { label: 'Low Fever', color: 'bg-amber-50 text-amber-700 border-amber-200' };
+  } else if (num >= 36.0 && num <= 37.4) {
+    return { label: 'Normal Temp', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
+  }
+  return null;
+}
+
+function getHeartRateBadge(hr?: number | string) {
+  if (!hr) return null;
+  const num = typeof hr === 'number' ? hr : parseInt(hr, 10);
+  if (isNaN(num)) return null;
+  if (num > 100) {
+    return { label: 'Tachycardia', color: 'bg-rose-50 text-rose-700 border-rose-200' };
+  } else if (num < 60) {
+    return { label: 'Bradycardia', color: 'bg-blue-50 text-blue-700 border-blue-200' };
+  } else {
+    return { label: 'Normal Pulse', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
+  }
+}
+
 export default function Patient360Page() {
   const params = useParams();
   const router = useRouter();
@@ -265,22 +310,48 @@ export default function Patient360Page() {
                 )}
 
                 {/* Vitals Ribbon */}
-                {(v.bloodPressure || v.heartRate || v.temperature || v.weightKg) && (
-                  <div className="flex flex-wrap gap-2 text-xs bg-slate-50 p-2.5 rounded-lg border border-slate-100">
-                    {v.bloodPressure && (
-                      <span className="font-medium text-slate-700">BP: <span className="font-mono">{v.bloodPressure}</span></span>
-                    )}
-                    {v.heartRate && (
-                      <span className="font-medium text-slate-700">Pulse: <span className="font-mono">{v.heartRate} bpm</span></span>
-                    )}
-                    {v.temperature && (
-                      <span className="font-medium text-slate-700">Temp: <span className="font-mono">{v.temperature}°C</span></span>
-                    )}
-                    {v.weightKg && (
-                      <span className="font-medium text-slate-700">Weight: <span className="font-mono">{v.weightKg} kg</span></span>
-                    )}
-                  </div>
-                )}
+                {(v.bloodPressure || v.heartRate || v.temperature || v.weightKg) && (() => {
+                  const bpBadge = getBloodPressureBadge(v.bloodPressure);
+                  const tempBadge = getTemperatureBadge(v.temperature);
+                  const hrBadge = getHeartRateBadge(v.heartRate);
+                  return (
+                    <div className="flex flex-wrap items-center gap-2 text-xs bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                      {v.bloodPressure && (
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-medium text-slate-700">BP: <span className="font-mono">{v.bloodPressure}</span></span>
+                          {bpBadge && (
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${bpBadge.color}`}>
+                              {bpBadge.label}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      {v.heartRate && (
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-medium text-slate-700">Pulse: <span className="font-mono">{v.heartRate} bpm</span></span>
+                          {hrBadge && (
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${hrBadge.color}`}>
+                              {hrBadge.label}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      {v.temperature && (
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-medium text-slate-700">Temp: <span className="font-mono">{v.temperature}°C</span></span>
+                          {tempBadge && (
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${tempBadge.color}`}>
+                              {tempBadge.label}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      {v.weightKg && (
+                        <span className="font-medium text-slate-700">Weight: <span className="font-mono">{v.weightKg} kg</span></span>
+                      )}
+                    </div>
+                  );
+                })()}
 
                 {/* Clinical Notes & Diagnosis */}
                 <div className="space-y-1 text-xs">
