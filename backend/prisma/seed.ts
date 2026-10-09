@@ -7,11 +7,17 @@ async function main() {
   console.log('--- Starting Clinic Database Seeding ---');
 
   // 1. Seed Roles & Users with Production-Grade High Entropy Passwords (bcrypt 12 rounds)
-  const adminHash = await bcrypt.hash('Rotana@Admin#2026$Pmc', 12);
-  const doctorHash = await bcrypt.hash('DrSok#Med2026$Care', 12);
-  const receptionHash = await bcrypt.hash('Recept#Desk2026$Front', 12);
-  const cashierHash = await bcrypt.hash('Cashier#Pos2026$Pay', 12);
-  const pharmacyHash = await bcrypt.hash('Pharm#Rx2026$Dispense', 12);
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD || 'Admin@DemoClinic#2026';
+  const doctorPassword = process.env.SEED_DOCTOR_PASSWORD || 'Doctor@DemoClinic#2026';
+  const receptionPassword = process.env.SEED_RECEPTIONIST_PASSWORD || 'Reception@DemoClinic#2026';
+  const cashierPassword = process.env.SEED_CASHIER_PASSWORD || 'Cashier@DemoClinic#2026';
+  const pharmacyPassword = process.env.SEED_PHARMACIST_PASSWORD || 'Pharmacy@DemoClinic#2026';
+
+  const adminHash = await bcrypt.hash(adminPassword, 12);
+  const doctorHash = await bcrypt.hash(doctorPassword, 12);
+  const receptionHash = await bcrypt.hash(receptionPassword, 12);
+  const cashierHash = await bcrypt.hash(cashierPassword, 12);
+  const pharmacyHash = await bcrypt.hash(pharmacyPassword, 12);
 
   const admin = await prisma.user.upsert({
     where: { email: 'admin@clinic.com' },
