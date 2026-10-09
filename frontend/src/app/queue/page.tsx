@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
 import { useTranslation } from '../../context/I18nContext';
 import { ClinicLogo } from '../../components/common/ClinicLogo';
+import { playHospitalChime } from '../../lib/chime';
 import {
   Monitor,
   Volume2,
@@ -108,40 +109,15 @@ export default function QueuePage() {
     },
   ]);
 
-  // Two-tone Hospital Audio Chime using Web Audio API (Zero external mp3 needed)
-  const playHospitalChime = () => {
-    if (!soundEnabled) return;
-    try {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioCtx) return;
-      const ctx = new AudioCtx();
-
-      const playTone = (freq: number, start: number, duration: number) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, ctx.currentTime + start);
-
-        gain.gain.setValueAtTime(0, ctx.currentTime + start);
-        gain.gain.linearRampToValueAtTime(0.2, ctx.currentTime + start + 0.05);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + duration);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(ctx.currentTime + start);
-        osc.stop(ctx.currentTime + start + duration);
-      };
-
-      // Gentle C5 (523.25 Hz) followed by E5 (659.25 Hz) chime
-      playTone(523.25, 0, 0.4);
-      playTone(659.25, 0.35, 0.6);
-    } catch {
-      // Audio autoplay policy fallback
+  // Real audible hospital broadcast chime using Web Audio API
+  const handlePlayHospitalChime = () => {
+    if (soundEnabled) {
+      playHospitalChime();
     }
   };
 
   const handleCallPatient = (item: QueueItem) => {
-    playHospitalChime();
+    handlePlayHospitalChime();
     setActiveCall(item);
     setQueueItems((prev) =>
       prev.map((q) => (q.id === item.id ? { ...q, status: 'CALLING' } : q))
@@ -272,7 +248,7 @@ export default function QueuePage() {
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                onClick={() => playHospitalChime()}
+                onClick={() => handlePlayHospitalChime()}
                 className="px-4 py-2.5 bg-white/15 hover:bg-white/25 rounded-xl text-xs font-semibold border border-white/20 transition-colors flex items-center gap-1.5"
               >
                 <Volume2 className="w-4 h-4 text-amber-300" />

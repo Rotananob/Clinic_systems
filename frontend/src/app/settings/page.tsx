@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from '../../context/I18nContext';
+import { playPaymentSuccessChime, playHospitalChime, playCashRegisterChime } from '../../lib/chime';
 import {
   Building2,
   QrCode,
@@ -700,6 +701,48 @@ export default function SettingsPage() {
                     {isKm
                       ? 'បន្លឺសំឡេង chime ជូនដំណឹងដល់បេឡាពេលភ្ញៀវស្កេនរួច'
                       : 'Plays an audio chime confirming cashier settlement instant verification'}
+                  </div>
+
+                  {/* Immediate Audio Test Buttons */}
+                  <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        playPaymentSuccessChime();
+                      }}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 text-xs font-semibold transition shadow-2xs"
+                      title="Test Payment Chime"
+                    >
+                      <Volume2 className="w-3.5 h-3.5 text-teal-700" />
+                      <span>{isKm ? 'សាកល្បងសំឡេងបង់ប្រាក់ KHQR' : 'Test KHQR Payment Chime'}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        playHospitalChime();
+                      }}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 text-xs font-semibold transition shadow-2xs"
+                      title="Test Hospital Chime"
+                    >
+                      <Volume2 className="w-3.5 h-3.5 text-indigo-700" />
+                      <span>{isKm ? 'សាកល្បងសំឡេងហៅជួរ Queue' : 'Test Queue Call Chime'}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        playCashRegisterChime();
+                      }}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-semibold transition shadow-2xs"
+                      title="Test Cash Chime"
+                    >
+                      <Volume2 className="w-3.5 h-3.5 text-amber-700" />
+                      <span>{isKm ? 'សាកល្បងសំឡេងប្រាក់សុទ្ធ' : 'Test Cash Register Chime'}</span>
+                    </button>
                   </div>
                 </div>
               </label>

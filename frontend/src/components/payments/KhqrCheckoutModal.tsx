@@ -25,8 +25,9 @@ import {
   Minimize2,
   Receipt,
   Sparkles,
+  XCircle,
 } from 'lucide-react';
-import { playPaymentSuccessChime } from '../../lib/chime';
+import { playPaymentSuccessChime, playCancelChime } from '../../lib/chime';
 import { ClinicReceiptModal } from './ClinicReceiptModal';
 
 interface KhqrCheckoutModalProps {
@@ -120,6 +121,28 @@ export function KhqrCheckoutModal({
       clearTimeout(pollTimerRef.current);
       pollTimerRef.current = null;
     }
+  };
+
+  const handleCancelCheckout = () => {
+    clearPolling();
+    activeRequestRef.current += 1;
+    if (autoOpenTimerRef.current) {
+      clearTimeout(autoOpenTimerRef.current);
+      autoOpenTimerRef.current = null;
+    }
+    if (storageKey) {
+      try {
+        sessionStorage.removeItem(storageKey);
+      } catch {}
+    }
+    if (!settled && soundEnabled) {
+      playCancelChime();
+    }
+    setQrData(null);
+    setSettled(false);
+    setSettling(false);
+    setError(null);
+    onClose();
   };
 
   const handleSuccess = (customTranId?: string) => {
@@ -326,7 +349,7 @@ export function KhqrCheckoutModal({
   // Instant App-Switch Wakeup (Safari / Mobile Chrome tab resumption)
   useEffect(() => {
     const handleVisibilityOrFocus = async () => {
-      if (isOpen && qrData?.tranId && !settled && document.visibilityState === 'visible') {
+      if (isOpen && isPollingRef.current && qrData?.tranId && !settled && document.visibilityState === 'visible') {
         try {
           const res = await api.payments.checkStatus(qrData.tranId);
           if (res.status === 'SUCCESS' || res.invoiceStatus === 'PAID') {
@@ -442,7 +465,7 @@ export function KhqrCheckoutModal({
     <>
       <Modal
         isOpen={isOpen}
-        onClose={onClose}
+        onClose={handleCancelCheckout}
         title={
           settled
             ? (isKm ? 'ការទូទាត់ជោគជ័យ' : 'Payment Settled')
@@ -937,25 +960,36 @@ export function KhqrCheckoutModal({
                 </a>
               </div>
 
-              {/* Instant Verification Button for Cashier */}
-              <button
-                type="button"
-                onClick={handleInstantSettle}
-                disabled={settling || countdown <= 0}
-                className="w-full py-2 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 shadow-xs"
-              >
-                {settling ? (
-                  <>
-                    <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>{isKm ? 'កំពុងផ្ទៀងផ្ទាត់ (0.3s)...' : 'Verifying (0.3s)...'}</span>
-                  </>
-                ) : (
-                  <>
-                    <ShieldCheck className="w-3.5 h-3.5 text-teal-400" />
-                    <span>{isKm ? 'ផ្ទៀងផ្ទាត់ការទូទាត់ភ្លាមៗ (0.3s)' : 'Instant Verify Settlement (0.3s)'}</span>
-                  </>
-                )}
-              </button>
+              {/* ACTION BUTTONS: CANCEL CHECKOUT & INSTANT VERIFY / PAY */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={handleCancelCheckout}
+                  className="py-2.5 px-3 bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 border border-slate-200 hover:border-rose-200 shadow-2xs"
+                >
+                  <XCircle className="w-4 h-4 text-slate-500" />
+                  <span>{isKm ? 'បោះបង់ការទូទាត់' : 'Cancel Checkout'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleInstantSettle}
+                  disabled={settling || countdown <= 0}
+                  className="py-2.5 px-3 bg-teal-700 hover:bg-teal-800 disabled:bg-slate-300 text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-xs"
+                >
+                  {settling ? (
+                    <>
+                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>{isKm ? 'កំពុងផ្ទៀងផ្ទាត់...' : 'Verifying...'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShieldCheck className="w-4 h-4 text-teal-200" />
+                      <span>{isKm ? 'បង់ប្រាក់រួចរាល់ / ផ្ទៀងផ្ទាត់' : 'Confirm Paid / Instant Settle'}</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           )
         )}
