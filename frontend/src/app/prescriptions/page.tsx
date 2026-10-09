@@ -5,6 +5,7 @@ import { api } from '../../lib/api';
 import Link from 'next/link';
 import { Modal } from '../../components/ui/Modal';
 import { KhqrCheckoutModal } from '../../components/payments/KhqrCheckoutModal';
+import { useTranslation } from '../../context/I18nContext';
 import {
   Pill,
   Search,
@@ -33,6 +34,8 @@ interface PrescriptionItemInput {
 }
 
 export default function PrescriptionsPage() {
+  const { t, locale } = useTranslation();
+  const isKm = locale === 'km';
   const [prescriptions, setPrescriptions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -99,9 +102,9 @@ export default function PrescriptionsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Pharmacy & Prescriptions</h1>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">{t.prescriptions.title}</h1>
           <p className="text-xs text-slate-500 mt-1">
-            Dispense clinical medications, multi-item drug orders, and trigger automated pharmacy billing
+            {t.prescriptions.subtitle}
           </p>
         </div>
 
@@ -109,7 +112,7 @@ export default function PrescriptionsPage() {
           <button
             onClick={fetchPrescriptions}
             className="p-2 text-slate-500 hover:text-slate-700 bg-white border border-slate-200 rounded-lg shadow-sm transition-colors text-xs"
-            title="Refresh prescriptions"
+            title={t.common.refresh}
           >
             <RefreshCw className="w-4 h-4" />
           </button>
@@ -119,7 +122,7 @@ export default function PrescriptionsPage() {
             className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-teal-700 hover:bg-teal-800 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors"
           >
             <Plus className="w-4 h-4" />
-            <span>New Prescription</span>
+            <span>{t.prescriptions.newPrescription}</span>
           </button>
         </div>
       </div>
@@ -133,7 +136,7 @@ export default function PrescriptionsPage() {
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-500">All Prescriptions</span>
+            <span className="text-xs font-medium text-slate-500">{isKm ? 'វេជ្ជបញ្ជាទាំងអស់' : 'All Prescriptions'}</span>
             <Pill className="w-4 h-4 text-slate-400" />
           </div>
           <div className="text-xl font-bold text-slate-900 mt-1.5 font-mono">{counters.all}</div>

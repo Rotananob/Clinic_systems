@@ -2,6 +2,7 @@
 
 import React, { useRef } from 'react';
 import { useTranslation } from '../../context/I18nContext';
+import { ClinicLogo } from '../common/ClinicLogo';
 import {
   Printer,
   X,
@@ -142,15 +143,12 @@ export function ClinicReceiptModal({
           className="p-6 bg-white text-slate-900 font-sans space-y-4"
         >
           {/* Clinic Header */}
-          <div className="text-center pb-3 border-b border-dashed border-slate-300 space-y-1">
-            <div className="w-10 h-10 mx-auto rounded-full bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-700 font-bold mb-1">
-              <Building className="w-5 h-5" />
+          <div className="pb-3 border-b border-dashed border-slate-300 space-y-1.5">
+            <div className="flex justify-center">
+              <ClinicLogo variant="print" />
             </div>
-            <h2 className="text-base font-bold tracking-tight text-slate-900">{clinicInfo.nameKh}</h2>
-            <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wider">{clinicInfo.nameEn}</h3>
-            <p className="text-[11px] text-slate-500 leading-tight">{clinicInfo.address}</p>
-            <p className="text-[11px] text-slate-500">Tel: {clinicInfo.phone}</p>
-            <p className="text-[10px] text-slate-400 font-mono">{clinicInfo.license}</p>
+            <p className="text-[11px] text-slate-500 text-center leading-tight">{clinicInfo.address}</p>
+            <p className="text-[11px] text-slate-500 text-center">Tel: {clinicInfo.phone}</p>
           </div>
 
           {/* Receipt Title & Status Stamp */}

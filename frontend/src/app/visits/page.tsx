@@ -4,6 +4,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { api } from '../../lib/api';
 import Link from 'next/link';
 import { Modal } from '../../components/ui/Modal';
+import { useTranslation } from '../../context/I18nContext';
 import {
   Activity,
   User,
@@ -25,6 +26,8 @@ import {
 } from 'lucide-react';
 
 export default function VisitsPage() {
+  const { t, locale } = useTranslation();
+  const isKm = locale === 'km';
   const [visits, setVisits] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -95,9 +98,9 @@ export default function VisitsPage() {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Clinical Visits & Queue</h1>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">{t.visits.title}</h1>
           <p className="text-xs text-slate-500 mt-1">
-            Real-time outpatient consultation flow, vitals assessment, and clinical records
+            {t.visits.subtitle}
           </p>
         </div>
 
@@ -105,17 +108,24 @@ export default function VisitsPage() {
           <button
             onClick={fetchVisits}
             className="p-2 text-slate-500 hover:text-slate-700 bg-white border border-slate-200 rounded-lg shadow-sm transition-colors text-xs"
-            title="Refresh queue"
+            title={t.common.refresh}
           >
             <RefreshCw className="w-4 h-4" />
           </button>
+
+          <Link
+            href="/queue"
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors"
+          >
+            <span>{t.nav.queue}</span>
+          </Link>
 
           <button
             onClick={() => setIsCheckinOpen(true)}
             className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-teal-700 hover:bg-teal-800 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors"
           >
             <Plus className="w-4 h-4" />
-            <span>Check-in Patient</span>
+            <span>{t.visits.checkin}</span>
           </button>
         </div>
       </div>
@@ -129,7 +139,7 @@ export default function VisitsPage() {
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-500">All Registered Visits</span>
+            <span className="text-xs font-medium text-slate-500">{isKm ? 'វត្តមានអ្នកជំងឺទាំងអស់' : 'All Registered Visits'}</span>
             <Activity className="w-4 h-4 text-slate-400" />
           </div>
           <div className="text-xl font-bold text-slate-900 mt-1.5 font-mono">{counters.all}</div>
@@ -142,7 +152,7 @@ export default function VisitsPage() {
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-amber-700">Waiting for Vitals / Doctor</span>
+            <span className="text-xs font-medium text-amber-700">{t.visits.waiting}</span>
             <Clock className="w-4 h-4 text-amber-500" />
           </div>
           <div className="text-xl font-bold text-amber-800 mt-1.5 font-mono">{counters.waiting}</div>
@@ -155,7 +165,7 @@ export default function VisitsPage() {
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-teal-700">In Consultation</span>
+            <span className="text-xs font-medium text-teal-700">{t.visits.inConsultation}</span>
             <Stethoscope className="w-4 h-4 text-teal-600" />
           </div>
           <div className="text-xl font-bold text-teal-800 mt-1.5 font-mono">{counters.inConsult}</div>
@@ -168,7 +178,7 @@ export default function VisitsPage() {
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-emerald-700">Consultation Finished</span>
+            <span className="text-xs font-medium text-emerald-700">{t.visits.completed}</span>
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
           </div>
           <div className="text-xl font-bold text-emerald-800 mt-1.5 font-mono">{counters.completed}</div>

@@ -4,8 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
 import { Search, Plus, Phone, Calendar, ArrowRight, ShieldAlert, Loader2 } from 'lucide-react';
 import { RegisterPatientDrawer } from './RegisterPatientDrawer';
+import { useTranslation } from '../../context/I18nContext';
 
 export const PatientList: React.FC = () => {
+  const { t, locale } = useTranslation();
+  const isKm = locale === 'km';
   const [patients, setPatients] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -43,16 +46,16 @@ export const PatientList: React.FC = () => {
       {/* Action Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900 tracking-tight">Patient Registry</h1>
-          <p className="text-xs text-slate-500">Search existing records or register a new clinical patient</p>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">{t.patients.title}</h1>
+          <p className="text-xs text-slate-500">{t.patients.subtitle}</p>
         </div>
 
         <button
           onClick={() => setIsRegisterOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-teal-700 hover:bg-teal-800 text-white rounded-lg text-sm font-medium transition-colors shadow-sm self-start sm:self-auto"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-teal-700 hover:bg-teal-800 text-white rounded-xl text-xs font-semibold transition-colors shadow-xs self-start sm:self-auto"
         >
           <Plus className="w-4 h-4" />
-          <span>New Patient</span>
+          <span>{t.patients.registerNew}</span>
         </button>
       </div>
 
@@ -61,39 +64,43 @@ export const PatientList: React.FC = () => {
         <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
         <input
           type="text"
-          placeholder="Search by Patient ID, Name (EN/KH), or Phone number..."
+          placeholder={t.patients.searchPlaceholder}
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
             setPage(1);
           }}
-          className="w-full pl-9 pr-4 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-teal-600 shadow-sm"
+          className="w-full pl-9 pr-4 py-2.5 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-teal-700 shadow-2xs"
         />
       </div>
 
       {/* Patients Table */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
         {isLoading ? (
           <div className="p-12 flex flex-col items-center justify-center text-slate-400">
-            <Loader2 className="w-6 h-6 animate-spin mb-2" />
-            <span className="text-xs">Loading patient registry...</span>
+            <Loader2 className="w-6 h-6 animate-spin mb-2 text-teal-700" />
+            <span className="text-xs">{t.common.loading}</span>
           </div>
         ) : patients.length === 0 ? (
           <div className="p-12 text-center text-slate-500">
-            <p className="text-sm font-medium">No patient records found</p>
-            <p className="text-xs text-slate-400 mt-1">Try another search term or click &quot;New Patient&quot; to register.</p>
+            <p className="text-sm font-medium">{isKm ? 'រកមិនឃើញទិន្នន័យអ្នកជំងឺទេ' : 'No patient records found'}</p>
+            <p className="text-xs text-slate-400 mt-1">
+              {isKm
+                ? 'សូមសាកល្បងស្វែងរកពាក្យផ្សេង ឬចុច «ចុះឈ្មោះអ្នកជំងឺថ្មី»'
+                : 'Try another search term or click "Register New Patient"'}
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono">
                 <tr>
-                  <th className="px-4 py-3">Patient Code</th>
-                  <th className="px-4 py-3">Full Name</th>
-                  <th className="px-4 py-3">Gender / Blood</th>
-                  <th className="px-4 py-3">Phone</th>
-                  <th className="px-4 py-3">Allergies</th>
-                  <th className="px-4 py-3 text-right">Actions</th>
+                  <th className="px-4 py-3">{t.patients.patientCode}</th>
+                  <th className="px-4 py-3">{t.patients.fullNameEn}</th>
+                  <th className="px-4 py-3">{isKm ? 'ភេទ / ប្រភេទឈាម' : 'Gender / Blood'}</th>
+                  <th className="px-4 py-3">{t.patients.phone}</th>
+                  <th className="px-4 py-3">{t.patients.allergies}</th>
+                  <th className="px-4 py-3 text-right">{t.common.actions}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -131,15 +138,15 @@ export const PatientList: React.FC = () => {
                           {p.allergies}
                         </span>
                       ) : (
-                        <span className="text-slate-400">None reported</span>
+                        <span className="text-slate-400">{isKm ? 'គ្មាន' : 'None reported'}</span>
                       )}
                     </td>
                     <td className="px-4 py-3.5 text-right">
                       <a
                         href={`/patients/${p.id}`}
-                        className="inline-flex items-center gap-1 text-xs font-medium text-teal-700 hover:text-teal-900 hover:underline"
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-teal-700 hover:text-teal-900 hover:underline"
                       >
-                        <span>Patient 360</span>
+                        <span>{t.patients.viewProfile}</span>
                         <ArrowRight className="w-3.5 h-3.5" />
                       </a>
                     </td>

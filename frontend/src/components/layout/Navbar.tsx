@@ -1,13 +1,16 @@
 'use client';
 
 import React from 'react';
-import { Stethoscope, User, LogOut, QrCode } from 'lucide-react';
+import { User, LogOut, QrCode, Monitor } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useTranslation } from '../../context/I18nContext';
 import { LanguageSwitcher } from '../common/LanguageSwitcher';
+import { ClinicLogo } from '../common/ClinicLogo';
 import Link from 'next/link';
 
 export const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
+  const { t, locale } = useTranslation();
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
@@ -15,39 +18,48 @@ export const Navbar: React.FC = () => {
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 bg-white border-b border-slate-200">
+    <header className="sticky top-0 z-30 bg-white border-b border-slate-200 shadow-xs">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-teal-700 flex items-center justify-center text-white shadow-sm">
-            <Stethoscope className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="font-semibold text-slate-900 leading-tight">Rotana Clinic</div>
-            <div className="text-xs text-slate-500">Patient Management & KHQR</div>
-          </div>
+        <Link href="/" className="flex items-center gap-2 hover:opacity-95 transition-opacity">
+          <ClinicLogo variant="navbar" size="md" />
         </Link>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Link
+            href="/queue"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold transition-colors shadow-xs"
+            title={locale === 'km' ? 'ក្ដារជួរ & ហៅលេខអ្នកជំងឺ' : 'Patient Queue & Calling Screen'}
+          >
+            <Monitor className="w-3.5 h-3.5 text-teal-700" />
+            <span className="hidden md:inline">{t.nav.queue}</span>
+            <span className="md:hidden">Queue</span>
+          </Link>
+
           <Link
             href="/billing"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 text-xs font-semibold transition-colors shadow-xs"
+            className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 text-xs font-semibold transition-colors shadow-xs"
           >
             <QrCode className="w-3.5 h-3.5 text-teal-700" />
-            <span className="hidden sm:inline">បង់ប្រាក់ KHQR / Billing</span>
+            <span className="hidden sm:inline">KHQR & Billing</span>
             <span className="sm:hidden">KHQR</span>
           </Link>
+
           <LanguageSwitcher />
 
           {mounted && user ? (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 pl-1 sm:pl-2 border-l border-slate-200">
               <div className="text-right hidden sm:block">
-                <div className="text-sm font-medium text-slate-900">{user.fullNameEn}</div>
-                <div className="text-xs text-slate-500 font-mono uppercase">{user.role}</div>
+                <div className="text-xs font-bold text-slate-900 leading-tight">
+                  {locale === 'km' && user.fullNameKh ? user.fullNameKh : user.fullNameEn}
+                </div>
+                <div className="text-[10px] text-teal-700 font-mono font-semibold uppercase">
+                  {user.role}
+                </div>
               </div>
               <button
                 onClick={logout}
-                className="p-2 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-slate-100 transition-colors"
-                title="Logout"
+                className="p-1.5 sm:p-2 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                title={t.nav.logout}
               >
                 <LogOut className="w-4 h-4" />
               </button>
@@ -55,10 +67,10 @@ export const Navbar: React.FC = () => {
           ) : (
             <Link
               href="/login"
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-teal-700 text-white text-xs font-medium hover:bg-teal-800 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-700 hover:bg-teal-800 text-white text-xs font-semibold transition-colors shadow-xs"
             >
               <User className="w-3.5 h-3.5" />
-              Staff Login
+              <span>{t.auth.signInBtn}</span>
             </Link>
           )}
         </div>

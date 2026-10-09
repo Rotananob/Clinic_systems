@@ -1,7 +1,22 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <rect width="512" height="512" rx="96" fill="#0f766e" />
-  <g fill="none" stroke="#ffffff" stroke-width="32" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M256 128v256M128 256h256" />
-    <circle cx="256" cy="256" r="88" stroke-width="16" stroke-dasharray="12 24" />
-  </g>
+<svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" width="512" height="512">
+  <defs>
+    <linearGradient id="rotanaPwaGrad512" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#0f766e" />
+      <stop offset="100%" stopColor="#042f2e" />
+    </linearGradient>
+    <linearGradient id="rotanaPwaGold512" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#f59e0b" />
+      <stop offset="100%" stopColor="#d97706" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#rotanaPwaGrad512)" />
+  <rect x="24" y="24" width="464" height="464" rx="96" stroke="url(#rotanaPwaGold512)" stroke-width="8" stroke-opacity="0.75" />
+  <path d="M214 118H298V214H394V298H298V394H214V298H118V214H214V118Z" fill="#ffffff" fill-opacity="0.14" />
+  <line x1="256" y1="96" x2="256" y2="416" stroke="url(#rotanaPwaGold512)" stroke-width="16" stroke-linecap="round" />
+  <circle cx="256" cy="90" r="22" fill="url(#rotanaPwaGold512)" />
+  <path d="M180 170C180 170 234 144 256 202C278 260 332 234 332 234" stroke="#ffffff" stroke-width="14" stroke-linecap="round" fill="none" />
+  <path d="M332 170C332 170 278 144 256 202C234 260 180 234 180 234" stroke="#ffffff" stroke-width="14" stroke-linecap="round" fill="none" />
+  <path d="M192 288C192 288 234 262 256 310C278 358 320 332 320 332" stroke="#ffffff" stroke-width="14" stroke-linecap="round" fill="none" />
+  <path d="M86 256H186L208 224L230 300L256 192L282 320L304 240L326 256H426" stroke="#34d399" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" />
+  <circle cx="256" cy="422" r="11" fill="#f59e0b" />
 </svg>

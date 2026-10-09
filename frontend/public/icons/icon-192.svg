@@ -1,7 +1,22 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
-  <rect width="192" height="192" rx="36" fill="#0f766e" />
-  <g fill="none" stroke="#ffffff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M96 48v96M48 96h96" />
-    <circle cx="96" cy="96" r="32" stroke-width="6" stroke-dasharray="4 8" />
-  </g>
+<svg viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg" width="192" height="192">
+  <defs>
+    <linearGradient id="rotanaPwaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#0f766e" />
+      <stop offset="100%" stopColor="#042f2e" />
+    </linearGradient>
+    <linearGradient id="rotanaPwaGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#f59e0b" />
+      <stop offset="100%" stopColor="#d97706" />
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="44" fill="url(#rotanaPwaGrad)" />
+  <rect x="8" y="8" width="176" height="176" rx="38" stroke="url(#rotanaPwaGold)" stroke-width="3" stroke-opacity="0.75" />
+  <path d="M80 44H112V80H148V112H112V148H80V112H44V80H80V44Z" fill="#ffffff" fill-opacity="0.14" />
+  <line x1="96" y1="36" x2="96" y2="156" stroke="url(#rotanaPwaGold)" stroke-width="6" stroke-linecap="round" />
+  <circle cx="96" cy="34" r="8" fill="url(#rotanaPwaGold)" />
+  <path d="M68 64C68 64 88 54 96 76C104 98 124 88 124 88" stroke="#ffffff" stroke-width="5" stroke-linecap="round" fill="none" />
+  <path d="M124 64C124 64 104 54 96 76C88 98 68 88 68 88" stroke="#ffffff" stroke-width="5" stroke-linecap="round" fill="none" />
+  <path d="M72 108C72 108 88 98 96 116C104 134 120 124 120 124" stroke="#ffffff" stroke-width="5" stroke-linecap="round" fill="none" />
+  <path d="M32 96H70L78 84L86 112L96 72L106 120L114 90L122 96H160" stroke="#34d399" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+  <circle cx="96" cy="158" r="4" fill="#f59e0b" />
 </svg>

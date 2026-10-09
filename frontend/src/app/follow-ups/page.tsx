@@ -4,6 +4,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { api } from '../../lib/api';
 import Link from 'next/link';
 import { Modal } from '../../components/ui/Modal';
+import { useTranslation } from '../../context/I18nContext';
 import {
   Calendar,
   Clock,
@@ -22,6 +23,8 @@ import {
 } from 'lucide-react';
 
 export default function FollowUpsPage() {
+  const { t, locale } = useTranslation();
+  const isKm = locale === 'km';
   const [followUps, setFollowUps] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -99,9 +102,9 @@ export default function FollowUpsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Clinical Follow-Ups & Recalls</h1>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">{t.followUps.title}</h1>
           <p className="text-xs text-slate-500 mt-1">
-            Outpatient appointment recall management, suture removal, chronic care monitoring, and checkups
+            {t.followUps.subtitle}
           </p>
         </div>
 
@@ -109,7 +112,7 @@ export default function FollowUpsPage() {
           <button
             onClick={fetchFollowUps}
             className="p-2 text-slate-500 hover:text-slate-700 bg-white border border-slate-200 rounded-lg shadow-sm transition-colors text-xs"
-            title="Refresh appointments"
+            title={t.common.refresh}
           >
             <RefreshCw className="w-4 h-4" />
           </button>
@@ -119,7 +122,7 @@ export default function FollowUpsPage() {
             className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-teal-700 hover:bg-teal-800 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors"
           >
             <Plus className="w-4 h-4" />
-            <span>Schedule Follow-Up</span>
+            <span>{t.followUps.schedule}</span>
           </button>
         </div>
       </div>
