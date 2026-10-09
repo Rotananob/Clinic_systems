@@ -49,6 +49,7 @@ export default function BillingPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'UNPAID' | 'PENDING' | 'PAID'>('ALL');
   const [timeFilter, setTimeFilter] = useState<'ALL' | 'TODAY' | 'MONTH'>('ALL');
+  const [exactDate, setExactDate] = useState<string>('');
 
   // Quick Invoice Creation Modal
   const [isQuickModalOpen, setIsQuickModalOpen] = useState(false);
@@ -198,7 +199,12 @@ export default function BillingPage() {
 
   const filteredInvoices = useMemo(() => {
     let list = invoices;
-    if (timeFilter === 'TODAY') {
+    if (exactDate) {
+      list = list.filter((inv) => {
+        const dStr = new Date(inv.createdAt).toISOString().split('T')[0];
+        return dStr === exactDate;
+      });
+    } else if (timeFilter === 'TODAY') {
       const today = new Date().toDateString();
       list = list.filter((inv) => new Date(inv.createdAt).toDateString() === today);
     } else if (timeFilter === 'MONTH') {
@@ -218,7 +224,7 @@ export default function BillingPage() {
       const pCode = inv.patient?.patientCode?.toLowerCase() || '';
       return invNum.includes(q) || pNameEn.includes(q) || pNameKh.includes(q) || pCode.includes(q);
     });
-  }, [invoices, searchQuery, timeFilter]);
+  }, [invoices, searchQuery, timeFilter, exactDate]);
 
   // Financial summary
   const summary = useMemo(() => {
@@ -356,22 +362,47 @@ export default function BillingPage() {
       </div>
 
       {/* Search & Tabs */}
-      <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+      <div className="bg-[#FDFBF7] p-3.5 rounded-2xl border border-[#E7E1D4] shadow-xs flex flex-col lg:flex-row items-center justify-between gap-3">
+        <div className="relative w-full lg:w-80">
+          <Search className="w-4 h-4 text-stone-400 absolute left-3 top-2.5" />
           <input
             type="text"
             placeholder="Search by invoice #, patient name, or code..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-teal-700 focus:bg-white transition-colors"
+            className="w-full pl-9 pr-3 py-1.5 bg-[#F6F1E6] border border-[#E0D8C8] rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-teal-700 focus:bg-white transition-colors text-stone-800"
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+        <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+          {/* Specific Exact Date Picker */}
+          <div className="flex items-center gap-1.5 bg-[#F2EDE2] p-1 px-2.5 rounded-xl text-xs border border-[#DFD6C6]">
+            <Calendar className="w-3.5 h-3.5 text-stone-500 shrink-0" />
+            <input
+              type="date"
+              value={exactDate}
+              onChange={(e) => {
+                setExactDate(e.target.value);
+                if (e.target.value) setTimeFilter('ALL');
+              }}
+              className="bg-transparent text-xs text-stone-800 focus:outline-none font-mono"
+              title={isKm ? 'ស្វែងរកតាមថ្ងៃជាក់លាក់' : 'Search by exact date'}
+            />
+            {exactDate && (
+              <button
+                type="button"
+                onClick={() => setExactDate('')}
+                className="text-stone-400 hover:text-stone-700 p-0.5"
+                title={isKm ? 'ជម្រះថ្ងៃ' : 'Clear date'}
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
           {/* Time Range Filter */}
-          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg text-xs">
-            <span className="text-[10px] text-slate-400 font-semibold px-1 uppercase flex items-center gap-0.5">
+          <div className="flex items-center gap-1 bg-[#F2EDE2] p-1 rounded-xl text-xs border border-[#DFD6C6]">
+            <span className="text-[10px] text-stone-400 font-semibold px-1 uppercase flex items-center gap-0.5">
               <Calendar className="w-3 h-3" />
             </span>
             {(
@@ -383,11 +414,14 @@ export default function BillingPage() {
             ).map((t) => (
               <button
                 key={t.id}
-                onClick={() => setTimeFilter(t.id)}
-                className={`px-2 py-1 rounded-md text-[11px] font-semibold transition-colors ${
-                  timeFilter === t.id
-                    ? 'bg-white text-teal-800 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
+                onClick={() => {
+                  setTimeFilter(t.id);
+                  setExactDate('');
+                }}
+                className={`px-2 py-1 rounded-lg text-[11px] font-semibold transition-colors ${
+                  timeFilter === t.id && !exactDate
+                    ? 'bg-white text-stone-900 shadow-xs'
+                    : 'text-stone-600 hover:text-stone-900'
                 }`}
               >
                 {isKm ? t.labelKm : t.labelEn}

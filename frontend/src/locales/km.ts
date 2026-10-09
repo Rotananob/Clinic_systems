@@ -9,6 +9,7 @@ export const km = {
     certificates: 'លិខិតបញ្ជាក់សុខភាព',
     followUps: 'ការណាត់ជួប & តាមដាន',
     documents: 'ឯកសារវេជ្ជសាស្ត្រ & Lab',
+    reports: 'របាយការណ៍ & ស្ថិតិ',
     staff: 'គ្រប់គ្រងបុគ្គលិក',
     settings: 'ការកំណត់គ្លីនិក',
     logout: 'ចាកចេញពីប្រព័ន្ធ',

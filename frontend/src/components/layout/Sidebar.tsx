@@ -15,6 +15,7 @@ import {
   FolderOpen,
   ShieldCheck,
   Settings,
+  BarChart3,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from '../../context/I18nContext';
@@ -37,6 +38,7 @@ export const Sidebar: React.FC = () => {
     { label: t.nav.queue, href: '/queue', icon: Monitor },
     { label: t.nav.prescriptions, href: '/prescriptions', icon: Pill },
     { label: t.nav.billing, href: '/billing', icon: CreditCard },
+    { label: t.nav.reports, href: '/reports', icon: BarChart3 },
     { label: t.nav.certificates, href: '/certificates', icon: FileCheck },
     { label: t.nav.followUps, href: '/follow-ups', icon: CalendarDays },
     { label: t.nav.documents, href: '/documents', icon: FolderOpen },
@@ -49,13 +51,13 @@ export const Sidebar: React.FC = () => {
   navItems.push({ label: t.nav.settings, href: '/settings', icon: Settings });
 
   return (
-    <aside className="hidden md:flex flex-col w-64 border-r border-slate-200 bg-white min-h-[calc(100vh-4rem)] p-4">
+    <aside className="hidden md:flex flex-col w-64 border-r border-[#E7E1D4] bg-[#FDFBF7] min-h-[calc(100vh-4rem)] p-4 shadow-2xs">
       {/* Brand Badge in Sidebar */}
       <div className="mb-4">
         <ClinicLogo variant="sidebar" />
       </div>
 
-      <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2 font-mono">
+      <div className="text-[11px] font-bold text-stone-400 uppercase tracking-wider px-3 mb-2 font-mono">
         {locale === 'km' ? 'ម៉ូឌុលព្យាបាល & ប្រតិបត្តិការ' : 'Clinical Modules'}
       </div>
 
@@ -69,13 +71,13 @@ export const Sidebar: React.FC = () => {
               href={item.href}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all ${
                 isActive
-                  ? 'bg-teal-50 text-teal-800 font-semibold shadow-2xs border border-teal-200/60'
-                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                  ? 'bg-[#F2ECE0] text-stone-900 font-semibold shadow-2xs border border-[#DFD8CA]'
+                  : 'text-stone-600 hover:bg-[#F6F1E6] hover:text-stone-900'
               }`}
             >
               <Icon
                 className={`w-4 h-4 shrink-0 ${
-                  isActive ? 'text-teal-700' : 'text-slate-400'
+                  isActive ? 'text-teal-800' : 'text-stone-400'
                 }`}
               />
               <span className="truncate">{item.label}</span>

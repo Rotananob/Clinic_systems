@@ -23,6 +23,7 @@ import {
   Clock,
   X,
   Command,
+  BarChart3,
 } from 'lucide-react';
 
 interface CommandItem {
@@ -171,6 +172,17 @@ export const CommandPalette: React.FC = () => {
       icon: CreditCard,
       action: () => {
         router.push('/billing');
+        setIsOpen(false);
+      },
+    },
+    {
+      id: 'nav-reports',
+      category: isKm ? 'ការរុករក' : 'Navigation',
+      title: t.nav.reports,
+      subtitle: isKm ? 'របាយការណ៍ហិរញ្ញវត្ថុ និងស្ថិតិព្យាបាល' : 'Financial revenue & clinical operations reports',
+      icon: BarChart3,
+      action: () => {
+        router.push('/reports');
         setIsOpen(false);
       },
     },

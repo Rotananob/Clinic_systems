@@ -9,6 +9,7 @@ export const en = {
     certificates: 'Medical Certificates',
     followUps: 'Follow-Ups & Recalls',
     documents: 'Documents & Lab Files',
+    reports: 'Reports & Analytics',
     staff: 'Staff Management',
     settings: 'Clinic Settings',
     logout: 'Sign Out',

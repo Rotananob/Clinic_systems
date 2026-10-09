@@ -12,6 +12,17 @@ module.exports = {
         khmer: ['Kantumruy Pro', 'sans-serif'],
       },
       colors: {
+        milk: {
+          canvas: '#F7F4EE',
+          surface: '#FDFBF7',
+          card: '#FAF7F2',
+          subtle: '#F1ECE1',
+          border: '#E7E1D4',
+          borderLight: '#EFEAE0',
+          espresso: '#231F1C',
+          taupe: '#78716C',
+          accent: '#A16207',
+        },
         clinical: {
           50: '#f0fdfa',
           100: '#ccfbf1',

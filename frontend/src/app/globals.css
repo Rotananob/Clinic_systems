@@ -5,8 +5,10 @@
 @tailwind utilities;
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --background: #F7F4EE;
+  --foreground: #231F1C;
+  --card-surface: #FDFBF7;
+  --card-border: #E7E1D4;
 }
 
 html, body {
@@ -44,39 +46,82 @@ html, body {
   overscroll-behavior-x: contain;
 }
 
-/* Clean clinical custom scrollbar */
+/* Clean warm milk-stone custom scrollbar */
 ::-webkit-scrollbar {
   width: 5px;
   height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #F1ECE1;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #D8D1C3;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #B8AE9E;
 }
 
-/* Modern Clinical UI Enhancements */
+/* Modern Warm Milk-Coffee UI Enhancements */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(253, 251, 247, 0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(231, 225, 212, 0.85);
 }
 
 .card-hover {
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.24s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .card-hover:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 28px -6px rgba(15, 23, 42, 0.08), 0 6px 12px -4px rgba(15, 23, 42, 0.03);
+  box-shadow: 0 12px 28px -6px rgba(45, 37, 28, 0.08), 0 6px 12px -4px rgba(45, 37, 28, 0.03);
+}
+
+/* 3D Depth Card & Perspective Tilt */
+.card-3d {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-3d:hover {
+  transform: translateY(-4px) scale(1.008);
+  box-shadow: 0 18px 36px -10px rgba(45, 37, 28, 0.12), 0 8px 16px -4px rgba(45, 37, 28, 0.05);
+}
+
+/* 3D Floating Animation */
+@keyframes float3d {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(0.4deg);
+  }
+}
+
+.animate-float-3d {
+  animation: float3d 5.5s ease-in-out infinite;
+}
+
+/* 3D Ambient Blur Orb Drift */
+@keyframes ambientDrift {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translate(25px, -18px) scale(1.08);
+    opacity: 0.72;
+  }
+}
+
+.animate-ambient-drift {
+  animation: ambientDrift 16s ease-in-out infinite;
 }
 
 @keyframes laserScan {
@@ -97,5 +142,17 @@ html, body {
 
 .animate-pulse-subtle {
   animation: subtlePulse 2.5s ease-in-out infinite;
+}
+
+/* Warm Shimmer */
+@keyframes shimmerWarm {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-shimmer-warm {
+  background: linear-gradient(90deg, rgba(231,225,212,0.15) 0%, rgba(255,255,255,0.7) 50%, rgba(231,225,212,0.15) 100%);
+  background-size: 200% 100%;
+  animation: shimmerWarm 3s infinite linear;
 }
 
