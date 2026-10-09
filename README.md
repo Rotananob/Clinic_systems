@@ -157,7 +157,7 @@ DATABASE_URL="postgresql://postgres:your_secure_password@localhost:5432/clinic_s
 # Backend Configuration (NestJS)
 PORT=4000
 NODE_ENV=production
-JWT_SECRET="rotana_clinic_super_secure_jwt_secret_key_2026"
+JWT_SECRET="replace_with_a_secure_random_64_char_secret_key_in_production"
 JWT_EXPIRES_IN="7d"
 
 # Bakong / KHQR Payment Engine (khqr-helper)

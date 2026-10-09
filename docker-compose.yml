@@ -7,7 +7,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgressqlsmosnas}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Error: POSTGRES_PASSWORD required in .env}
       POSTGRES_DB: ${POSTGRES_DB:-clinic_systems}
     ports:
       - "5432:5432"
@@ -28,10 +28,10 @@ services:
     container_name: clinic_backend
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgressqlsmosnas}@postgres:5432/${POSTGRES_DB:-clinic_systems}?schema=public
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-clinic_systems}?schema=public
       PORT: 4000
       NODE_ENV: production
-      JWT_SECRET: ${JWT_SECRET:-rotana_clinic_super_secure_jwt_secret_key_2026}
+      JWT_SECRET: ${JWT_SECRET:?Error: JWT_SECRET required in .env}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
       BAKONG_ACCOUNT_ID: ${BAKONG_ACCOUNT_ID:-rotana_clinic@aba}
       BAKONG_MERCHANT_NAME: ${BAKONG_MERCHANT_NAME:-Rotana Clinic}
