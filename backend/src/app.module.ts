@@ -13,6 +13,7 @@ import { FollowUpsModule } from './follow-ups/follow-ups.module';
 import { DocumentsModule } from './documents/documents.module';
 import { HealthModule } from './health/health.module';
 import { HardwareModule } from './hardware/hardware.module';
+import { SystemModule } from './system/system.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { HardwareModule } from './hardware/hardware.module';
     DocumentsModule,
     HealthModule,
     HardwareModule,
+    SystemModule,
   ],
 })
 export class AppModule {}

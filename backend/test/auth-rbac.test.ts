@@ -21,6 +21,7 @@ describe('Auth & Role-Based Access Control (RBAC) Test Suite', () => {
 
   it('should enforce distinct permission sets for clinical roles', () => {
     const ROLE_PERMISSIONS: Record<string, string[]> = {
+      SUPER_ADMIN: ['*'],
       ADMIN: ['*'],
       DOCTOR: ['patients:read', 'patients:write', 'visits:manage', 'medical_records:manage', 'prescriptions:prescribe'],
       NURSE: ['patients:read', 'patients:write', 'visits:vitals', 'follow_ups:manage'],
@@ -52,5 +53,10 @@ describe('Auth & Role-Based Access Control (RBAC) Test Suite', () => {
     assert.equal(canPerform('ADMIN', 'prescriptions:dispense'), true);
     assert.equal(canPerform('ADMIN', 'payments:khqr_settle'), true);
     assert.equal(canPerform('ADMIN', 'any:unknown:action'), true);
+
+    // Super Admin (System Owner) has ultimate master access
+    assert.equal(canPerform('SUPER_ADMIN', 'system:manage_admins'), true);
+    assert.equal(canPerform('SUPER_ADMIN', 'system:trigger_backup'), true);
+    assert.equal(canPerform('SUPER_ADMIN', 'any:emergency:override'), true);
   });
 });

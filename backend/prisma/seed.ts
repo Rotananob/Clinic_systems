@@ -7,17 +7,33 @@ async function main() {
   console.log('--- Starting Clinic Database Seeding ---');
 
   // 1. Seed Roles & Users with Production-Grade High Entropy Passwords (bcrypt 12 rounds)
+  const superAdminPassword = process.env.SEED_SUPER_ADMIN_PASSWORD || 'Owner@DemoClinic#2026';
   const adminPassword = process.env.SEED_ADMIN_PASSWORD || 'Admin@DemoClinic#2026';
   const doctorPassword = process.env.SEED_DOCTOR_PASSWORD || 'Doctor@DemoClinic#2026';
   const receptionPassword = process.env.SEED_RECEPTIONIST_PASSWORD || 'Reception@DemoClinic#2026';
   const cashierPassword = process.env.SEED_CASHIER_PASSWORD || 'Cashier@DemoClinic#2026';
   const pharmacyPassword = process.env.SEED_PHARMACIST_PASSWORD || 'Pharmacy@DemoClinic#2026';
 
+  const superAdminHash = await bcrypt.hash(superAdminPassword, 12);
   const adminHash = await bcrypt.hash(adminPassword, 12);
   const doctorHash = await bcrypt.hash(doctorPassword, 12);
   const receptionHash = await bcrypt.hash(receptionPassword, 12);
   const cashierHash = await bcrypt.hash(cashierPassword, 12);
   const pharmacyHash = await bcrypt.hash(pharmacyPassword, 12);
+
+  const superAdmin = await prisma.user.upsert({
+    where: { email: 'owner@clinic.com' },
+    update: { passwordHash: superAdminHash, role: Role.SUPER_ADMIN, isActive: true },
+    create: {
+      email: 'owner@clinic.com',
+      passwordHash: superAdminHash,
+      fullNameEn: 'Rotana Nob (System Owner & Director)',
+      fullNameKh: 'លោក ណុប រតនា (ម្ចាស់ប្រព័ន្ធ & នាយកប្រតិបត្តិ)',
+      role: Role.SUPER_ADMIN,
+      phone: '012888999',
+      isActive: true,
+    },
+  });
 
   const admin = await prisma.user.upsert({
     where: { email: 'admin@clinic.com' },
@@ -89,7 +105,7 @@ async function main() {
     },
   });
 
-  console.log('Seeded Users with Ultra-Secure Passwords: Admin, Doctor, Receptionist, Cashier, Pharmacist');
+  console.log('Seeded Users with Ultra-Secure Passwords: Super Admin (Owner), Admin, Doctor, Receptionist, Cashier, Pharmacist');
 
   // 2. Seed Realistic Sample Patients
   const patient1 = await prisma.patient.upsert({

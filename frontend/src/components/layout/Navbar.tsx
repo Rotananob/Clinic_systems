@@ -88,8 +88,14 @@ export const Navbar: React.FC = () => {
                 <div className="text-xs font-bold text-slate-900 leading-tight">
                   {locale === 'km' && user.fullNameKh ? user.fullNameKh : user.fullNameEn}
                 </div>
-                <div className="text-[10px] text-teal-700 font-mono font-semibold uppercase">
-                  {user.role}
+                <div className="text-[10px] font-mono font-semibold uppercase">
+                  {user.role === 'SUPER_ADMIN' ? (
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-100/90 text-amber-900 border border-amber-300 font-bold text-[9px] tracking-wide">
+                      {locale === 'km' ? 'មហាសិទ្ធ (OWNER)' : 'SUPER ADMIN'}
+                    </span>
+                  ) : (
+                    <span className="text-teal-700">{user.role}</span>
+                  )}
                 </div>
               </div>
               <button

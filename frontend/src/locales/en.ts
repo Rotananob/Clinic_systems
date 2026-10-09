@@ -13,6 +13,7 @@ export const en = {
     staff: 'Staff Management',
     settings: 'Clinic Settings',
     invoiceTemplate: 'Invoice Template',
+    ownerControl: 'Owner Control Panel',
     logout: 'Sign Out',
   },
   common: {

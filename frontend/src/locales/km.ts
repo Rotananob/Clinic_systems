@@ -13,6 +13,7 @@ export const km = {
     staff: 'គ្រប់គ្រងបុគ្គលិក',
     settings: 'ការកំណត់គ្លីនិក',
     invoiceTemplate: 'រចនាម៉ូតវិក្កយបត្រ',
+    ownerControl: 'ផ្ទាំងមហាសិទ្ធ (Owner)',
     logout: 'ចាកចេញពីប្រព័ន្ធ',
   },
   common: {

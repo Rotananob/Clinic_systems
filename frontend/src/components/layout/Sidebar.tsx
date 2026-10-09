@@ -17,6 +17,7 @@ import {
   Settings,
   BarChart3,
   LayoutTemplate,
+  Crown,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from '../../context/I18nContext';
@@ -45,8 +46,12 @@ export const Sidebar: React.FC = () => {
     { label: t.nav.documents, href: '/documents', icon: FolderOpen },
   ];
 
-  if (mounted && user?.role === 'ADMIN') {
+  if (mounted && (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN')) {
     navItems.push({ label: t.nav.staff, href: '/staff', icon: ShieldCheck });
+  }
+
+  if (mounted && user?.role === 'SUPER_ADMIN') {
+    navItems.push({ label: t.nav.ownerControl, href: '/owner', icon: Crown });
   }
 
   navItems.push({ label: t.nav.invoiceTemplate, href: '/invoice-template', icon: LayoutTemplate });

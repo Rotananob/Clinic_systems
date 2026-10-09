@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, Param, Query, UseGuards, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -14,11 +14,11 @@ import { Role } from '@prisma/client';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @ApiOperation({ summary: 'Create staff account (Admin only)' })
+  @ApiOperation({ summary: 'Create staff account (Admin & Super Admin only)' })
   @Roles(Role.ADMIN)
   @Post()
-  create(@Body() dto: CreateUserDto) {
-    return this.usersService.create(dto);
+  create(@Body() dto: CreateUserDto, @Req() req: any) {
+    return this.usersService.create(dto, req.user?.role);
   }
 
   @ApiOperation({ summary: 'List all staff users' })
@@ -35,10 +35,10 @@ export class UsersController {
     return this.usersService.findDoctors();
   }
 
-  @ApiOperation({ summary: 'Toggle user active status (Admin only)' })
+  @ApiOperation({ summary: 'Toggle user active status (Admin & Super Admin only)' })
   @Roles(Role.ADMIN)
   @Patch(':id/toggle-active')
-  toggleActive(@Param('id') id: string) {
-    return this.usersService.toggleActive(id);
+  toggleActive(@Param('id') id: string, @Req() req: any) {
+    return this.usersService.toggleActive(id, req.user?.role);
   }
 }

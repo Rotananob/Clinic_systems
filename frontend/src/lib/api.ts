@@ -342,6 +342,14 @@ class ApiClient {
   dashboard = {
     getMetrics: () => this.request<any>('/dashboard/metrics'),
   };
+
+  // System Owner Governance (SUPER_ADMIN)
+  system = {
+    getStatus: () => this.request<any>('/system/status'),
+    getPermissions: () => this.request<any[]>('/system/permissions'),
+    getAuditLogs: () => this.request<any>('/system/audit-logs'),
+    triggerBackup: () => this.request<any>('/system/backup', { method: 'POST' }),
+  };
 }
 
 export const api = new ApiClient();

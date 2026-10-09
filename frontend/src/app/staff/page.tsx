@@ -69,7 +69,7 @@ export default function StaffManagementPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (user && user.role !== 'ADMIN') {
+    if (user && user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
       router.push('/');
       return;
     }
@@ -151,6 +151,8 @@ export default function StaffManagementPage() {
 
   const getRoleBadge = (role: string) => {
     switch (role) {
+      case 'SUPER_ADMIN':
+        return 'bg-amber-100 text-amber-950 border-amber-300 font-extrabold shadow-2xs';
       case 'ADMIN':
         return 'bg-purple-100 text-purple-800 border-purple-200';
       case 'DOCTOR':
@@ -249,6 +251,7 @@ export default function StaffManagementPage() {
             className="text-sm px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500"
           >
             <option value="ALL">All Roles</option>
+            <option value="SUPER_ADMIN">SUPER ADMIN (Owner)</option>
             <option value="ADMIN">ADMIN</option>
             <option value="DOCTOR">DOCTOR</option>
             <option value="RECEPTIONIST">RECEPTIONIST</option>
