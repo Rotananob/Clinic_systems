@@ -85,6 +85,24 @@ export default function BillingPage() {
     notes: '',
   });
 
+  // Real-time payment confirmation popup notice
+  const [paymentSuccessNotice, setPaymentSuccessNotice] = useState<{
+    invoiceNumber: string;
+    amount: number | string;
+    currency?: string;
+    patientName?: string;
+    tranId?: string;
+    invoice: any;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!paymentSuccessNotice) return;
+    const timer = setTimeout(() => {
+      setPaymentSuccessNotice(null);
+    }, 10000);
+    return () => clearTimeout(timer);
+  }, [paymentSuccessNotice]);
+
   const handleOpenEdit = (inv: any) => {
     setEditingInvoice(inv);
     setEditForm({
@@ -706,10 +724,36 @@ export default function BillingPage() {
             setIsCheckoutOpen(false);
             setSelectedInvoice(null);
           }}
-          onSuccess={() => {
+          onPaymentSuccess={(settledInv) => {
+            fetchInvoices();
+            if (settledInv) {
+              setReceiptInvoice(settledInv);
+              setPaymentSuccessNotice({
+                invoiceNumber: settledInv.invoiceNumber,
+                amount: settledInv.payableAmount,
+                currency: settledInv.currency || 'USD',
+                patientName: settledInv.patient?.nameEn || settledInv.patient?.nameKh || 'Patient',
+                tranId: settledInv.transactions?.[0]?.tranId || 'N/A',
+                invoice: settledInv,
+              });
+            }
+          }}
+          onSuccess={(settledInv) => {
             setIsCheckoutOpen(false);
             setSelectedInvoice(null);
             fetchInvoices();
+            if (settledInv) {
+              setReceiptInvoice(settledInv);
+              setIsReceiptOpen(true);
+              setPaymentSuccessNotice({
+                invoiceNumber: settledInv.invoiceNumber,
+                amount: settledInv.payableAmount,
+                currency: settledInv.currency || 'USD',
+                patientName: settledInv.patient?.nameEn || settledInv.patient?.nameKh || 'Patient',
+                tranId: settledInv.transactions?.[0]?.tranId || 'N/A',
+                invoice: settledInv,
+              });
+            }
           }}
         />
       )}
@@ -729,6 +773,14 @@ export default function BillingPage() {
             fetchInvoices();
             setReceiptInvoice(settledInv);
             setIsReceiptOpen(true);
+            setPaymentSuccessNotice({
+              invoiceNumber: settledInv.invoiceNumber,
+              amount: settledInv.payableAmount,
+              currency: settledInv.currency || 'USD',
+              patientName: settledInv.patient?.nameEn || settledInv.patient?.nameKh || 'Patient',
+              tranId: 'CASH-' + Date.now().toString().slice(-6),
+              invoice: settledInv,
+            });
           }}
         />
       )}
@@ -870,6 +922,68 @@ export default function BillingPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Real-time Payment Confirmation Popup Notice */}
+      {paymentSuccessNotice && (
+        <div className="fixed top-20 right-4 sm:right-8 z-50 max-w-md w-full bg-white border-2 border-emerald-500 rounded-2xl shadow-2xl p-4 animate-in slide-in-from-top-4 duration-200">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center shrink-0 text-emerald-600">
+              <CheckCircle2 className="w-6 h-6" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-bold text-slate-900">
+                  {isKm ? 'ការទូទាត់ត្រូវបានផ្ទៀងផ្ទាត់ជោគជ័យ!' : 'Payment Verified Successfully!'}
+                </span>
+                <span className="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-mono font-bold">
+                  PAID
+                </span>
+              </div>
+              <p className="text-xs text-slate-600 mt-1 font-mono truncate">
+                {paymentSuccessNotice.invoiceNumber} -{' '}
+                <span className="font-sans font-semibold text-slate-900">
+                  {paymentSuccessNotice.patientName}
+                </span>
+              </p>
+              <div className="mt-1 flex items-center gap-2 text-xs">
+                <span className="font-bold text-emerald-800 font-mono text-sm">
+                  ${Number(paymentSuccessNotice.amount).toFixed(2)}
+                </span>
+                <span className="text-[10px] text-slate-400 font-mono">
+                  [TranID: {paymentSuccessNotice.tranId || 'N/A'}]
+                </span>
+              </div>
+              <div className="mt-3 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setReceiptInvoice(paymentSuccessNotice.invoice);
+                    setIsReceiptOpen(true);
+                  }}
+                  className="px-3 py-1.5 bg-teal-700 hover:bg-teal-800 text-white rounded-lg text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-colors"
+                >
+                  <Receipt className="w-3.5 h-3.5" />
+                  <span>{isKm ? 'មើលវិក្កយបត្រ Real-Time & បោះពុម្ព' : 'View Real-Time Invoice'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentSuccessNotice(null)}
+                  className="px-2.5 py-1.5 text-xs text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
+                >
+                  {isKm ? 'បិទ' : 'Dismiss'}
+                </button>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setPaymentSuccessNotice(null)}
+              className="p-1 text-slate-400 hover:text-slate-600 rounded-lg"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
         </div>
       )}

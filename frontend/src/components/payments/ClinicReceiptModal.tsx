@@ -118,6 +118,23 @@ export function ClinicReceiptModal({
           </div>
         </div>
 
+        {/* Real-time Settled Confirmation Alert (Hidden on Print) */}
+        {isPaid && (
+          <div className="no-print bg-emerald-50 border-b border-emerald-200 px-5 py-2.5 flex items-center justify-between text-emerald-800 text-xs animate-in fade-in duration-150">
+            <div className="flex items-center gap-2 font-medium">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>
+                {isKm
+                  ? 'ការទូទាត់ត្រូវបានផ្ទៀងផ្ទាត់ជោគជ័យ - វិក្កយបត្រ Real-Time'
+                  : 'Payment Verified Successfully - Real-Time Settled Invoice'}
+              </span>
+            </div>
+            <span className="font-mono text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded border border-emerald-300">
+              PAID & SETTLED
+            </span>
+          </div>
+        )}
+
         {/* Printable Receipt Container */}
         <div
           id="clinic-printable-receipt"

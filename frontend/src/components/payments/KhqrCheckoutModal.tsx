@@ -23,6 +23,8 @@ import {
   VolumeX,
   Maximize2,
   Minimize2,
+  Receipt,
+  Sparkles,
 } from 'lucide-react';
 import { playPaymentSuccessChime } from '../../lib/chime';
 import { ClinicReceiptModal } from './ClinicReceiptModal';
@@ -40,12 +42,13 @@ interface KhqrCheckoutModalProps {
       nameKh?: string;
       phone?: string;
     };
+    [key: string]: any;
   } | null;
   invoiceId?: string;
   clinicName?: string;
   clinicNameKh?: string;
-  onPaymentSuccess?: () => void;
-  onSuccess?: () => void;
+  onPaymentSuccess?: (settledInvoice?: any) => void;
+  onSuccess?: (settledInvoice?: any) => void;
 }
 
 type PaymentMethodType = 'aba' | 'card' | 'khqr' | 'wechat' | 'alipay';
@@ -75,6 +78,8 @@ export function KhqrCheckoutModal({
   const [isCustomerDisplay, setIsCustomerDisplay] = useState(false);
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [settledInvoiceData, setSettledInvoiceData] = useState<any>(null);
+  const [autoOpeningReceipt, setAutoOpeningReceipt] = useState(false);
 
   const [qrData, setQrData] = useState<{
     qrString: string;
@@ -93,6 +98,7 @@ export function KhqrCheckoutModal({
   const isPollingRef = useRef<boolean>(false);
   const activeRequestRef = useRef<number>(0);
   const consecutiveErrorsRef = useRef<number>(0);
+  const autoOpenTimerRef = useRef<NodeJS.Timeout | null>(null);
   const activeInvoiceId = invoiceId || invoice?.id;
   const paywayLiveUrl = qrData?.paywayLink || 'https://link.payway.com.kh/ABAPAYCK539089j';
   const storageKey = activeInvoiceId ? `clinic_active_payment_${activeInvoiceId}` : null;
@@ -116,18 +122,42 @@ export function KhqrCheckoutModal({
     }
   };
 
-  const handleSuccess = () => {
+  const handleSuccess = (customTranId?: string) => {
     clearPolling();
+    const effectiveTranId = customTranId || qrData?.tranId || 'TXN-' + Date.now();
+    const settledInv = {
+      ...(invoice || {}),
+      ...(qrData || {}),
+      id: activeInvoiceId,
+      invoiceNumber: qrData?.invoiceNumber || invoice?.invoiceNumber,
+      payableAmount: qrData?.amount || invoice?.payableAmount,
+      currency: qrData?.currency || invoice?.currency || 'USD',
+      status: 'PAID',
+      paidAt: new Date().toISOString(),
+      paymentMethod: selectedMethod === 'aba' ? 'KHQR_ABA' : 'KHQR',
+      transactions: [{ tranId: effectiveTranId, status: 'SUCCESS' }, ...(invoice?.transactions || [])],
+    };
+
+    setSettledInvoiceData(settledInv);
     setSettled(true);
     setSettling(false);
+    setAutoOpeningReceipt(true);
+
     if (soundEnabled) {
       playPaymentSuccessChime();
     }
     if (storageKey) {
       try { sessionStorage.removeItem(storageKey); } catch {}
     }
-    if (onPaymentSuccess) onPaymentSuccess();
-    if (onSuccess) onSuccess();
+
+    if (onPaymentSuccess) onPaymentSuccess(settledInv);
+
+    // Auto-launch the real-time invoice receipt modal after 1.8 seconds so cashier sees confirmation popup first
+    if (autoOpenTimerRef.current) clearTimeout(autoOpenTimerRef.current);
+    autoOpenTimerRef.current = setTimeout(() => {
+      setShowReceiptModal(true);
+      setAutoOpeningReceipt(false);
+    }, 1800);
   };
 
   // Safe polite polling with recursive setTimeout (4s interval) to prevent request overlapping or server spam
@@ -209,6 +239,15 @@ export function KhqrCheckoutModal({
 
       // If the invoice is already settled, show success screen immediately without polling
       if (res.alreadyPaid || res.status === 'PAID' || (invoice as any)?.status === 'PAID') {
+        const settledInv = {
+          ...(invoice || {}),
+          ...res,
+          payableAmount: res.amount || invoice?.payableAmount,
+          status: 'PAID',
+          paidAt: res.paidAt || (invoice as any)?.paidAt || new Date().toISOString(),
+          transactions: res.tranId ? [{ tranId: res.tranId, status: 'SUCCESS' }] : (invoice?.transactions || []),
+        };
+        setSettledInvoiceData(settledInv);
         setSettled(true);
         clearPolling();
         return;
@@ -484,48 +523,85 @@ export function KhqrCheckoutModal({
         {/* SETTLED SUCCESS SCREEN */}
         {settled ? (
           <div className="py-6 text-center space-y-4">
-            <div className="w-14 h-14 bg-emerald-50 border border-emerald-200 rounded-full flex items-center justify-center mx-auto text-emerald-600">
-              <CheckCircle2 className="w-8 h-8" />
+            <div className="relative w-16 h-16 mx-auto">
+              <div className="w-16 h-16 bg-emerald-50 border-2 border-emerald-400 rounded-full flex items-center justify-center text-emerald-600 shadow-sm animate-in zoom-in-75 duration-200">
+                <CheckCircle2 className="w-10 h-10 text-emerald-600" />
+              </div>
             </div>
+
             <div>
-              <h3 className="text-base font-semibold text-slate-900">
-                {isKm ? 'ការទូទាត់ត្រូវបានផ្ទៀងផ្ទាត់ជោគជ័យ' : 'Payment Successfully Verified'}
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider mb-2">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
+                <span>{isKm ? 'ការទូទាត់ជោគជ័យ' : 'Payment Confirmed'}</span>
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 tracking-tight">
+                {isKm ? 'ការទូទាត់ត្រូវបានផ្ទៀងផ្ទាត់ជោគជ័យ!' : 'Payment Successfully Verified!'}
               </h3>
               <p className="text-xs text-slate-500 mt-1">
                 {isKm ? 'ចំនួនទឹកប្រាក់ទូទាត់ ' : 'Settled amount '}
-                <span className="font-semibold text-slate-900">{formattedAmount}</span>
+                <span className="font-bold text-emerald-800 text-sm font-mono">{formattedAmount}</span>
                 {isKm ? ' សម្រាប់វិក្កយបត្រ ' : ' for '}
-                {invoiceNumber}
+                <span className="font-mono font-semibold text-slate-800">{invoiceNumber}</span>
               </p>
             </div>
-            <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs text-slate-600 max-w-sm mx-auto text-left space-y-1.5 font-mono">
-              <div className="flex justify-between">
-                <span className="text-slate-400">Transaction ID:</span>
-                <span className="font-medium text-slate-800">{qrData?.tranId}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400">Method:</span>
-                <span className="font-medium text-slate-800">
-                  {selectedMethod === 'aba' ? 'ABA Pay' : 'Bakong KHQR Bridge'}
+
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs text-slate-600 max-w-sm mx-auto text-left space-y-2 font-mono shadow-xs">
+              <div className="flex justify-between items-center pb-1.5 border-b border-slate-200/60">
+                <span className="text-slate-400 font-sans text-[11px]">{isKm ? 'អ្នកជំងឺ:' : 'Patient:'}</span>
+                <span className="font-semibold text-slate-800 font-sans text-xs">
+                  {invoice?.patient?.nameEn || invoice?.patient?.nameKh || 'Registered Patient'}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400">Status:</span>
-                <span className="font-semibold text-emerald-700">Settled (PAID)</span>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400 font-sans text-[11px]">{isKm ? 'លេខកូដប្រតិបត្តិការ:' : 'Transaction ID:'}</span>
+                <span className="font-medium text-slate-800">{settledInvoiceData?.transactions?.[0]?.tranId || qrData?.tranId || 'N/A'}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400 font-sans text-[11px]">{isKm ? 'វិធីសាស្ត្រ:' : 'Method:'}</span>
+                <span className="font-medium text-slate-800">
+                  {selectedMethod === 'aba' ? 'ABA Pay (Dynamic Tag 01=12)' : 'Bakong KHQR Bridge'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center pt-1.5 border-t border-slate-200/60">
+                <span className="text-slate-400 font-sans text-[11px]">{isKm ? 'ស្ថានភាព:' : 'Status:'}</span>
+                <span className="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 text-[11px]">
+                  Settled (PAID)
+                </span>
               </div>
             </div>
+
+            {/* Auto-opening banner */}
+            {autoOpeningReceipt && (
+              <div className="p-2.5 bg-teal-50 border border-teal-200 rounded-xl text-xs text-teal-800 flex items-center justify-center gap-2 animate-pulse">
+                <RefreshCw className="w-3.5 h-3.5 animate-spin text-teal-700" />
+                <span>
+                  {isKm
+                    ? 'កំពុងបើកវិក្កយបត្រ Real-Time ដោយស្វ័យប្រវត្តិ...'
+                    : 'Auto-opening real-time receipt in a moment...'}
+                </span>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
               <button
                 type="button"
-                onClick={() => setShowReceiptModal(true)}
+                onClick={() => {
+                  if (autoOpenTimerRef.current) clearTimeout(autoOpenTimerRef.current);
+                  setAutoOpeningReceipt(false);
+                  setShowReceiptModal(true);
+                }}
                 className="py-2.5 px-3 bg-teal-700 hover:bg-teal-800 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center justify-center gap-1.5"
               >
                 <Printer className="w-4 h-4" />
-                <span>{isKm ? 'បោះពុម្ពបង្កាន់ដៃផ្លូវការ' : 'Print Official Receipt'}</span>
+                <span>{isKm ? 'មើលវិក្កយបត្រ Real-Time & បោះពុម្ព' : 'View Real-Time Invoice & Print'}</span>
               </button>
               <button
                 type="button"
-                onClick={onClose}
+                onClick={() => {
+                  if (autoOpenTimerRef.current) clearTimeout(autoOpenTimerRef.current);
+                  if (onSuccess) onSuccess(settledInvoiceData);
+                  onClose();
+                }}
                 className="py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-colors"
               >
                 {isKm ? 'រួចរាល់ និងបិទ' : 'Done & Close'}
@@ -889,12 +965,18 @@ export function KhqrCheckoutModal({
     {/* Official Clinic Receipt Modal */}
     <ClinicReceiptModal
       isOpen={showReceiptModal}
-      onClose={() => setShowReceiptModal(false)}
+      onClose={() => {
+        setShowReceiptModal(false);
+        if (onSuccess) onSuccess(settledInvoiceData);
+        onClose();
+      }}
       invoice={
+        settledInvoiceData ||
         invoice || {
           ...qrData,
           payableAmount: qrData?.amount,
           status: 'PAID',
+          paidAt: new Date().toISOString(),
           transactions: qrData?.tranId ? [{ tranId: qrData.tranId }] : [],
         }
       }
