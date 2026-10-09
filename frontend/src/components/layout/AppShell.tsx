@@ -13,12 +13,12 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
   return (
     <AuthProvider>
       <I18nProvider>
-        <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900">
+        <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 w-full max-w-[100vw] overflow-x-hidden">
           <Navbar />
           <OfflineSyncBanner />
-          <div className="flex-1 flex max-w-7xl w-full mx-auto pb-20 md:pb-6">
+          <div className="flex-1 flex max-w-7xl w-full mx-auto pb-24 md:pb-6 min-w-0">
             <Sidebar />
-            <main className="flex-1 p-4 md:p-6 overflow-y-auto">
+            <main className="flex-1 min-w-0 max-w-full p-3 sm:p-4 md:p-6 overflow-x-hidden">
               {children}
             </main>
           </div>

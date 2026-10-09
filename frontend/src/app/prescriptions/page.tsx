@@ -249,7 +249,7 @@ export default function PrescriptionsPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4 self-end md:self-center">
+                  <div className="flex flex-wrap items-center justify-between md:justify-end gap-2.5 sm:gap-4 w-full md:w-auto pt-2 md:pt-0 border-t md:border-t-0 border-slate-100">
                     <div className="text-right">
                       <div className="text-base font-bold text-slate-900 font-mono">
                         ${Number(rx.totalAmount).toFixed(2)}
@@ -302,8 +302,8 @@ export default function PrescriptionsPage() {
                     <div className="text-xs font-semibold text-slate-700 mb-2 uppercase tracking-wider text-[11px]">
                       Medications Prescribed
                     </div>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-xs text-left">
+                    <div className="overflow-x-auto touch-scroll">
+                      <table className="w-full text-xs text-left min-w-[550px]">
                         <thead>
                           <tr className="border-b border-slate-200 text-slate-500 text-[11px]">
                             <th className="py-1.5 font-medium">Medicine</th>

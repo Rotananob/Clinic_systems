@@ -1,5 +1,6 @@
 // Offline & Synchronization Manager for Rotana Clinic
 // Local-First architecture using browser IndexedDB
+import { getApiBaseUrl } from './api';
 
 export type SyncState = 'OFFLINE' | 'LOCAL_SAVE' | 'SYNCING' | 'SYNCED' | 'SYNC_FAILED';
 
@@ -202,11 +203,20 @@ class OfflineSyncManager {
 
     let succeeded = 0;
     let failed = 0;
-    const token = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null;
+    const token =
+      typeof localStorage !== 'undefined'
+        ? localStorage.getItem('clinic_access_token') || localStorage.getItem('token')
+        : null;
+
+    const baseUrl = getApiBaseUrl();
 
     for (const item of pending) {
       try {
-        const res = await fetch(item.endpoint, {
+        const fullUrl = item.endpoint.startsWith('http')
+          ? item.endpoint
+          : `${baseUrl}${item.endpoint.startsWith('/') ? '' : '/'}${item.endpoint.replace(/^\/api\/?/, '')}`;
+
+        const res = await fetch(fullUrl, {
           method: item.method,
           headers: {
             'Content-Type': 'application/json',

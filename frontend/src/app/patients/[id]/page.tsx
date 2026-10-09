@@ -172,7 +172,7 @@ export default function Patient360Page() {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-200 gap-6 text-sm font-medium overflow-x-auto pb-1 sm:pb-0">
+      <div className="flex border-b border-slate-200 gap-4 sm:gap-6 text-xs sm:text-sm font-medium overflow-x-auto touch-scroll pb-1 sm:pb-0">
         <button
           onClick={() => setActiveTab('visits')}
           className={`pb-3 flex items-center gap-2 whitespace-nowrap transition-colors relative ${

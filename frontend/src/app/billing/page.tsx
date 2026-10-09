@@ -426,7 +426,7 @@ export default function BillingPage() {
                 </div>
 
                 {/* Right: Amount & KHQR Trigger */}
-                <div className="flex items-center gap-4 self-end md:self-center">
+                <div className="flex flex-wrap items-center justify-between md:justify-end gap-2.5 sm:gap-4 w-full md:w-auto pt-2 md:pt-0 border-t md:border-t-0 border-slate-100">
                   <div className="text-right font-mono">
                     <div className="text-base font-bold text-slate-900">
                       {inv.currency === 'KHR' ? '៛' : '$'}{Number(inv.payableAmount).toFixed(2)}

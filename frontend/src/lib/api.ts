@@ -1,4 +1,4 @@
-function getApiBaseUrl(): string {
+export function getApiBaseUrl(): string {
   if (typeof window !== 'undefined' && window.location.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
     return `http://${window.location.hostname}:4000/api`;
   }
@@ -27,23 +27,56 @@ class ApiClient {
     }
 
     const baseUrl = getApiBaseUrl();
-    const response = await fetch(`${baseUrl}${endpoint}`, {
-      ...options,
-      headers,
-    });
 
-    if (!response.ok) {
-      let errorMessage = `HTTP Error ${response.status}`;
-      try {
-        const errorData = await response.json();
-        errorMessage = errorData.message || errorData.error || errorMessage;
-      } catch {
-        // use default error message
+    try {
+      const response = await fetch(`${baseUrl}${endpoint}`, {
+        ...options,
+        headers,
+      });
+
+      if (!response.ok) {
+        let errorMessage = `HTTP Error ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorData.error || errorMessage;
+        } catch {
+          // use default error message
+        }
+        throw new Error(errorMessage);
       }
-      throw new Error(errorMessage);
-    }
 
-    return response.json();
+      return response.json();
+    } catch (err: any) {
+      // Offline fallback: if offline or network error, queue mutation in IndexedDB
+      const isMutation = options.method && options.method !== 'GET';
+      const isNetworkError =
+        (typeof navigator !== 'undefined' && !navigator.onLine) ||
+        err?.name === 'TypeError' ||
+        err?.message?.includes('fetch') ||
+        err?.message?.includes('Network');
+
+      if (isMutation && isNetworkError) {
+        try {
+          const { syncManager } = await import('./syncManager');
+          await syncManager.queueMutation({
+            endpoint,
+            method: options.method as any,
+            body: options.body ? JSON.parse(options.body as string) : null,
+            label: `${options.method} ${endpoint}`,
+          });
+
+          return {
+            id: `offline-${Date.now()}`,
+            _isOfflineQueued: true,
+            status: 'OFFLINE_SAVED',
+            message: 'Saved locally. Will sync when back online.',
+          } as any;
+        } catch (queueErr) {
+          console.error('Failed to queue offline mutation:', queueErr);
+        }
+      }
+      throw err;
+    }
   }
 
   // Authentication

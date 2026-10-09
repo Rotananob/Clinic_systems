@@ -199,21 +199,21 @@ export const ClinicLogo: React.FC<ClinicLogoProps> = ({
 
   // Default navbar variant
   return (
-    <div className={`flex items-center gap-3 ${className}`}>
+    <div className={`flex items-center gap-2 sm:gap-3 ${className}`}>
       <div className={`${getIconDimensions()} shrink-0`}>
         <EmblemSvg />
       </div>
-      <div>
+      <div className="min-w-0">
         <div className="flex items-center gap-1.5">
-          <span className="font-bold text-slate-900 leading-tight text-sm tracking-tight">
+          <span className="font-bold text-slate-900 leading-tight text-xs sm:text-sm tracking-tight truncate">
             មជ្ឈមណ្ឌល រតនា
           </span>
           <span className="hidden lg:inline-block px-1.5 py-0.2 rounded bg-teal-50 border border-teal-200 text-[9px] font-mono font-bold text-teal-800 uppercase">
             POLYCLINIC
           </span>
         </div>
-        <div className="text-[11px] text-slate-500 font-medium leading-tight">
-          Rotana Medical Management
+        <div className="text-[10px] sm:text-[11px] text-slate-500 font-medium leading-tight hidden min-[400px]:block truncate max-w-[150px]">
+          Rotana Medical
         </div>
       </div>
     </div>

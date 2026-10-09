@@ -63,7 +63,7 @@ export const Modal: React.FC<ModalProps> = ({
         </div>
 
         {/* Body */}
-        <div className="p-4 md:p-5 overflow-y-auto flex-1">{children}</div>
+        <div className="p-4 md:p-5 overflow-y-auto touch-scroll flex-1 pb-safe">{children}</div>
       </div>
     </div>
   );

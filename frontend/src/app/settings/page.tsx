@@ -274,7 +274,7 @@ export default function SettingsPage() {
       )}
 
       {/* Tab Navigation */}
-      <div className="flex border-b border-slate-200 gap-1 overflow-x-auto pb-px bg-white p-1 rounded-xl shadow-xs">
+      <div className="flex border-b border-slate-200 gap-1 overflow-x-auto touch-scroll pb-px bg-white p-1 rounded-xl shadow-xs">
         <button
           type="button"
           onClick={() => setActiveTab('profile')}

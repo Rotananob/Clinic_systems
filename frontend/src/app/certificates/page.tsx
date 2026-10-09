@@ -214,9 +214,10 @@ export default function CertificatesPage() {
         </div>
 
         {/* Right: Official A4 Printable Certificate Preview */}
-        <div className="lg:col-span-7 bg-white rounded-2xl border-2 border-slate-300 p-8 sm:p-12 shadow-xl print:shadow-none print:border-none print:p-0 print:m-0 print:w-full">
-          {/* Decorative Official Border for Cambodian Medical Certificate */}
-          <div className="border-4 border-double border-teal-900/30 p-6 sm:p-8 rounded-xl relative">
+        <div className="lg:col-span-7 overflow-x-auto touch-scroll -mx-2 sm:mx-0 p-1">
+          <div className="min-w-[320px] bg-white rounded-2xl border-2 border-slate-300 p-4 sm:p-8 md:p-12 shadow-xl print:shadow-none print:border-none print:p-0 print:m-0 print:w-full">
+            {/* Decorative Official Border for Cambodian Medical Certificate */}
+            <div className="border-4 border-double border-teal-900/30 p-4 sm:p-6 md:p-8 rounded-xl relative">
             {/* Header: Kingdom & Ministry */}
             <div className="text-center pb-4 border-b-2 border-slate-200">
               <div className="text-sm font-bold text-slate-900 tracking-wide font-sans">
@@ -343,5 +344,6 @@ export default function CertificatesPage() {
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 }

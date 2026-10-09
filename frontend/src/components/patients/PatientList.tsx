@@ -91,8 +91,8 @@ export const PatientList: React.FC = () => {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+          <div className="overflow-x-auto touch-scroll">
+            <table className="w-full text-left text-xs min-w-[560px]">
               <thead className="bg-slate-50 border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono">
                 <tr>
                   <th className="px-4 py-3">{t.patients.patientCode}</th>

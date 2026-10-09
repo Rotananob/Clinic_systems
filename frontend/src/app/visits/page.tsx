@@ -297,7 +297,7 @@ export default function VisitsPage() {
                 </div>
 
                 {/* Right: Status and Actions */}
-                <div className="flex items-center gap-3 self-end md:self-center shrink-0">
+                <div className="flex flex-wrap items-center justify-between md:justify-end gap-2.5 sm:gap-3 w-full md:w-auto pt-2 md:pt-0 border-t md:border-t-0 border-slate-100 shrink-0">
                   <span
                     className={`px-2.5 py-1 rounded-full text-[11px] font-semibold tracking-wide uppercase ${
                       v.status === 'COMPLETED'

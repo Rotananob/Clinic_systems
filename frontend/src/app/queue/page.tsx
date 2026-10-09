@@ -360,18 +360,18 @@ export default function QueuePage() {
           </span>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+        <div className="overflow-x-auto touch-scroll">
+          <table className="w-full text-left text-xs min-w-[620px]">
             <thead className={`border-b text-[11px] font-bold uppercase tracking-wider text-slate-400 ${
               isFullscreen ? 'border-slate-700 bg-slate-800' : 'border-slate-100 bg-slate-50'
             }`}>
               <tr>
-                <th className="px-6 py-3 font-mono">{t.queue.token}</th>
-                <th className="px-6 py-3">{t.queue.patient}</th>
-                <th className="px-6 py-3">{t.queue.department}</th>
-                <th className="px-6 py-3">{t.queue.status}</th>
-                <th className="px-6 py-3 font-mono">{t.queue.averageWaitTime}</th>
-                <th className="px-6 py-3 text-right">{t.common.actions}</th>
+                <th className="px-4 sm:px-6 py-3 font-mono">{t.queue.token}</th>
+                <th className="px-4 sm:px-6 py-3">{t.queue.patient}</th>
+                <th className="px-4 sm:px-6 py-3">{t.queue.department}</th>
+                <th className="px-4 sm:px-6 py-3">{t.queue.status}</th>
+                <th className="px-4 sm:px-6 py-3 font-mono">{t.queue.averageWaitTime}</th>
+                <th className="px-4 sm:px-6 py-3 text-right">{t.common.actions}</th>
               </tr>
             </thead>
             <tbody className={`divide-y ${isFullscreen ? 'divide-slate-700' : 'divide-slate-100'}`}>
