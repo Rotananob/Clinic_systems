@@ -822,6 +822,9 @@ export default function BillingPage() {
                 tranId: settledInv.transactions?.[0]?.tranId || 'N/A',
                 invoice: settledInv,
               });
+              if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('payment-confirmed', { detail: { invoice: settledInv } }));
+              }
             }
           }}
           onSuccess={(settledInv) => {
@@ -839,6 +842,9 @@ export default function BillingPage() {
                 tranId: settledInv.transactions?.[0]?.tranId || 'N/A',
                 invoice: settledInv,
               });
+              if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('payment-confirmed', { detail: { invoice: settledInv } }));
+              }
             }
           }}
         />
@@ -867,6 +873,9 @@ export default function BillingPage() {
               tranId: 'CASH-' + Date.now().toString().slice(-6),
               invoice: settledInv,
             });
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('payment-confirmed', { detail: { invoice: settledInv } }));
+            }
           }}
         />
       )}

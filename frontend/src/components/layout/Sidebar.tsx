@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   Settings,
   BarChart3,
+  LayoutTemplate,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from '../../context/I18nContext';
@@ -48,6 +49,7 @@ export const Sidebar: React.FC = () => {
     navItems.push({ label: t.nav.staff, href: '/staff', icon: ShieldCheck });
   }
 
+  navItems.push({ label: t.nav.invoiceTemplate, href: '/invoice-template', icon: LayoutTemplate });
   navItems.push({ label: t.nav.settings, href: '/settings', icon: Settings });
 
   return (

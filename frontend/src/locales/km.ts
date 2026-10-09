@@ -12,6 +12,7 @@ export const km = {
     reports: 'របាយការណ៍ & ស្ថិតិ',
     staff: 'គ្រប់គ្រងបុគ្គលិក',
     settings: 'ការកំណត់គ្លីនិក',
+    invoiceTemplate: 'រចនាម៉ូតវិក្កយបត្រ',
     logout: 'ចាកចេញពីប្រព័ន្ធ',
   },
   common: {
@@ -291,7 +292,7 @@ export const km = {
   },
   settings: {
     title: 'ការកំណត់រដ្ឋបាលគ្លីនិក',
-    subtitle: 'ការកំណត់ប្រព័ន្ធ ម៉ាកសញ្ញាគ្លីនិក ការបោះពុម្ព និងការតភ្ជាប់ Direct PayWay',
+    subtitle: 'ការកំណត់ប្រព័ន្ធ ម៉ាកសញ្ណាគ្លីនិក ការបោះពុម្ព និងការតភ្ជាប់ Direct PayWay',
     clinicProfile: 'ព័ត៌មានគ្លីនិក & ម៉ាកសញ្ញា',
     clinicNameKh: 'ឈ្មោះគ្លីនិក (ខ្មែរ)',
     clinicNameEn: 'ឈ្មោះគ្លីនិក (អង់គ្លេស)',
@@ -303,6 +304,8 @@ export const km = {
     receiptFooter: 'សារចុងវិក្កយបត្រ',
     directPayway: 'ការតភ្ជាប់ Direct PayWay & KHQR',
     saveSettings: 'រក្សាទុកការកំណត់',
+    invoiceTemplate: 'រចនាម៉ូតវិក្កយបត្រ',
+    hardware: 'ហាតវែរ & ឧបករណ៍',
   },
   vitalsAlerts: {
     normal: 'ធម្មតា',

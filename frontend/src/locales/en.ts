@@ -12,6 +12,7 @@ export const en = {
     reports: 'Reports & Analytics',
     staff: 'Staff Management',
     settings: 'Clinic Settings',
+    invoiceTemplate: 'Invoice Template',
     logout: 'Sign Out',
   },
   common: {
@@ -303,6 +304,8 @@ export const en = {
     receiptFooter: 'Receipt Footer Note',
     directPayway: 'Direct PayWay & KHQR Engine',
     saveSettings: 'Save Configuration',
+    invoiceTemplate: 'Invoice Template Designer',
+    hardware: 'Hardware & Peripherals',
   },
   vitalsAlerts: {
     normal: 'Normal',

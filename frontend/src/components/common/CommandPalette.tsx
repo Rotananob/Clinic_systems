@@ -24,6 +24,8 @@ import {
   X,
   Command,
   BarChart3,
+  LayoutTemplate,
+  Cpu,
 } from 'lucide-react';
 
 interface CommandItem {
@@ -194,6 +196,28 @@ export const CommandPalette: React.FC = () => {
       icon: FileCheck,
       action: () => {
         router.push('/certificates');
+        setIsOpen(false);
+      },
+    },
+    {
+      id: 'nav-invoice-template',
+      category: isKm ? 'ការរុករក' : 'Navigation',
+      title: isKm ? 'រចនាម៉ូតវិក្កយបត្រ (Invoice Template)' : 'Invoice Template Designer',
+      subtitle: isKm ? 'រចនារូបរាង Logo ពណ៌ និងទម្រង់បោះពុម្ព' : 'Customize invoice layouts, logo, colors & fonts',
+      icon: LayoutTemplate,
+      action: () => {
+        router.push('/invoice-template');
+        setIsOpen(false);
+      },
+    },
+    {
+      id: 'nav-hardware',
+      category: isKm ? 'ការរុករក' : 'Navigation',
+      title: isKm ? 'ហាតវែរ & ឧបករណ៍ (Hardware & Devices)' : 'Hardware & Peripherals',
+      subtitle: isKm ? 'តភ្ជាប់ម៉ាស៊ីនព្រីន POS កេសលុយ និងម៉ាស៊ីនស្កេន' : 'Connect thermal printers, cash drawer & barcode scanner',
+      icon: Cpu,
+      action: () => {
+        router.push('/settings');
         setIsOpen(false);
       },
     },

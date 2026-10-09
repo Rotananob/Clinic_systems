@@ -12,6 +12,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { FollowUpsModule } from './follow-ups/follow-ups.module';
 import { DocumentsModule } from './documents/documents.module';
 import { HealthModule } from './health/health.module';
+import { HardwareModule } from './hardware/hardware.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { HealthModule } from './health/health.module';
     FollowUpsModule,
     DocumentsModule,
     HealthModule,
+    HardwareModule,
   ],
 })
 export class AppModule {}
