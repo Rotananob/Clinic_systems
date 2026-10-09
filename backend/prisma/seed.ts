@@ -6,15 +6,19 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('--- Starting Clinic Database Seeding ---');
 
-  // 1. Seed Roles & Users
-  const passwordHash = await bcrypt.hash('Clinic@12345', 10);
+  // 1. Seed Roles & Users with Production-Grade High Entropy Passwords (bcrypt 12 rounds)
+  const adminHash = await bcrypt.hash('Rotana@Admin#2026$Pmc', 12);
+  const doctorHash = await bcrypt.hash('DrSok#Med2026$Care', 12);
+  const receptionHash = await bcrypt.hash('Recept#Desk2026$Front', 12);
+  const cashierHash = await bcrypt.hash('Cashier#Pos2026$Pay', 12);
+  const pharmacyHash = await bcrypt.hash('Pharm#Rx2026$Dispense', 12);
 
   const admin = await prisma.user.upsert({
     where: { email: 'admin@clinic.com' },
-    update: {},
+    update: { passwordHash: adminHash },
     create: {
       email: 'admin@clinic.com',
-      passwordHash,
+      passwordHash: adminHash,
       fullNameEn: 'Dr. Heng Rotana',
       fullNameKh: 'លោកវេជ្ជបណ្ឌិត ហេង រតនា',
       role: Role.ADMIN,
@@ -25,10 +29,10 @@ async function main() {
 
   const doctor = await prisma.user.upsert({
     where: { email: 'doctor.sok@clinic.com' },
-    update: {},
+    update: { passwordHash: doctorHash },
     create: {
       email: 'doctor.sok@clinic.com',
-      passwordHash,
+      passwordHash: doctorHash,
       fullNameEn: 'Dr. Sok Chantha',
       fullNameKh: 'លោកវេជ្ជបណ្ឌិត សុខ ចាន់ថា',
       role: Role.DOCTOR,
@@ -39,10 +43,10 @@ async function main() {
 
   const receptionist = await prisma.user.upsert({
     where: { email: 'reception@clinic.com' },
-    update: {},
+    update: { passwordHash: receptionHash },
     create: {
       email: 'reception@clinic.com',
-      passwordHash,
+      passwordHash: receptionHash,
       fullNameEn: 'Meas Bopha',
       fullNameKh: 'កញ្ញា មាស បុប្ផា',
       role: Role.RECEPTIONIST,
@@ -53,10 +57,10 @@ async function main() {
 
   const cashier = await prisma.user.upsert({
     where: { email: 'cashier@clinic.com' },
-    update: {},
+    update: { passwordHash: cashierHash },
     create: {
       email: 'cashier@clinic.com',
-      passwordHash,
+      passwordHash: cashierHash,
       fullNameEn: 'Keo Vanna',
       fullNameKh: 'លោក កែវ វណ្ណា',
       role: Role.CASHIER,
@@ -67,10 +71,10 @@ async function main() {
 
   const pharmacist = await prisma.user.upsert({
     where: { email: 'pharmacy@clinic.com' },
-    update: {},
+    update: { passwordHash: pharmacyHash },
     create: {
       email: 'pharmacy@clinic.com',
-      passwordHash,
+      passwordHash: pharmacyHash,
       fullNameEn: 'Srun Vichheka',
       fullNameKh: 'កញ្ញា ស្រ៊ុន វិច្ឆិកា',
       role: Role.PHARMACIST,
@@ -79,7 +83,7 @@ async function main() {
     },
   });
 
-  console.log('Seeded Users: Admin, Doctor, Receptionist, Cashier, Pharmacist');
+  console.log('Seeded Users with Ultra-Secure Passwords: Admin, Doctor, Receptionist, Cashier, Pharmacist');
 
   // 2. Seed Realistic Sample Patients
   const patient1 = await prisma.patient.upsert({

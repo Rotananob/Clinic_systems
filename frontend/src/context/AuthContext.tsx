@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { api } from '../lib/api';
 
 interface User {
@@ -17,6 +17,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, pass: string) => Promise<void>;
   logout: () => void;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -25,6 +26,7 @@ const AuthContext = createContext<AuthContextType>({
   isLoading: true,
   login: async () => {},
   logout: () => {},
+  refreshProfile: async () => {},
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -32,37 +34,60 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const savedToken = localStorage.getItem('clinic_access_token');
-    const savedUser = localStorage.getItem('clinic_user');
-    if (savedToken && savedUser) {
-      setToken(savedToken);
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch {
-        localStorage.removeItem('clinic_user');
-      }
+  const logout = useCallback(() => {
+    try {
+      localStorage.removeItem('clinic_access_token');
+      localStorage.removeItem('clinic_user');
+    } catch {
+      // ignore
     }
-    setIsLoading(false);
+    setToken(null);
+    setUser(null);
   }, []);
+
+  const refreshProfile = useCallback(async () => {
+    const savedToken = typeof window !== 'undefined' ? localStorage.getItem('clinic_access_token') : null;
+    if (!savedToken) {
+      setUser(null);
+      setToken(null);
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const verifiedUser = await api.auth.me();
+      if (verifiedUser && verifiedUser.id) {
+        setUser(verifiedUser);
+        setToken(savedToken);
+        localStorage.setItem('clinic_user', JSON.stringify(verifiedUser));
+      } else {
+        logout();
+      }
+    } catch {
+      // If server unreachable or token invalid, clear
+      logout();
+    } finally {
+      setIsLoading(false);
+    }
+  }, [logout]);
+
+  useEffect(() => {
+    refreshProfile();
+  }, [refreshProfile]);
 
   const login = async (email: string, pass: string) => {
     const res = await api.auth.login({ email, password: pass });
+    if (!res || !res.accessToken || !res.user) {
+      throw new Error('Invalid credentials');
+    }
     localStorage.setItem('clinic_access_token', res.accessToken);
     localStorage.setItem('clinic_user', JSON.stringify(res.user));
     setToken(res.accessToken);
     setUser(res.user);
   };
 
-  const logout = () => {
-    localStorage.removeItem('clinic_access_token');
-    localStorage.removeItem('clinic_user');
-    setToken(null);
-    setUser(null);
-  };
-
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, logout, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

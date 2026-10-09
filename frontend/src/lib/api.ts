@@ -38,10 +38,22 @@ class ApiClient {
         let errorMessage = `HTTP Error ${response.status}`;
         try {
           const errorData = await response.json();
-          errorMessage = errorData.message || errorData.error || errorMessage;
+          if (Array.isArray(errorData?.message)) {
+            errorMessage = errorData.message.join('. ');
+          } else {
+            errorMessage = errorData?.message || errorData?.error || errorMessage;
+          }
         } catch {
           // use default error message
         }
+
+        if (response.status === 401 && typeof window !== 'undefined') {
+          if (!window.location.pathname.includes('/login')) {
+            localStorage.removeItem('clinic_access_token');
+            localStorage.removeItem('clinic_user');
+          }
+        }
+
         throw new Error(errorMessage);
       }
 

@@ -117,35 +117,49 @@ export function ClinicReceiptModal({
   const footerNoteEn = cfg?.footerNoteEn ?? 'Thank you for choosing Rotana Clinic. Wish you a speedy recovery!';
   const footerNoteKh = cfg?.footerNoteKh ?? 'សូមអរគុណចំពោះការជឿទុកចិត្ត! សូមជូនពរលោកអ្នកឆាប់ជាសះស្បើយ!';
 
+  const isThermal = cfg?.paperSize === '80MM_THERMAL';
   const printMaxWidth =
     cfg?.paperSize === 'A4_STANDARD'
       ? '210mm'
       : cfg?.paperSize === 'A5_HALF'
       ? '148mm'
-      : '80mm';
+      : '76mm';
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
       {/* Print Styles Injection */}
       <style jsx global>{`
         @media print {
+          @page {
+            size: ${isThermal ? '80mm auto' : cfg?.paperSize === 'A5_HALF' ? '148mm 210mm' : 'A4 portrait'};
+            margin: ${isThermal ? '0mm' : '10mm'};
+          }
+          html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #fff !important;
+            width: 100% !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
           body * {
-            visibility: hidden;
+            visibility: hidden !important;
           }
           #clinic-printable-receipt,
           #clinic-printable-receipt * {
-            visibility: visible;
+            visibility: visible !important;
           }
           #clinic-printable-receipt {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            max-width: ${printMaxWidth};
-            margin: 0 auto;
-            padding: 12px;
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            max-width: ${printMaxWidth} !important;
+            margin: 0 auto !important;
+            padding: ${isThermal ? '2mm 3mm' : '8mm'} !important;
             box-shadow: none !important;
             border: none !important;
+            background: #fff !important;
           }
           .no-print {
             display: none !important;
@@ -216,12 +230,12 @@ export function ClinicReceiptModal({
           )}
 
           {/* Clinic Header */}
-          <div style={headerBgStyle} className="pb-3 border-b border-dashed border-slate-300 space-y-1.5 p-6 pb-4">
+          <div style={headerBgStyle} className={`pb-3 border-b border-dashed border-slate-300 space-y-1.5 ${isThermal ? 'p-3 pb-2' : 'p-6 pb-4'}`}>
             {(cfg?.showLogo ?? true) && (
               cfg?.logoUrl ? (
                 <div className="flex justify-center mb-2">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={cfg.logoUrl} alt="Clinic Logo" className="h-14 object-contain" />
+                  <img src={cfg.logoUrl} alt="Clinic Logo" className={`${isThermal ? 'h-10' : 'h-14'} object-contain`} />
                 </div>
               ) : (
                 <div className="flex justify-center">
@@ -231,22 +245,22 @@ export function ClinicReceiptModal({
             )}
             {(cfg?.showClinicName ?? true) && (
               <div className="text-center">
-                <p className="font-bold text-sm">{clinicInfo.nameEn}</p>
-                <p className="text-[11px] opacity-80">{clinicInfo.nameKh}</p>
+                <p className={`font-bold ${isThermal ? 'text-xs' : 'text-sm'}`}>{clinicInfo.nameEn}</p>
+                <p className="text-[10px] opacity-80">{clinicInfo.nameKh}</p>
               </div>
             )}
             {(cfg?.showMohLicense ?? true) && clinicInfo.license && (
-              <p className="text-[11px] text-slate-500 text-center">{clinicInfo.license}</p>
+              <p className="text-[10px] text-slate-500 text-center">{clinicInfo.license}</p>
             )}
             {(cfg?.showClinicAddress ?? true) && clinicInfo.address && (
-              <p className="text-[11px] text-slate-500 text-center leading-tight">{clinicInfo.address}</p>
+              <p className="text-[10px] text-slate-500 text-center leading-tight">{clinicInfo.address}</p>
             )}
             {(cfg?.showClinicPhone ?? true) && clinicInfo.phone && (
-              <p className="text-[11px] text-slate-500 text-center">Tel: {clinicInfo.phone}</p>
+              <p className="text-[10px] text-slate-500 text-center">Tel: {clinicInfo.phone}</p>
             )}
           </div>
 
-          <div className="px-6 space-y-4">
+          <div className={`${isThermal ? 'px-3 space-y-2.5' : 'px-6 space-y-4'}`}>
             {/* Receipt Title & Status Stamp */}
             <div className="flex items-center justify-between pt-1">
               <div>

@@ -7,6 +7,8 @@ import { KhqrCheckoutModal } from '../../components/payments/KhqrCheckoutModal';
 import { ClinicReceiptModal } from '../../components/payments/ClinicReceiptModal';
 import { CashPaymentModal } from '../../components/payments/CashPaymentModal';
 import { useTranslation } from '../../context/I18nContext';
+import { useToast } from '../../context/ToastContext';
+import { getHumanErrorMessage } from '../../lib/errorHandler';
 import {
   CreditCard,
   Search,
@@ -44,6 +46,7 @@ const servicePresets = [
 export default function BillingPage() {
   const { locale } = useTranslation();
   const isKm = locale === 'km';
+  const toast = useToast();
   const [invoices, setInvoices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -129,8 +132,13 @@ export default function BillingPage() {
       setIsEditOpen(false);
       setEditingInvoice(null);
       await fetchInvoices();
-    } catch (err: any) {
-      alert(err.message || 'Failed to update invoice');
+      toast.success(
+        isKm
+          ? 'បានកែប្រែទិន្នន័យវិក្កយបត្រដោយជោគជ័យ'
+          : 'Invoice updated successfully.',
+      );
+    } catch (err: unknown) {
+      toast.error(getHumanErrorMessage(err, locale));
     } finally {
       setEditLoading(false);
     }
@@ -155,12 +163,18 @@ export default function BillingPage() {
   const handleCreateQuickInvoice = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!quickForm.nameEn.trim() || !quickForm.amount) {
-      alert(isKm ? 'សូមបញ្ចូលឈ្មោះអ្នកជំងឺ និងចំនួនទឹកប្រាក់' : 'Please enter patient name and amount');
+      toast.error(
+        isKm
+          ? 'សូមបញ្ចូលឈ្មោះអ្នកជំងឺ និងចំនួនទឹកប្រាក់'
+          : 'Please enter patient name and amount.',
+      );
       return;
     }
     const amt = parseFloat(quickForm.amount);
     if (isNaN(amt) || amt <= 0) {
-      alert(isKm ? 'ចំនួនទឹកប្រាក់មិនត្រឹមត្រូវ' : 'Invalid amount');
+      toast.error(
+        isKm ? 'ចំនួនទឹកប្រាក់មិនត្រឹមត្រូវ' : 'Invalid amount entered.',
+      );
       return;
     }
 
@@ -186,12 +200,17 @@ export default function BillingPage() {
       setIsQuickModalOpen(false);
       fetchInvoices();
 
+      toast.success(
+        isKm
+          ? 'បានបង្កើតវិក្កយបត្រថ្មីដោយជោគជ័យ'
+          : 'New invoice generated successfully.',
+      );
+
       // Immediately show KHQR on screen for patient to scan
       setSelectedInvoice(createdInvoice);
       setIsCheckoutOpen(true);
-    } catch (err: any) {
-      console.error('Failed to create quick invoice', err);
-      alert(err?.message || 'Failed to create invoice');
+    } catch (err: unknown) {
+      toast.error(getHumanErrorMessage(err, locale));
     } finally {
       setQuickLoading(false);
     }
