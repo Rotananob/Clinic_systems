@@ -20,13 +20,34 @@ export class TelegramController {
     return this.telegramService.getPublicStatus();
   }
 
-  @ApiOperation({ summary: '1-Click Connect Telegram Bot and Auto-Create Topics' })
+  @ApiOperation({ summary: 'Start 1-Click pairing session with deep link' })
+  @Post('start-pairing')
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  startPairing() {
+    return this.telegramService.startPairingSession();
+  }
+
+  @ApiOperation({ summary: 'Get current pairing session status' })
+  @Get('pairing-status')
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  getPairingStatus() {
+    return this.telegramService.getPairingStatus();
+  }
+
+  @ApiOperation({ summary: 'Check admin privileges and create forum topics if newly granted' })
+  @Post('check-admin-topics')
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  checkAdminTopics() {
+    return this.telegramService.checkAdminAndCreateTopics();
+  }
+
+  @ApiOperation({ summary: 'Manual connect Telegram Bot with Chat ID' })
   @Post('connect')
   @Roles(Role.SUPER_ADMIN, Role.ADMIN)
   async connect(
     @Body()
     dto: {
-      botToken: string;
+      botToken?: string;
       chatId: string;
       autoCreateTopics?: boolean;
     },

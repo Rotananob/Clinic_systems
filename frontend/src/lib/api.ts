@@ -354,7 +354,10 @@ class ApiClient {
   // Telegram Bot & Topics Bridge
   telegram = {
     getStatus: () => this.request<any>('/telegram/status'),
-    connect: (data: { botToken: string; chatId: string; autoCreateTopics?: boolean }) =>
+    startPairing: () => this.request<any>('/telegram/start-pairing', { method: 'POST' }),
+    getPairingStatus: () => this.request<any>('/telegram/pairing-status'),
+    checkAdminTopics: () => this.request<any>('/telegram/check-admin-topics', { method: 'POST' }),
+    connect: (data: { botToken?: string; chatId: string; autoCreateTopics?: boolean }) =>
       this.request<any>('/telegram/connect', {
         method: 'POST',
         body: JSON.stringify(data),
