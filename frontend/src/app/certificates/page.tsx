@@ -28,7 +28,7 @@ export default function CertificatesPage() {
     age: '28',
     gender: 'Male (ប្រុស)',
     nationalId: '010293847',
-    doctorName: 'Dr. Heng Rotana (វេជ្ជ. ហេង រតនា)',
+    doctorName: 'Dr. Houn Vannak (វេជ្ជ. ហួន វណ្ណៈ)',
     doctorLicense: 'MOH-DOC-9842',
     diagnosis: 'Acute Upper Respiratory Tract Infection (J06.9) with Moderate Fever',
     daysOff: '3',
@@ -89,7 +89,7 @@ export default function CertificatesPage() {
           <table style="border: none; margin: 0;">
             <tr style="border: none;">
               <td style="border: none; padding: 0;">
-                <div style="font-size: 14pt; font-weight: bold; color: #0f766e;">ROTANA MEDICAL CLINIC</div>
+                <div style="font-size: 14pt; font-weight: bold; color: #0f766e;">មន្ទីរសម្រាកព្យាបាល ហួន វណ្ណៈ (HOUN VANNAK CLINIC)</div>
                 <div style="font-size: 9pt; color: #64748b;">MOH License No: 1842/26 • Phnom Penh, Cambodia</div>
               </td>
               <td style="border: none; padding: 0; text-align: right; font-size: 9.5pt; color: #475569;">

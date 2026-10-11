@@ -3,7 +3,7 @@ import './globals.css';
 import { AppShell } from '../components/layout/AppShell';
 
 export const metadata: Metadata = {
-  title: 'Rotana Clinic Management System',
+  title: 'ពេទ្យ ហួន វណ្ណៈ - ប្រព័ន្ធគ្រប់គ្រងគ្លីនិក (Houn Vannak Clinic)',
   description: 'Enterprise Clinic Management with Real-time KHQR Bridge and Local-First Offline Sync',
   manifest: '/manifest.json',
   icons: {
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Rotana Clinic',
+    title: 'ពេទ្យ ហួន វណ្ណៈ',
   },
 };
 

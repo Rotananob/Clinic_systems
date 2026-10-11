@@ -56,7 +56,7 @@ export const en = {
   },
   auth: {
     portalTitle: 'Staff Portal Login',
-    portalSubtitle: 'Rotana Medical Center & Polyclinic',
+    portalSubtitle: 'Houn Vannak Medical Clinic & Polyclinic',
     emailLabel: 'Staff Email Address',
     passwordLabel: 'Access Password',
     signInBtn: 'Sign In to Dashboard',
@@ -160,7 +160,7 @@ export const en = {
     completed: 'Completed',
     callNext: 'Call Next Patient',
     recall: 'Recall Patient',
-    room1: 'Consultation Room 1 (Dr. Heng Rotana)',
+    room1: 'Consultation Room 1 (Dr. Houn Vannak)',
     room2: 'Consultation Room 2 (Dr. Sok Chantha)',
     triageRoom: 'Triage & Vital Signs Desk',
     pharmacyDesk: 'Pharmacy Dispensing Counter',
@@ -228,7 +228,7 @@ export const en = {
     paidAmount: 'Paid Amount',
     settledVia: 'Payment Method',
     transactionId: 'Bank Reference / Tran ID',
-    thankYou: 'Thank you for trusting Rotana Medical Center. Wishing you a speedy recovery!',
+    thankYou: 'Thank you for trusting Houn Vannak Medical Clinic. Wishing you a speedy recovery!',
   },
   certificates: {
     title: 'Medical Certificate & Sick Leave',
@@ -319,7 +319,7 @@ export const en = {
     bradycardia: 'Bradycardia (Low Pulse)',
   },
   pwa: {
-    installPrompt: 'Install Rotana Clinic App on your device for quick access and offline records',
+    installPrompt: 'Install Houn Vannak Clinic App on your device for quick access and offline records',
     installBtn: 'Install App',
     offlineBanner: 'Offline Mode: Changes will be saved locally and synchronized automatically when network returns.',
     onlineSyncBanner: 'Network Restored: Synchronizing queued records with clinic server...',

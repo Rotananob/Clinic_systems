@@ -138,8 +138,8 @@ export class PaymentsService {
     const paywayLink =
       this.configService.get<string>('PAYWAY_PAYMENT_URL') ||
       'https://link.payway.com.kh/ABAPAYCK539089j';
-    const bakongId = this.configService.get<string>('BAKONG_ACCOUNT_ID') || 'rotana_clinic@aba';
-    const merchantName = this.configService.get<string>('BAKONG_MERCHANT_NAME') || 'Rotana Clinic';
+    const bakongId = this.configService.get<string>('BAKONG_ACCOUNT_ID') || 'houn_vannak_clinic@aba';
+    const merchantName = this.configService.get<string>('BAKONG_MERCHANT_NAME') || 'Houn Vannak Clinic';
     const merchantCity = this.configService.get<string>('BAKONG_MERCHANT_CITY') || 'Phnom Penh';
     const amount = Number(invoice.payableAmount);
     const currency = (invoice.currency as 'USD' | 'KHR') || 'USD';

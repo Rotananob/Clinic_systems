@@ -61,8 +61,8 @@ export const DEFAULT_TEMPLATE_CONFIG: InvoiceTemplateConfig = {
   showItemizedServices: true,
   showKhrEquivalent: true,
 
-  footerNoteEn: 'Thank you for choosing Rotana Clinic. Wish you a speedy recovery!',
-  footerNoteKh: 'សូមអរគុណចំពោះការជឿទុកចិត្ត! សូមជូនពរលោកអ្នកឆាប់ជាសះស្បើយ!',
+  footerNoteEn: 'Thank you for choosing Houn Vannak Clinic. Wish you a speedy recovery!',
+  footerNoteKh: 'សូមអរគុណចំពោះការជឿទុកចិត្តលើ ពេទ្យ ហួន វណ្ណៈ! សូមជូនពរលោកអ្នកឆាប់ជាសះស្បើយ!',
   showFooterSignatureLine: false,
   showKhqrOnReceipt: false,
   showAbaReference: true,

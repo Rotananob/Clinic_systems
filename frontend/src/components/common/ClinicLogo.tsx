@@ -144,10 +144,10 @@ export const ClinicLogo: React.FC<ClinicLogoProps> = ({
         </div>
         <div className="text-left">
           <div className="text-[13px] font-bold text-slate-900 leading-tight tracking-wide font-sans">
-            មជ្ឈមណ្ឌលវេជ្ជសាស្ត្រ រតនា
+            មន្ទីរសម្រាកព្យាបាល ហួន វណ្ណៈ
           </div>
           <div className="text-xs font-bold text-slate-800 tracking-wider font-mono uppercase">
-            ROTANA MEDICAL CENTER & POLYCLINIC
+            HOUN VANNAK MEDICAL CLINIC & POLYCLINIC
           </div>
           <div className="text-[10px] text-slate-500 font-sans mt-0.5">
             Ministry of Health Reg. No: MOH-KHM-2026-9908 • 24/7 Outpatient & Emergency
@@ -165,10 +165,10 @@ export const ClinicLogo: React.FC<ClinicLogoProps> = ({
         </div>
         <div className="min-w-0 flex-1">
           <div className="text-xs font-bold text-slate-900 truncate leading-tight">
-            មជ្ឈមណ្ឌល រតនា
+            ពេទ្យ ហួន វណ្ណៈ
           </div>
           <div className="text-[11px] font-bold text-teal-800 font-mono tracking-tight truncate">
-            ROTANA CLINIC
+            HOUN VANNAK CLINIC
           </div>
           <div className="text-[10px] text-slate-400 truncate">Smart Health & KHQR</div>
         </div>
@@ -183,10 +183,10 @@ export const ClinicLogo: React.FC<ClinicLogoProps> = ({
           <EmblemSvg />
         </div>
         <div className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
-          មជ្ឈមណ្ឌលវេជ្ជសាស្ត្រ រតនា
+          មន្ទីរសម្រាកព្យាបាល ហួន វណ្ណៈ
         </div>
         <div className="text-xs sm:text-sm font-semibold text-teal-800 font-mono tracking-wider uppercase mt-0.5">
-          ROTANA MEDICAL CENTER
+          HOUN VANNAK MEDICAL CLINIC
         </div>
         {showSubtitle && (
           <p className="text-[11px] sm:text-xs text-slate-500 mt-1 max-w-xs">
@@ -206,14 +206,14 @@ export const ClinicLogo: React.FC<ClinicLogoProps> = ({
       <div className="min-w-0">
         <div className="flex items-center gap-1.5">
           <span className="font-bold text-slate-900 leading-tight text-xs sm:text-sm tracking-tight truncate">
-            មជ្ឈមណ្ឌល រតនា
+            ពេទ្យ ហួន វណ្ណៈ
           </span>
           <span className="hidden lg:inline-block px-1.5 py-0.2 rounded bg-teal-50 border border-teal-200 text-[9px] font-mono font-bold text-teal-800 uppercase">
-            POLYCLINIC
+            CLINIC
           </span>
         </div>
         <div className="text-[10px] sm:text-[11px] text-slate-500 font-medium leading-tight hidden min-[400px]:block truncate max-w-[150px]">
-          Rotana Medical
+          Houn Vannak Medical
         </div>
       </div>
     </div>
