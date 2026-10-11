@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
-import { Search, Plus, Phone, Calendar, ArrowRight, ShieldAlert, Loader2 } from 'lucide-react';
+import { Search, Plus, Phone, Calendar, ArrowRight, ShieldAlert, Loader2, Download } from 'lucide-react';
 import { RegisterPatientDrawer } from './RegisterPatientDrawer';
 import { useTranslation } from '../../context/I18nContext';
 
@@ -41,6 +41,42 @@ export const PatientList: React.FC = () => {
     setTotal(total + 1);
   };
 
+  const handleExportCsv = () => {
+    if (patients.length === 0) return;
+    const headers = [
+      'Patient Code',
+      'Full Name (EN)',
+      'Full Name (KH)',
+      'Gender',
+      'Phone',
+      'Blood Type',
+      'Date of Birth',
+      'Registered Date',
+    ];
+    const rows = patients.map((p) => [
+      `"${p.patientCode || ''}"`,
+      `"${(p.nameEn || '').replace(/"/g, '""')}"`,
+      `"${(p.nameKh || '').replace(/"/g, '""')}"`,
+      `"${p.gender || ''}"`,
+      `"${p.phone || ''}"`,
+      `"${p.bloodType || ''}"`,
+      `"${p.dateOfBirth ? new Date(p.dateOfBirth).toISOString().split('T')[0] : ''}"`,
+      `"${p.createdAt ? new Date(p.createdAt).toISOString().split('T')[0] : ''}"`,
+    ]);
+
+    const csvContent =
+      '\ufeff' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `rotana_clinic_patients_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-4">
       {/* Action Header */}
@@ -50,13 +86,25 @@ export const PatientList: React.FC = () => {
           <p className="text-xs text-slate-500">{t.patients.subtitle}</p>
         </div>
 
-        <button
-          onClick={() => setIsRegisterOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-teal-700 hover:bg-teal-800 text-white rounded-xl text-xs font-semibold transition-colors shadow-xs self-start sm:self-auto"
-        >
-          <Plus className="w-4 h-4" />
-          <span>{t.patients.registerNew}</span>
-        </button>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <button
+            onClick={handleExportCsv}
+            disabled={patients.length === 0}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white hover:bg-slate-50 disabled:opacity-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-semibold transition-colors shadow-2xs"
+            title="Export to Excel / CSV"
+          >
+            <Download className="w-3.5 h-3.5 text-slate-500" />
+            <span>{isKm ? 'ទាញយក Excel / CSV' : 'Export Excel / CSV'}</span>
+          </button>
+
+          <button
+            onClick={() => setIsRegisterOpen(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-teal-700 hover:bg-teal-800 text-white rounded-xl text-xs font-semibold transition-colors shadow-xs"
+          >
+            <Plus className="w-4 h-4" />
+            <span>{t.patients.registerNew}</span>
+          </button>
+        </div>
       </div>
 
       {/* Search Bar */}

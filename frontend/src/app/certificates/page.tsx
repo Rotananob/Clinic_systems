@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   AlertCircle,
   Plus,
+  Download,
 } from 'lucide-react';
 
 export default function CertificatesPage() {
@@ -43,6 +44,129 @@ export default function CertificatesPage() {
     window.print();
   };
 
+  const handleExportWord = () => {
+    const titleKm =
+      certData.certType === 'SICK_LEAVE'
+        ? 'លិខិតបញ្ជាក់ឈប់សម្រាកព្យាបាលជំងឺ'
+        : certData.certType === 'FITNESS'
+        ? 'លិខិតបញ្ជាក់កាយសម្បទា'
+        : 'លិខិតបញ្ជូនអ្នកជំងឺ';
+
+    const titleEn =
+      certData.certType === 'SICK_LEAVE'
+        ? 'OFFICIAL MEDICAL CERTIFICATE / SICK LEAVE'
+        : certData.certType === 'FITNESS'
+        ? 'CERTIFICATE OF MEDICAL FITNESS'
+        : 'MEDICAL REFERRAL LETTER';
+
+    const wordHtml = `
+      <html xmlns:o='urn:schemas-microsoft-com:office:office'
+            xmlns:w='urn:schemas-microsoft-com:office:word'
+            xmlns='http://www.w3.org/TR/REC-html40'>
+      <head>
+        <meta charset='utf-8'>
+        <title>${titleKm}</title>
+        <style>
+          @page { size: A4; margin: 2.5cm; }
+          body { font-family: 'Khmer OS Siemreap', 'Segoe UI', Calibri, Arial, sans-serif; font-size: 11pt; color: #1e293b; line-height: 1.6; }
+          .center { text-align: center; }
+          .title-kh { font-size: 16pt; font-weight: bold; color: #042f2e; margin: 0; }
+          .title-en { font-size: 11pt; font-weight: bold; color: #0f766e; margin-top: 4px; letter-spacing: 1px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          td, th { padding: 10px 12px; border: 1px solid #cbd5e1; font-size: 10.5pt; vertical-align: top; }
+          .label { font-weight: bold; width: 32%; background-color: #f8fafc; color: #334155; }
+          .value { width: 68%; }
+        </style>
+      </head>
+      <body>
+        <div class="center" style="margin-bottom: 25px;">
+          <div style="font-size: 13pt; font-weight: bold;">ព្រះរាជាណាចក្រកម្ពុជា</div>
+          <div style="font-size: 11pt; font-weight: bold; letter-spacing: 2px;">KINGDOM OF CAMBODIA</div>
+          <div style="font-size: 9.5pt; color: #475569;">ជាតិ សាសនា ព្រះមហាក្សត្រ • NATION RELIGION KING</div>
+        </div>
+
+        <div style="border-bottom: 2px solid #0f766e; padding-bottom: 12px; margin-bottom: 20px;">
+          <table style="border: none; margin: 0;">
+            <tr style="border: none;">
+              <td style="border: none; padding: 0;">
+                <div style="font-size: 14pt; font-weight: bold; color: #0f766e;">ROTANA MEDICAL CLINIC</div>
+                <div style="font-size: 9pt; color: #64748b;">MOH License No: 1842/26 • Phnom Penh, Cambodia</div>
+              </td>
+              <td style="border: none; padding: 0; text-align: right; font-size: 9.5pt; color: #475569;">
+                <div>Ref No: <b>${certData.certNumber}</b></div>
+                <div>Issue Date: <b>${certData.startDate}</b></div>
+              </td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="center" style="margin-bottom: 20px;">
+          <div class="title-kh">${titleKm}</div>
+          <div class="title-en">${titleEn}</div>
+        </div>
+
+        <table>
+          <tr>
+            <td class="label">ឈ្មោះអ្នកជំងឺ / Patient Name</td>
+            <td class="value"><b>${certData.patientName}</b> (Code: ${certData.patientCode})</td>
+          </tr>
+          <tr>
+            <td class="label">អាយុ & ភេទ / Age & Gender</td>
+            <td class="value">${certData.age} ឆ្នាំ / Years • ${certData.gender}</td>
+          </tr>
+          <tr>
+            <td class="label">អត្តសញ្ញាណប័ណ្ណ / National ID</td>
+            <td class="value">${certData.nationalId || 'N/A'}</td>
+          </tr>
+          <tr>
+            <td class="label">ការធ្វើរោគវិនិច្ឆ័យ / Diagnosis</td>
+            <td class="value"><b style="color: #b91c1c;">${certData.diagnosis}</b></td>
+          </tr>
+          ${
+            certData.certType === 'SICK_LEAVE'
+              ? `<tr>
+                  <td class="label">រយៈពេលឈប់សម្រាក / Sick Leave</td>
+                  <td class="value">
+                    <b>${certData.daysOff} ថ្ងៃ / Days</b> (ចាប់ពី <b>${certData.startDate}</b> ដល់ <b>${certData.endDate}</b>)
+                  </td>
+                </tr>`
+              : ''
+          }
+          <tr>
+            <td class="label">ការណែនាំវេជ្ជសាស្ត្រ / Clinical Remarks</td>
+            <td class="value">${certData.remarks}</td>
+          </tr>
+        </table>
+
+        <div style="margin-top: 40px;">
+          <table style="border: none;">
+            <tr style="border: none;">
+              <td style="border: none; width: 50%;"></td>
+              <td style="border: none; width: 50%; text-align: center;">
+                <div style="font-size: 10pt; color: #475569;">រាជធានីភ្នំពេញ, ថ្ងៃទី ${certData.issuedDate}</div>
+                <div style="font-size: 10.5pt; font-weight: bold; margin-top: 4px;">វេជ្ជបណ្ឌិតទទួលបន្ទុកព្យាបាល / Attending Physician</div>
+                <div style="height: 60px;"></div>
+                <div style="font-size: 11pt; font-weight: bold; color: #042f2e;">${certData.doctorName}</div>
+                <div style="font-size: 9pt; color: #64748b;">License: ${certData.doctorLicense}</div>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob(['\ufeff' + wordHtml], { type: 'application/msword;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Medical_Certificate_${certData.certNumber}_${certData.patientCode}.doc`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Header Bar - Hidden on print */}
@@ -62,6 +186,14 @@ export default function CertificatesPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleExportWord}
+            className="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-xl text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-colors"
+          >
+            <Download className="w-4 h-4" />
+            <span>{isKm ? 'ទាញយកជា Word (.doc)' : 'Export Word (.doc)'}</span>
+          </button>
           <button
             type="button"
             onClick={handlePrint}
@@ -201,14 +333,22 @@ export default function CertificatesPage() {
             />
           </div>
 
-          <div className="pt-2 flex items-center justify-end">
+          <div className="pt-2 flex flex-col sm:flex-row items-center gap-2">
+            <button
+              type="button"
+              onClick={handleExportWord}
+              className="w-full sm:w-1/2 py-2.5 bg-blue-700 hover:bg-blue-800 text-white rounded-xl text-xs font-semibold shadow-xs flex items-center justify-center gap-1.5 transition-colors"
+            >
+              <Download className="w-4 h-4" />
+              <span>{isKm ? 'ទាញយក Word (.doc)' : 'Export Word (.doc)'}</span>
+            </button>
             <button
               type="button"
               onClick={handlePrint}
-              className="w-full py-2.5 bg-teal-700 hover:bg-teal-800 text-white rounded-xl text-xs font-semibold shadow-xs flex items-center justify-center gap-1.5 transition-colors"
+              className="w-full sm:w-1/2 py-2.5 bg-teal-700 hover:bg-teal-800 text-white rounded-xl text-xs font-semibold shadow-xs flex items-center justify-center gap-1.5 transition-colors"
             >
               <Printer className="w-4 h-4" />
-              <span>{isKm ? 'បោះពុម្ពលិខិតផ្លូវការ (Print A4)' : 'Print Official A4 Certificate'}</span>
+              <span>{isKm ? 'បោះពុម្ព (Print A4)' : 'Print (A4)'}</span>
             </button>
           </div>
         </div>
