@@ -31,7 +31,8 @@ function loadKhqrHelper(): any {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+import { TelegramService } from '../telegram/telegram.service';
+
 const khqrHelper = loadKhqrHelper();
 const { KhqrGateway, verifySettlement, buildKhqr, buildBankDeeplinks, computeMd5 } = khqrHelper;
 
@@ -45,6 +46,7 @@ export class PaymentsService {
     private prisma: PrismaService,
     private configService: ConfigService,
     private paywayDirectService: PaywayDirectService,
+    private telegramService: TelegramService,
   ) {}
 
   private getGateway(): any {
@@ -319,6 +321,21 @@ export class PaymentsService {
         transaction: updatedTxn,
         invoice: updatedInvoice,
       };
+    });
+
+    // Auto-dispatch notification to Telegram Payments Topic (non-blocking)
+    this.telegramService.notify(
+      'PAYMENTS',
+      [
+        `<b>[ការទូទាត់ជោគជ័យ] ពេទ្យ ហួន វណ្ណៈ</b>`,
+        `• <b>វិក្កយបត្រ:</b> #${settled.invoice.invoiceNumber}`,
+        `• <b>ចំនួនទឹកប្រាក់:</b> $${Number(settled.transaction.amount).toFixed(2)} (${settled.transaction.currency})`,
+        `• <b>វិធីសាស្ត្រ:</b> KHQR (ABA PayWay)`,
+        `• <b>Tran ID:</b> <code>${tranId}</code>`,
+        `• <b>កាលបរិច្ឆេទ:</b> ${now.toLocaleString('km-KH')}`,
+      ].join('\n')
+    ).catch((err: any) => {
+      this.logger.debug(`Telegram notification skipped: ${err.message}`);
     });
 
     return {

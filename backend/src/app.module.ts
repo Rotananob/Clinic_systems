@@ -14,6 +14,7 @@ import { DocumentsModule } from './documents/documents.module';
 import { HealthModule } from './health/health.module';
 import { HardwareModule } from './hardware/hardware.module';
 import { SystemModule } from './system/system.module';
+import { TelegramModule } from './telegram/telegram.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { SystemModule } from './system/system.module';
     HealthModule,
     HardwareModule,
     SystemModule,
+    TelegramModule,
   ],
 })
 export class AppModule {}

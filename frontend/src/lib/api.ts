@@ -350,6 +350,27 @@ class ApiClient {
     getAuditLogs: () => this.request<any>('/system/audit-logs'),
     triggerBackup: () => this.request<any>('/system/backup', { method: 'POST' }),
   };
+
+  // Telegram Bot & Topics Bridge
+  telegram = {
+    getStatus: () => this.request<any>('/telegram/status'),
+    connect: (data: { botToken: string; chatId: string; autoCreateTopics?: boolean }) =>
+      this.request<any>('/telegram/connect', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    disconnect: () => this.request<any>('/telegram/disconnect', { method: 'POST' }),
+    updateSettings: (settings: any) =>
+      this.request<any>('/telegram/settings', {
+        method: 'PUT',
+        body: JSON.stringify(settings),
+      }),
+    sendTest: (category?: string) =>
+      this.request<any>('/telegram/test', {
+        method: 'POST',
+        body: JSON.stringify({ category }),
+      }),
+  };
 }
 
 export const api = new ApiClient();

@@ -53,7 +53,7 @@ export default function QueuePage() {
       patientName: 'Chan Dara (ចាន់ ដារ៉ា)',
       patientCode: 'P-0012',
       department: 'Consultation Room 1',
-      doctorName: 'Dr. Heng Rotana',
+      doctorName: 'Dr. Houn Vannak',
       room: 'Room 1',
       status: 'CALLING',
       waitTimeMinutes: 12,

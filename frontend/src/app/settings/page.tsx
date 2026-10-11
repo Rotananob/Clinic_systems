@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useTranslation } from '../../context/I18nContext';
 import { playPaymentSuccessChime, playHospitalChime, playCashRegisterChime } from '../../lib/chime';
 import { HardwareSettingsPanel } from '../../components/hardware/HardwareSettingsPanel';
+import { TelegramSettingsPanel } from '../../components/telegram/TelegramSettingsPanel';
 import {
   Building2,
   QrCode,
@@ -28,6 +29,7 @@ import {
   Cpu,
   LayoutTemplate,
   ArrowRight,
+  Send,
 } from 'lucide-react';
 
 interface ClinicSettingsState {
@@ -92,14 +94,14 @@ interface ClinicSettingsState {
 
 const defaultSettings: ClinicSettingsState = {
   // 1. Clinic Profile
-  clinicNameEn: 'Rotana Medical Center & Polyclinic',
-  clinicNameKh: 'មជ្ឈមណ្ឌលវេជ្ជសាស្ត្រ និងពហុព្យាបាល រតនៈ',
+  clinicNameEn: 'Houn Vannak Medical Clinic & Polyclinic',
+  clinicNameKh: 'មន្ទីរសម្រាកព្យាបាល ហួន វណ្ណៈ',
   mohLicenseNumber: 'MoH-2024-8841-KHM',
   clinicType: 'Polyclinic & Outpatient Center',
   phonePrimary: '+855 23 888 999',
   phoneEmergency: '+855 12 333 444',
-  email: 'info@rotanaclinic.com.kh',
-  website: 'https://rotanaclinic.com.kh',
+  email: 'info@hounvannakclinic.com.kh',
+  website: 'https://hounvannakclinic.com.kh',
   addressEn: '#128, St. 271, Sangkat Phsar Doeum Thkov, Khan Chamkarmon, Phnom Penh',
   addressKh: 'ផ្ទះលេខ ១២៨ ផ្លូវ ២៧១ សង្កាត់ផ្សារដើមថ្កូវ ខណ្ឌចំការមន រាជធានីភ្នំពេញ',
   openingHoursEn: 'Monday - Sunday: 07:30 AM - 08:30 PM (Emergency 24/7)',
@@ -107,9 +109,9 @@ const defaultSettings: ClinicSettingsState = {
   missionSlogan: 'Professional Medical Care With Compassion & Precision',
 
   // 2. KHQR & PayWay
-  merchantName: 'ROTANA CLINIC',
+  merchantName: 'HOUN VANNAK CLINIC',
   merchantCity: 'PHNOM PENH',
-  bakongAccountId: 'rotana_clinic@aclb',
+  bakongAccountId: 'houn_vannak_clinic@aba',
   defaultCurrency: 'USD',
   usdToKhrRate: 4100,
   pollingIntervalSeconds: 3,
@@ -139,7 +141,7 @@ const defaultSettings: ClinicSettingsState = {
   printKhqrOnPending: true,
   printAbaReferenceOnPaid: true,
   receiptFooterNoteKh: 'សូមអរគុណ និងសូមជូនពរឆាប់ជាសះស្បើយ!',
-  receiptFooterNoteEn: 'Thank you for choosing Rotana Clinic. Wishing you a speedy recovery!',
+  receiptFooterNoteEn: 'Thank you for choosing Houn Vannak Clinic. Wishing you a speedy recovery!',
   autoOpenPrintDialog: true,
 
   // 5. Security & Operations
@@ -150,12 +152,12 @@ const defaultSettings: ClinicSettingsState = {
   enforceStrongPassword: true,
 };
 
-const STORAGE_KEY = 'rotana_clinic_settings_v1';
+const STORAGE_KEY = 'houn_vannak_clinic_settings_v1';
 
 export default function SettingsPage() {
   const { locale } = useTranslation();
   const isKm = locale === 'km';
-  const [activeTab, setActiveTab] = useState<'profile' | 'khqr' | 'fees' | 'receipt' | 'hardware' | 'security'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'khqr' | 'fees' | 'receipt' | 'hardware' | 'telegram' | 'security'>('profile');
   const [settings, setSettings] = useState<ClinicSettingsState>(defaultSettings);
   const [savedNotice, setSavedNotice] = useState(false);
   const [resetNotice, setResetNotice] = useState(false);
@@ -196,7 +198,7 @@ export default function SettingsPage() {
     const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(settings, null, 2));
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute('href', dataStr);
-    downloadAnchor.setAttribute('download', `rotana_clinic_config_${new Date().toISOString().slice(0, 10)}.json`);
+    downloadAnchor.setAttribute('download', `houn_vannak_clinic_config_${new Date().toISOString().slice(0, 10)}.json`);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
@@ -344,6 +346,19 @@ export default function SettingsPage() {
         >
           <Cpu className="w-4 h-4" />
           <span>{isKm ? 'ហាតវែរ & ឧបករណ៍' : 'Hardware & Devices'}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('telegram')}
+          className={`px-4 py-2.5 rounded-lg text-xs font-semibold flex items-center gap-2 whitespace-nowrap transition-colors ${
+            activeTab === 'telegram'
+              ? 'bg-teal-700 text-white shadow-xs'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+          }`}
+        >
+          <Send className="w-4 h-4" />
+          <span>{isKm ? 'តេឡេក្រាម & Forum Topics' : 'Telegram Bot & Topics'}</span>
         </button>
 
         <button
@@ -622,7 +637,7 @@ export default function SettingsPage() {
                   required
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono focus:ring-1 focus:ring-teal-700 focus:bg-white"
                 />
-                <span className="text-[10px] text-slate-400">e.g. rotana_clinic@aclb or mobile number</span>
+                <span className="text-[10px] text-slate-400">e.g. houn_vannak_clinic@aba or mobile number</span>
               </div>
 
               <div>
@@ -1246,8 +1261,15 @@ export default function SettingsPage() {
           </div>
         )}
 
+        {/* TAB 6: Telegram Bot & Forum Topics */}
+        {activeTab === 'telegram' && (
+          <div className="space-y-6">
+            <TelegramSettingsPanel />
+          </div>
+        )}
+
         {/* Action Buttons */}
-        {activeTab !== 'hardware' && (
+        {activeTab !== 'hardware' && activeTab !== 'telegram' && (
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
             <button
               type="button"
