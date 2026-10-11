@@ -25,16 +25,16 @@ export interface DirectStatusResult {
   raw?: any;
 }
 
-const BROWSER_USER_AGENT =
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
+const MOBILE_USER_AGENT =
+  'Mozilla/5.0 (Linux; Android 14; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.6778.200 Mobile Safari/537.36';
 
 const BROWSER_HEADERS: Record<string, string> = {
-  'User-Agent': BROWSER_USER_AGENT,
-  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+  'User-Agent': MOBILE_USER_AGENT,
+  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
   'Accept-Language': 'en-US,en;q=0.9',
-  'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
-  'sec-ch-ua-mobile': '?0',
-  'sec-ch-ua-platform': '"Windows"',
+  'sec-ch-ua': '"Android Chrome";v="131", "Chromium";v="131"',
+  'sec-ch-ua-mobile': '?1',
+  'sec-ch-ua-platform': '"Android"',
   'sec-fetch-dest': 'document',
   'sec-fetch-mode': 'navigate',
   'sec-fetch-site': 'none',
@@ -46,11 +46,11 @@ const API_HEADERS_BASE: Record<string, string> = {
   'Content-Type': 'application/json',
   'Accept': 'application/json, text/plain, */*',
   'Origin': 'https://link.payway.com.kh',
-  'User-Agent': BROWSER_USER_AGENT,
+  'User-Agent': MOBILE_USER_AGENT,
   'Accept-Language': 'en-US,en;q=0.9',
-  'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
-  'sec-ch-ua-mobile': '?0',
-  'sec-ch-ua-platform': '"Windows"',
+  'sec-ch-ua': '"Android Chrome";v="131", "Chromium";v="131"',
+  'sec-ch-ua-mobile': '?1',
+  'sec-ch-ua-platform': '"Android"',
   'sec-fetch-dest': 'empty',
   'sec-fetch-mode': 'cors',
   'sec-fetch-site': 'cross-site',
@@ -93,10 +93,14 @@ export class PaywayDirectService {
       throw new Error(`Failed to handshake with checkout link: HTTP ${res.status}`);
     }
 
-    const setCookies = res.headers.getSetCookie ? res.headers.getSetCookie() : [];
-    const cfBmCookie = setCookies.find((c) => c.startsWith('__cf_bm='))?.split(';')[0] || '';
-    const i18nCookie = setCookies.find((c) => c.startsWith('i18n_redirected='))?.split(';')[0] || 'i18n_redirected=en';
-    const cookieHeader = [cfBmCookie, i18nCookie].filter(Boolean).join('; ');
+    const rawCookies: string[] = res.headers.getSetCookie
+      ? res.headers.getSetCookie()
+      : [res.headers.get('set-cookie') || ''];
+
+    const cookieHeader = rawCookies
+      .map((c) => (c ? c.split(';')[0].trim() : ''))
+      .filter(Boolean)
+      .join('; ');
 
     const html = await res.text();
     const abaMatch = html.match(ABA_DATA_REGEX);
@@ -119,7 +123,7 @@ export class PaywayDirectService {
     };
 
     this.sessionPool.set(checkoutUrl, session);
-    this.logger.log(`Handshake clearance captured for ${checkoutUrl}. Has __cf_bm: ${Boolean(cfBmCookie)}`);
+    this.logger.log(`Handshake clearance captured for ${checkoutUrl}. Has cookies: ${Boolean(cookieHeader)}`);
     return session;
   }
 
