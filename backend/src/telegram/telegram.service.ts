@@ -224,28 +224,39 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
           this.lastUpdateId = update.update_id;
         }
 
-        // Case A: my_chat_member event (bot added to group or permission changed)
-        if (update.my_chat_member) {
-          const chat = update.my_chat_member.chat;
-          const newMember = update.my_chat_member.new_chat_member;
-          if (newMember?.user?.id === OFFICIAL_BOT_ID || newMember?.user?.username === this.config.botUsername) {
+        // Case A: my_chat_member / chat_member event (bot added to group or promoted)
+        const chatMemberEvt = update.my_chat_member || update.chat_member;
+        if (chatMemberEvt) {
+          const chat = chatMemberEvt.chat;
+          const newMember = chatMemberEvt.new_chat_member;
+          const memberUserId = newMember?.user?.id;
+          const memberUsername = newMember?.user?.username?.toLowerCase();
+          const targetUsername = (this.config.botUsername || DEFAULT_OFFICIAL_USERNAME).toLowerCase();
+
+          if (memberUserId === OFFICIAL_BOT_ID || memberUsername === targetUsername) {
             if (['member', 'administrator', 'creator'].includes(newMember.status)) {
               await this.handleChatDiscovered(String(chat.id), chat.title || 'Telegram Group');
             }
           }
         }
 
-        // Case B: message with /start pair_ or bot added
-        if (update.message) {
-          const chat = update.message.chat;
-          const text = update.message.text || '';
-          const newMembers = update.message.new_chat_members || [];
+        // Case B: regular message or channel_post in group/supergroup
+        const msg = update.message || update.channel_post;
+        if (msg) {
+          const chat = msg.chat;
+          const text = msg.text || '';
+          const newMembers = msg.new_chat_members || [];
 
-          const isBotAdded = newMembers.some((m: any) => m.id === OFFICIAL_BOT_ID || m.username === this.config.botUsername);
+          const isBotAdded = newMembers.some((m: any) => 
+            m.id === OFFICIAL_BOT_ID || 
+            m.username?.toLowerCase() === (this.config.botUsername || DEFAULT_OFFICIAL_USERNAME).toLowerCase()
+          );
           const isPairingCommand = text.includes('pair_') || text.startsWith('/start');
 
-          if ((isBotAdded || isPairingCommand) && ['group', 'supergroup'].includes(chat.type)) {
-            await this.handleChatDiscovered(String(chat.id), chat.title || 'Telegram Group');
+          if (['group', 'supergroup', 'channel'].includes(chat.type)) {
+            if (isBotAdded || isPairingCommand || !this.config.enabled || !this.config.chatId) {
+              await this.handleChatDiscovered(String(chat.id), chat.title || 'Telegram Group');
+            }
           }
         }
       }

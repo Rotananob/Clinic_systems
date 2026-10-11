@@ -1,0 +1,13 @@
+{
+  "enabled": false,
+  "botToken": "8934642394:AAG-nzLq9Zr0DnMWgwkSgAE_HZdp1ddLn8s",
+  "chatId": "",
+  "botUsername": "Clinic_alertbot",
+  "botName": "Clinic_Alert",
+  "pendingAdmin": false,
+  "topics": {},
+  "notifyOnPayment": true,
+  "notifyOnQueueCheckin": true,
+  "notifyOnLowStock": true,
+  "notifyOnSecurityAudit": true
+}

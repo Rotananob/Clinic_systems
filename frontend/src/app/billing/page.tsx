@@ -160,8 +160,8 @@ export default function BillingPage() {
     fetchInvoices();
   }, [statusFilter]);
 
-  const handleCreateQuickInvoice = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCreateQuickInvoice = async (e?: React.FormEvent, showQrImmediately: boolean = true) => {
+    if (e) e.preventDefault();
     if (!quickForm.nameEn.trim() || !quickForm.amount) {
       toast.error(
         isKm
@@ -206,9 +206,11 @@ export default function BillingPage() {
           : 'New invoice generated successfully.',
       );
 
-      // Immediately show KHQR on screen for patient to scan
-      setSelectedInvoice(createdInvoice);
-      setIsCheckoutOpen(true);
+      // If requested, open KHQR on screen immediately for patient to scan
+      if (showQrImmediately) {
+        setSelectedInvoice(createdInvoice);
+        setIsCheckoutOpen(true);
+      }
     } catch (err: unknown) {
       toast.error(getHumanErrorMessage(err, locale));
     } finally {
@@ -785,21 +787,34 @@ export default function BillingPage() {
                 />
               </div>
 
-              {/* Action Buttons */}
-              <div className="pt-2 flex items-center justify-end gap-2.5">
+              {/* Action Buttons: 2 Options */}
+              <div className="pt-2 flex flex-col sm:flex-row items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setIsQuickModalOpen(false)}
                   disabled={quickLoading}
-                  className="px-4 py-2 text-xs font-medium text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+                  className="w-full sm:w-auto px-3.5 py-2 text-xs font-medium text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors order-3 sm:order-1"
                 >
                   {isKm ? 'បោះបង់' : 'Cancel'}
                 </button>
 
+                {/* Option 1: Create invoice only (saved in system, no immediate QR popup/polling) */}
                 <button
-                  type="submit"
+                  type="button"
+                  onClick={(e) => handleCreateQuickInvoice(e, false)}
                   disabled={quickLoading}
-                  className="px-4 py-2 bg-teal-700 hover:bg-teal-800 disabled:opacity-50 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors flex items-center gap-1.5"
+                  className="w-full sm:w-auto px-3.5 py-2 bg-slate-800 hover:bg-slate-900 disabled:opacity-50 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors flex items-center justify-center gap-1.5 order-2 sm:order-2"
+                >
+                  <FileText className="w-3.5 h-3.5 text-slate-300" />
+                  <span>{isKm ? 'បង្កើតវិក្កយបត្រទុកសិន (មិនទាន់ស្កេន)' : 'Create Invoice Only (Pay Later)'}</span>
+                </button>
+
+                {/* Option 2: Create & show KHQR immediately for patient to scan */}
+                <button
+                  type="button"
+                  onClick={(e) => handleCreateQuickInvoice(e, true)}
+                  disabled={quickLoading}
+                  className="w-full sm:w-auto px-4 py-2 bg-teal-700 hover:bg-teal-800 disabled:opacity-50 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors flex items-center justify-center gap-1.5 order-1 sm:order-3"
                 >
                   {quickLoading ? (
                     <>
@@ -809,7 +824,7 @@ export default function BillingPage() {
                   ) : (
                     <>
                       <QrCode className="w-4 h-4" />
-                      <span>{isKm ? 'បង្កើត & បង្ហាញ QR Code ស្កេន' : 'Create & Show QR Code'}</span>
+                      <span>{isKm ? 'បង្កើត & ស្កេន KHQR ភ្លាមៗ' : 'Create & Show KHQR Now'}</span>
                     </>
                   )}
                 </button>
