@@ -1,0 +1,39 @@
+services:
+  - type: web
+    name: houn-vannak-clinic-backend
+    runtime: node
+    rootDir: backend
+    region: singapore
+    plan: starter
+    buildCommand: npm install && npm run prisma:generate && npm run build
+    startCommand: npm run start:prod
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: BAKONG_ACCOUNT_ID
+        value: rotana_clinic@aba
+      - key: BAKONG_MERCHANT_NAME
+        value: Houn Vannak Medical Clinic
+      - key: BAKONG_MERCHANT_CITY
+        value: Phnom Penh
+      - key: BAKONG_CURRENCY
+        value: USD
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        value: 8934642394:AAG-nzLq9Zr0DnMWgwkSgAE_HZdp1ddLn8s
+      - key: FRONTEND_URL
+        sync: false
