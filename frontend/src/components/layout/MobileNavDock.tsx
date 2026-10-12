@@ -3,25 +3,39 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, Calendar, Monitor, CreditCard } from 'lucide-react';
+import { LayoutDashboard, Users, Calendar, Monitor, CreditCard, Pill, UserCheck } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from '../../context/I18nContext';
+import { isRouteAllowed } from '../../lib/rbac';
 
 export const MobileNavDock: React.FC = () => {
   const pathname = usePathname();
+  const { user } = useAuth();
   const { locale } = useTranslation();
+  const isKh = locale === 'km';
 
-  const navItems = [
-    { label: locale === 'km' ? 'ទំព័រដើម' : 'Home', href: '/', icon: LayoutDashboard },
-    { label: locale === 'km' ? 'អ្នកជំងឺ' : 'Patients', href: '/patients', icon: Users },
-    { label: locale === 'km' ? 'ជួរហៅលេខ' : 'Queue', href: '/queue', icon: Monitor },
-    { label: locale === 'km' ? 'ពិគ្រោះ' : 'Visits', href: '/visits', icon: Calendar },
-    { label: locale === 'km' ? 'គិតលុយ' : 'Billing', href: '/billing', icon: CreditCard },
+  const potentialItems = [
+    { label: isKh ? 'ទំព័រដើម' : 'Home', href: '/', icon: LayoutDashboard },
+    { label: isKh ? 'អ្នកជំងឺ' : 'Patients', href: '/patients', icon: Users },
+    { label: isKh ? 'ជួរហៅ' : 'Queue', href: '/queue', icon: Monitor },
+    { label: isKh ? 'ពិគ្រោះ' : 'Visits', href: '/visits', icon: Calendar },
+    { label: isKh ? 'បើកថ្នាំ' : 'Pharmacy', href: '/prescriptions', icon: Pill },
+    { label: isKh ? 'គិតលុយ' : 'Billing', href: '/billing', icon: CreditCard },
+    { label: isKh ? 'គណនី' : 'Profile', href: '/profile', icon: UserCheck },
   ];
+
+  // Filter based on user's active role permissions
+  const activeItems = potentialItems
+    .filter((item) => isRouteAllowed(user?.role, item.href))
+    .slice(0, 5); // Display top 5 relevant allowed items for mobile thumb zone
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#FDFBF7]/95 backdrop-blur-md border-t border-[#E7E1D4] md:hidden pb-safe shadow-lg">
-      <div className="grid grid-cols-5 h-14 items-center px-1">
-        {navItems.map((item) => {
+      <div
+        className="grid h-14 items-center px-1"
+        style={{ gridTemplateColumns: `repeat(${activeItems.length}, minmax(0, 1fr))` }}
+      >
+        {activeItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
           return (
@@ -45,4 +59,3 @@ export const MobileNavDock: React.FC = () => {
     </nav>
   );
 };
-

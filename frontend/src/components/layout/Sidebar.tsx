@@ -18,22 +18,26 @@ import {
   BarChart3,
   LayoutTemplate,
   Crown,
+  Lock,
+  UserCheck,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from '../../context/I18nContext';
 import { ClinicLogo } from '../common/ClinicLogo';
+import { isRouteAllowed, getRoleDisplayName } from '../../lib/rbac';
 
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
   const { user } = useAuth();
   const { t, locale } = useTranslation();
+  const isKh = locale === 'km';
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
     setMounted(true);
   }, []);
 
-  const navItems = [
+  const allNavItems = [
     { label: t.nav.dashboard, href: '/', icon: LayoutDashboard },
     { label: t.nav.patients, href: '/patients', icon: Users },
     { label: t.nav.visits, href: '/visits', icon: Calendar },
@@ -44,39 +48,74 @@ export const Sidebar: React.FC = () => {
     { label: t.nav.certificates, href: '/certificates', icon: FileCheck },
     { label: t.nav.followUps, href: '/follow-ups', icon: CalendarDays },
     { label: t.nav.documents, href: '/documents', icon: FolderOpen },
+    { label: t.nav.staff, href: '/staff', icon: ShieldCheck },
+    { label: t.nav.ownerControl, href: '/owner', icon: Crown },
+    { label: t.nav.invoiceTemplate, href: '/invoice-template', icon: LayoutTemplate },
+    { label: t.nav.settings, href: '/settings', icon: Settings },
+    { label: isKh ? 'ព័ត៌មានផ្ទាល់ខ្លួន' : 'My Profile', href: '/profile', icon: UserCheck },
   ];
 
-  if (mounted && (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN')) {
-    navItems.push({ label: t.nav.staff, href: '/staff', icon: ShieldCheck });
+  if (!mounted) {
+    return (
+      <aside className="hidden md:flex flex-col w-64 border-r border-[#E7E1D4] bg-[#FDFBF7] min-h-[calc(100vh-4rem)] p-4 shadow-2xs">
+        <div className="mb-4">
+          <ClinicLogo variant="sidebar" />
+        </div>
+      </aside>
+    );
   }
 
-  if (mounted && user?.role === 'SUPER_ADMIN') {
-    navItems.push({ label: t.nav.ownerControl, href: '/owner', icon: Crown });
-  }
+  const role = user?.role;
+  const isSuperAdmin = role === 'SUPER_ADMIN';
 
-  navItems.push({ label: t.nav.invoiceTemplate, href: '/invoice-template', icon: LayoutTemplate });
-  navItems.push({ label: t.nav.settings, href: '/settings', icon: Settings });
+  const allowedItems = allNavItems.filter((item) => isRouteAllowed(role, item.href));
+  const lockedItems = allNavItems.filter((item) => !isRouteAllowed(role, item.href));
 
   return (
-    <aside className="hidden md:flex flex-col w-64 border-r border-[#E7E1D4] bg-[#FDFBF7] min-h-[calc(100vh-4rem)] p-4 shadow-2xs">
+    <aside className="hidden md:flex flex-col w-64 border-r border-[#E7E1D4] bg-[#FDFBF7] min-h-[calc(100vh-4rem)] p-4 shadow-2xs select-none">
       {/* Brand Badge in Sidebar */}
-      <div className="mb-4">
+      <div className="mb-3">
         <ClinicLogo variant="sidebar" />
       </div>
 
-      <div className="text-[11px] font-bold text-stone-400 uppercase tracking-wider px-3 mb-2 font-mono">
-        {locale === 'km' ? 'ម៉ូឌុលព្យាបាល & ប្រតិបត្តិការ' : 'Clinical Modules'}
+      {/* Role Pill */}
+      <div className="mb-4 p-2.5 rounded-xl bg-[#F6F1E6] border border-[#E7DFC9] flex items-center justify-between">
+        <div className="min-w-0">
+          <div className="text-[10px] text-stone-500 uppercase tracking-wider font-semibold">
+            {isKh ? 'តួនាទីបច្ចុប្បន្ន' : 'Current Role'}
+          </div>
+          <div className="text-xs font-bold text-stone-900 truncate flex items-center gap-1.5 mt-0.5">
+            {isSuperAdmin && <Crown className="w-3.5 h-3.5 text-amber-600 shrink-0" />}
+            <span className="truncate">{getRoleDisplayName(role, isKh)}</span>
+          </div>
+        </div>
+        {isSuperAdmin ? (
+          <span className="px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-800 text-[10px] font-bold border border-amber-500/30 shrink-0">
+            {isKh ? 'សិទ្ធិ ALL' : 'MASTER'}
+          </span>
+        ) : (
+          <span className="px-1.5 py-0.5 rounded bg-teal-50 text-teal-800 text-[10px] font-bold border border-teal-200 shrink-0">
+            RBAC
+          </span>
+        )}
       </div>
 
+      <div className="text-[11px] font-bold text-stone-400 uppercase tracking-wider px-3 mb-1.5 font-mono">
+        {isSuperAdmin
+          ? (isKh ? 'ម៉ូឌុលទាំងអស់ (All Modules)' : 'All Clinic Modules')
+          : (isKh ? 'ម៉ូឌុលអនុញ្ញាត (Allowed)' : 'Allowed Modules')}
+      </div>
+
+      {/* Allowed Modules */}
       <nav className="space-y-1">
-        {navItems.map((item) => {
+        {allowedItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all ${
+              className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
                 isActive
                   ? 'bg-[#F2ECE0] text-stone-900 font-semibold shadow-2xs border border-[#DFD8CA]'
                   : 'text-stone-600 hover:bg-[#F6F1E6] hover:text-stone-900'
@@ -92,6 +131,34 @@ export const Sidebar: React.FC = () => {
           );
         })}
       </nav>
+
+      {/* Locked Modules for specific roles */}
+      {!isSuperAdmin && lockedItems.length > 0 && (
+        <div className="mt-5 pt-4 border-t border-[#EBE3D3]">
+          <div className="text-[10px] font-bold text-stone-400 uppercase tracking-wider px-3 mb-1.5 font-mono flex items-center justify-between">
+            <span>{isKh ? 'ម៉ូឌុលចាក់សោ (Locked)' : 'Restricted Modules'}</span>
+            <Lock className="w-3 h-3 text-stone-400" />
+          </div>
+          <div className="space-y-1">
+            {lockedItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <div
+                  key={item.href}
+                  className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-stone-400 bg-stone-100/40 border border-transparent cursor-not-allowed opacity-60"
+                  title={isKh ? 'តួនាទីរបស់អ្នកមិនមានសិទ្ធិចូលប្រើប្រាស់ម៉ូឌុលនេះទេ' : 'Locked for your current role'}
+                >
+                  <div className="flex items-center gap-3 truncate">
+                    <Icon className="w-4 h-4 shrink-0 text-stone-300" />
+                    <span className="truncate">{item.label}</span>
+                  </div>
+                  <Lock className="w-3 h-3 text-stone-400 shrink-0" />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </aside>
   );
 };

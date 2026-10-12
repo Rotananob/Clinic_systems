@@ -3,12 +3,18 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { api } from '../lib/api';
 
-interface User {
+export interface User {
   id: string;
   email: string;
   fullNameEn: string;
   fullNameKh?: string;
   role: string;
+  phone?: string;
+  avatarUrl?: string;
+  department?: string;
+  telegramUsername?: string;
+  bio?: string;
+  notificationsEnabled?: boolean;
 }
 
 interface AuthContextType {
@@ -18,6 +24,7 @@ interface AuthContextType {
   login: (email: string, pass: string) => Promise<void>;
   logout: () => void;
   refreshProfile: () => Promise<void>;
+  updateUserLocal: (updated: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -55,7 +62,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     try {
-      const verifiedUser = await api.auth.me();
+      const verifiedUser = await api.users.getProfile().catch(() => api.auth.me());
       if (verifiedUser && verifiedUser.id) {
         setUser(verifiedUser);
         setToken(savedToken);
@@ -70,6 +77,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(false);
     }
   }, [logout]);
+
+  const updateUserLocal = useCallback((updated: Partial<User>) => {
+    setUser((prev) => {
+      if (!prev) return null;
+      const merged = { ...prev, ...updated };
+      try {
+        localStorage.setItem('clinic_user', JSON.stringify(merged));
+      } catch {}
+      return merged;
+    });
+  }, []);
 
   useEffect(() => {
     refreshProfile();
@@ -87,7 +105,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, logout, refreshProfile }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, logout, refreshProfile, updateUserLocal }}>
       {children}
     </AuthContext.Provider>
   );

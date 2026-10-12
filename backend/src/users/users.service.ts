@@ -99,4 +99,66 @@ export class UsersService {
       },
     });
   }
+
+  async getProfile(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        fullNameEn: true,
+        fullNameKh: true,
+        role: true,
+        phone: true,
+        avatarUrl: true,
+        department: true,
+        telegramUsername: true,
+        bio: true,
+        notificationsEnabled: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User profile not found');
+    }
+
+    return user;
+  }
+
+  async updateProfile(userId: string, dto: any) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User not found');
+
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        fullNameEn: dto.fullNameEn !== undefined ? dto.fullNameEn : user.fullNameEn,
+        fullNameKh: dto.fullNameKh !== undefined ? dto.fullNameKh : user.fullNameKh,
+        phone: dto.phone !== undefined ? dto.phone : user.phone,
+        avatarUrl: dto.avatarUrl !== undefined ? dto.avatarUrl : user.avatarUrl,
+        department: dto.department !== undefined ? dto.department : user.department,
+        telegramUsername: dto.telegramUsername !== undefined ? dto.telegramUsername : user.telegramUsername,
+        bio: dto.bio !== undefined ? dto.bio : user.bio,
+        notificationsEnabled: dto.notificationsEnabled !== undefined ? dto.notificationsEnabled : user.notificationsEnabled,
+      },
+      select: {
+        id: true,
+        email: true,
+        fullNameEn: true,
+        fullNameKh: true,
+        role: true,
+        phone: true,
+        avatarUrl: true,
+        department: true,
+        telegramUsername: true,
+        bio: true,
+        notificationsEnabled: true,
+        isActive: true,
+        updatedAt: true,
+      },
+    });
+  }
 }

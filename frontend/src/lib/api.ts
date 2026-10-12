@@ -326,6 +326,12 @@ class ApiClient {
       const query = role ? `?role=${role}` : '';
       return this.request<any[]>(`/users${query}`);
     },
+    getProfile: () => this.request<any>('/users/profile'),
+    updateProfile: (data: any) =>
+      this.request<any>('/users/profile', {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }),
     create: (data: {
       email: string;
       password: string;
@@ -341,6 +347,16 @@ class ApiClient {
     toggleActive: (id: string) =>
       this.request<any>(`/users/${id}/toggle-active`, {
         method: 'PATCH',
+      }),
+  };
+
+  // Cloudinary Cloud Upload
+  upload = {
+    getStatus: () => this.request<any>('/upload/status'),
+    uploadImage: (image: string, folder = 'avatars') =>
+      this.request<{ success: boolean; url: string; publicId?: string; format?: string; bytes?: number }>('/upload/image', {
+        method: 'POST',
+        body: JSON.stringify({ image, folder }),
       }),
   };
 

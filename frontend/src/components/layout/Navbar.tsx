@@ -52,55 +52,79 @@ export const Navbar: React.FC = () => {
             <Search className="w-3.5 h-3.5 text-stone-700" />
           </button>
 
-          <Link
-            href="/reports"
-            className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#F5EFE4] hover:bg-[#EFE6D8] text-stone-800 border border-[#DFD6C6] text-xs font-semibold transition-colors shadow-xs"
-            title={locale === 'km' ? 'របាយការណ៍ & ស្ថិតិ' : 'Reports & Analytics'}
-          >
-            <span className="hidden md:inline">{locale === 'km' ? 'របាយការណ៍' : 'Reports'}</span>
-            <span className="md:hidden">Report</span>
-          </Link>
+          {mounted && user && isRouteAllowed(user.role, '/reports') && (
+            <Link
+              href="/reports"
+              className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#F5EFE4] hover:bg-[#EFE6D8] text-stone-800 border border-[#DFD6C6] text-xs font-semibold transition-colors shadow-xs"
+              title={locale === 'km' ? 'របាយការណ៍ & ស្ថិតិ' : 'Reports & Analytics'}
+            >
+              <span className="hidden md:inline">{locale === 'km' ? 'របាយការណ៍' : 'Reports'}</span>
+              <span className="md:hidden">Report</span>
+            </Link>
+          )}
 
-          <Link
-            href="/queue"
-            className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#FAF7F2] hover:bg-[#F2ECE1] text-stone-700 border border-[#E5DFD2] text-xs font-semibold transition-colors shadow-xs"
-            title={locale === 'km' ? 'ក្ដារជួរ & ហៅលេខអ្នកជំងឺ' : 'Patient Queue & Calling Screen'}
-          >
-            <Monitor className="w-3.5 h-3.5 text-teal-800" />
-            <span className="hidden md:inline">{t.nav.queue}</span>
-            <span className="md:hidden">Queue</span>
-          </Link>
+          {mounted && user && isRouteAllowed(user.role, '/queue') && (
+            <Link
+              href="/queue"
+              className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#FAF7F2] hover:bg-[#F2ECE1] text-stone-700 border border-[#E5DFD2] text-xs font-semibold transition-colors shadow-xs"
+              title={locale === 'km' ? 'ក្ដារជួរ & ហៅលេខអ្នកជំងឺ' : 'Patient Queue & Calling Screen'}
+            >
+              <Monitor className="w-3.5 h-3.5 text-teal-800" />
+              <span className="hidden md:inline">{t.nav.queue}</span>
+              <span className="md:hidden">Queue</span>
+            </Link>
+          )}
 
-          <Link
-            href="/billing"
-            className="inline-flex items-center gap-1 px-2 sm:px-3 py-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-900 border border-teal-200/80 text-xs font-semibold transition-colors shadow-xs"
-          >
-            <QrCode className="w-3.5 h-3.5 text-teal-700" />
-            <span className="hidden sm:inline">KHQR & Billing</span>
-            <span className="sm:hidden">KHQR</span>
-          </Link>
+          {mounted && user && isRouteAllowed(user.role, '/billing') && (
+            <Link
+              href="/billing"
+              className="inline-flex items-center gap-1 px-2 sm:px-3 py-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-900 border border-teal-200/80 text-xs font-semibold transition-colors shadow-xs"
+            >
+              <QrCode className="w-3.5 h-3.5 text-teal-700" />
+              <span className="hidden sm:inline">KHQR & Billing</span>
+              <span className="sm:hidden">KHQR</span>
+            </Link>
+          )}
 
           <LanguageSwitcher />
 
           {mounted && user ? (
-            <div className="flex items-center gap-1 sm:gap-3 pl-1 sm:pl-2 border-l border-slate-200">
-              <div className="text-right hidden sm:block">
-                <div className="text-xs font-bold text-slate-900 leading-tight">
-                  {locale === 'km' && user.fullNameKh ? user.fullNameKh : user.fullNameEn}
+            <div className="flex items-center gap-1 sm:gap-2 pl-1 sm:pl-2 border-l border-[#E7DFC9]">
+              <Link
+                href="/profile"
+                className="flex items-center gap-2 px-2 py-1 rounded-xl hover:bg-[#F2ECE0] transition-colors group"
+                title={locale === 'km' ? 'មើល និងកែសម្រួលព័ត៌មានផ្ទាល់ខ្លួន' : 'View & Edit Profile'}
+              >
+                {user.avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={user.avatarUrl}
+                    alt={user.fullNameEn}
+                    className="w-8 h-8 rounded-full object-cover border border-[#DFD6C6] shadow-2xs group-hover:border-teal-700"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-teal-800 text-white font-bold text-xs flex items-center justify-center shadow-2xs">
+                    {(user.fullNameEn || user.email || 'U').charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <div className="text-right hidden sm:block">
+                  <div className="text-xs font-bold text-stone-900 leading-tight group-hover:text-teal-900">
+                    {locale === 'km' && user.fullNameKh ? user.fullNameKh : user.fullNameEn}
+                  </div>
+                  <div className="text-[10px] font-mono font-semibold uppercase">
+                    {user.role === 'SUPER_ADMIN' ? (
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-amber-100 text-amber-900 border border-amber-300 font-bold text-[9px] tracking-wide">
+                        {locale === 'km' ? 'មហាសិទ្ធ (OWNER)' : 'SUPER ADMIN'}
+                      </span>
+                    ) : (
+                      <span className="text-teal-800 font-semibold">{user.role}</span>
+                    )}
+                  </div>
                 </div>
-                <div className="text-[10px] font-mono font-semibold uppercase">
-                  {user.role === 'SUPER_ADMIN' ? (
-                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-100/90 text-amber-900 border border-amber-300 font-bold text-[9px] tracking-wide">
-                      {locale === 'km' ? 'មហាសិទ្ធ (OWNER)' : 'SUPER ADMIN'}
-                    </span>
-                  ) : (
-                    <span className="text-teal-700">{user.role}</span>
-                  )}
-                </div>
-              </div>
+              </Link>
               <button
                 onClick={logout}
-                className="p-1.5 sm:p-2 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                className="p-1.5 sm:p-2 rounded-lg text-stone-500 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                 title={t.nav.logout}
               >
                 <LogOut className="w-4 h-4" />

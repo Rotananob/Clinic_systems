@@ -98,6 +98,8 @@ export function KhqrCheckoutModal({
 
   const pollTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isPollingRef = useRef<boolean>(false);
+  const isCheckInFlightRef = useRef<boolean>(false);
+  const lastVisibilityTriggerRef = useRef<number>(0);
   const activeRequestRef = useRef<number>(0);
   const consecutiveErrorsRef = useRef<number>(0);
   const autoOpenTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -191,6 +193,15 @@ export function KhqrCheckoutModal({
 
     const poll = async () => {
       if (!isPollingRef.current) return;
+      if (isCheckInFlightRef.current) {
+        // A check is already in-flight; reschedule politely without stacking
+        if (isPollingRef.current) {
+          pollTimerRef.current = setTimeout(poll, 2500);
+        }
+        return;
+      }
+
+      isCheckInFlightRef.current = true;
       try {
         const statusRes = await api.payments.checkStatus(tranId);
         consecutiveErrorsRef.current = 0;
@@ -204,6 +215,8 @@ export function KhqrCheckoutModal({
           clearPolling();
           return;
         }
+      } finally {
+        isCheckInFlightRef.current = false;
       }
 
       if (isPollingRef.current) {
@@ -347,59 +360,24 @@ export function KhqrCheckoutModal({
     return () => clearInterval(interval);
   }, [qrData, settled, storageKey]);
 
-  // Instant App-Switch Wakeup (Safari / Mobile Chrome tab resumption from banking app)
+  // Polite App-Switch Wakeup (Mobile browser resumption from ABA / Bakong app)
   useEffect(() => {
-    let burstTimer: NodeJS.Timeout | null = null;
-
-    const handleVisibilityOrFocus = async () => {
-      // Must be open, have transaction ID, and not already settled
+    const handleVisibilityChange = () => {
       if (!isOpen || !qrData?.tranId || settled) return;
       if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
 
-      const currentTranId = qrData.tranId;
-      isPollingRef.current = true;
+      const now = Date.now();
+      // Throttle: enforce minimum 3.5 seconds between visibility triggers to prevent bank gateway spam
+      if (now - lastVisibilityTriggerRef.current < 3500) return;
+      lastVisibilityTriggerRef.current = now;
 
-      // 1. Immediate fresh check upon app resumption (forceFresh = true bypasses cache)
-      try {
-        const res = await api.payments.checkStatus(currentTranId, true);
-        if (res.status === 'SUCCESS' || res.invoiceStatus === 'PAID') {
-          handleSuccess();
-          return;
-        }
-      } catch {}
-
-      // 2. Accelerated burst sequence (at 1s, 2.2s, 3.5s) to capture bank gateway settlement latency
-      let burstCount = 0;
-      const executeBurst = async () => {
-        if (!isPollingRef.current || settled) return;
-        burstCount += 1;
-        try {
-          const burstRes = await api.payments.checkStatus(currentTranId, true);
-          if (burstRes.status === 'SUCCESS' || burstRes.invoiceStatus === 'PAID') {
-            handleSuccess();
-            return;
-          }
-        } catch {}
-
-        if (burstCount < 3 && isPollingRef.current && !settled) {
-          burstTimer = setTimeout(executeBurst, 1200);
-        } else if (isPollingRef.current && !settled) {
-          // Resume standard background poller
-          startPolling(currentTranId, 2500);
-        }
-      };
-
-      burstTimer = setTimeout(executeBurst, 1000);
+      // Gracefully restart polling with a short 600ms polite delay
+      startPolling(qrData.tranId, 600);
     };
 
-    window.addEventListener('visibilitychange', handleVisibilityOrFocus);
-    window.addEventListener('pageshow', handleVisibilityOrFocus);
-    window.addEventListener('focus', handleVisibilityOrFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => {
-      if (burstTimer) clearTimeout(burstTimer);
-      window.removeEventListener('visibilitychange', handleVisibilityOrFocus);
-      window.removeEventListener('pageshow', handleVisibilityOrFocus);
-      window.removeEventListener('focus', handleVisibilityOrFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [isOpen, qrData?.tranId, settled]);
 

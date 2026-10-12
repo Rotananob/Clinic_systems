@@ -47,6 +47,11 @@ export class AuthService {
         fullNameKh: user.fullNameKh,
         role: user.role,
         phone: user.phone,
+        avatarUrl: user.avatarUrl,
+        department: user.department,
+        telegramUsername: user.telegramUsername,
+        bio: user.bio,
+        notificationsEnabled: user.notificationsEnabled,
       },
     };
   }

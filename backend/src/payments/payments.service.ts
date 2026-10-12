@@ -370,10 +370,11 @@ export class PaymentsService {
       };
     }
 
-    // 2. Anti-spam rate limiter: if checked in the last 1200ms and not forceFresh, return cached response
+    // 2. Anti-spam rate limiter: protect ABA gateway from being blocked or flagged
     const now = Date.now();
     const cached = this.statusCheckCache.get(tranId);
-    if (!forceFresh && cached && now - cached.timestamp < 1200) {
+    const minThrottleMs = forceFresh ? 1500 : 2500;
+    if (cached && now - cached.timestamp < minThrottleMs) {
       return cached.result;
     }
 

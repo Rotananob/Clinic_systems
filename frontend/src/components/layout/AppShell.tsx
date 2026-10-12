@@ -13,6 +13,7 @@ import { PwaRegister } from '../common/PwaRegister';
 import { CommandPalette } from '../common/CommandPalette';
 import { ClinicLogo } from '../common/ClinicLogo';
 import { ShieldCheck, Loader2 } from 'lucide-react';
+import { isRouteAllowed, getRoleDisplayName } from '../../lib/rbac';
 
 const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const pathname = usePathname();
@@ -82,7 +83,8 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
     );
   }
 
-  // Authenticated: Render full clinical system
+  const routeAllowed = isRouteAllowed(user.role, pathname);
+
   return (
     <div className="min-h-screen flex flex-col bg-[#F7F4EE] text-stone-900 w-full max-w-[100vw] overflow-x-hidden relative">
       {/* Subtle 3D Ambient Background Glows */}
@@ -95,7 +97,30 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
         <div className="flex-1 flex max-w-7xl w-full mx-auto pb-24 md:pb-6 min-w-0">
           <Sidebar />
           <main className="flex-1 min-w-0 max-w-full p-3 sm:p-4 md:p-6 overflow-x-hidden">
-            {children}
+            {routeAllowed ? (
+              children
+            ) : (
+              <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+                <div className="w-14 h-14 rounded-2xl bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center mb-4 shadow-xs">
+                  <ShieldCheck className="w-7 h-7 text-amber-700" />
+                </div>
+                <h2 className="text-base sm:text-lg font-bold text-stone-900 mb-1">
+                  {isKm ? 'ទំព័រនេះត្រូវបានចាក់សោសម្រាប់តួនាទីរបស់អ្នក' : 'Restricted Module for Your Role'}
+                </h2>
+                <p className="text-xs text-stone-600 max-w-md mb-5 leading-relaxed">
+                  {isKm
+                    ? `គណនីរបស់អ្នកមានតួនាទីជា "${getRoleDisplayName(user.role, true)}" ដែលមិនមានសិទ្ធិចូលមើល ឬកែប្រែទំព័រនេះឡើយ។ ប្រសិនបើអ្នកត្រូវការចូលប្រើប្រាស់ សូមទាក់ទងម្ចាស់គ្លីនិក (Super Admin)។`
+                    : `Your current role "${getRoleDisplayName(user.role, false)}" is not authorized to access this module. Please contact the Clinic Owner (Super Admin) for elevated privileges.`}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => router.push('/')}
+                  className="px-4 py-2 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors"
+                >
+                  {isKm ? 'ត្រឡប់ទៅផ្ទាំងដើម' : 'Back to Dashboard'}
+                </button>
+              </div>
+            )}
           </main>
         </div>
         <MobileNavDock />

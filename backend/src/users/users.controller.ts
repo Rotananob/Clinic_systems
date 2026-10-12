@@ -35,6 +35,18 @@ export class UsersController {
     return this.usersService.findDoctors();
   }
 
+  @ApiOperation({ summary: 'Get current user profile (Accessible to any logged-in user)' })
+  @Get('profile')
+  getProfile(@Req() req: any) {
+    return this.usersService.getProfile(req.user.id);
+  }
+
+  @ApiOperation({ summary: 'Update current user profile (Accessible to any logged-in user)' })
+  @Patch('profile')
+  updateProfile(@Req() req: any, @Body() dto: any) {
+    return this.usersService.updateProfile(req.user.id, dto);
+  }
+
   @ApiOperation({ summary: 'Toggle user active status (Admin & Super Admin only)' })
   @Roles(Role.ADMIN)
   @Patch(':id/toggle-active')
