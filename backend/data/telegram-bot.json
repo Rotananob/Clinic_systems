@@ -1,21 +1,29 @@
 {
-  "enabled": false,
+  "enabled": true,
   "botToken": "8934642394:AAG-nzLq9Zr0DnMWgwkSgAE_HZdp1ddLn8s",
-  "chatId": "",
+  "chatId": "-1004328379441",
   "botUsername": "Clinic_alertbot",
   "botName": "Clinic_Alert",
   "pendingAdmin": false,
   "topics": {
-    "paymentsThreadId": 19,
-    "queueThreadId": 21,
-    "pharmacyThreadId": 23,
-    "securityThreadId": 25
+    "paymentsThreadId": 38,
+    "queueThreadId": 40,
+    "pharmacyThreadId": 42,
+    "securityThreadId": 45
+  },
+  "groupTopicsMap": {
+    "-1004328379441": {
+      "paymentsThreadId": 38,
+      "queueThreadId": 40,
+      "pharmacyThreadId": 42,
+      "securityThreadId": 45
+    }
   },
   "notifyOnPayment": true,
   "notifyOnQueueCheckin": true,
   "notifyOnLowStock": true,
   "notifyOnSecurityAudit": true,
-  "chatTitle": "",
+  "chatTitle": "Clinic_Alert",
   "isForum": true,
-  "connectedAt": "2026-10-12T05:29:58.926Z"
+  "connectedAt": "2026-10-12T06:33:55.313Z"
 }

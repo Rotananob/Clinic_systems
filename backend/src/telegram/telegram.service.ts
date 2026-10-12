@@ -19,6 +19,7 @@ export interface TelegramConfig {
   isForum?: boolean;
   pendingAdmin?: boolean;
   topics: TelegramTopicConfig;
+  groupTopicsMap?: Record<string, TelegramTopicConfig>;
   notifyOnPayment: boolean;
   notifyOnQueueCheckin: boolean;
   notifyOnLowStock: boolean;
@@ -43,6 +44,7 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
     botName: 'Clinic_Alert',
     pendingAdmin: false,
     topics: {},
+    groupTopicsMap: {},
     notifyOnPayment: true,
     notifyOnQueueCheckin: true,
     notifyOnLowStock: true,
@@ -53,6 +55,7 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
   private isPolling = false;
   private pollIntervalTimer: NodeJS.Timeout | null = null;
   private lastProcessedChatId = '';
+  private isProcessingDiscovery = false;
 
   private activePairing: {
     code?: string;
@@ -83,11 +86,16 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
       if (fs.existsSync(this.configFilePath)) {
         const raw = fs.readFileSync(this.configFilePath, 'utf8');
         const parsed = JSON.parse(raw);
+        const groupTopicsMap = parsed.groupTopicsMap || {};
+        if (parsed.chatId && parsed.topics && Object.keys(parsed.topics).length > 0 && !groupTopicsMap[parsed.chatId]) {
+          groupTopicsMap[parsed.chatId] = parsed.topics;
+        }
         this.config = {
           ...this.config,
           ...parsed,
           botToken: parsed.botToken || DEFAULT_OFFICIAL_TOKEN,
           botUsername: parsed.botUsername || DEFAULT_OFFICIAL_USERNAME,
+          groupTopicsMap,
         };
         this.logger.log(`Telegram Bot config loaded. Enabled: ${this.config.enabled}`);
       } else {
@@ -132,6 +140,16 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
+   * Helper to check if a 1-Click pairing session is currently active
+   */
+  private isSessionActive(): boolean {
+    return Boolean(
+      this.activePairing?.code &&
+      Date.now() - (this.activePairing.startedAt || 0) < 600000 // 10 minutes timeout
+    );
+  }
+
+  /**
    * 1-Click Pairing Session Generator:
    * Generates deep link that opens Telegram app and prompts user to add the bot to a group as Admin
    */
@@ -152,6 +170,7 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
       startedAt: Date.now(),
       paired: false,
     };
+    this.lastProcessedChatId = '';
 
     // Ensure update poller is active
     this.startBackgroundPoller();
@@ -169,7 +188,7 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
    */
   getPairingStatus() {
     return {
-      active: Boolean(this.activePairing.code),
+      active: this.isSessionActive(),
       code: this.activePairing.code,
       paired: this.activePairing.paired || this.config.enabled,
       chatTitle: this.activePairing.chatTitle || this.config.chatTitle || null,
@@ -205,7 +224,7 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
-   * Poll Telegram getUpdates to detect when bot is added to a group
+   * Poll Telegram getUpdates to detect when bot is added to a group during an active pairing session
    */
   private async pollUpdates() {
     const token = this.config.botToken || DEFAULT_OFFICIAL_TOKEN;
@@ -224,6 +243,9 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
           this.lastUpdateId = update.update_id;
         }
 
+        const isPairingActive = this.isSessionActive();
+        const activeCode = this.activePairing?.code;
+
         // Case A: my_chat_member / chat_member event (bot added to group or promoted)
         const chatMemberEvt = update.my_chat_member || update.chat_member;
         if (chatMemberEvt) {
@@ -234,8 +256,15 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
           const targetUsername = (this.config.botUsername || DEFAULT_OFFICIAL_USERNAME).toLowerCase();
 
           if (memberUserId === OFFICIAL_BOT_ID || memberUsername === targetUsername) {
-            if (['member', 'administrator', 'creator'].includes(newMember.status)) {
-              await this.handleChatDiscovered(String(chat.id), chat.title || 'Telegram Group');
+            const isMemberOrAdmin = ['member', 'administrator', 'creator'].includes(newMember.status);
+            if (isMemberOrAdmin) {
+              if (isPairingActive) {
+                await this.handleChatDiscovered(String(chat.id), chat.title || 'Telegram Group');
+              } else if (this.config.enabled && this.config.chatId === String(chat.id) && this.config.pendingAdmin) {
+                if (['administrator', 'creator'].includes(newMember.status)) {
+                  await this.checkAdminAndCreateTopics();
+                }
+              }
             }
           }
         }
@@ -247,15 +276,19 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
           const text = msg.text || '';
           const newMembers = msg.new_chat_members || [];
 
-          const isBotAdded = newMembers.some((m: any) => 
-            m.id === OFFICIAL_BOT_ID || 
-            m.username?.toLowerCase() === (this.config.botUsername || DEFAULT_OFFICIAL_USERNAME).toLowerCase()
-          );
-          const isPairingCommand = text.includes('pair_') || text.startsWith('/start');
-
           if (['group', 'supergroup', 'channel'].includes(chat.type)) {
-            if (isBotAdded || isPairingCommand || !this.config.enabled || !this.config.chatId) {
-              await this.handleChatDiscovered(String(chat.id), chat.title || 'Telegram Group');
+            // STRICT RULE: Only process message if there is an ACTIVE pairing session initiated from dashboard!
+            // When disconnected or no active pairing session, all group chatter is strictly ignored!
+            if (isPairingActive && activeCode) {
+              const containsActiveCode = text.includes(activeCode);
+              const isBotAdded = newMembers.some((m: any) => 
+                m.id === OFFICIAL_BOT_ID || 
+                m.username?.toLowerCase() === (this.config.botUsername || DEFAULT_OFFICIAL_USERNAME).toLowerCase()
+              );
+
+              if (containsActiveCode || isBotAdded) {
+                await this.handleChatDiscovered(String(chat.id), chat.title || 'Telegram Group');
+              }
             }
           }
         }
@@ -271,15 +304,39 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
    */
   async handleChatDiscovered(chatId: string, chatTitle: string): Promise<boolean> {
     if (!chatId) return false;
-    if (this.lastProcessedChatId === chatId && this.config.enabled && !this.config.pendingAdmin) {
-      return true; // Already processed
+
+    // Mutex lock to prevent duplicate concurrent discovery calls
+    if (this.isProcessingDiscovery) {
+      return false;
     }
+
+    const isPairingActive = this.isSessionActive();
+
+    // Guard 1: Never process if bot is disconnected and no active pairing session exists
+    if (!this.config.enabled && !isPairingActive) {
+      this.logger.debug(`Ignored handleChatDiscovered for chat ${chatId}: bot is disconnected and no active pairing session.`);
+      return false;
+    }
+
+    // Guard 2: If already enabled, connected to this chat, and not pending admin, no action needed
+    if (this.config.enabled && this.config.chatId === chatId && !this.config.pendingAdmin) {
+      return true;
+    }
+
+    if (this.lastProcessedChatId === chatId && this.config.enabled && !this.config.pendingAdmin) {
+      return true;
+    }
+
+    this.isProcessingDiscovery = true;
     this.lastProcessedChatId = chatId;
 
     this.logger.log(`Discovered Telegram Group: ${chatTitle} (${chatId}). Verifying permissions...`);
     const token = this.config.botToken || DEFAULT_OFFICIAL_TOKEN;
 
     try {
+      // Invalidate the pairing code so it cannot be reused
+      this.activePairing.code = undefined;
+
       // 1. Get Chat details
       const chatRes = await fetch(`https://api.telegram.org/bot${token}/getChat`, {
         method: 'POST',
@@ -323,12 +380,12 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
 
         const successMessage = [
           `<b>[ពេទ្យ ហួន វណ្ណៈ] Houn Vannak Clinic OS</b>`,
-          `<b>[ជោគជ័យ] Telegram Bot បានតភ្ជាប់ជាមួយក្រុម និងបង្កើត Forum Topics ស្វ័យប្រវត្តរួចរាល់!</b>`,
+          `<b>[ជោគជ័យ] Telegram Bot បានតភ្ជាប់ជាមួយក្រុម និងរៀបចំ Forum Topics រួចរាល់!</b>`,
           ``,
           `• <b>ប្រព័ន្ធ:</b> Houn Vannak Clinic Management System v1.0.0`,
           `• <b>Bot:</b> @${this.config.botUsername || DEFAULT_OFFICIAL_USERNAME}`,
           `• <b>ក្រុម:</b> ${chatInfo.title || chatTitle}`,
-          `• <b>Forum Topics:</b> បង្កើតបាន ៤ ប្រធានបទរួចរាល់`,
+          `• <b>Forum Topics:</b> ៤ ប្រធានបទ (Payments, Queue, Pharmacy, Security)`,
           `• <b>កាលបរិច្ឆេទ:</b> ${new Date().toLocaleString('km-KH')}`,
           ``,
           `<i>រាល់ការទូទាត់ KHQR និងការជូនដំណឹងសំខាន់ៗ នឹងរត់ចូលទីនេះដោយស្វ័យប្រវត្ត។</i>`,
@@ -425,22 +482,39 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
       this.logger.error(`Error in handleChatDiscovered: ${err.message}`);
       this.activePairing.error = err.message;
       return false;
+    } finally {
+      this.isProcessingDiscovery = false;
     }
   }
 
   /**
-   * Helper to create 4 forum topics in Telegram supergroup
+   * Helper to create 4 forum topics in Telegram supergroup or reuse existing ones
    */
   private async createForumTopics(token: string, chatId: string): Promise<TelegramTopicConfig> {
-    const topics: TelegramTopicConfig = {};
-    const topicDefinitions = [
+    if (!this.config.groupTopicsMap) {
+      this.config.groupTopicsMap = {};
+    }
+
+    const existingTopics: TelegramTopicConfig =
+      this.config.groupTopicsMap[chatId] ||
+      (this.config.chatId === chatId ? this.config.topics : {}) ||
+      {};
+
+    const topicDefinitions: { key: keyof TelegramTopicConfig; name: string; color: number }[] = [
       { key: 'paymentsThreadId', name: '[Payments & KHQR] ការទូទាត់ប្រាក់', color: 7322096 },
       { key: 'queueThreadId', name: '[Appointments & Queue] ការណាត់ជួប & ជួររង់ចាំ', color: 16766590 },
       { key: 'pharmacyThreadId', name: '[Pharmacy & Stock] ឱសថស្ថាន & ស្តុកថ្នាំ', color: 9367192 },
       { key: 'securityThreadId', name: '[Security & Audit] សន្តិស្ដខប្រព័ន្ធ', color: 16478098 },
     ];
 
+    const finalTopics: TelegramTopicConfig = { ...existingTopics };
+
     for (const def of topicDefinitions) {
+      if (typeof finalTopics[def.key] === 'number' && (finalTopics[def.key] as number) > 0) {
+        this.logger.log(`Reusing existing forum topic for group ${chatId} - ${def.name} (Thread ID: ${finalTopics[def.key]})`);
+        continue;
+      }
+
       try {
         const createTopicRes = await fetch(`https://api.telegram.org/bot${token}/createForumTopic`, {
           method: 'POST',
@@ -453,15 +527,18 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
         });
         const createTopicJson = await createTopicRes.json();
         if (createTopicJson.ok && createTopicJson.result?.message_thread_id) {
-          (topics as any)[def.key] = createTopicJson.result.message_thread_id;
+          finalTopics[def.key] = createTopicJson.result.message_thread_id;
           this.logger.log(`Created topic: ${def.name} (Thread ID: ${createTopicJson.result.message_thread_id})`);
+        } else {
+          this.logger.warn(`Could not create topic ${def.name}: ${JSON.stringify(createTopicJson)}`);
         }
       } catch (err: any) {
         this.logger.warn(`Could not create topic ${def.name}: ${err.message}`);
       }
     }
 
-    return topics;
+    this.config.groupTopicsMap[chatId] = finalTopics;
+    return finalTopics;
   }
 
   /**
@@ -515,7 +592,7 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
 
       const successNotice = [
         `<b>[ពេទ្យ ហួន វណ្ណៈ] Houn Vannak Clinic OS</b>`,
-        `<b>[ជោគជ័យ] សិទ្ធិ Admin ត្រូវបានផ្ទៀងផ្ទាត់! Topics ទាំង ៤ ត្រូវបានបង្កើតរួចរាល់។</b>`,
+        `<b>[ជោគជ័យ] សិទ្ធិ Admin ត្រូវបានផ្ទៀងផ្ទាត់! Topics ទាំង ៤ ត្រូវបានរៀបចំរួចរាល់។</b>`,
       ].join('\n');
       await this.sendMessageDirect(token, chatId, successNotice, topics.securityThreadId || topics.paymentsThreadId);
 
@@ -524,7 +601,7 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
         isAdmin: true,
         isForum: true,
         topicsCreated: true,
-        message: 'Admin permissions verified! Forum topics created successfully.',
+        message: 'Admin permissions verified! Forum topics configured successfully.',
       };
     }
 
@@ -572,6 +649,13 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
       throw new Error('Chat ID is required.');
     }
 
+    // Set a manual pairing code so handleChatDiscovered is authorized
+    this.activePairing = {
+      code: `manual_${Date.now()}`,
+      startedAt: Date.now(),
+      paired: false,
+    };
+
     // Process chat
     await this.handleChatDiscovered(chatId, 'Telegram Group');
 
@@ -594,8 +678,11 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
     this.config.chatId = '';
     this.config.chatTitle = '';
     this.config.pendingAdmin = false;
+    this.config.isForum = false;
     this.saveConfig();
     this.activePairing = { paired: false };
+    this.lastProcessedChatId = '';
+    this.logger.log('Telegram Bot disconnected by user.');
     return { success: true, message: 'Telegram Bot disconnected.' };
   }
 
