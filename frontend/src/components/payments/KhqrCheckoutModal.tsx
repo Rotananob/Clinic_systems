@@ -4,6 +4,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Modal } from '../ui/Modal';
 import { api } from '../../lib/api';
+import { trackUserAction } from '../../lib/tracker';
 import { useTranslation } from '../../context/I18nContext';
 import {
   CheckCircle2,
@@ -177,6 +178,13 @@ export function KhqrCheckoutModal({
     }
 
     if (onPaymentSuccess) onPaymentSuccess(settledInv);
+
+    trackUserAction('PAYMENT_SETTLED', {
+      invoiceNumber: settledInv.invoiceNumber,
+      amount: settledInv.payableAmount,
+      currency: settledInv.currency,
+      tranId: effectiveTranId,
+    });
 
     // Auto-launch the real-time invoice receipt modal after 1.8 seconds so cashier sees confirmation popup first
     if (autoOpenTimerRef.current) clearTimeout(autoOpenTimerRef.current);

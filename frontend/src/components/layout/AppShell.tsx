@@ -14,6 +14,7 @@ import { CommandPalette } from '../common/CommandPalette';
 import { ClinicLogo } from '../common/ClinicLogo';
 import { ShieldCheck, Loader2 } from 'lucide-react';
 import { isRouteAllowed, getRoleDisplayName } from '../../lib/rbac';
+import { trackPageView, trackUserAction } from '../../lib/tracker';
 
 const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const pathname = usePathname();
@@ -22,6 +23,22 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
   const { locale } = useTranslation();
   const isKm = locale === 'km';
   const isLoginPage = pathname === '/login';
+
+  // Automatically track page view navigation, visitor IP, device and location
+  useEffect(() => {
+    trackPageView(pathname);
+  }, [pathname]);
+
+  // Track unauthorized access attempts to restricted modules
+  useEffect(() => {
+    if (user && !isLoginPage && !isRouteAllowed(user.role, pathname)) {
+      trackUserAction('RESTRICTED_ACCESS_ATTEMPT', {
+        attemptedPath: pathname,
+        userRole: user.role,
+        userEmail: user.email,
+      });
+    }
+  }, [user, pathname, isLoginPage]);
 
   useEffect(() => {
     if (!isLoading && !user && !isLoginPage) {

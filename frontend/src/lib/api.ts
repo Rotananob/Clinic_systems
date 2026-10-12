@@ -396,6 +396,37 @@ class ApiClient {
         body: JSON.stringify({ category }),
       }),
   };
+
+  // Visitor & Activity Telemetry Tracking
+  tracking = {
+    recordEvent: (data: {
+      path: string;
+      action?: string;
+      title?: string;
+      referrer?: string;
+      sessionId?: string;
+      clientReportedIp?: string;
+      device?: {
+        deviceType?: string;
+        browser?: string;
+        os?: string;
+        screenResolution?: string;
+        language?: string;
+        timezone?: string;
+      };
+      location?: {
+        latitude?: number;
+        longitude?: number;
+        accuracy?: number;
+      };
+      details?: Record<string, any>;
+    }) =>
+      this.request<{ success: boolean; ip: string; location: any }>('/tracking/event', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    getStats: () => this.request<any>('/tracking/stats'),
+  };
 }
 
 export const api = new ApiClient();

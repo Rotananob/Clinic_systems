@@ -86,6 +86,7 @@ model User {
   cashierInvoices     Invoice[]        @relation("CashierInvoices")
   uploadedDocuments   Document[]       @relation("UploadedDocuments")
   auditLogs           AuditLog[]
+  visitorLogs         VisitorLog[]
 
   @@map("users")
 }
@@ -324,3 +325,40 @@ model Document {
   @@index([category])
   @@map("documents")
 }
+
+model VisitorLog {
+  id               BigInt   @id @default(autoincrement())
+  sessionId        String?
+  ipAddress        String
+  country          String?
+  countryCode      String?
+  city             String?
+  region           String?
+  isp              String?
+  latitude         Float?
+  longitude        Float?
+  deviceType       String?
+  os               String?
+  browser          String?
+  screenResolution String?
+  language         String?
+  path             String
+  title            String?
+  referrer         String?
+  action           String   @default("PAGE_VIEW")
+  userId           String?  @db.Uuid
+  userEmail        String?
+  userRole         String?
+  userName         String?
+  details          Json?
+  createdAt        DateTime @default(now())
+
+  user             User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([ipAddress])
+  @@index([path])
+  @@index([action])
+  @@index([createdAt])
+  @@map("visitor_logs")
+}
+

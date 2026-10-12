@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { api } from '../lib/api';
+import { trackUserAction } from '../lib/tracker';
 
 export interface User {
   id: string;
@@ -43,6 +44,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   const logout = useCallback(() => {
+    trackUserAction('USER_LOGOUT');
     try {
       localStorage.removeItem('clinic_access_token');
       localStorage.removeItem('clinic_user');
@@ -95,14 +97,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [refreshProfile]);
 
   const login = async (email: string, pass: string) => {
-    const res = await api.auth.login({ email, password: pass });
-    if (!res || !res.accessToken || !res.user) {
-      throw new Error('Invalid credentials');
+    try {
+      const res = await api.auth.login({ email, password: pass });
+      if (!res || !res.accessToken || !res.user) {
+        trackUserAction('USER_LOGIN_FAILED', { email });
+        throw new Error('Invalid credentials');
+      }
+      localStorage.setItem('clinic_access_token', res.accessToken);
+      localStorage.setItem('clinic_user', JSON.stringify(res.user));
+      setToken(res.accessToken);
+      setUser(res.user);
+      trackUserAction('USER_LOGIN', {
+        email: res.user.email,
+        role: res.user.role,
+        name: res.user.fullNameKh || res.user.fullNameEn,
+      });
+    } catch (err) {
+      trackUserAction('USER_LOGIN_FAILED', { email });
+      throw err;
     }
-    localStorage.setItem('clinic_access_token', res.accessToken);
-    localStorage.setItem('clinic_user', JSON.stringify(res.user));
-    setToken(res.accessToken);
-    setUser(res.user);
   };
 
   return (

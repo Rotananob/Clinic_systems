@@ -16,6 +16,7 @@ import { HardwareModule } from './hardware/hardware.module';
 import { SystemModule } from './system/system.module';
 import { TelegramModule } from './telegram/telegram.module';
 import { UploadModule } from './upload/upload.module';
+import { TrackingModule } from './tracking/tracking.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { UploadModule } from './upload/upload.module';
     SystemModule,
     TelegramModule,
     UploadModule,
+    TrackingModule,
   ],
 })
 export class AppModule {}
