@@ -6,6 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from '../../context/I18nContext';
 import { LanguageSwitcher } from '../common/LanguageSwitcher';
 import { ClinicLogo } from '../common/ClinicLogo';
+import { isRouteAllowed } from '../../lib/rbac';
 import Link from 'next/link';
 
 export const Navbar: React.FC = () => {
