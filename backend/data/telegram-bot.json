@@ -6,17 +6,17 @@
   "botName": "Clinic_Alert",
   "pendingAdmin": false,
   "topics": {
-    "paymentsThreadId": 38,
-    "queueThreadId": 40,
-    "pharmacyThreadId": 42,
-    "securityThreadId": 45
+    "paymentsThreadId": 57,
+    "queueThreadId": 69,
+    "pharmacyThreadId": 59,
+    "securityThreadId": 60
   },
   "groupTopicsMap": {
     "-1004328379441": {
-      "paymentsThreadId": 38,
-      "queueThreadId": 40,
-      "pharmacyThreadId": 42,
-      "securityThreadId": 45
+      "paymentsThreadId": 57,
+      "queueThreadId": 69,
+      "pharmacyThreadId": 59,
+      "securityThreadId": 60
     }
   },
   "notifyOnPayment": true,
@@ -25,5 +25,5 @@
   "notifyOnSecurityAudit": true,
   "chatTitle": "Clinic_Alert",
   "isForum": true,
-  "connectedAt": "2026-10-12T06:33:55.313Z"
+  "connectedAt": "2026-10-12T06:57:31.697Z"
 }

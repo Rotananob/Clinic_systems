@@ -318,12 +318,12 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
       return false;
     }
 
-    // Guard 2: If already enabled, connected to this chat, and not pending admin, no action needed
-    if (this.config.enabled && this.config.chatId === chatId && !this.config.pendingAdmin) {
+    // Guard 2: If already enabled, connected to this chat, not pending admin, and NO active pairing request, skip redundant work
+    if (this.config.enabled && this.config.chatId === chatId && !this.config.pendingAdmin && !isPairingActive) {
       return true;
     }
 
-    if (this.lastProcessedChatId === chatId && this.config.enabled && !this.config.pendingAdmin) {
+    if (this.lastProcessedChatId === chatId && this.config.enabled && !this.config.pendingAdmin && !isPairingActive) {
       return true;
     }
 
@@ -357,12 +357,12 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
       const member = memberJson.ok ? memberJson.result : {};
 
       const isBotAdmin = ['administrator', 'creator'].includes(member.status);
-      const canManageTopics = Boolean(member.can_manage_topics);
+      const hasTopicCreationRights = member.status === 'creator' || Boolean(member.can_manage_topics);
 
-      this.logger.log(`Bot status in ${chatTitle}: Admin=${isBotAdmin}, CanManageTopics=${canManageTopics}, Forum=${isForum}`);
+      this.logger.log(`Bot status in ${chatTitle}: Admin=${isBotAdmin}, CanManageTopics=${hasTopicCreationRights}, Forum=${isForum}`);
 
-      // Case 1: Bot is Admin AND Forum is enabled
-      if (isBotAdmin && isForum) {
+      // Case 1: Connect SUCCESS with topic permissions (Admin + CanManageTopics + Forum supergroup)
+      if (isBotAdmin && hasTopicCreationRights && isForum) {
         const topics = await this.createForumTopics(token, chatId);
 
         this.config = {
@@ -488,7 +488,35 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
-   * Helper to create 4 forum topics in Telegram supergroup or reuse existing ones
+   * Validates live in Telegram if a forum topic thread ID exists and is active.
+   * Returns true if topic exists; false if it was deleted or does not exist.
+   */
+  private async isForumTopicAlive(token: string, chatId: string, threadId?: number, name?: string): Promise<boolean> {
+    if (!threadId || typeof threadId !== 'number' || threadId <= 0) {
+      return false;
+    }
+    try {
+      const res = await fetch(`https://api.telegram.org/bot${token}/editForumTopic`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: chatId,
+          message_thread_id: threadId,
+          name: name || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (data.ok) return true;
+      if (data.description && data.description.includes('TOPIC_NOT_MODIFIED')) return true;
+      return false;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Helper to ensure all 4 forum topics in Telegram supergroup exist.
+   * Checks live in chat to avoid duplicates; if an admin deleted any topic, recreates the missing ones.
    */
   private async createForumTopics(token: string, chatId: string): Promise<TelegramTopicConfig> {
     if (!this.config.groupTopicsMap) {
@@ -508,13 +536,26 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
     ];
 
     const finalTopics: TelegramTopicConfig = { ...existingTopics };
+    let createdCount = 0;
+    let preservedCount = 0;
 
     for (const def of topicDefinitions) {
-      if (typeof finalTopics[def.key] === 'number' && (finalTopics[def.key] as number) > 0) {
-        this.logger.log(`Reusing existing forum topic for group ${chatId} - ${def.name} (Thread ID: ${finalTopics[def.key]})`);
-        continue;
+      const candidateThreadId = finalTopics[def.key];
+      let topicIsAlive = false;
+
+      // 1. Live inspection in Telegram supergroup: Is this thread ID still alive?
+      if (typeof candidateThreadId === 'number' && candidateThreadId > 0) {
+        topicIsAlive = await this.isForumTopicAlive(token, chatId, candidateThreadId, def.name);
+        if (topicIsAlive) {
+          preservedCount++;
+          this.logger.log(`Verified live topic in group ${chatId} - ${def.name} (Thread ID: ${candidateThreadId}). Preserved without duplication.`);
+          continue;
+        } else {
+          this.logger.warn(`Topic ${def.name} (Thread ID: ${candidateThreadId}) was deleted or invalid in Telegram. Recreating...`);
+        }
       }
 
+      // 2. Topic does not exist or was deleted by an admin: create it now so all 4 topics are complete
       try {
         const createTopicRes = await fetch(`https://api.telegram.org/bot${token}/createForumTopic`, {
           method: 'POST',
@@ -528,7 +569,8 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
         const createTopicJson = await createTopicRes.json();
         if (createTopicJson.ok && createTopicJson.result?.message_thread_id) {
           finalTopics[def.key] = createTopicJson.result.message_thread_id;
-          this.logger.log(`Created topic: ${def.name} (Thread ID: ${createTopicJson.result.message_thread_id})`);
+          createdCount++;
+          this.logger.log(`Created replacement/new topic: ${def.name} (Thread ID: ${createTopicJson.result.message_thread_id})`);
         } else {
           this.logger.warn(`Could not create topic ${def.name}: ${JSON.stringify(createTopicJson)}`);
         }
@@ -538,6 +580,10 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
     }
 
     this.config.groupTopicsMap[chatId] = finalTopics;
+    this.config.topics = { ...this.config.topics, ...finalTopics };
+    this.saveConfig();
+
+    this.logger.log(`Topics reconciliation complete for ${chatId}: ${preservedCount} preserved alive, ${createdCount} created.`);
     return finalTopics;
   }
 
@@ -578,9 +624,9 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
     const member = memberJson.ok ? memberJson.result : {};
 
     const isBotAdmin = ['administrator', 'creator'].includes(member.status);
-    const canManageTopics = Boolean(member.can_manage_topics);
+    const hasTopicCreationRights = member.status === 'creator' || Boolean(member.can_manage_topics);
 
-    if (isBotAdmin && isForum) {
+    if (isBotAdmin && hasTopicCreationRights && isForum) {
       const topics = await this.createForumTopics(token, chatId);
       this.config = {
         ...this.config,
@@ -655,6 +701,7 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
       startedAt: Date.now(),
       paired: false,
     };
+    this.lastProcessedChatId = '';
 
     // Process chat
     await this.handleChatDiscovered(chatId, 'Telegram Group');
@@ -679,6 +726,7 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
     this.config.chatTitle = '';
     this.config.pendingAdmin = false;
     this.config.isForum = false;
+    this.config.topics = {};
     this.saveConfig();
     this.activePairing = { paired: false };
     this.lastProcessedChatId = '';
