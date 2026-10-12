@@ -115,10 +115,62 @@
 
 ---
 
-### ជំហានទី ៥: ការធ្វើតេស្តផ្ទៀងផ្ទាត់ប្រព័ន្ធពេញលេញ (Production Verification Checklist)
+### ជំហានទី ៥: រៀបចំ Cloudflare (Custom Domain, DNS, SSL & DDoS Protection)
+
+Cloudflare ដើរតួជាខែលការពារសុវត្ថិភាព (Firewall), គ្រប់គ្រង DNS និងផ្តល់ SSL Encryption កម្រិតខ្ពស់សម្រាប់ Custom Domain របស់គ្លីនិក:
+
+1. **បង្កើតគណនី និងបន្ថែម Domain ទៅក្នុង Cloudflare:**
+   - ចូលទៅកាន់គេហទំព័រ [https://cloudflare.com](https://cloudflare.com) ហើយចុះឈ្មោះគណនីឥតគិតថ្លៃ។
+   - ចុច **Add a site** -> បញ្ចូលឈ្មោះ Domain របស់គ្លីនិក (ឧទាហរណ៍: `hounvannak-clinic.com`)។
+   - ជ្រើសរើស **Free Plan** ($0/ខែ) ហើយចុច Continue។
+   - Cloudflare នឹងផ្តល់ Nameservers ចំនួន ២ (ឧទាហរណ៍: `amy.ns.cloudflare.com` និង `bob.ns.cloudflare.com`)។
+
+2. **ប្តូរ Nameservers នៅ Registrar (កន្លែងដែលទិញ Domain):**
+   - ចូលទៅកាន់កន្លែងដែលអ្នកបានទិញ Domain (Namecheap, GoDaddy, Google Domains, etc.)។
+   - ចូលទៅកាន់ផ្នែក Manage Domain -> DNS / Nameservers។
+   - ប្តូរពី Default Nameservers ទៅជា **Custom Nameservers** របស់ Cloudflare ទាំង ២ នោះ។
+   - រង់ចាំប្រហែល ៥ ទៅ ១៥ នាទីរហូតដល់ Cloudflare បញ្ជាក់ស្ថានភាព Active។
+
+3. **កំណត់ DNS Records សម្រាប់ Frontend (Vercel):**
+   - ចូលទៅកាន់ផ្ទាំង **DNS** -> **Records** ក្នុង Cloudflare:
+     - Record ទី ១:
+       - Type: `CNAME`
+       - Name: `@` (Root Domain)
+       - Target: `cname.vercel-dns.com`
+       - Proxy status: `Proxied` (បើកពពកពណ៌ទឹកក្រូច)
+     - Record ទី ២:
+       - Type: `CNAME`
+       - Name: `www`
+       - Target: `cname.vercel-dns.com`
+       - Proxy status: `Proxied` (បើកពពកពណ៌ទឹកក្រូច)
+   - ក្នុង Vercel Dashboard: ចូលទៅកាន់ Settings -> Domains -> បន្ថែម `hounvannak-clinic.com` និង `www.hounvannak-clinic.com`។
+
+4. **កំណត់ DNS Record សម្រាប់ Backend (Render API Custom Subdomain):**
+   - ក្នុង Cloudflare DNS Records បន្ថែម:
+     - Type: `CNAME`
+     - Name: `api`
+     - Target: `houn-vannak-clinic-backend.onrender.com` *(ឈ្មោះ Render backend របស់អ្នក)*
+     - Proxy status: `Proxied` (បើកពពកពណ៌ទឹកក្រូច)
+   - ក្នុង Render Dashboard: ចូលទៅកាន់ Settings -> Custom Domains -> បន្ថែម `api.hounvannak-clinic.com`។
+   - ធ្វើបច្ចុប្បន្នភាព Environment Variable ក្នុង Vercel:
+     `NEXT_PUBLIC_API_URL=https://api.hounvannak-clinic.com/api`
+
+5. **កំណត់ SSL/TLS Encryption & Security:**
+   - ចូលទៅកាន់ផ្ទាំង **SSL/TLS**:
+     - ជ្រើសរើសទម្រង់: **Full (strict)** (ដើម្បីឱ្យមានសុវត្ថិភាពខ្ពស់បំផុតរវាង Cloudflare និង Render/Vercel)។
+   - ចូលទៅកាន់ **Edge Certificates**:
+     - បើកមុខងារ: **Always Use HTTPS** -> `ON`
+     - បើកមុខងារ: **Automatic HTTPS Rewrites** -> `ON`
+     - Minimum TLS Version: `TLS 1.2`
+   - ចូលទៅកាន់ **Security** -> **Bots**:
+     - បើក **Bot Fight Mode** -> `ON` (ដើម្បីទប់ស្កាត់ Spammer និង Bot មិនឱ្យវាយលុកប្រព័ន្ធ)។
+
+---
+
+### ជំហានទី ៦: ការធ្វើតេស្តផ្ទៀងផ្ទាត់ប្រព័ន្ធពេញលេញ (Production Verification Checklist)
 
 1. **ការចូលប្រើប្រាស់ (Authentication):**
-   - ចូលទៅកាន់ URL របស់ Vercel ហើយ Login ដោយប្រើ `owner@clinic.com` / `Rotana#Owner$2026!MasterKey`។
+   - ចូលទៅកាន់ Domain ផ្លូវការ (ឧ. `https://hounvannak-clinic.com`) ហើយ Login ដោយប្រើ `owner@clinic.com` / `Rotana#Owner$2026!MasterKey`។
 2. **ការ Upload រូបភាព និងឯកសារ (Cloudinary CDN Test):**
    - ចូលទៅកាន់ទំព័រ Medical Documents ឬ Invoice Template Designer។
    - សាកល្បង Upload ឡូហ្គោគ្លីនិក ឬឯកសារពិនិត្យឈាម។
@@ -129,3 +181,6 @@
 4. **ការជូនដំណឹងតាម Telegram (Telegram Bot Alerts):**
    - ពិនិត្យមើល Telegram Supergroup (`-1004328379441`)។
    - ការជូនដំណឹងត្រូវបញ្ជូនចូលទៅកាន់ Topic ត្រឹមត្រូវ (Payments, Queue, Pharmacy, Security) ដោយគ្មាន Duplicate។
+5. **សុវត្ថិភាព Cloudflare SSL & Fast DNS:**
+   - ពិនិត្យមើលរូបសោរ SSL (Padlock) លើ Browser ឃើញពណ៌បៃតង/សុវត្ថិភាព (HTTPS 100%)។
+
