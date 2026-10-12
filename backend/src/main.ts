@@ -18,9 +18,12 @@ async function bootstrap() {
     next();
   });
 
-  // Enable CORS with 24-hour preflight cache
+  // Enable CORS with 24-hour preflight cache and compliant credentials support
   app.enableCors({
-    origin: '*',
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, curl, backend) or dynamically reflect origin
+      callback(null, origin || true);
+    },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
     maxAge: 86400,

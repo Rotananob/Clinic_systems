@@ -5,3 +5,7 @@ out/
 .env.*
 !.env.example
 *.log
+.vercel
+*.pem
+*.key
+

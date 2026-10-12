@@ -11,6 +11,8 @@ export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
   @ApiOperation({ summary: 'List all clinic invoices with status and patient filter' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @ApiQuery({ name: 'status', enum: InvoiceStatus, required: false })
   @ApiQuery({ name: 'patientId', required: false })
   @Get('invoices')
@@ -22,18 +24,24 @@ export class PaymentsController {
   }
 
   @ApiOperation({ summary: 'Get detailed invoice with transactions and patient data' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Get('invoices/:id')
   findInvoiceById(@Param('id') id: string) {
     return this.paymentsService.findInvoiceById(id);
   }
 
   @ApiOperation({ summary: 'Generate dynamic KHQR Tag 01=12 and bank deeplinks for an invoice' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Post('generate-qr')
   generateQr(@Body() dto: GenerateInvoiceQrDto) {
     return this.paymentsService.generateInvoiceKhqr(dto.invoiceId);
   }
 
   @ApiOperation({ summary: 'Instant settlement verification endpoint for 0.3s webhook / cashier confirm' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Post('settle')
   settle(@Request() req: any, @Body() dto: SettlePaymentDto) {
     const cashierId = req.user?.id || 'CASHIER_OR_WEBHOOK';
@@ -48,18 +56,24 @@ export class PaymentsController {
   }
 
   @ApiOperation({ summary: 'Create quick patient invoice for instant laptop screen KHQR scan' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Post('quick-invoice')
   createQuickInvoice(@Body() dto: CreateQuickInvoiceDto) {
     return this.paymentsService.createQuickInvoice(dto);
   }
 
   @ApiOperation({ summary: 'Settle invoice via cash collection with change calculation' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Post('settle-cash')
   settleCash(@Body() dto: { invoiceId: string; amountTendered: number }) {
     return this.paymentsService.settleCash(dto.invoiceId, dto.amountTendered);
   }
 
   @ApiOperation({ summary: 'Update or correct invoice status and details' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Patch('invoices/:id')
   updateInvoice(
     @Param('id') id: string,

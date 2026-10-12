@@ -7,3 +7,11 @@ dist/
 backend.log
 prisma/*.db
 prisma/*.db-journal
+data/
+data/*.json
+!data/*.example
+*.pem
+*.key
+*.cert
+*.crt
+

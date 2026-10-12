@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import * as path from 'path';
 import { PrismaModule } from './prisma/prisma.module';
@@ -17,6 +17,7 @@ import { SystemModule } from './system/system.module';
 import { TelegramModule } from './telegram/telegram.module';
 import { UploadModule } from './upload/upload.module';
 import { TrackingModule } from './tracking/tracking.module';
+import { RateLimiterMiddleware } from './common/middleware/rate-limiter.middleware';
 
 @Module({
   imports: [
@@ -46,4 +47,8 @@ import { TrackingModule } from './tracking/tracking.module';
     TrackingModule,
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(RateLimiterMiddleware).forRoutes('*');
+  }
+}

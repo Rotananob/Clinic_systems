@@ -1,8 +1,11 @@
-import { Controller, Post, Body, HttpException, HttpStatus } from '@nestjs/common';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { Controller, Post, Body, HttpException, HttpStatus, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { HardwareService } from './hardware.service';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 
 @ApiTags('Hardware')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('hardware')
 export class HardwareController {
   constructor(private readonly hardwareService: HardwareService) {}

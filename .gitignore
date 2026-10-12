@@ -42,6 +42,15 @@ credentials/
 id_rsa*
 id_ed25519*
 
+# Runtime Secrets & Data Stores (STRICT EXCLUSION)
+data/
+backend/data/
+**/data/*.json
+!**/data/*.example
+!**/data/*.example.json
+*.bot.json
+telegram-bot.json
+
 # Database Local Storage & Dumps
 *.sqlite
 *.sqlite3
