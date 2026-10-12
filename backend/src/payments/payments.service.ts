@@ -348,7 +348,7 @@ export class PaymentsService {
     };
   }
 
-  async checkStatus(tranId: string) {
+  async checkStatus(tranId: string, forceFresh = false) {
     const txn = await this.prisma.paymentTransaction.findUnique({
       where: { tranId },
       include: { invoice: true },
@@ -370,10 +370,10 @@ export class PaymentsService {
       };
     }
 
-    // 2. Strict anti-spam rate limiter: if checked in the last 3500ms, return cached response
+    // 2. Anti-spam rate limiter: if checked in the last 1200ms and not forceFresh, return cached response
     const now = Date.now();
     const cached = this.statusCheckCache.get(tranId);
-    if (cached && now - cached.timestamp < 3500) {
+    if (!forceFresh && cached && now - cached.timestamp < 1200) {
       return cached.result;
     }
 

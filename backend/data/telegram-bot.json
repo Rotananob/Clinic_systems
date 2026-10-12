@@ -5,9 +5,17 @@
   "botUsername": "Clinic_alertbot",
   "botName": "Clinic_Alert",
   "pendingAdmin": false,
-  "topics": {},
+  "topics": {
+    "paymentsThreadId": 19,
+    "queueThreadId": 21,
+    "pharmacyThreadId": 23,
+    "securityThreadId": 25
+  },
   "notifyOnPayment": true,
   "notifyOnQueueCheckin": true,
   "notifyOnLowStock": true,
-  "notifyOnSecurityAudit": true
+  "notifyOnSecurityAudit": true,
+  "chatTitle": "",
+  "isForum": true,
+  "connectedAt": "2026-10-12T05:29:58.926Z"
 }

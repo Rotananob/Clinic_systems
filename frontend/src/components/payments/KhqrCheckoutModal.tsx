@@ -81,6 +81,7 @@ export function KhqrCheckoutModal({
   const [isMobile, setIsMobile] = useState(false);
   const [settledInvoiceData, setSettledInvoiceData] = useState<any>(null);
   const [autoOpeningReceipt, setAutoOpeningReceipt] = useState(false);
+  const [checkingStatus, setCheckingStatus] = useState(false);
 
   const [qrData, setQrData] = useState<{
     qrString: string;
@@ -183,8 +184,8 @@ export function KhqrCheckoutModal({
     }, 1800);
   };
 
-  // Safe polite polling with recursive setTimeout (4s interval) to prevent request overlapping or server spam
-  const startPolling = (tranId: string) => {
+  // Safe polite polling with recursive setTimeout (2.5s interval) to prevent request overlapping or server spam
+  const startPolling = (tranId: string, initialDelay = 2500) => {
     clearPolling();
     isPollingRef.current = true;
 
@@ -199,18 +200,18 @@ export function KhqrCheckoutModal({
         }
       } catch {
         consecutiveErrorsRef.current += 1;
-        if (consecutiveErrorsRef.current >= 4) {
+        if (consecutiveErrorsRef.current >= 6) {
           clearPolling();
           return;
         }
       }
 
       if (isPollingRef.current) {
-        pollTimerRef.current = setTimeout(poll, 4000);
+        pollTimerRef.current = setTimeout(poll, 2500);
       }
     };
 
-    pollTimerRef.current = setTimeout(poll, 4000);
+    pollTimerRef.current = setTimeout(poll, initialDelay);
   };
 
   const generateKhqr = async (id: string, requestId = ++activeRequestRef.current) => {
@@ -346,28 +347,76 @@ export function KhqrCheckoutModal({
     return () => clearInterval(interval);
   }, [qrData, settled, storageKey]);
 
-  // Instant App-Switch Wakeup (Safari / Mobile Chrome tab resumption)
+  // Instant App-Switch Wakeup (Safari / Mobile Chrome tab resumption from banking app)
   useEffect(() => {
+    let burstTimer: NodeJS.Timeout | null = null;
+
     const handleVisibilityOrFocus = async () => {
-      if (isOpen && isPollingRef.current && qrData?.tranId && !settled && document.visibilityState === 'visible') {
+      // Must be open, have transaction ID, and not already settled
+      if (!isOpen || !qrData?.tranId || settled) return;
+      if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
+
+      const currentTranId = qrData.tranId;
+      isPollingRef.current = true;
+
+      // 1. Immediate fresh check upon app resumption (forceFresh = true bypasses cache)
+      try {
+        const res = await api.payments.checkStatus(currentTranId, true);
+        if (res.status === 'SUCCESS' || res.invoiceStatus === 'PAID') {
+          handleSuccess();
+          return;
+        }
+      } catch {}
+
+      // 2. Accelerated burst sequence (at 1s, 2.2s, 3.5s) to capture bank gateway settlement latency
+      let burstCount = 0;
+      const executeBurst = async () => {
+        if (!isPollingRef.current || settled) return;
+        burstCount += 1;
         try {
-          const res = await api.payments.checkStatus(qrData.tranId);
-          if (res.status === 'SUCCESS' || res.invoiceStatus === 'PAID') {
+          const burstRes = await api.payments.checkStatus(currentTranId, true);
+          if (burstRes.status === 'SUCCESS' || burstRes.invoiceStatus === 'PAID') {
             handleSuccess();
+            return;
           }
         } catch {}
-      }
+
+        if (burstCount < 3 && isPollingRef.current && !settled) {
+          burstTimer = setTimeout(executeBurst, 1200);
+        } else if (isPollingRef.current && !settled) {
+          // Resume standard background poller
+          startPolling(currentTranId, 2500);
+        }
+      };
+
+      burstTimer = setTimeout(executeBurst, 1000);
     };
 
     window.addEventListener('visibilitychange', handleVisibilityOrFocus);
     window.addEventListener('pageshow', handleVisibilityOrFocus);
     window.addEventListener('focus', handleVisibilityOrFocus);
     return () => {
+      if (burstTimer) clearTimeout(burstTimer);
       window.removeEventListener('visibilitychange', handleVisibilityOrFocus);
       window.removeEventListener('pageshow', handleVisibilityOrFocus);
       window.removeEventListener('focus', handleVisibilityOrFocus);
     };
   }, [isOpen, qrData?.tranId, settled]);
+
+  const handleManualCheckStatus = async () => {
+    if (!qrData?.tranId || checkingStatus || settled) return;
+    setCheckingStatus(true);
+    try {
+      const res = await api.payments.checkStatus(qrData.tranId, true);
+      if (res.status === 'SUCCESS' || res.invoiceStatus === 'PAID') {
+        handleSuccess();
+      }
+    } catch {
+      // Ignore network errors on manual retry
+    } finally {
+      setCheckingStatus(false);
+    }
+  };
 
   const handleInstantSettle = async () => {
     if (!qrData?.tranId) return;
@@ -454,10 +503,11 @@ export function KhqrCheckoutModal({
     return qrData?.deeplinks?.wing?.ios || `wingmoney://qr?data=${encodeURIComponent(qrStr)}`;
   };
 
-  // When mobile user taps a banking deep link, temporarily halt polling (0 calls, wait for MTProto)
+  // When mobile user taps a banking deep link: pause background timer while user is in banking app
   const handleDeeplinkClick = () => {
-    if (isMobile) {
-      clearPolling();
+    if (pollTimerRef.current) {
+      clearTimeout(pollTimerRef.current);
+      pollTimerRef.current = null;
     }
   };
 
@@ -677,23 +727,35 @@ export function KhqrCheckoutModal({
               </div>
 
               {/* Status Poller & 3-Minute Countdown Banner */}
-              <div className="bg-slate-50 border border-slate-200 rounded-xl p-2.5 flex items-center justify-between text-[11px] text-slate-600">
-                <span className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span>
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-2.5 flex items-center justify-between text-[11px] text-slate-600 gap-2">
+                <span className="flex items-center gap-1.5 truncate">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                  <span className="truncate">
                     {isKm
-                      ? 'ប្រព័ន្ធកំពុងរង់ចាំការទូទាត់ (MTProto Push)...'
-                      : 'Listening for settlement push (MTProto)...'}
+                      ? 'ប្រព័ន្ធកំពុងរង់ចាំការទូទាត់...'
+                      : 'Listening for settlement push...'}
                   </span>
                 </span>
-                <span className="flex items-center gap-1 font-mono text-slate-500 font-semibold">
-                  <Clock className="w-3.5 h-3.5 text-slate-400" />
-                  <span className={countdown <= 30 ? 'text-rose-600 font-bold' : ''}>
-                    {countdown <= 0
-                      ? (isKm ? 'ផុតកំណត់' : 'Expired')
-                      : `${Math.floor(countdown / 60)}:${(countdown % 60).toString().padStart(2, '0')}`}
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    disabled={checkingStatus}
+                    onClick={handleManualCheckStatus}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-[10px] font-semibold transition shadow-2xs"
+                    title={isKm ? 'ពិនិត្យស្ថានភាពភ្លាមៗ' : 'Check status immediately'}
+                  >
+                    <RefreshCw className={`w-3 h-3 text-teal-700 ${checkingStatus ? 'animate-spin' : ''}`} />
+                    <span>{isKm ? 'ពិនិត្យភ្លាមៗ' : 'Check Now'}</span>
+                  </button>
+                  <span className="flex items-center gap-1 font-mono text-slate-500 font-semibold">
+                    <Clock className="w-3.5 h-3.5 text-slate-400" />
+                    <span className={countdown <= 30 ? 'text-rose-600 font-bold' : ''}>
+                      {countdown <= 0
+                        ? (isKm ? 'ផុតកំណត់' : 'Expired')
+                        : `${Math.floor(countdown / 60)}:${(countdown % 60).toString().padStart(2, '0')}`}
+                    </span>
                   </span>
-                </span>
+                </div>
               </div>
 
               {/* 1. TOP SECTION: MULTI-BANK DEEPLINKS (Mobile Active / Desktop Locked) */}

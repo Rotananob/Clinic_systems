@@ -42,8 +42,9 @@ export class PaymentsController {
 
   @ApiOperation({ summary: 'Real-time status check for client poller' })
   @Get('status/:tranId')
-  checkStatus(@Param('tranId') tranId: string) {
-    return this.paymentsService.checkStatus(tranId);
+  checkStatus(@Param('tranId') tranId: string, @Query('force') force?: string) {
+    const forceFresh = force === 'true' || force === '1';
+    return this.paymentsService.checkStatus(tranId, forceFresh);
   }
 
   @ApiOperation({ summary: 'Create quick patient invoice for instant laptop screen KHQR scan' })

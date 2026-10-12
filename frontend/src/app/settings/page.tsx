@@ -164,6 +164,13 @@ export default function SettingsPage() {
 
   useEffect(() => {
     try {
+      if (typeof window !== 'undefined') {
+        const urlParams = new URLSearchParams(window.location.search);
+        const tab = urlParams.get('tab');
+        if (tab && ['profile', 'khqr', 'fees', 'receipt', 'hardware', 'telegram', 'security'].includes(tab)) {
+          setActiveTab(tab as any);
+        }
+      }
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);

@@ -222,15 +222,18 @@ class ApiClient {
         method: 'POST',
         body: JSON.stringify({ tranId }),
       }),
-    checkStatus: (tranId: string) => {
-      const key = `status:${tranId}`;
-      if (this.inFlightPromises.has(key)) {
+    checkStatus: (tranId: string, force = false) => {
+      const query = force ? '?force=true' : '';
+      const key = `status:${tranId}${query}`;
+      if (!force && this.inFlightPromises.has(key)) {
         return this.inFlightPromises.get(key)!;
       }
-      const promise = this.request<any>(`/payments/status/${tranId}`).finally(() => {
+      const promise = this.request<any>(`/payments/status/${tranId}${query}`).finally(() => {
         this.inFlightPromises.delete(key);
       });
-      this.inFlightPromises.set(key, promise);
+      if (!force) {
+        this.inFlightPromises.set(key, promise);
+      }
       return promise;
     },
     createQuickInvoice: (data: {

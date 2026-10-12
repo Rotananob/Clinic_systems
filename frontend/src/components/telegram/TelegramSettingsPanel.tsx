@@ -30,6 +30,7 @@ export const TelegramSettingsPanel: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [pairingActive, setPairingActive] = useState(false);
   const [pairingStep, setPairingStep] = useState<'IDLE' | 'WAITING_ADD' | 'PAIRED'>('IDLE');
+  const [pairingDeepLink, setPairingDeepLink] = useState<string | null>(null);
   const [testingCategory, setTestingCategory] = useState<string | null>(null);
   const [checkingAdmin, setCheckingAdmin] = useState(false);
 
@@ -66,7 +67,15 @@ export const TelegramSettingsPanel: React.FC = () => {
       const session = await api.telegram.startPairing();
       // Open Telegram app / web directly to add bot to group
       if (session.deepLink) {
-        window.open(session.deepLink, '_blank', 'noopener,noreferrer');
+        setPairingDeepLink(session.deepLink);
+        try {
+          const opened = window.open(session.deepLink, '_blank', 'noopener,noreferrer');
+          if (!opened || opened.closed || typeof opened.closed === 'undefined') {
+            window.location.href = session.deepLink;
+          }
+        } catch {
+          window.location.href = session.deepLink;
+        }
       }
 
       toast.info(
@@ -420,20 +429,32 @@ export const TelegramSettingsPanel: React.FC = () => {
                 </div>
               </div>
 
-              <div className="pt-2 flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={handleStartPairing}
-                  className="px-3.5 py-1.5 bg-teal-700 hover:bg-teal-800 text-white rounded-lg text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-colors"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  <span>{isKm ? 'បើក Telegram ឡើងវិញ' : 'Re-open Telegram'}</span>
-                </button>
+              <div className="pt-2 flex flex-wrap items-center gap-3">
+                {pairingDeepLink ? (
+                  <a
+                    href={pairingDeepLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 bg-teal-700 hover:bg-teal-800 text-white rounded-lg text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-colors"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span>{isKm ? 'បើកកម្មវិធី Telegram' : 'Open Telegram App'}</span>
+                  </a>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleStartPairing}
+                    className="px-3.5 py-1.5 bg-teal-700 hover:bg-teal-800 text-white rounded-lg text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-colors"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span>{isKm ? 'បើក Telegram ឡើងវិញ' : 'Re-open Telegram'}</span>
+                  </button>
+                )}
 
                 <button
                   type="button"
                   onClick={handleCancelPairing}
-                  className="px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold transition-colors"
+                  className="px-3.5 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold transition-colors"
                 >
                   <span>{isKm ? 'បោះបង់' : 'Cancel'}</span>
                 </button>
