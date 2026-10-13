@@ -1,4 +1,4 @@
-# មន្ទីរសម្រាកព្យាបាល ហួន វណ្ណៈ (Houn Vannak Medical Clinic & Polyclinic)
+# មន្ទីរសម្រាកព្យាបាល ហួន វណ្ណៈ 
 ## Enterprise Clinical Patient Management, KHQR Billing & Telegram Forum Bot System
 ### Version 1.0.0 Production Ready
 
