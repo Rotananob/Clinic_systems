@@ -24,7 +24,9 @@ import { RateLimiterMiddleware } from './common/middleware/rate-limiter.middlewa
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: [
+        path.resolve(process.cwd(), 'backend/.env'),
         path.resolve(__dirname, '../../.env'),
+        path.resolve(__dirname, '../.env'),
         path.resolve(process.cwd(), '.env'),
         path.resolve(process.cwd(), '../.env'),
       ],

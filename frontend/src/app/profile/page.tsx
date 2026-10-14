@@ -83,13 +83,16 @@ export default function ProfilePage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Reset file input value so selecting the same file triggers change again
+    e.target.value = '';
+
     if (!file.type.startsWith('image/')) {
       showFeedback('error', isKh ? 'សូមជ្រើសរើសឯកសាររូបភាពត្រឹមត្រូវ (JPG, PNG, WEBP)' : 'Please select a valid image file');
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      showFeedback('error', isKh ? 'ទំហំរូបភាពមិនត្រូវលើសពី 5MB ឡើយ' : 'Image size cannot exceed 5MB');
+    if (file.size > 15 * 1024 * 1024) {
+      showFeedback('error', isKh ? 'ទំហំរូបភាពមិនត្រូវលើសពី 15MB ឡើយ' : 'Image size cannot exceed 15MB');
       return;
     }
 

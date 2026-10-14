@@ -28,11 +28,13 @@ services:
       - key: BAKONG_CURRENCY
         value: USD
       - key: CLOUDINARY_CLOUD_NAME
-        sync: false
+        value: lkpe4jyo
       - key: CLOUDINARY_API_KEY
-        sync: false
+        value: "328623574498885"
       - key: CLOUDINARY_API_SECRET
-        sync: false
+        value: 9IW34m0PG4gx6Tht4bq9esNKRLQ
+      - key: CLOUDINARY_URL
+        value: cloudinary://328623574498885:9IW34m0PG4gx6Tht4bq9esNKRLQ@lkpe4jyo
       - key: TELEGRAM_BOT_TOKEN
         value: 8934642394:AAG-nzLq9Zr0DnMWgwkSgAE_HZdp1ddLn8s
       - key: FRONTEND_URL
