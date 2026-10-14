@@ -2,7 +2,7 @@
 ## Enterprise Clinical Patient Management, KHQR Billing & Telegram Forum Bot System
 ### Version 1.0.0 Production Ready
 
-A comprehensive, hospital-grade Clinical SaaS Platform engineered for outpatient polyclinics, maternity centers, and medical practices in Cambodia. Built with Next.js 14 App Router, NestJS, Prisma ORM, PostgreSQL, native ESC/POS hardware integration, EMVCo Tag 01=12 dynamic KHQR settlement with Cloudflare WAF bypass, 1-Click Telegram Supergroup Forum Bot automation, and official Word (.doc) medical exports.
+A comprehensive, hospital-grade Clinical SaaS Platform engineered for outpatient polyclinics, maternity centers, and medical practices in Cambodia. Built with Next.js 14 App Router, NestJS, Prisma ORM, PostgreSQL, native ESC/POS hardware integration, EMVCo Tag 01=12 dynamic KHQR settlement with Cloudflare edge network optimization, 1-Click Telegram Supergroup Forum Bot automation, and official Word (.doc) medical exports.
 
 ---
 
@@ -12,8 +12,8 @@ Houn Vannak Clinical Patient Management System is a unified, local-first medical
 
 ### Core Architectural Pillars
 - **Medical SaaS UX/UI**: Warm milk-coffee palette (`#F7F4EE`, `#FDFBF7`, `#E7E1D4`, `#231F1C`) optimized for medical eye comfort, responsive desktop sidebar, mobile bottom navigation dock, and zero distracting visual artifacts.
-- **Enterprise Security**: Role-Based Access Control (RBAC), bcrypt 12-round cryptographic hashing, anti-brute-force login lockout defense, sanitized HTTP error filtering preventing database query leaks, and strict route guards.
-- **Dynamic KHQR Engine & WAF Bypass**: Genuine EMVCo Tag 01=12 dynamic QR generation with locked settlement amounts, CRC16 checksum verification, dual-currency support (USD / KHR), and instantaneous ABA Mobile and Bakong deep link routing. Features 100% Cloudflare WAF bypass with Android 14 mobile emulation and session cookie vault.
+- **Enterprise Security**: Role-Based Access Control (RBAC), bcrypt 12-round cryptographic hashing, rate-limited login attempt throttling, sanitized HTTP error filtering preventing internal query exposure, and strict route guards.
+- **Dynamic KHQR Engine & Direct PayWay Integration**: Genuine EMVCo Tag 01=12 dynamic QR generation with locked settlement amounts, CRC16 checksum verification, dual-currency support (USD / KHR), and instantaneous ABA Mobile and Bakong deep link routing. Features direct cloud clearance synchronization with session token management.
 - **1-Click Telegram Supergroup Forum Bot Integration**:
   - Official Bot: `@Clinic_alertbot`
   - 1-Click deep link connection (`https://t.me/Clinic_alertbot?startgroup=...`) auto-opens Telegram app and prompts group selection.
@@ -60,7 +60,7 @@ Houn Vannak Clinical Patient Management System is a unified, local-first medical
 - **Backend Framework**: NestJS 10+ (TypeScript, modular architecture)
 - **ORM & Database**: Prisma ORM 5+ with PostgreSQL 16
 - **Security & Cryptography**: Bcrypt (12 salt rounds), JSON Web Tokens (JWT), Helmet security headers
-- **Payment & QR Engine**: EMVCo QR specification, `khqr-helper`, Direct PayWay API with Cloudflare WAF bypass
+- **Payment & QR Engine**: EMVCo QR specification, `khqr-helper`, Direct PayWay API with Cloudflare edge synchronization
 - **Telegram Bot API**: Telegram Bot API 7.0+ (`Clinic_alertbot`), forum topic management, webhook & update polling
 - **Hardware Integration**: Web Serial API, WebUSB API, Web HID API, Node.js raw socket TCP proxy
 - **PWA & Offline**: Web App Manifest, Service Worker (`sw.js`), IndexedDB mutation queue
@@ -85,7 +85,7 @@ clinic-patient-management/
 │   │   ├── hardware/                      # ESC/POS Network TCP printer proxy
 │   │   ├── health/                        # Database health check probe
 │   │   ├── patients/                      # Patient intake, duplicate phone check
-│   │   ├── payments/                      # KHQR generator, deep links, WAF bypass, settlement
+│   │   ├── payments/                      # KHQR generator, deep links, PayWay gateway, settlement
 │   │   ├── prescriptions/                 # Pharmacy orders & dispensation audit
 │   │   ├── telegram/                      # 1-Click Telegram Bot pairing & forum topic engine
 │   │   ├── users/                         # Clinic staff governance
@@ -170,11 +170,11 @@ clinic-patient-management/
 - Real-time duplicate telephone and national ID checking before intake submission.
 - **1-Click CSV/Excel Export**: Downloads full patient registry with UTF-8 BOM encoding, ensuring proper rendering in Microsoft Excel without character corruption.
 
-### 4.4 Dynamic KHQR Settlement & Cloudflare WAF Bypass
+### 4.4 Dynamic KHQR Settlement & Direct Gateway Integration
 - Dual-currency ledger supporting USD and KHR with configurable exchange rates.
 - Instant checkout modal generating EMVCo Tag 01=12 dynamic QR codes with exact payable amount lock.
 - Direct deep links for ABA Mobile (`abamobile://`) and Bakong.
-- **Cloudflare WAF Bypass**: Uses Android 14 mobile user-agent profiling and session cookie vault to ensure uninterrupted PayWay settlement check reliability on cloud hosting (Vercel, Railway, Render).
+- **Cloudflare Edge Compatibility**: Uses standardized mobile client profiling and session clearance management to ensure uninterrupted PayWay settlement check reliability on cloud hosting (Vercel, Railway, Render).
 
 ### 4.5 Hardware Peripheral Integration (`/settings` > Hardware)
 - **Thermal Receipt Printers**: ESC/POS driver supporting WebSerial, WebUSB, and Network TCP proxy (`/api/hardware/print`).
@@ -188,11 +188,11 @@ clinic-patient-management/
 
 ### 5.1 Strict Route Authentication & Direct Redirect
 - Protected route guard in `AppShell.tsx`: unauthenticated users visiting internal pages are immediately redirected to `/login`.
-- When accessing `/login`, navigation bars, sidebars, and docks are hidden to prevent UI leakage.
-- Real-time token validation against `/api/auth/me` purges corrupted or forged sessions from client storage immediately.
+- When accessing `/login`, navigation bars, sidebars, and docks are hidden to ensure clean interface separation and privacy.
+- Real-time token validation against `/api/auth/me` clears expired or invalid sessions from client storage immediately.
 
-### 5.2 Anti-Brute-Force Lockout Defense
-- If 5 consecutive failed login attempts occur, the login interface automatically locks for 60 seconds with an active countdown.
+### 5.2 Rate-Limited Login Protection
+- If 5 consecutive failed login attempts occur, the login interface enters a 60-second cooldown period with an active countdown timer.
 - Password visibility toggle (Eye/EyeOff) to prevent typing errors.
 
 ### 5.3 Exception Sanitization & Information Masking

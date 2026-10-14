@@ -1,4 +1,4 @@
-MASTER DEVELOPMENT PREPARATION PROMPT
+﻿MASTER DEVELOPMENT PREPARATION PROMPT
 Clinic Patient Management System
 
 You are the primary AI software development agent responsible for building a complete Clinic Patient Management System.
@@ -1380,7 +1380,7 @@ This section defines mandatory architectural constraints and user-experience sta
    - Strictly use the native Telegram MTProto User Client (`TelegramMtprotoListener` from `pay-helper`). Authenticated via real Telegram user session (`npx auth-telegram`), it intercepts 100% of ABA alerts in real-time without public webhooks, domains, or port forwarding.
 
 5. ZERO DEDICATED ANDROID PHONES / TASKER / MACDROID RULE (CRITICAL):
-   - STRICTLY FORBIDDEN: Do NOT write instructions or invent architecture requiring a dedicated Android phone on a 24/7 charger running Tasker, MacroDroid, or Notification Forwarders! That is a fragile, outdated hack.
+   - STRICTLY FORBIDDEN: Do NOT write instructions or invent architecture requiring a dedicated Android phone on a 24/7 charger running Tasker, MacroDroid, or Notification Forwarders! That is an unreliable, fragile, and non-enterprise approach.
    - ABA Bank sends official alerts directly to Telegram channels/groups. With `pay-helper`'s native MTProto client, your backend daemon intercepts alerts in <50ms with zero extra hardware.
 
 6. Mandatory Checkout UI/UX Architecture & Layout Rules:
@@ -1421,3 +1421,4 @@ This section defines mandatory architectural constraints and user-experience sta
    - Seamlessly responsive:
      - Mobile / Tablet: Optimized for nurses and doctors walking between consultation rooms.
      - Desktop: Expands into an efficient, dense dual-pane workstation for receptionists and administrators.
+

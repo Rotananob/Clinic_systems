@@ -1,4 +1,4 @@
-# មគ្គុទ្ទេសក៍ការដាក់ឱ្យដំណើរការប្រព័ន្ធឡើង Cloud (Production Deployment Guide 2026)
+﻿# មគ្គុទ្ទេសក៍ការដាក់ឱ្យដំណើរការប្រព័ន្ធឡើង Cloud (Production Deployment Guide 2026)
 ## មន្ទីរសម្រាកព្យាបាល ហួន វណ្ណៈ (Houn Vannak Medical Clinic & Polyclinic)
 
 ---
@@ -163,7 +163,7 @@ Cloudflare ដើរតួជាខែលការពារសុវត្ថិ
      - បើកមុខងារ: **Automatic HTTPS Rewrites** -> `ON`
      - Minimum TLS Version: `TLS 1.2`
    - ចូលទៅកាន់ **Security** -> **Bots**:
-     - បើក **Bot Fight Mode** -> `ON` (ដើម្បីទប់ស្កាត់ Spammer និង Bot មិនឱ្យវាយលុកប្រព័ន្ធ)។
+     - បើក **Bot Fight Mode** -> `ON` (ដើម្បីការពារប្រព័ន្ធពីការរំខានដោយស្វ័យប្រវត្តិ និងចរាចរណ៍ក្លែងក្លាយ)។
 
 ---
 
@@ -183,4 +183,5 @@ Cloudflare ដើរតួជាខែលការពារសុវត្ថិ
    - ការជូនដំណឹងត្រូវបញ្ជូនចូលទៅកាន់ Topic ត្រឹមត្រូវ (Payments, Queue, Pharmacy, Security) ដោយគ្មាន Duplicate។
 5. **សុវត្ថិភាព Cloudflare SSL & Fast DNS:**
    - ពិនិត្យមើលរូបសោរ SSL (Padlock) លើ Browser ឃើញពណ៌បៃតង/សុវត្ថិភាព (HTTPS 100%)។
+
 
