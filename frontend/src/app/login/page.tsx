@@ -82,18 +82,18 @@ export default function LoginPage() {
     }
   };
 
-  const DEMO_EMAIL = 'demo.superadmin@hounvannak.com';
-  const DEMO_PASS = 'Demo#SuperAdmin2026!MasterKey';
+  const TEST_ACCOUNT_EMAIL = 'test.admin@hounvannak.com';
+  const TEST_ACCOUNT_PASS = 'TestAdmin#2026!Clinic';
 
-  const handleOneClickDemoLogin = async () => {
+  const handleOneClickTestLogin = async () => {
     if (lockoutSeconds > 0 || isLoading) return;
-    setEmail(DEMO_EMAIL);
-    setPassword(DEMO_PASS);
+    setEmail(TEST_ACCOUNT_EMAIL);
+    setPassword(TEST_ACCOUNT_PASS);
     setError(null);
     setIsLoading(true);
 
     try {
-      await login(DEMO_EMAIL, DEMO_PASS);
+      await login(TEST_ACCOUNT_EMAIL, TEST_ACCOUNT_PASS);
       setFailedAttempts(0);
       router.push('/');
     } catch (err: unknown) {
@@ -104,9 +104,9 @@ export default function LoginPage() {
     }
   };
 
-  const handleAutoFillDemo = () => {
-    setEmail(DEMO_EMAIL);
-    setPassword(DEMO_PASS);
+  const handleAutoFillTest = () => {
+    setEmail(TEST_ACCOUNT_EMAIL);
+    setPassword(TEST_ACCOUNT_PASS);
     setError(null);
   };
 
@@ -218,39 +218,39 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Test / Evaluation Account Showcase with 1-Click Login */}
-        <div className="mt-5 p-3.5 rounded-2xl bg-gradient-to-br from-emerald-50/80 via-teal-50/50 to-stone-50 border border-teal-200/80 shadow-xs">
+        {/* Evaluation Account Showcase with 1-Click Login and Auto-fill */}
+        <div className="mt-5 p-3.5 rounded-2xl bg-[#FAF8F5] border border-[#E7E1D4] shadow-2xs">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-1.5">
               <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold tracking-wide bg-teal-800 text-white font-mono uppercase">
                 SUPER_ADMIN
               </span>
               <span className="text-[11px] font-semibold text-stone-700">
-                {isKm ? 'គណនីសាកល្បង' : 'Demo Account'}
+                {isKm ? 'គណនីវាយតម្លៃប្រព័ន្ធ' : 'Evaluation Account'}
               </span>
             </div>
-            <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-md font-mono border border-emerald-200/60">
-              {isKm ? 'ផុតកំណត់: 31/12/2026' : 'Expires: 31/12/2026'}
+            <span className="text-[10px] font-medium text-stone-600 bg-stone-200/70 px-2 py-0.5 rounded-md font-mono">
+              {isKm ? 'សុពលភាព: 31/12/2026' : 'Valid until: 31/12/2026'}
             </span>
           </div>
 
-          <div className="text-[11px] text-stone-600 space-y-1 mb-3 font-mono bg-white/90 p-2.5 rounded-xl border border-teal-100/90 shadow-2xs">
+          <div className="text-[11px] text-stone-600 space-y-1 mb-3 font-mono bg-white p-2.5 rounded-xl border border-[#E7E1D4]">
             <div className="flex items-center justify-between">
               <span className="text-stone-400 font-sans text-[10px]">Email:</span>
               <span className="font-semibold text-stone-800 selection:bg-teal-100 select-all">
-                demo.superadmin@hounvannak.com
+                test.admin@hounvannak.com
               </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-stone-400 font-sans text-[10px]">{isKm ? 'ពាក្យសម្ងាត់:' : 'Password:'}</span>
               <span className="font-semibold text-stone-800 selection:bg-teal-100 select-all">
-                Demo#SuperAdmin2026!MasterKey
+                TestAdmin#2026!Clinic
               </span>
             </div>
             <div className="flex items-center justify-between pt-1 border-t border-stone-100 text-[10px]">
-              <span className="text-stone-400 font-sans">{isKm ? 'សិទ្ធិ:' : 'Access:'}</span>
-              <span className="text-teal-800 font-sans font-bold">
-                {isKm ? 'មហាសិទ្ធិ (Full Access & All Modules)' : 'Full Master Access (100%)'}
+              <span className="text-stone-400 font-sans">{isKm ? 'ប្រភពទិន្នន័យ:' : 'Data Source:'}</span>
+              <span className="text-stone-700 font-sans font-medium">
+                {isKm ? 'ទិន្នន័យជាក់ស្តែងពី Database (PostgreSQL)' : 'Live Database Data (PostgreSQL)'}
               </span>
             </div>
           </div>
@@ -258,21 +258,21 @@ export default function LoginPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <button
               type="button"
-              onClick={handleOneClickDemoLogin}
+              onClick={handleOneClickTestLogin}
               disabled={isLoading || lockoutSeconds > 0}
-              className="w-full py-2 px-3 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs font-bold transition-all shadow-sm hover:shadow flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+              className="w-full py-2 px-3 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs font-semibold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
               <Zap className="w-3.5 h-3.5 fill-current" />
-              <span>{isKm ? 'ចូលប្រើភ្លាមៗ (1-Click)' : '1-Click Demo Login'}</span>
+              <span>{isKm ? 'ចូលប្រើភ្លាមៗ (1-Click)' : '1-Click Login'}</span>
             </button>
             <button
               type="button"
-              onClick={handleAutoFillDemo}
+              onClick={handleAutoFillTest}
               disabled={isLoading || lockoutSeconds > 0}
-              className="w-full py-2 px-3 bg-white hover:bg-stone-100 text-stone-700 border border-stone-200 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+              className="w-full py-2 px-3 bg-white hover:bg-stone-50 text-stone-700 border border-[#E7E1D4] rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
               <KeyRound className="w-3.5 h-3.5 text-stone-500" />
-              <span>{isKm ? 'បំពេញស្វ័យប្រវត្តិ' : 'Auto-fill Form'}</span>
+              <span>{isKm ? 'បំពេញទិន្នន័យ' : 'Auto-fill'}</span>
             </button>
           </div>
         </div>

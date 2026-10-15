@@ -21,31 +21,28 @@ async function main() {
   const cashierHash = await bcrypt.hash(cashierPassword, 12);
   const pharmacyHash = await bcrypt.hash(pharmacyPassword, 12);
 
-  const demoExpiresAt = new Date('2026-12-31T23:59:59.999Z');
-  const demoPassword = process.env.SEED_DEMO_PASSWORD || 'Demo#SuperAdmin2026!MasterKey';
+  const demoPassword = process.env.SEED_DEMO_PASSWORD || 'TestAdmin#2026!Clinic';
   const demoHash = await bcrypt.hash(demoPassword, 12);
 
   const demoSuperAdmin = await prisma.user.upsert({
-    where: { email: 'demo.superadmin@hounvannak.com' },
+    where: { email: 'test.admin@hounvannak.com' },
     update: {
       passwordHash: demoHash,
       role: Role.SUPER_ADMIN,
       isActive: true,
-      expiresAt: demoExpiresAt,
-      fullNameEn: 'Demo Super Administrator (Evaluation)',
-      fullNameKh: 'គណនីសាកល្បងជាន់ខ្ពស់ (Super Admin Demo)',
+      fullNameEn: 'Test Administrator',
+      fullNameKh: 'អ្នកគ្រប់គ្រងប្រព័ន្ធសាកល្បង',
     },
     create: {
-      email: 'demo.superadmin@hounvannak.com',
+      email: 'test.admin@hounvannak.com',
       passwordHash: demoHash,
-      fullNameEn: 'Demo Super Administrator (Evaluation)',
-      fullNameKh: 'គណនីសាកល្បងជាន់ខ្ពស់ (Super Admin Demo)',
+      fullNameEn: 'Test Administrator',
+      fullNameKh: 'អ្នកគ្រប់គ្រងប្រព័ន្ធសាកល្បង',
       role: Role.SUPER_ADMIN,
       phone: '012999000',
       isActive: true,
-      expiresAt: demoExpiresAt,
       department: 'Executive Medical Board',
-      bio: 'Pre-configured full-access evaluation account expiring 31/12/2026.',
+      bio: 'Evaluation account with full administrative privileges.',
     },
   });
 

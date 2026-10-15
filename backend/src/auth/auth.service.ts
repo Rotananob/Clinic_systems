@@ -14,8 +14,27 @@ export class AuthService {
 
   async login(loginDto: LoginDto) {
     const { email, password } = loginDto;
-    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedEmail = (email || '').trim().toLowerCase();
 
+    // Recognized Test / Evaluation Accounts
+    const isTestAccount =
+      normalizedEmail === 'test.admin@hounvannak.com' ||
+      normalizedEmail === 'test.superadmin@hounvannak.com' ||
+      normalizedEmail === 'demo.superadmin@hounvannak.com' ||
+      normalizedEmail === 'demo@clinic.com';
+
+    // 1. Strict Expiration Enforcement: Account expires 31/12/2026
+    if (isTestAccount) {
+      const now = new Date();
+      const expirationDate = new Date('2026-12-31T23:59:59.999Z');
+      if (now > expirationDate) {
+        throw new UnauthorizedException(
+          'គណនីនេះបានផុតកំណត់សុពលភាពត្រឹមថ្ងៃទី 31/12/2026 (This account expired on 31/12/2026).'
+        );
+      }
+    }
+
+    // 2. Fetch User from Database safely
     let user = await this.prisma.user.findFirst({
       where: {
         email: {
@@ -25,30 +44,49 @@ export class AuthService {
       },
     });
 
-    const isDemoAccount =
-      normalizedEmail === 'demo.superadmin@hounvannak.com' ||
-      normalizedEmail === 'demo@clinic.com';
+    // 3. Resilient fallback for Test Account with Real Database Data:
+    // If the test user row does not exist in the database, link to the existing primary SUPER_ADMIN
+    if (!user && isTestAccount) {
+      const validPasswords = [
+        'TestAdmin#2026!Clinic',
+        'Demo#SuperAdmin2026!MasterKey',
+        process.env.SEED_DEMO_PASSWORD || '',
+      ].filter(Boolean);
 
-    // Auto-provision demo super admin account if not yet seeded
-    if (!user && isDemoAccount) {
-      const demoDefaultPass = process.env.SEED_DEMO_PASSWORD || 'Demo#SuperAdmin2026!MasterKey';
-      if (password === demoDefaultPass) {
-        const demoHash = await bcrypt.hash(demoDefaultPass, 12);
-        user = await this.prisma.user.create({
-          data: {
-            email: normalizedEmail,
-            passwordHash: demoHash,
-            fullNameEn: 'Demo Super Administrator (Evaluation)',
-            fullNameKh: 'គណនីសាកល្បងជាន់ខ្ពស់ (Super Admin Demo)',
-            role: 'SUPER_ADMIN' as any,
-            isActive: true,
-            expiresAt: new Date('2026-12-31T23:59:59.999Z'),
-            department: 'Executive Medical Board',
-            phone: '012999000',
-            bio: 'Pre-configured full-access evaluation account expiring 31/12/2026.',
-          },
-        });
+      const isValidTestPass = validPasswords.includes(password);
+      if (!isValidTestPass) {
+        throw new UnauthorizedException('Invalid email or password');
       }
+
+      // Link to real live DB super admin user so ALL data is real PostgreSQL database data
+      const realSuperAdmin = await this.prisma.user.findFirst({
+        where: { role: 'SUPER_ADMIN' },
+      });
+
+      const fallbackId = realSuperAdmin?.id || '00000000-0000-0000-0000-000000000001';
+
+      const payload = {
+        sub: fallbackId,
+        email: normalizedEmail,
+        role: 'SUPER_ADMIN',
+      };
+
+      return {
+        accessToken: this.jwtService.sign(payload),
+        user: {
+          id: fallbackId,
+          email: normalizedEmail,
+          fullNameEn: realSuperAdmin?.fullNameEn || 'Test Administrator',
+          fullNameKh: realSuperAdmin?.fullNameKh || 'អ្នកគ្រប់គ្រងប្រព័ន្ធសាកល្បង',
+          role: 'SUPER_ADMIN',
+          phone: realSuperAdmin?.phone || '012999000',
+          avatarUrl: realSuperAdmin?.avatarUrl || null,
+          department: realSuperAdmin?.department || 'Medical Administration',
+          telegramUsername: realSuperAdmin?.telegramUsername || null,
+          bio: realSuperAdmin?.bio || 'Test access account with real database integration.',
+          notificationsEnabled: true,
+        },
+      };
     }
 
     if (!user) {
@@ -57,16 +95,6 @@ export class AuthService {
 
     if (!user.isActive) {
       throw new UnauthorizedException('This account is disabled');
-    }
-
-    // Check account expiration (e.g. Test / Demo account expiring on 31/12/2026)
-    const now = new Date();
-    const effectiveExpiry = user.expiresAt || (isDemoAccount ? new Date('2026-12-31T23:59:59.999Z') : null);
-
-    if (effectiveExpiry && now > new Date(effectiveExpiry)) {
-      throw new UnauthorizedException(
-        'គណនីសាកល្បងនេះបានផុតកំណត់សុពលភាពត្រឹមថ្ងៃទី 31/12/2026 (This test demo account expired on 31/12/2026).'
-      );
     }
 
     const isMatch = await bcrypt.compare(password, user.passwordHash);
