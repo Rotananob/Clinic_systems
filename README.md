@@ -15,8 +15,8 @@ Houn Vannak Clinical Patient Management System is a unified, local-first medical
 - **Enterprise Security**: Role-Based Access Control (RBAC), bcrypt 12-round cryptographic hashing, rate-limited login attempt throttling, sanitized HTTP error filtering preventing internal query exposure, and strict route guards.
 - **Dynamic KHQR Engine & Direct PayWay Integration**: Genuine EMVCo Tag 01=12 dynamic QR generation with locked settlement amounts, CRC16 checksum verification, dual-currency support (USD / KHR), and instantaneous ABA Mobile and Bakong deep link routing. Features direct cloud clearance synchronization with session token management.
 - **1-Click Telegram Supergroup Forum Bot Integration**:
-  - Official Bot: `@Clinic_alertbot`
-  - 1-Click deep link connection (`https://t.me/Clinic_alertbot?startgroup=...`) auto-opens Telegram app and prompts group selection.
+  - Official Bot: `@Clinic_systemBot`
+  - 1-Click deep link connection (`https://t.me/Clinic_systemBot?startgroup=...`) auto-opens Telegram app and prompts group selection.
   - Automatic Chat ID detection when bot enters group.
   - Smart Permission Inspection: Checks administrator rights and `can_manage_topics`.
   - Auto-creates 4 dedicated forum topics for Payments, Queue, Pharmacy, and Security.
@@ -61,7 +61,7 @@ Houn Vannak Clinical Patient Management System is a unified, local-first medical
 - **ORM & Database**: Prisma ORM 5+ with PostgreSQL 16
 - **Security & Cryptography**: Bcrypt (12 salt rounds), JSON Web Tokens (JWT), Helmet security headers
 - **Payment & QR Engine**: EMVCo QR specification, `khqr-helper`, Direct PayWay API with Cloudflare edge synchronization
-- **Telegram Bot API**: Telegram Bot API 7.0+ (`Clinic_alertbot`), forum topic management, webhook & update polling
+- **Telegram Bot API**: Telegram Bot API 7.0+ (`Clinic_systemBot`), forum topic management, webhook & update polling
 - **Hardware Integration**: Web Serial API, WebUSB API, Web HID API, Node.js raw socket TCP proxy
 - **PWA & Offline**: Web App Manifest, Service Worker (`sw.js`), IndexedDB mutation queue
 - **Testing**: Node.js native test runner (`node --test`), 100% i18n parity check
@@ -148,7 +148,7 @@ clinic-patient-management/
 ## 4. Key Clinical Modules
 
 ### 4.1 1-Click Telegram Bot & Forum Topics Bridge
-- **Official Bot**: `@Clinic_alertbot` (Clinic_Alert).
+- **Official Bot**: `@Clinic_systemBot` (Clinic_System).
 - **1-Click Connection**: Admin clicks "Connect to Telegram (1-Click Connect)" in **Settings > Telegram Bot**. The browser triggers a deep link opening the Telegram app and prompting the user to pick a group.
 - **Auto-Detection**: The backend listens to updates, auto-captures the group Chat ID, and inspects bot administrator rights.
 - **Smart Forum Topics Initialization**:
@@ -226,7 +226,7 @@ cp backend/.env.example backend/.env
 cp frontend/.env.example frontend/.env
 ```
 
-Ensure `TELEGRAM_BOT_TOKEN="8934642394:AAG-nzLq9Zr0DnMWgwkSgAE_HZdp1ddLn8s"` and `TELEGRAM_BOT_USERNAME="Clinic_alertbot"` are present in `backend/.env`.
+Ensure `TELEGRAM_BOT_TOKEN="8822219627:AAHjLV4FeVD5XS55BpUil24UgLdR3WsiUsg"` and `TELEGRAM_BOT_USERNAME="Clinic_systemBot"` are present in `backend/.env`.
 
 ### 3. Install Monorepo Dependencies
 ```bash

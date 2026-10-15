@@ -297,7 +297,7 @@ export const TelegramSettingsPanel: React.FC = () => {
                     : (isKm ? 'មិនទាន់ភ្ជាប់' : 'DISCONNECTED')}
                 </span>
                 <span className="text-[10px] font-mono text-teal-800 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-200">
-                  @{botStatus?.botUsername || 'Clinic_alertbot'}
+                  @{botStatus?.botUsername || 'Clinic_systemBot'}
                 </span>
               </div>
               <p className="text-xs text-slate-600 mt-1">
@@ -359,7 +359,7 @@ export const TelegramSettingsPanel: React.FC = () => {
               <span>{isKm ? 'តភ្ជាប់ Telegram Bot ផ្លូវការ (1-Click Auto Setup)' : '1-Click Official Telegram Bot Setup'}</span>
             </div>
             <span className="text-[11px] font-mono text-teal-800 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-200">
-              Bot: @Clinic_alertbot
+              Bot: @Clinic_systemBot
             </span>
           </div>
 

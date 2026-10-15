@@ -107,7 +107,7 @@ describe('Security Hardening & Stress Testing Suite', () => {
   it('should guarantee zero secrets leak into git tracked files', () => {
     // Secret scanning regex checks
     const botTokenPattern = /^[0-9]{8,10}:[a-zA-Z0-9_-]{35}$/;
-    const sampleToken = '8934642394:AAG-nzLq9Zr0DnMWgwkSgAE_HZdp1ddLn8s';
+    const sampleToken = '8822219627:AAHjLV4FeVD5XS55BpUil24UgLdR3WsiUsg';
 
     assert.equal(botTokenPattern.test(sampleToken), true);
 

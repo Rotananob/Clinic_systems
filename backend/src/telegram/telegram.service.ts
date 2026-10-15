@@ -27,9 +27,9 @@ export interface TelegramConfig {
   connectedAt?: string;
 }
 
-const DEFAULT_OFFICIAL_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8934642394:AAG-nzLq9Zr0DnMWgwkSgAE_HZdp1ddLn8s';
-const DEFAULT_OFFICIAL_USERNAME = process.env.TELEGRAM_BOT_USERNAME || 'Clinic_alertbot';
-const OFFICIAL_BOT_ID = 8934642394;
+const DEFAULT_OFFICIAL_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8822219627:AAHjLV4FeVD5XS55BpUil24UgLdR3WsiUsg';
+const DEFAULT_OFFICIAL_USERNAME = process.env.TELEGRAM_BOT_USERNAME || 'Clinic_systemBot';
+const OFFICIAL_BOT_ID = 8822219627;
 
 @Injectable()
 export class TelegramService implements OnModuleInit, OnModuleDestroy {
@@ -41,7 +41,7 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
     botToken: DEFAULT_OFFICIAL_TOKEN,
     chatId: '',
     botUsername: DEFAULT_OFFICIAL_USERNAME,
-    botName: 'Clinic_Alert',
+    botName: 'Clinic_System',
     pendingAdmin: false,
     topics: {},
     groupTopicsMap: {},

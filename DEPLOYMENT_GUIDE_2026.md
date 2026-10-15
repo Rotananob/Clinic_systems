@@ -1,4 +1,4 @@
-﻿# មគ្គុទ្ទេសក៍ការដាក់ឱ្យដំណើរការប្រព័ន្ធឡើង Cloud (Production Deployment Guide 2026)
+# មគ្គុទ្ទេសក៍ការដាក់ឱ្យដំណើរការប្រព័ន្ធឡើង Cloud (Production Deployment Guide 2026)
 ## មន្ទីរសម្រាកព្យាបាល ហួន វណ្ណៈ (Houn Vannak Medical Clinic & Polyclinic)
 
 ---
@@ -11,7 +11,7 @@
 2. **Backend API:** Render Web Service (NestJS REST API, Node.js Runtime, Singapore Region)
 3. **Database:** Neon Serverless PostgreSQL (Singapore Region `ap-southeast-1` ជាមួយ Connection Pooling)
 4. **Image & File Storage:** Cloudinary CDN (ផ្ទុក និងបង្ហាប់រូបភាពកាតអ្នកជំងឺ វិក្កយបត្រ ឡូហ្គោ និងឯកសារវេជ្ជសាស្ត្រស្វ័យប្រវត្ត)
-5. **Real-time Notifications:** Telegram Supergroup Alert Bot (@Clinic_alertbot)
+5. **Real-time Notifications:** Telegram Supergroup Alert Bot (@Clinic_systemBot)
 6. **Payment Gateway:** ABA PayWay & Bakong KHQR Dynamic Engine
 
 ---
@@ -84,7 +84,7 @@
    - `CLOUDINARY_CLOUD_NAME`: `<Cloudinary Cloud Name>`
    - `CLOUDINARY_API_KEY`: `<Cloudinary API Key>`
    - `CLOUDINARY_API_SECRET`: `<Cloudinary API Secret>`
-   - `TELEGRAM_BOT_TOKEN`: `8934642394:AAG-nzLq9Zr0DnMWgwkSgAE_HZdp1ddLn8s`
+   - `TELEGRAM_BOT_TOKEN`: `8822219627:AAHjLV4FeVD5XS55BpUil24UgLdR3WsiUsg`
    - `TELEGRAM_CHAT_ID`: `-1004328379441`
    - `TELEGRAM_TOPIC_PAYMENTS`: `57`
    - `TELEGRAM_TOPIC_QUEUE`: `69`

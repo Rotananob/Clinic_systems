@@ -36,6 +36,6 @@ services:
       - key: CLOUDINARY_URL
         value: cloudinary://328623574498885:9IW34m0PG4gx6Tht4bq9esNKRLQ@lkpe4jyo
       - key: TELEGRAM_BOT_TOKEN
-        value: 8934642394:AAG-nzLq9Zr0DnMWgwkSgAE_HZdp1ddLn8s
+        value: 8822219627:AAHjLV4FeVD5XS55BpUil24UgLdR3WsiUsg
       - key: FRONTEND_URL
         sync: false

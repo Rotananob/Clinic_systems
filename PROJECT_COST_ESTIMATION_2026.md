@@ -40,7 +40,7 @@
 | 3 | Pharmacy & Stock Inventory | គ្រប់គ្រងស្តុកថ្នាំ, ដាស់តឿនថ្នាំជិតអស់, គណនាថ្លៃថ្នាំស្វ័យប្រវត្ត, ការបើកថ្នាំ | $220 - $300 |
 | 4 | Dual-Action Invoicing & Billing | បង្កើតវិក្កយបត្រមាន ២ ជម្រើស: រង់ចាំទូទាត់ពេលក្រោយ vs ទូទាត់ KHQR ភ្លាមៗ | $180 - $240 |
 | 5 | ABA PayWay Dynamic KHQR Integration | បង្កើត Dynamic KHQR តាមចំនួនទឹកប្រាក់ពិតប្រាកដ, Bakong/ABA Deeplink, និងពិនិត្យការទូទាត់ក្រោម 0.3 វិនាទី | $220 - $300 |
-| 6 | Official Telegram Bot & 4 Forum Topics | @Clinic_alertbot: តភ្ជាប់ 1-Click, បង្កើត និង Reconcile ៤ ប្រធានបទស្វ័យប្រវត្ត, ការពារ Duplicate, និង Auto-Heal ពេលបាត់ Topic | $180 - $250 |
+| 6 | Official Telegram Bot & 4 Forum Topics | @Clinic_systemBot: តភ្ជាប់ 1-Click, បង្កើត និង Reconcile ៤ ប្រធានបទស្វ័យប្រវត្ត, ការពារ Duplicate, និង Auto-Heal ពេលបាត់ Topic | $180 - $250 |
 | 7 | Security, RBAC & Audit Trail | សិទ្ធិ ៦ កម្រិត (Super Admin, Admin, Doctor, Receptionist, Cashier, Pharmacist) + កត់ត្រាសកម្មភាពបុគ្គលិក | $120 - $180 |
 | 8 | Hardware Integration Driver | Web USB/Serial Direct Print (មិនបាច់ចុច Preview) និងបញ្ជាបើកថតលុយស្វ័យប្រវត្ត | $80 - $120 |
 
