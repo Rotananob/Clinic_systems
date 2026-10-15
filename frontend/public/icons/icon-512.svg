@@ -1,22 +1,58 @@
 <svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" width="512" height="512">
   <defs>
-    <linearGradient id="rotanaPwaGrad512" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stopColor="#0f766e" />
-      <stop offset="100%" stopColor="#042f2e" />
+    <linearGradient id="genzBaseGrad512" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#031c19" />
+      <stop offset="100%" stopColor="#063f39" />
     </linearGradient>
-    <linearGradient id="rotanaPwaGold512" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stopColor="#f59e0b" />
-      <stop offset="100%" stopColor="#d97706" />
+    <linearGradient id="genzMintGrad512" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#34d399" />
+      <stop offset="100%" stopColor="#059669" />
+    </linearGradient>
+    <linearGradient id="genzAccentSpark512" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#6ee7b7" />
+      <stop offset="100%" stopColor="#10b981" />
     </linearGradient>
   </defs>
-  <rect width="512" height="512" rx="112" fill="url(#rotanaPwaGrad512)" />
-  <rect x="24" y="24" width="464" height="464" rx="96" stroke="url(#rotanaPwaGold512)" stroke-width="8" stroke-opacity="0.75" />
-  <path d="M214 118H298V214H394V298H298V394H214V298H118V214H214V118Z" fill="#ffffff" fill-opacity="0.14" />
-  <line x1="256" y1="96" x2="256" y2="416" stroke="url(#rotanaPwaGold512)" stroke-width="16" stroke-linecap="round" />
-  <circle cx="256" cy="90" r="22" fill="url(#rotanaPwaGold512)" />
-  <path d="M180 170C180 170 234 144 256 202C278 260 332 234 332 234" stroke="#ffffff" stroke-width="14" stroke-linecap="round" fill="none" />
-  <path d="M332 170C332 170 278 144 256 202C234 260 180 234 180 234" stroke="#ffffff" stroke-width="14" stroke-linecap="round" fill="none" />
-  <path d="M192 288C192 288 234 262 256 310C278 358 320 332 320 332" stroke="#ffffff" stroke-width="14" stroke-linecap="round" fill="none" />
-  <path d="M86 256H186L208 224L230 300L256 192L282 320L304 240L326 256H426" stroke="#34d399" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" />
-  <circle cx="256" cy="422" r="11" fill="#f59e0b" />
+
+  <!-- Human-Crafted Modern Squircle Container -->
+  <rect width="512" height="512" rx="128" fill="url(#genzBaseGrad512)" />
+  <rect x="6" y="6" width="500" height="500" rx="122" stroke="#10b981" stroke-width="6" stroke-opacity="0.22" />
+
+  <!-- Gen-Z Minimalist Monogram: Interlocking 'H' + 'V' Kinetic Medical Plus -->
+  <!-- 1. Dynamic 'V' Foundation with curved apex -->
+  <path
+    d="M154 136V256C154 312.3 199.7 358 256 358C312.3 358 358 312.3 358 256V136"
+    stroke="url(#genzMintGrad512)"
+    stroke-width="42"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+
+  <!-- 2. Precision Crossbar forming the 'H' and horizontal beam of '+' -->
+  <line
+    x1="94"
+    y1="214"
+    x2="418"
+    y2="214"
+    stroke="#ffffff"
+    stroke-width="42"
+    stroke-linecap="round"
+  />
+
+  <!-- 3. Vertical Health Pillar completing the '+' beacon -->
+  <line
+    x1="256"
+    y1="94"
+    x2="256"
+    y2="214"
+    stroke="url(#genzAccentSpark512)"
+    stroke-width="42"
+    stroke-linecap="round"
+  />
+
+  <!-- 4. Center Optical Aperture Point -->
+  <circle cx="256" cy="214" r="17" fill="#031c19" />
+
+  <!-- 5. Minimalist Gen-Z Vitality Spark -->
+  <circle cx="256" cy="410" r="11" fill="#34d399" />
 </svg>

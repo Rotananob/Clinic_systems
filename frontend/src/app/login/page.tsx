@@ -17,6 +17,8 @@ import {
   EyeOff,
   ShieldAlert,
   Clock,
+  Zap,
+  KeyRound,
 } from 'lucide-react';
 
 export default function LoginPage() {
@@ -78,6 +80,34 @@ export default function LoginPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const DEMO_EMAIL = 'demo.superadmin@hounvannak.com';
+  const DEMO_PASS = 'Demo#SuperAdmin2026!MasterKey';
+
+  const handleOneClickDemoLogin = async () => {
+    if (lockoutSeconds > 0 || isLoading) return;
+    setEmail(DEMO_EMAIL);
+    setPassword(DEMO_PASS);
+    setError(null);
+    setIsLoading(true);
+
+    try {
+      await login(DEMO_EMAIL, DEMO_PASS);
+      setFailedAttempts(0);
+      router.push('/');
+    } catch (err: unknown) {
+      const friendlyMsg = getHumanErrorMessage(err, locale);
+      setError(friendlyMsg);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAutoFillDemo = () => {
+    setEmail(DEMO_EMAIL);
+    setPassword(DEMO_PASS);
+    setError(null);
   };
 
   return (
@@ -187,6 +217,65 @@ export default function LoginPage() {
             )}
           </button>
         </form>
+
+        {/* Test / Evaluation Account Showcase with 1-Click Login */}
+        <div className="mt-5 p-3.5 rounded-2xl bg-gradient-to-br from-emerald-50/80 via-teal-50/50 to-stone-50 border border-teal-200/80 shadow-xs">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-1.5">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold tracking-wide bg-teal-800 text-white font-mono uppercase">
+                SUPER_ADMIN
+              </span>
+              <span className="text-[11px] font-semibold text-stone-700">
+                {isKm ? 'គណនីសាកល្បង' : 'Demo Account'}
+              </span>
+            </div>
+            <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-md font-mono border border-emerald-200/60">
+              {isKm ? 'ផុតកំណត់: 31/12/2026' : 'Expires: 31/12/2026'}
+            </span>
+          </div>
+
+          <div className="text-[11px] text-stone-600 space-y-1 mb-3 font-mono bg-white/90 p-2.5 rounded-xl border border-teal-100/90 shadow-2xs">
+            <div className="flex items-center justify-between">
+              <span className="text-stone-400 font-sans text-[10px]">Email:</span>
+              <span className="font-semibold text-stone-800 selection:bg-teal-100 select-all">
+                demo.superadmin@hounvannak.com
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-stone-400 font-sans text-[10px]">{isKm ? 'ពាក្យសម្ងាត់:' : 'Password:'}</span>
+              <span className="font-semibold text-stone-800 selection:bg-teal-100 select-all">
+                Demo#SuperAdmin2026!MasterKey
+              </span>
+            </div>
+            <div className="flex items-center justify-between pt-1 border-t border-stone-100 text-[10px]">
+              <span className="text-stone-400 font-sans">{isKm ? 'សិទ្ធិ:' : 'Access:'}</span>
+              <span className="text-teal-800 font-sans font-bold">
+                {isKm ? 'មហាសិទ្ធិ (Full Access & All Modules)' : 'Full Master Access (100%)'}
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={handleOneClickDemoLogin}
+              disabled={isLoading || lockoutSeconds > 0}
+              className="w-full py-2 px-3 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs font-bold transition-all shadow-sm hover:shadow flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+            >
+              <Zap className="w-3.5 h-3.5 fill-current" />
+              <span>{isKm ? 'ចូលប្រើភ្លាមៗ (1-Click)' : '1-Click Demo Login'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleAutoFillDemo}
+              disabled={isLoading || lockoutSeconds > 0}
+              className="w-full py-2 px-3 bg-white hover:bg-stone-100 text-stone-700 border border-stone-200 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+            >
+              <KeyRound className="w-3.5 h-3.5 text-stone-500" />
+              <span>{isKm ? 'បំពេញស្វ័យប្រវត្តិ' : 'Auto-fill Form'}</span>
+            </button>
+          </div>
+        </div>
 
         {/* Security Policy Notice Footer */}
         <div className="mt-6 pt-4 border-t border-[#E7E1D4] text-center">

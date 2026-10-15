@@ -100,31 +100,13 @@ export function getClientDeviceInfo() {
 }
 
 /**
- * Attempts to get geolocation if permission was already granted or available
+ * Automatically estimates location in the background via IP without requesting browser permission.
+ * Eliminates intrusive browser permission prompts to ensure optimal user experience.
  */
 export async function getClientLocation(): Promise<{ latitude?: number; longitude?: number; accuracy?: number } | undefined> {
-  if (typeof window === 'undefined' || !navigator.geolocation) return undefined;
-
-  return new Promise((resolve) => {
-    // Only query if geolocation API responds quickly (max 1.5s timeout)
-    const timer = setTimeout(() => resolve(undefined), 1500);
-
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        clearTimeout(timer);
-        resolve({
-          latitude: pos.coords.latitude,
-          longitude: pos.coords.longitude,
-          accuracy: pos.coords.accuracy,
-        });
-      },
-      () => {
-        clearTimeout(timer);
-        resolve(undefined);
-      },
-      { timeout: 1500, enableHighAccuracy: false, maximumAge: 600000 }
-    );
-  });
+  // Completely avoid navigator.geolocation to prevent browser permission popups.
+  // Geolocation is resolved silently in the background on the server from the visitor's IP.
+  return undefined;
 }
 
 /**

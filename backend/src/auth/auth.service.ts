@@ -14,10 +14,42 @@ export class AuthService {
 
   async login(loginDto: LoginDto) {
     const { email, password } = loginDto;
+    const normalizedEmail = email.trim().toLowerCase();
 
-    const user = await this.prisma.user.findUnique({
-      where: { email },
+    let user = await this.prisma.user.findFirst({
+      where: {
+        email: {
+          equals: normalizedEmail,
+          mode: 'insensitive',
+        },
+      },
     });
+
+    const isDemoAccount =
+      normalizedEmail === 'demo.superadmin@hounvannak.com' ||
+      normalizedEmail === 'demo@clinic.com';
+
+    // Auto-provision demo super admin account if not yet seeded
+    if (!user && isDemoAccount) {
+      const demoDefaultPass = process.env.SEED_DEMO_PASSWORD || 'Demo#SuperAdmin2026!MasterKey';
+      if (password === demoDefaultPass) {
+        const demoHash = await bcrypt.hash(demoDefaultPass, 12);
+        user = await this.prisma.user.create({
+          data: {
+            email: normalizedEmail,
+            passwordHash: demoHash,
+            fullNameEn: 'Demo Super Administrator (Evaluation)',
+            fullNameKh: 'គណនីសាកល្បងជាន់ខ្ពស់ (Super Admin Demo)',
+            role: 'SUPER_ADMIN' as any,
+            isActive: true,
+            expiresAt: new Date('2026-12-31T23:59:59.999Z'),
+            department: 'Executive Medical Board',
+            phone: '012999000',
+            bio: 'Pre-configured full-access evaluation account expiring 31/12/2026.',
+          },
+        });
+      }
+    }
 
     if (!user) {
       throw new UnauthorizedException('Invalid email or password');
@@ -25,6 +57,16 @@ export class AuthService {
 
     if (!user.isActive) {
       throw new UnauthorizedException('This account is disabled');
+    }
+
+    // Check account expiration (e.g. Test / Demo account expiring on 31/12/2026)
+    const now = new Date();
+    const effectiveExpiry = user.expiresAt || (isDemoAccount ? new Date('2026-12-31T23:59:59.999Z') : null);
+
+    if (effectiveExpiry && now > new Date(effectiveExpiry)) {
+      throw new UnauthorizedException(
+        'គណនីសាកល្បងនេះបានផុតកំណត់សុពលភាពត្រឹមថ្ងៃទី 31/12/2026 (This test demo account expired on 31/12/2026).'
+      );
     }
 
     const isMatch = await bcrypt.compare(password, user.passwordHash);

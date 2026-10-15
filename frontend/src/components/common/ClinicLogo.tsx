@@ -34,97 +34,90 @@ export const ClinicLogo: React.FC<ClinicLogoProps> = ({
       viewBox="0 0 120 120"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className="w-full h-full drop-shadow-xs"
+      className="w-full h-full drop-shadow-sm select-none"
     >
       <defs>
-        <linearGradient id="rotanaTealGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor={isPrint ? '#1e293b' : '#0f766e'} />
-          <stop offset="100%" stopColor={isPrint ? '#0f172a' : '#042f2e'} />
+        <linearGradient id="genzBaseGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor={isPrint ? '#0f172a' : '#031c19'} />
+          <stop offset="100%" stopColor={isPrint ? '#020617' : '#063f39'} />
         </linearGradient>
-        <linearGradient id="rotanaGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor={isPrint ? '#475569' : '#f59e0b'} />
-          <stop offset="100%" stopColor={isPrint ? '#334155' : '#d97706'} />
+        <linearGradient id="genzMintGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor={isPrint ? '#ffffff' : '#34d399'} />
+          <stop offset="100%" stopColor={isPrint ? '#e2e8f0' : '#059669'} />
         </linearGradient>
-        <filter id="subtleGlow" x="-10%" y="-10%" width="120%" height="120%">
-          <feDropShadow dx="0" dy="1" stdDeviation="1.5" floodOpacity="0.25" />
-        </filter>
+        <linearGradient id="genzAccentSpark" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor={isPrint ? '#94a3b8' : '#6ee7b7'} />
+          <stop offset="100%" stopColor={isPrint ? '#64748b' : '#10b981'} />
+        </linearGradient>
       </defs>
 
-      {/* Outer Protective Shield Shield Base */}
+      {/* Human-Crafted Modern Squircle Container */}
       <rect
         x="6"
         y="6"
         width="108"
         height="108"
-        rx="28"
-        fill="url(#rotanaTealGrad)"
+        rx="30"
+        fill="url(#genzBaseGrad)"
       />
       <rect
-        x="9"
-        y="9"
-        width="102"
-        height="102"
-        rx="25"
-        stroke="url(#rotanaGoldGrad)"
-        strokeWidth="2"
-        strokeOpacity={isPrint ? '0.4' : '0.65'}
+        x="6.75"
+        y="6.75"
+        width="106.5"
+        height="106.5"
+        rx="29.25"
+        stroke={isPrint ? '#334155' : '#10b981'}
+        strokeWidth="1.5"
+        strokeOpacity={isPrint ? '0.4' : '0.22'}
       />
 
-      {/* Inner Medical Cross Silhouette */}
+      {/* Gen-Z Minimalist Monogram: Interlocking 'H' + 'V' Kinetic Medical Plus */}
+      {/* 1. Dynamic 'V' Foundation with curved apex */}
       <path
-        d="M50 28H70V50H92V70H70V92H50V70H28V50H50V28Z"
-        fill="#ffffff"
-        fillOpacity="0.12"
-      />
-
-      {/* Caduceus Rod of Asclepius with Gentle Serpent & Heartbeat Wave */}
-      {/* Central Staff */}
-      <line
-        x1="60"
-        y1="24"
-        x2="60"
-        y2="96"
-        stroke="url(#rotanaGoldGrad)"
-        strokeWidth="4"
-        strokeLinecap="round"
-      />
-      <circle cx="60" cy="22" r="5" fill="url(#rotanaGoldGrad)" />
-
-      {/* Double Caduceus Wings / Coils */}
-      <path
-        d="M42 42C42 42 54 36 60 48C66 60 78 54 78 54"
-        stroke="#ffffff"
-        strokeWidth="3.5"
-        strokeLinecap="round"
-        fill="none"
-      />
-      <path
-        d="M78 42C78 42 66 36 60 48C54 60 42 54 42 54"
-        stroke="#ffffff"
-        strokeWidth="3.5"
-        strokeLinecap="round"
-        fill="none"
-      />
-      <path
-        d="M45 68C45 68 54 62 60 72C66 82 75 76 75 76"
-        stroke="#ffffff"
-        strokeWidth="3.5"
-        strokeLinecap="round"
-        fill="none"
-      />
-
-      {/* Clinical ECG Pulse Line running horizontally through center */}
-      <path
-        d="M20 60H44L49 52L54 70L60 46L66 74L71 56L76 60H100"
-        stroke="#34d399"
-        strokeWidth="3"
+        d="M36 32V60C36 73.25 46.75 84 60 84C73.25 84 84 73.25 84 60V32"
+        stroke="url(#genzMintGrad)"
+        strokeWidth="10"
         strokeLinecap="round"
         strokeLinejoin="round"
-        filter="url(#subtleGlow)"
       />
 
-      {/* Small Star of Excellence at base */}
-      <circle cx="60" cy="98" r="2.5" fill="#f59e0b" />
+      {/* 2. Precision Crossbar forming the 'H' and horizontal beam of '+' */}
+      <line
+        x1="22"
+        y1="50"
+        x2="98"
+        y2="50"
+        stroke={isPrint ? '#ffffff' : '#ffffff'}
+        strokeWidth="10"
+        strokeLinecap="round"
+      />
+
+      {/* 3. Vertical Health Pillar completing the '+' beacon */}
+      <line
+        x1="60"
+        y1="22"
+        x2="60"
+        y2="50"
+        stroke="url(#genzAccentSpark)"
+        strokeWidth="10"
+        strokeLinecap="round"
+      />
+
+      {/* 4. Center Optical Aperture Point */}
+      <circle
+        cx="60"
+        cy="50"
+        r="4"
+        fill={isPrint ? '#0f172a' : '#031c19'}
+      />
+
+      {/* 5. Minimalist Gen-Z Vitality Spark */}
+      <circle
+        cx="60"
+        cy="96"
+        r="2.5"
+        fill={isPrint ? '#94a3b8' : '#34d399'}
+      />
     </svg>
   );
 

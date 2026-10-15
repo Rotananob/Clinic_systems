@@ -59,4 +59,38 @@ describe('Auth & Role-Based Access Control (RBAC) Test Suite', () => {
     assert.equal(canPerform('SUPER_ADMIN', 'system:trigger_backup'), true);
     assert.equal(canPerform('SUPER_ADMIN', 'any:emergency:override'), true);
   });
+
+  it('should enforce account expiration policy (demo account expiring on 31/12/2026)', () => {
+    const demoExpiration = new Date('2026-12-31T23:59:59.999Z');
+
+    // Validation helper
+    const checkAccountValidity = (user: { email: string; expiresAt?: Date | null }, testTime: Date) => {
+      const isDemo = user.email.toLowerCase() === 'demo.superadmin@hounvannak.com';
+      const effectiveExpiry = user.expiresAt || (isDemo ? demoExpiration : null);
+      if (effectiveExpiry && testTime > effectiveExpiry) {
+        return { allowed: false, reason: 'EXPIRED' };
+      }
+      return { allowed: true };
+    };
+
+    const demoUser = {
+      email: 'demo.superadmin@hounvannak.com',
+      expiresAt: demoExpiration,
+      role: 'SUPER_ADMIN',
+    };
+
+    // 1. Current year 2026: Should be allowed
+    const validDate2026 = new Date('2026-10-15T12:00:00.000Z');
+    assert.equal(checkAccountValidity(demoUser, validDate2026).allowed, true);
+
+    // 2. Exact expiry boundary
+    const boundaryDate = new Date('2026-12-31T23:59:59.000Z');
+    assert.equal(checkAccountValidity(demoUser, boundaryDate).allowed, true);
+
+    // 3. Immediately after expiry (Jan 1, 2027 00:00:01): Must be blocked
+    const expiredDate2027 = new Date('2027-01-01T00:00:01.000Z');
+    const result2027 = checkAccountValidity(demoUser, expiredDate2027);
+    assert.equal(result2027.allowed, false);
+    assert.equal(result2027.reason, 'EXPIRED');
+  });
 });

@@ -21,6 +21,34 @@ async function main() {
   const cashierHash = await bcrypt.hash(cashierPassword, 12);
   const pharmacyHash = await bcrypt.hash(pharmacyPassword, 12);
 
+  const demoExpiresAt = new Date('2026-12-31T23:59:59.999Z');
+  const demoPassword = process.env.SEED_DEMO_PASSWORD || 'Demo#SuperAdmin2026!MasterKey';
+  const demoHash = await bcrypt.hash(demoPassword, 12);
+
+  const demoSuperAdmin = await prisma.user.upsert({
+    where: { email: 'demo.superadmin@hounvannak.com' },
+    update: {
+      passwordHash: demoHash,
+      role: Role.SUPER_ADMIN,
+      isActive: true,
+      expiresAt: demoExpiresAt,
+      fullNameEn: 'Demo Super Administrator (Evaluation)',
+      fullNameKh: 'គណនីសាកល្បងជាន់ខ្ពស់ (Super Admin Demo)',
+    },
+    create: {
+      email: 'demo.superadmin@hounvannak.com',
+      passwordHash: demoHash,
+      fullNameEn: 'Demo Super Administrator (Evaluation)',
+      fullNameKh: 'គណនីសាកល្បងជាន់ខ្ពស់ (Super Admin Demo)',
+      role: Role.SUPER_ADMIN,
+      phone: '012999000',
+      isActive: true,
+      expiresAt: demoExpiresAt,
+      department: 'Executive Medical Board',
+      bio: 'Pre-configured full-access evaluation account expiring 31/12/2026.',
+    },
+  });
+
   const superAdmin = await prisma.user.upsert({
     where: { email: 'owner@clinic.com' },
     update: { passwordHash: superAdminHash, role: Role.SUPER_ADMIN, isActive: true },

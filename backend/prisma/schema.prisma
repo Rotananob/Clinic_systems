@@ -76,9 +76,10 @@ model User {
   telegramUsername     String?
   bio                  String?
   notificationsEnabled Boolean  @default(true)
-  isActive             Boolean  @default(true)
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  isActive             Boolean   @default(true)
+  expiresAt            DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 
   doctorVisits        Visit[]          @relation("DoctorVisits")
   doctorPrescriptions Prescription[] @relation("DoctorPrescriptions")
