@@ -54,18 +54,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     return null;
   });
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const savedToken = localStorage.getItem('clinic_access_token');
+      // If no token, user is unauthenticated immediately (no need to spin)
+      if (!savedToken) return false;
+      const savedUser = localStorage.getItem('clinic_user');
+      // If both token and user are cached, render immediately without blocking
+      if (savedUser) return false;
+    }
+    return false;
+  });
 
   const logout = useCallback(() => {
     trackUserAction('USER_LOGOUT');
     try {
       localStorage.removeItem('clinic_access_token');
       localStorage.removeItem('clinic_user');
+      sessionStorage.clear();
     } catch {
       // ignore
     }
     setToken(null);
     setUser(null);
+    setIsLoading(false);
+
+    if (typeof window !== 'undefined') {
+      // Lock history and replace location so browser back button cannot restore protected clinic pages
+      window.history.pushState(null, '', '/login');
+      window.location.replace('/login');
+    }
   }, []);
 
   const refreshProfile = useCallback(async () => {
@@ -79,19 +97,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // If device is offline, keep cached user session active without network roundtrip
     if (typeof navigator !== 'undefined' && !navigator.onLine) {
-      try {
-        const savedUser = localStorage.getItem('clinic_user');
-        if (savedUser) {
-          setUser(JSON.parse(savedUser));
-          setToken(savedToken);
-        }
-      } catch {}
       setIsLoading(false);
       return;
     }
 
     try {
-      const verifiedUser = await api.users.getProfile().catch(() => api.auth.me());
+      // Fast background verification with 2500ms timeout so clinical staff are never blocked
+      const verifyWithTimeout = Promise.race([
+        api.users.getProfile().catch(() => api.auth.me()),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('SESSION_VERIFY_TIMEOUT')), 2500)),
+      ]);
+
+      const verifiedUser: any = await verifyWithTimeout;
       if (verifiedUser && verifiedUser.id) {
         setUser(verifiedUser);
         setToken(savedToken);
@@ -109,7 +126,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (isUnauthorized) {
         logout();
       } else {
-        // Network connection error: preserve existing cached user session
+        // Network timeout / connection error: retain cached session so clinic operations continue smoothly
         try {
           const savedUser = localStorage.getItem('clinic_user');
           if (savedUser) {

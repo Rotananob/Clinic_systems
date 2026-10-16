@@ -23,9 +23,30 @@ import {
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, user, token } = useAuth();
   const { t, locale } = useTranslation();
   const isKm = locale === 'km';
+
+  // Strict browser history trap: prevents back button from navigating into previous protected session
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.history.pushState(null, '', window.location.href);
+      const handlePopState = () => {
+        window.history.pushState(null, '', window.location.href);
+      };
+      window.addEventListener('popstate', handlePopState);
+      return () => {
+        window.removeEventListener('popstate', handlePopState);
+      };
+    }
+  }, []);
+
+  // If already logged in, redirect straight to dashboard
+  useEffect(() => {
+    if (user && token) {
+      router.replace('/');
+    }
+  }, [user, token, router]);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

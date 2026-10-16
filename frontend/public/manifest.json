@@ -1,14 +1,45 @@
 {
-  "name": "Rotana Clinic Patient Management System",
-  "short_name": "Rotana Clinic",
-  "description": "Outpatient electronic medical records, pharmacy dispensing, and dynamic KHQR billing",
+  "name": "ពេទ្យ ហួន វណ្ណៈ - ប្រព័ន្ធគ្រប់គ្រងគ្លីនិក (Houn Vannak Clinic)",
+  "short_name": "ពេទ្យ ហួន វណ្ណៈ",
+  "description": "Enterprise Clinic Management with Real-time KHQR Bridge and Local-First Offline Sync",
   "start_url": "/",
+  "id": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#0f172a",
-  "theme_color": "#0f766e",
+  "background_color": "#F7F4EE",
+  "theme_color": "#031c19",
   "categories": ["medical", "productivity", "business"],
   "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "/icons/icon-192.svg",
       "sizes": "192x192",
@@ -20,12 +51,6 @@
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any"
-    },
-    {
-      "src": "/icons/icon-512.svg",
-      "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "maskable"
     }
   ]
 }

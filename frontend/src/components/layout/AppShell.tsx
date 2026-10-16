@@ -40,9 +40,43 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
     }
   }, [user, pathname, isLoginPage]);
 
+  // Strict browser history lock & back-button bypass defense
+  useEffect(() => {
+    const enforceAuthLock = () => {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('clinic_access_token') : null;
+      if (!token && !isLoginPage) {
+        if (typeof window !== 'undefined') {
+          window.location.replace('/login');
+        }
+      }
+    };
+
+    enforceAuthLock();
+
+    const handlePopState = () => {
+      enforceAuthLock();
+    };
+
+    const handlePageShow = () => {
+      enforceAuthLock();
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    window.addEventListener('pageshow', handlePageShow);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('pageshow', handlePageShow);
+    };
+  }, [isLoginPage, pathname]);
+
   useEffect(() => {
     if (!isLoading && !user && !isLoginPage) {
-      router.replace('/login');
+      if (typeof window !== 'undefined') {
+        window.location.replace('/login');
+      } else {
+        router.replace('/login');
+      }
     }
   }, [isLoading, user, isLoginPage, router]);
 
@@ -61,7 +95,7 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
   }
 
   // Authentication Loading State
-  if (isLoading) {
+  if (isLoading && !user) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#F7F4EE] text-stone-900 p-4">
         <div className="flex flex-col items-center max-w-sm text-center space-y-4 animate-in fade-in duration-300">
