@@ -21,18 +21,32 @@ import {
   Crown,
   Check,
   X,
+  LogOut,
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from '../../context/I18nContext';
 import { api } from '../../lib/api';
 import { ROUTE_PERMISSIONS, getRoleDisplayName } from '../../lib/rbac';
 
 export default function ProfilePage() {
-  const { user, refreshProfile, updateUserLocal } = useAuth();
+  const router = useRouter();
+  const { user, logout, refreshProfile, updateUserLocal } = useAuth();
   const { locale, setLocale } = useTranslation();
   const isKh = locale === 'km';
 
   const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'preferences' | 'permissions'>('profile');
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    try {
+      logout();
+      router.replace('/login');
+    } finally {
+      setLoggingOut(false);
+    }
+  };
 
   // Profile Form State
   const [fullNameEn, setFullNameEn] = useState('');
@@ -326,6 +340,24 @@ export default function ProfilePage() {
               </button>
             )}
           </div>
+
+          {/* Header Action: Log Out Button */}
+          <div className="shrink-0 flex items-center justify-center sm:self-start">
+            <button
+              type="button"
+              onClick={handleLogout}
+              disabled={loggingOut}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 text-xs font-semibold shadow-2xs transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
+              title={isKh ? 'ចាកចេញពីគណនី' : 'Sign out of your account'}
+            >
+              {loggingOut ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <LogOut className="w-3.5 h-3.5 text-rose-600" />
+              )}
+              <span>{isKh ? 'ចាកចេញ' : 'Log Out'}</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -585,6 +617,29 @@ export default function ProfilePage() {
                 <span>{isKh ? 'ផ្លាស់ប្តូរពាក្យសម្ងាត់' : 'Update Password'}</span>
               </button>
             </div>
+          </div>
+
+          {/* Active Session & Device Sign Out */}
+          <div className="pt-6 border-t border-[#E7E1D4] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div className="text-xs font-bold text-stone-900">
+                {isKh ? 'សម័យប្រជុំ និងការចាកចេញ (Active Session & Sign Out)' : 'Active Session & Sign Out'}
+              </div>
+              <div className="text-[11px] text-stone-500">
+                {isKh
+                  ? 'ចាកចេញពីគណនីលើឧបករណ៍នេះ ដើម្បីការពារសុវត្ថិភាពទិន្នន័យគ្លីនិក'
+                  : 'Sign out of your account on this device to protect clinical records'}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleLogout}
+              disabled={loggingOut}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs transition-all active:scale-95 disabled:opacity-50 cursor-pointer self-start sm:self-auto"
+            >
+              {loggingOut ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
+              <span>{isKh ? 'ចាកចេញពីប្រព័ន្ធ (Log Out)' : 'Sign Out of Device'}</span>
+            </button>
           </div>
         </form>
       )}

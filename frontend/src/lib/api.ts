@@ -24,7 +24,287 @@ class ApiClient {
     return null;
   }
 
+  private async getCachedFallback<T>(endpoint: string, cleanEndpoint: string): Promise<T | null> {
+    const { syncManager } = await import('./syncManager');
+    let cached = await syncManager.getCachedData<T>(endpoint);
+    if (!cached && cleanEndpoint !== endpoint) {
+      cached = await syncManager.getCachedData<T>(cleanEndpoint);
+    }
+    if (cached) return cached;
+
+    // Built-in fallbacks if cache is not populated yet
+    if (cleanEndpoint === '/patients') {
+      return { data: [], meta: { total: 0, page: 1, limit: 15, totalPages: 1 } } as any;
+    }
+    if (
+      cleanEndpoint === '/visits' ||
+      cleanEndpoint === '/payments/invoices' ||
+      cleanEndpoint === '/prescriptions' ||
+      cleanEndpoint === '/users/doctors' ||
+      cleanEndpoint === '/follow-ups' ||
+      cleanEndpoint === '/documents'
+    ) {
+      return [] as any;
+    }
+    if (cleanEndpoint === '/dashboard/metrics') {
+      return { totalPatients: 0, todayVisits: 0, pendingInvoices: 0, totalRevenue: 0 } as any;
+    }
+    if (cleanEndpoint === '/system/status') {
+      return { status: 'ONLINE', database: 'LOCAL_OFFLINE', version: '1.0.0' } as any;
+    }
+
+    return null;
+  }
+
+  private async handleOfflineMutation<T>(
+    endpoint: string,
+    method: 'POST' | 'PUT' | 'PATCH' | 'DELETE',
+    body: any
+  ): Promise<T> {
+    const { syncManager } = await import('./syncManager');
+    const cleanEndpoint = endpoint.split('?')[0];
+
+    // 1. Enqueue mutation in IndexedDB
+    await syncManager.queueMutation({
+      endpoint,
+      method,
+      body,
+      label: `${method} ${endpoint}`,
+    });
+
+    const now = new Date().toISOString();
+
+    // Patient Registration: POST /patients
+    if (cleanEndpoint === '/patients' && method === 'POST') {
+      const optimisticPatient = {
+        id: `offline-pat-${Date.now()}`,
+        patientCode: `P-OFF-${Math.floor(1000 + Math.random() * 9000)}`,
+        nameEn: body.nameEn || 'Patient',
+        nameKh: body.nameKh || '',
+        gender: body.gender || 'MALE',
+        phone: body.phone || '',
+        dob: body.dob || '',
+        bloodType: body.bloodType || 'O+',
+        allergies: body.allergies || '',
+        address: body.address || '',
+        nationalId: body.nationalId || '',
+        createdAt: now,
+        updatedAt: now,
+        status: 'ACTIVE',
+        _isOfflineQueued: true,
+        ...body,
+      };
+      await syncManager.prependCachedItem('/patients', optimisticPatient);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('clinic_data_changed', { detail: { type: 'PATIENT_CREATED', data: optimisticPatient } })
+        );
+      }
+      return optimisticPatient as T;
+    }
+
+    // Patient Update: PUT /patients/:id
+    if (cleanEndpoint.startsWith('/patients/') && method === 'PUT') {
+      const patId = cleanEndpoint.split('/')[2];
+      await syncManager.updateCachedItem('/patients', (p: any) => p.id === patId, (p: any) => ({ ...p, ...body, updatedAt: now, _isOfflineQueued: true }));
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('clinic_data_changed', { detail: { type: 'PATIENT_UPDATED', patId } })
+        );
+      }
+      return { id: patId, ...body, updatedAt: now, _isOfflineQueued: true } as T;
+    }
+
+    // Visit Check-In: POST /visits
+    if (cleanEndpoint === '/visits' && method === 'POST') {
+      let patientObj = body.patient;
+      if (!patientObj && body.patientId) {
+        const patientsCache = await syncManager.getCachedData<any>('/patients');
+        const list = Array.isArray(patientsCache) ? patientsCache : patientsCache?.data || [];
+        patientObj = list.find((p: any) => p.id === body.patientId) || {
+          id: body.patientId,
+          nameEn: 'Selected Patient',
+          patientCode: 'P-OFF',
+          phone: '',
+        };
+      }
+
+      const optimisticVisit = {
+        id: `offline-vis-${Date.now()}`,
+        visitCode: `V-OFF-${Math.floor(1000 + Math.random() * 9000)}`,
+        patientId: body.patientId,
+        doctorId: body.doctorId || null,
+        reason: body.reason || 'Clinical Consultation',
+        symptoms: body.symptoms || '',
+        consultationFee: body.consultationFee || 5,
+        status: 'WAITING',
+        createdAt: now,
+        updatedAt: now,
+        patient: patientObj,
+        _isOfflineQueued: true,
+        ...body,
+      };
+      await syncManager.prependCachedItem('/visits', optimisticVisit);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('clinic_data_changed', { detail: { type: 'VISIT_CREATED', data: optimisticVisit } })
+        );
+      }
+      return optimisticVisit as T;
+    }
+
+    // Visit Vitals: PATCH /visits/:id/vitals
+    if (cleanEndpoint.startsWith('/visits/') && cleanEndpoint.endsWith('/vitals') && method === 'PATCH') {
+      const visitId = cleanEndpoint.split('/')[2];
+      await syncManager.updateCachedItem('/visits', (v: any) => v.id === visitId, (v: any) => ({ ...v, ...body, updatedAt: now, _isOfflineQueued: true }));
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('clinic_data_changed', { detail: { type: 'VITALS_UPDATED', visitId } })
+        );
+      }
+      return { id: visitId, ...body, updatedAt: now, _isOfflineQueued: true } as T;
+    }
+
+    // Visit Complete: PATCH /visits/:id/complete
+    if (cleanEndpoint.startsWith('/visits/') && cleanEndpoint.endsWith('/complete') && method === 'PATCH') {
+      const visitId = cleanEndpoint.split('/')[2];
+      await syncManager.updateCachedItem('/visits', (v: any) => v.id === visitId, (v: any) => ({ ...v, status: 'COMPLETED', ...body, completedAt: now, updatedAt: now, _isOfflineQueued: true }));
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('clinic_data_changed', { detail: { type: 'VISIT_COMPLETED', visitId } })
+        );
+      }
+      return { id: visitId, status: 'COMPLETED', ...body, completedAt: now, _isOfflineQueued: true } as T;
+    }
+
+    // Billing Quick Invoice: POST /payments/quick-invoice or /payments/invoices
+    if ((cleanEndpoint === '/payments/quick-invoice' || cleanEndpoint === '/payments/invoices') && method === 'POST') {
+      const optimisticInvoice = {
+        id: `offline-inv-${Date.now()}`,
+        invoiceNumber: `INV-OFF-${Date.now().toString().slice(-5)}`,
+        patientName: body.nameEn || body.patientName || 'Walk-in Patient',
+        patientNameKh: body.nameKh || '',
+        phone: body.phone || '',
+        totalAmount: Number(body.amount || body.totalAmount || 0),
+        payableAmount: Number(body.amount || body.totalAmount || 0),
+        currency: body.currency || 'USD',
+        reason: body.reason || 'Clinical Services',
+        status: 'PENDING',
+        paymentMethod: 'KHQR',
+        createdAt: now,
+        updatedAt: now,
+        items: body.items || [
+          {
+            id: `offline-item-${Date.now()}`,
+            description: body.reason || 'Medical Consultation',
+            quantity: 1,
+            unitPrice: Number(body.amount || 0),
+            totalPrice: Number(body.amount || 0),
+          },
+        ],
+        _isOfflineQueued: true,
+        ...body,
+      };
+      await syncManager.prependCachedItem('/payments/invoices', optimisticInvoice);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('clinic_data_changed', { detail: { type: 'INVOICE_CREATED', data: optimisticInvoice } })
+        );
+      }
+      return optimisticInvoice as T;
+    }
+
+    // Settle Cash: POST /payments/settle-cash
+    if (cleanEndpoint === '/payments/settle-cash' && method === 'POST') {
+      const invId = body.invoiceId;
+      await syncManager.updateCachedItem('/payments/invoices', (inv: any) => inv.id === invId, (inv: any) => ({ ...inv, status: 'PAID', paymentMethod: 'CASH', paidAt: now, _isOfflineQueued: true }));
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('clinic_data_changed', { detail: { type: 'INVOICE_PAID', invId } }));
+      }
+      return { id: invId, status: 'PAID', paymentMethod: 'CASH', paidAt: now, _isOfflineQueued: true } as T;
+    }
+
+    // Invoice Update: PATCH /payments/invoices/:id
+    if (cleanEndpoint.startsWith('/payments/invoices/') && method === 'PATCH') {
+      const invId = cleanEndpoint.split('/')[3];
+      await syncManager.updateCachedItem('/payments/invoices', (inv: any) => inv.id === invId, (inv: any) => ({ ...inv, ...body, updatedAt: now, _isOfflineQueued: true }));
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('clinic_data_changed', { detail: { type: 'INVOICE_UPDATED', invId } }));
+      }
+      return { id: invId, ...body, updatedAt: now, _isOfflineQueued: true } as T;
+    }
+
+    // Generate KHQR fallback when offline: POST /payments/generate-qr
+    if (cleanEndpoint === '/payments/generate-qr' && method === 'POST') {
+      const offlineTranId = `OFF-TRX-${Date.now().toString().slice(-6)}`;
+      return {
+        qrString: '00020101021229300012houn_vannak_clinic@aba520459995303840540510.005802KH5916ROTNACLINIC6010PHNOMPENH6304ABCD',
+        tranId: offlineTranId,
+        md5: 'offline-md5-hash',
+        amount: body.payableAmount || 10.0,
+        currency: 'USD',
+        invoiceNumber: `INV-OFF-${Date.now().toString().slice(-5)}`,
+        paywayLink: 'https://link.payway.com.kh/ABAPAYCK539089j',
+        expiresInSeconds: 180,
+        _isOfflineQueued: true,
+      } as T;
+    }
+
+    // Prescription Create: POST /prescriptions
+    if (cleanEndpoint === '/prescriptions' && method === 'POST') {
+      const optimisticRx = {
+        id: `offline-rx-${Date.now()}`,
+        prescriptionCode: `RX-OFF-${Date.now().toString().slice(-5)}`,
+        patientId: body.patientId,
+        visitId: body.visitId,
+        status: 'PENDING',
+        items: body.items || [],
+        createdAt: now,
+        updatedAt: now,
+        _isOfflineQueued: true,
+        ...body,
+      };
+      await syncManager.prependCachedItem('/prescriptions', optimisticRx);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('clinic_data_changed', { detail: { type: 'PRESCRIPTION_CREATED', data: optimisticRx } })
+        );
+      }
+      return optimisticRx as T;
+    }
+
+    // Prescription Dispense: PATCH /prescriptions/:id/dispense
+    if (cleanEndpoint.startsWith('/prescriptions/') && cleanEndpoint.endsWith('/dispense') && method === 'PATCH') {
+      const rxId = cleanEndpoint.split('/')[2];
+      await syncManager.updateCachedItem('/prescriptions', (rx: any) => rx.id === rxId, (rx: any) => ({ ...rx, status: 'DISPENSED', dispensedAt: now, _isOfflineQueued: true }));
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('clinic_data_changed', { detail: { type: 'PRESCRIPTION_DISPENSED', rxId } })
+        );
+      }
+      return { id: rxId, status: 'DISPENSED', dispensedAt: now, _isOfflineQueued: true } as T;
+    }
+
+    // Generic fallback for any other offline mutation
+    const generic = {
+      id: `offline-${Date.now()}`,
+      _isOfflineQueued: true,
+      status: 'OFFLINE_SAVED',
+      message: 'Saved locally. Will sync when back online.',
+      createdAt: now,
+      ...body,
+    };
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('clinic_data_changed', { detail: { type: 'GENERIC_MUTATION', data: generic } }));
+    }
+    return generic as T;
+  }
+
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    const isGet = !options.method || options.method === 'GET';
+    const cleanEndpoint = endpoint.split('?')[0];
     const token = this.getToken();
     const headers: Record<string, string> = {
       ...(options.body ? { 'Content-Type': 'application/json' } : {}),
@@ -33,6 +313,14 @@ class ApiClient {
 
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    // If completely offline and it's a GET request, immediately serve from cache!
+    if (isGet && typeof navigator !== 'undefined' && !navigator.onLine) {
+      const cached = await this.getCachedFallback<T>(endpoint, cleanEndpoint);
+      if (cached !== null) {
+        return cached;
+      }
     }
 
     const baseUrl = getApiBaseUrl();
@@ -66,36 +354,39 @@ class ApiClient {
         throw new Error(errorMessage);
       }
 
-      return response.json();
+      const data = await response.json();
+      // On successful GET, cache the fresh data
+      if (isGet) {
+        import('./syncManager').then(({ syncManager }) => {
+          syncManager.cacheData(endpoint, data);
+          if (cleanEndpoint !== endpoint) {
+            syncManager.cacheData(cleanEndpoint, data);
+          }
+        });
+      }
+      return data;
     } catch (err: any) {
-      // Offline fallback: if offline or network error, queue mutation in IndexedDB
-      const isMutation = options.method && options.method !== 'GET';
       const isNetworkError =
         (typeof navigator !== 'undefined' && !navigator.onLine) ||
         err?.name === 'TypeError' ||
         err?.message?.includes('fetch') ||
-        err?.message?.includes('Network');
+        err?.message?.includes('Network') ||
+        err?.message?.includes('Failed to fetch');
 
-      if (isMutation && isNetworkError) {
-        try {
-          const { syncManager } = await import('./syncManager');
-          await syncManager.queueMutation({
-            endpoint,
-            method: options.method as any,
-            body: options.body ? JSON.parse(options.body as string) : null,
-            label: `${options.method} ${endpoint}`,
-          });
-
-          return {
-            id: `offline-${Date.now()}`,
-            _isOfflineQueued: true,
-            status: 'OFFLINE_SAVED',
-            message: 'Saved locally. Will sync when back online.',
-          } as any;
-        } catch (queueErr) {
-          console.error('Failed to queue offline mutation:', queueErr);
+      // 1. GET request offline / network failure -> Fallback to Cache
+      if (isGet && isNetworkError) {
+        const cached = await this.getCachedFallback<T>(endpoint, cleanEndpoint);
+        if (cached !== null) {
+          return cached;
         }
       }
+
+      // 2. Mutation (POST/PUT/PATCH/DELETE) offline / network failure -> Optimistic execution & Queue
+      if (!isGet && isNetworkError) {
+        const parsedBody = options.body ? JSON.parse(options.body as string) : {};
+        return this.handleOfflineMutation<T>(endpoint, options.method as any, parsedBody);
+      }
+
       throw err;
     }
   }

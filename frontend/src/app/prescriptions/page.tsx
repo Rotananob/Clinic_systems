@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Modal } from '../../components/ui/Modal';
 import { KhqrCheckoutModal } from '../../components/payments/KhqrCheckoutModal';
 import { useTranslation } from '../../context/I18nContext';
+import { useLiveSync } from '../../lib/useLiveSync';
 import {
   Pill,
   Search,
@@ -65,6 +66,9 @@ export default function PrescriptionsPage() {
   useEffect(() => {
     fetchPrescriptions();
   }, [statusFilter]);
+
+  // Real-time automatic sync listener without requiring page reload
+  useLiveSync(fetchPrescriptions);
 
   const filteredPrescriptions = useMemo(() => {
     if (!searchQuery.trim()) return prescriptions;

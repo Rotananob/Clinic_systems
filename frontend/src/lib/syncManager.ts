@@ -138,6 +138,16 @@ class OfflineSyncManager {
       request.onsuccess = () => {
         this.state = 'LOCAL_SAVE';
         this.notify();
+
+        // Broadcast real-time change event to all active UI listeners
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('clinic_data_changed', {
+              detail: { type: 'MUTATION_QUEUED', mutation: record },
+            })
+          );
+        }
+
         resolve(request.result as number);
 
         // If online, immediately try to sync
@@ -255,6 +265,21 @@ class OfflineSyncManager {
     }
 
     this.notify();
+
+    // Broadcast real-time synchronization completion event to auto-refresh all views without page reload
+    if (typeof window !== 'undefined' && succeeded > 0) {
+      window.dispatchEvent(
+        new CustomEvent('clinic_data_synced', {
+          detail: { succeeded, failed, total: pending.length },
+        })
+      );
+      window.dispatchEvent(
+        new CustomEvent('clinic_data_changed', {
+          detail: { type: 'SYNC_COMPLETE', succeeded },
+        })
+      );
+    }
+
     return { total: pending.length, succeeded, failed };
   }
 
@@ -282,6 +307,14 @@ class OfflineSyncManager {
 
   // Local-First Read Caching
   public async cacheData(key: string, data: any): Promise<void> {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(`clinic_cache_${key}`, JSON.stringify(data));
+      } catch {
+        // Ignore localStorage quota limit
+      }
+    }
+
     try {
       const db = await this.initDb();
       return new Promise((resolve, reject) => {
@@ -297,6 +330,15 @@ class OfflineSyncManager {
   }
 
   public async getCachedData<T>(key: string): Promise<T | null> {
+    // 1. Instant recovery from localStorage
+    if (typeof window !== 'undefined') {
+      try {
+        const raw = localStorage.getItem(`clinic_cache_${key}`);
+        if (raw) return JSON.parse(raw);
+      } catch {}
+    }
+
+    // 2. Recovery from IndexedDB
     try {
       const db = await this.initDb();
       return new Promise((resolve) => {
@@ -308,6 +350,54 @@ class OfflineSyncManager {
       });
     } catch {
       return null;
+    }
+  }
+
+  // Prepend an optimistically created item to cached collections
+  public async prependCachedItem(collectionKey: string, item: any): Promise<void> {
+    try {
+      const existing = await this.getCachedData<any>(collectionKey);
+      if (Array.isArray(existing)) {
+        const updated = [item, ...existing];
+        await this.cacheData(collectionKey, updated);
+      } else if (existing && Array.isArray(existing.data)) {
+        const updated = {
+          ...existing,
+          data: [item, ...existing.data],
+          meta: {
+            ...existing.meta,
+            total: (existing.meta?.total || existing.data.length) + 1,
+          },
+        };
+        await this.cacheData(collectionKey, updated);
+      } else {
+        await this.cacheData(collectionKey, [item]);
+      }
+    } catch (err) {
+      console.warn('Failed to prepend cached item:', err);
+    }
+  }
+
+  // Update an existing item in cached collections
+  public async updateCachedItem(
+    collectionKey: string,
+    predicate: (item: any) => boolean,
+    updater: (item: any) => any
+  ): Promise<void> {
+    try {
+      const existing = await this.getCachedData<any>(collectionKey);
+      if (Array.isArray(existing)) {
+        const updated = existing.map((el) => (predicate(el) ? updater(el) : el));
+        await this.cacheData(collectionKey, updated);
+      } else if (existing && Array.isArray(existing.data)) {
+        const updated = {
+          ...existing,
+          data: existing.data.map((el: any) => (predicate(el) ? updater(el) : el)),
+        };
+        await this.cacheData(collectionKey, updated);
+      }
+    } catch (err) {
+      console.warn('Failed to update cached item:', err);
     }
   }
 }

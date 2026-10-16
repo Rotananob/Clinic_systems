@@ -5,6 +5,7 @@ import { api } from '../../lib/api';
 import { useTranslation } from '../../context/I18nContext';
 import { ClinicLogo } from '../../components/common/ClinicLogo';
 import { playHospitalChime } from '../../lib/chime';
+import { useLiveSync } from '../../lib/useLiveSync';
 import {
   Monitor,
   Volume2,
@@ -108,6 +109,39 @@ export default function QueuePage() {
       chiefComplaint: 'KHQR Payment Settlement',
     },
   ]);
+
+  const fetchQueueData = async () => {
+    try {
+      const liveVisits = await api.visits.list();
+      if (Array.isArray(liveVisits) && liveVisits.length > 0) {
+        const mapped: QueueItem[] = liveVisits.map((v: any, index: number) => {
+          const waitTime = Math.max(1, Math.round((Date.now() - new Date(v.createdAt).getTime()) / 60000));
+          return {
+            id: v.id,
+            token: v.visitCode || `Q-${100 + index}`,
+            patientName: v.patient ? `${v.patient.nameEn}${v.patient.nameKh ? ` (${v.patient.nameKh})` : ''}` : 'Patient',
+            patientCode: v.patient?.patientCode || 'P-0000',
+            department: v.doctor ? `Dr. ${v.doctor.fullNameEn}` : 'Consultation Desk',
+            doctorName: v.doctor ? `Dr. ${v.doctor.fullNameEn}` : 'Attending Physician',
+            room: v.doctor ? 'Consultation Room' : 'Triage Room',
+            status: v.status === 'COMPLETED' ? 'COMPLETED' : v.status === 'IN_CONSULTATION' ? 'IN_ROOM' : 'WAITING',
+            waitTimeMinutes: isNaN(waitTime) ? 5 : waitTime,
+            chiefComplaint: v.reason || 'Medical Consultation',
+          };
+        });
+        setQueueItems(mapped);
+      }
+    } catch {
+      // Retain existing local queue state
+    }
+  };
+
+  useEffect(() => {
+    fetchQueueData();
+  }, []);
+
+  // Real-time automatic sync listener without requiring page reload
+  useLiveSync(fetchQueueData);
 
   // Real audible hospital broadcast chime using Web Audio API
   const handlePlayHospitalChime = () => {

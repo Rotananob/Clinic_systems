@@ -14,12 +14,27 @@ export const OfflineSyncBanner: React.FC = () => {
     lastSyncedAt: null,
   });
   const [isManualSyncing, setIsManualSyncing] = useState(false);
+  const [justSynced, setJustSynced] = useState(false);
 
   useEffect(() => {
     const unsubscribe = syncManager.subscribe((newStatus) => {
       setStatus(newStatus);
     });
-    return () => unsubscribe();
+
+    const handleSyncDone = () => {
+      setJustSynced(true);
+      const timer = setTimeout(() => {
+        setJustSynced(false);
+      }, 4500);
+      return () => clearTimeout(timer);
+    };
+
+    window.addEventListener('clinic_data_synced', handleSyncDone);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener('clinic_data_synced', handleSyncDone);
+    };
   }, []);
 
   const handleManualSync = async () => {
@@ -31,8 +46,8 @@ export const OfflineSyncBanner: React.FC = () => {
     }
   };
 
-  // Only show banner if offline or has pending mutations or syncing or failed
-  if (status.isOnline && status.pendingCount === 0 && status.state === 'SYNCED') {
+  // Only show banner if offline, has pending mutations, syncing, failed, or justSynced
+  if (status.isOnline && status.pendingCount === 0 && status.state === 'SYNCED' && !justSynced) {
     return null;
   }
 
@@ -55,6 +70,8 @@ export const OfflineSyncBanner: React.FC = () => {
           <RefreshCw className="w-4 h-4 shrink-0 animate-spin text-blue-600" />
         ) : status.state === 'SYNC_FAILED' ? (
           <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+        ) : justSynced ? (
+          <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
         ) : (
           <Database className="w-4 h-4 shrink-0 text-emerald-600" />
         )}
@@ -68,6 +85,10 @@ export const OfflineSyncBanner: React.FC = () => {
             isKm ? 'កំពុងធ្វើសមកាលកម្មទិន្នន័យទៅម៉ាស៊ីនបម្រើ...' : 'Synchronizing local changes to server...'
           ) : status.state === 'SYNC_FAILED' ? (
             isKm ? 'ការធ្វើសមកាលកម្មបានបរាជ័យ។ សូមព្យាយាមម្តងទៀត។' : 'Sync failed. Retry available.'
+          ) : justSynced ? (
+            isKm
+              ? 'បានធ្វើសមកាលកម្មទិន្នន័យស្វ័យប្រវត្តទៅម៉ាស៊ីនបម្រើរួចរាល់ ១០០% (Real-time Synced)'
+              : 'All modifications synchronized successfully to server in real time'
           ) : (
             isKm
               ? `មាន ${status.pendingCount} ទិន្នន័យបានរក្សាទុកក្នុងឧបករណ៍ រង់ចាំសមកាលកម្ម`

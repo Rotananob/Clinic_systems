@@ -5,6 +5,7 @@ import { api } from '../../lib/api';
 import Link from 'next/link';
 import { Modal } from '../../components/ui/Modal';
 import { useTranslation } from '../../context/I18nContext';
+import { useLiveSync } from '../../lib/useLiveSync';
 import {
   Activity,
   User,
@@ -70,6 +71,9 @@ export default function VisitsPage() {
   useEffect(() => {
     fetchDoctors();
   }, []);
+
+  // Real-time automatic sync listener without requiring page reload
+  useLiveSync(fetchVisits);
 
   // Filtered queue items
   const filteredVisits = useMemo(() => {

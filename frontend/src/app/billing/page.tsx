@@ -9,6 +9,7 @@ import { CashPaymentModal } from '../../components/payments/CashPaymentModal';
 import { useTranslation } from '../../context/I18nContext';
 import { useToast } from '../../context/ToastContext';
 import { getHumanErrorMessage } from '../../lib/errorHandler';
+import { useLiveSync } from '../../lib/useLiveSync';
 import {
   CreditCard,
   Search,
@@ -159,6 +160,9 @@ export default function BillingPage() {
   useEffect(() => {
     fetchInvoices();
   }, [statusFilter]);
+
+  // Real-time automatic sync listener without requiring page reload
+  useLiveSync(fetchInvoices);
 
   const handleCreateQuickInvoice = async (e?: React.FormEvent, showQrImmediately: boolean = true) => {
     if (e) e.preventDefault();

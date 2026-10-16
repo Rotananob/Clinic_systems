@@ -5,6 +5,7 @@ import { api } from '../../lib/api';
 import { Search, Plus, Phone, Calendar, ArrowRight, ShieldAlert, Loader2, Download } from 'lucide-react';
 import { RegisterPatientDrawer } from './RegisterPatientDrawer';
 import { useTranslation } from '../../context/I18nContext';
+import { useLiveSync } from '../../lib/useLiveSync';
 
 export const PatientList: React.FC = () => {
   const { t, locale } = useTranslation();
@@ -35,6 +36,11 @@ export const PatientList: React.FC = () => {
     }, 300);
     return () => clearTimeout(timer);
   }, [search, page]);
+
+  // Real-time automatic sync listener without requiring page reload
+  useLiveSync(() => {
+    fetchPatients(search, page);
+  });
 
   const handlePatientCreated = (newPatient: any) => {
     setPatients([newPatient, ...patients]);
