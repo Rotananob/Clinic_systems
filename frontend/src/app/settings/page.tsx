@@ -6,6 +6,7 @@ import { useTranslation } from '../../context/I18nContext';
 import { playPaymentSuccessChime, playHospitalChime, playCashRegisterChime } from '../../lib/chime';
 import { HardwareSettingsPanel } from '../../components/hardware/HardwareSettingsPanel';
 import { TelegramSettingsPanel } from '../../components/telegram/TelegramSettingsPanel';
+import { SoundSettingsPanel } from '../../components/sound/SoundSettingsPanel';
 import {
   Building2,
   QrCode,
@@ -14,6 +15,7 @@ import {
   ShieldAlert,
   Save,
   RotateCcw,
+  Volume2,
   CheckCircle2,
   AlertCircle,
   Download,
@@ -24,7 +26,6 @@ import {
   Mail,
   Globe,
   FileText,
-  Volume2,
   Percent,
   Cpu,
   LayoutTemplate,
@@ -157,7 +158,7 @@ const STORAGE_KEY = 'houn_vannak_clinic_settings_v1';
 export default function SettingsPage() {
   const { locale } = useTranslation();
   const isKm = locale === 'km';
-  const [activeTab, setActiveTab] = useState<'profile' | 'khqr' | 'fees' | 'receipt' | 'hardware' | 'telegram' | 'security'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'khqr' | 'fees' | 'receipt' | 'hardware' | 'sound' | 'telegram' | 'security'>('profile');
   const [settings, setSettings] = useState<ClinicSettingsState>(defaultSettings);
   const [savedNotice, setSavedNotice] = useState(false);
   const [resetNotice, setResetNotice] = useState(false);
@@ -167,7 +168,7 @@ export default function SettingsPage() {
       if (typeof window !== 'undefined') {
         const urlParams = new URLSearchParams(window.location.search);
         const tab = urlParams.get('tab');
-        if (tab && ['profile', 'khqr', 'fees', 'receipt', 'hardware', 'telegram', 'security'].includes(tab)) {
+        if (tab && ['profile', 'khqr', 'fees', 'receipt', 'hardware', 'sound', 'telegram', 'security'].includes(tab)) {
           setActiveTab(tab as any);
         }
       }
@@ -353,6 +354,19 @@ export default function SettingsPage() {
         >
           <Cpu className="w-4 h-4" />
           <span>{isKm ? 'ហាតវែរ & ឧបករណ៍' : 'Hardware & Devices'}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('sound')}
+          className={`px-4 py-2.5 rounded-lg text-xs font-semibold flex items-center gap-2 whitespace-nowrap transition-colors ${
+            activeTab === 'sound'
+              ? 'bg-teal-700 text-white shadow-xs'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+          }`}
+        >
+          <Volume2 className="w-4 h-4" />
+          <span>{isKm ? 'សំឡេង & សំឡេងនិយាយ' : 'Sounds & Voice'}</span>
         </button>
 
         <button
@@ -1268,6 +1282,13 @@ export default function SettingsPage() {
           </div>
         )}
 
+        {/* TAB: Sound & Real Voice */}
+        {activeTab === 'sound' && (
+          <div className="space-y-6">
+            <SoundSettingsPanel />
+          </div>
+        )}
+
         {/* TAB 6: Telegram Bot & Forum Topics */}
         {activeTab === 'telegram' && (
           <div className="space-y-6">
@@ -1276,7 +1297,7 @@ export default function SettingsPage() {
         )}
 
         {/* Action Buttons */}
-        {activeTab !== 'hardware' && activeTab !== 'telegram' && (
+        {activeTab !== 'hardware' && activeTab !== 'telegram' && activeTab !== 'sound' && (
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
             <button
               type="button"

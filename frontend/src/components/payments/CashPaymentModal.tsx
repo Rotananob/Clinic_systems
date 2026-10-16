@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
 import { useTranslation } from '../../context/I18nContext';
-import { playPaymentSuccessChime } from '../../lib/chime';
+import { playCashRegisterChime } from '../../lib/chime';
 import {
   Banknote,
   X,
@@ -75,7 +75,7 @@ export function CashPaymentModal({
     setError(null);
     try {
       const res = await api.payments.settleCash(invoice.id, tendered);
-      playPaymentSuccessChime();
+      playCashRegisterChime();
       onSuccess(res.invoice);
     } catch (err: any) {
       setError(err?.message || 'Failed to record cash payment');

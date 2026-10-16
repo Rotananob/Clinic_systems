@@ -222,6 +222,17 @@ export const CommandPalette: React.FC = () => {
       },
     },
     {
+      id: 'nav-sound-settings',
+      category: isKm ? 'ការរុករក' : 'Navigation',
+      title: isKm ? 'កំណត់សំឡេង & ថតសំឡេងនិយាយ (Sound Studio)' : 'Sound & Voice Settings',
+      subtitle: isKm ? 'បញ្ចូល MP3 ឬថតសំឡេងប្រកាសផ្ទាល់ខ្លួន' : 'Upload MP3 or record real voice announcements',
+      icon: Volume2,
+      action: () => {
+        router.push('/settings?tab=sound');
+        setIsOpen(false);
+      },
+    },
+    {
       id: 'nav-settings',
       category: isKm ? 'ការរុករក' : 'Navigation',
       title: t.nav.settings,

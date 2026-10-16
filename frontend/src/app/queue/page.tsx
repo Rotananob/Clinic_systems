@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
 import { useTranslation } from '../../context/I18nContext';
 import { ClinicLogo } from '../../components/common/ClinicLogo';
-import { playHospitalChime } from '../../lib/chime';
+import { playHospitalChime, speakQueueCall } from '../../lib/chime';
 import { useLiveSync } from '../../lib/useLiveSync';
 import {
   Monitor,
@@ -143,15 +143,21 @@ export default function QueuePage() {
   // Real-time automatic sync listener without requiring page reload
   useLiveSync(fetchQueueData);
 
-  // Real audible hospital broadcast chime using Web Audio API
-  const handlePlayHospitalChime = () => {
+  // Real audible hospital broadcast chime using Web Audio API + Voice announcement
+  const handlePlayHospitalChime = (item?: QueueItem) => {
     if (soundEnabled) {
       playHospitalChime();
+      const target = item || activeCall;
+      if (target) {
+        setTimeout(() => {
+          speakQueueCall(target.token, target.room || target.department, isKm);
+        }, 900);
+      }
     }
   };
 
   const handleCallPatient = (item: QueueItem) => {
-    handlePlayHospitalChime();
+    handlePlayHospitalChime(item);
     setActiveCall(item);
     setQueueItems((prev) =>
       prev.map((q) => (q.id === item.id ? { ...q, status: 'CALLING' } : q))
@@ -247,19 +253,19 @@ export default function QueuePage() {
 
       {/* Prominent "Now Calling" Announcer Banner */}
       {activeCall && (
-        <div className="bg-gradient-to-r from-teal-800 via-teal-700 to-emerald-800 rounded-3xl p-6 text-white shadow-2xl border-2 border-teal-500 animate-in zoom-in-95 duration-200">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="flex items-center gap-5">
-              <div className="w-20 h-20 rounded-2xl bg-white/10 backdrop-blur-md border-2 border-amber-400 flex flex-col items-center justify-center shrink-0 shadow-lg">
-                <span className="text-[10px] uppercase tracking-wider font-mono text-amber-300 font-bold">
+        <div className="bg-gradient-to-r from-teal-800 via-teal-700 to-emerald-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 text-white shadow-2xl border-2 border-teal-500 animate-in zoom-in-95 duration-200">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
+            <div className="flex items-center gap-3 sm:gap-5">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/10 backdrop-blur-md border-2 border-amber-400 flex flex-col items-center justify-center shrink-0 shadow-lg">
+                <span className="text-[9px] sm:text-[10px] uppercase tracking-wider font-mono text-amber-300 font-bold">
                   {t.queue.token}
                 </span>
-                <span className="text-3xl font-black font-mono tracking-tight text-white">
+                <span className="text-2xl sm:text-3xl font-black font-mono tracking-tight text-white">
                   {activeCall.token}
                 </span>
               </div>
-              <div>
-                <div className="flex items-center gap-2">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span className="px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-900 text-[10px] font-bold font-mono uppercase tracking-wide flex items-center gap-1.5 shadow-xs">
                     <span className="flex items-center gap-0.5">
                       <span className="w-1 h-2 bg-slate-900 rounded-full animate-bounce [animation-delay:0ms]" />
@@ -272,10 +278,10 @@ export default function QueuePage() {
                     {activeCall.patientCode}
                   </span>
                 </div>
-                <h2 className="text-2xl font-bold text-white mt-1">
+                <h2 className="text-lg sm:text-2xl font-bold text-white mt-1 truncate">
                   {activeCall.patientName}
                 </h2>
-                <p className="text-sm text-teal-100 mt-0.5 flex items-center gap-1.5">
+                <p className="text-xs sm:text-sm text-teal-100 mt-0.5 flex flex-wrap items-center gap-1.5">
                   <span>{t.queue.pleaseProceedTo}:</span>
                   <span className="font-bold underline text-amber-300">
                     {activeCall.department} ({activeCall.room})
@@ -284,11 +290,11 @@ export default function QueuePage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
               <button
                 type="button"
-                onClick={() => handlePlayHospitalChime()}
-                className="px-4 py-2.5 bg-white/15 hover:bg-white/25 rounded-xl text-xs font-semibold border border-white/20 transition-colors flex items-center gap-1.5"
+                onClick={() => handlePlayHospitalChime(activeCall)}
+                className="flex-1 sm:flex-initial px-3 sm:px-4 py-2 sm:py-2.5 bg-white/15 hover:bg-white/25 rounded-xl text-xs font-semibold border border-white/20 transition-colors flex items-center justify-center gap-1.5"
               >
                 <Volume2 className="w-4 h-4 text-amber-300" />
                 <span>{t.queue.recall}</span>
@@ -296,7 +302,7 @@ export default function QueuePage() {
               <button
                 type="button"
                 onClick={() => handleCompletePatient(activeCall.id)}
-                className="px-4 py-2.5 bg-amber-400 hover:bg-amber-300 text-slate-900 rounded-xl text-xs font-bold transition-colors shadow-md flex items-center gap-1.5"
+                className="flex-1 sm:flex-initial px-3 sm:px-4 py-2 sm:py-2.5 bg-amber-400 hover:bg-amber-300 text-slate-900 rounded-xl text-xs font-bold transition-colors shadow-md flex items-center justify-center gap-1.5"
               >
                 <CheckCircle2 className="w-4 h-4" />
                 <span>{isKm ? 'បានចូលពិគ្រោះ' : 'Proceed to Room'}</span>
