@@ -128,6 +128,23 @@ export class VisitsService {
     });
   }
 
+  async updateStatus(id: string, status: VisitStatus) {
+    await this.findOne(id);
+
+    return this.prisma.visit.update({
+      where: { id },
+      data: { status },
+      include: {
+        patient: {
+          select: { id: true, patientCode: true, nameEn: true, nameKh: true, phone: true, gender: true },
+        },
+        doctor: {
+          select: { id: true, fullNameEn: true, fullNameKh: true },
+        },
+      },
+    });
+  }
+
   async completeVisit(
     id: string,
     data: {

@@ -165,6 +165,18 @@ class ApiClient {
       return { id: visitId, ...body, updatedAt: now, _isOfflineQueued: true } as T;
     }
 
+    // Visit Status: PATCH /visits/:id/status
+    if (cleanEndpoint.startsWith('/visits/') && cleanEndpoint.endsWith('/status') && method === 'PATCH') {
+      const visitId = cleanEndpoint.split('/')[2];
+      await syncManager.updateCachedItem('/visits', (v: any) => v.id === visitId, (v: any) => ({ ...v, status: body.status, updatedAt: now, _isOfflineQueued: true }));
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('clinic_data_changed', { detail: { type: 'VISIT_UPDATED', visitId, status: body.status } })
+        );
+      }
+      return { id: visitId, status: body.status, updatedAt: now, _isOfflineQueued: true } as T;
+    }
+
     // Visit Complete: PATCH /visits/:id/complete
     if (cleanEndpoint.startsWith('/visits/') && cleanEndpoint.endsWith('/complete') && method === 'PATCH') {
       const visitId = cleanEndpoint.split('/')[2];
@@ -466,6 +478,14 @@ class ApiClient {
       this.request<any>(`/visits/${id}/vitals`, {
         method: 'PATCH',
         body: JSON.stringify(data),
+      }),
+    updateStatus: (
+      id: string,
+      status: 'WAITING' | 'IN_CONSULTATION' | 'COMPLETED' | 'CANCELLED',
+    ) =>
+      this.request<any>(`/visits/${id}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status }),
       }),
     complete: (
       id: string,

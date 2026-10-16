@@ -44,6 +44,15 @@ export class VisitsController {
     return this.visitsService.updateVitals(id, vitalsDto);
   }
 
+  @ApiOperation({ summary: 'Update visit queue status (WAITING, IN_CONSULTATION, COMPLETED, CANCELLED)' })
+  @Patch(':id/status')
+  updateStatus(
+    @Param('id') id: string,
+    @Body('status') status: VisitStatus,
+  ) {
+    return this.visitsService.updateStatus(id, status);
+  }
+
   @ApiOperation({ summary: 'Complete consultation with diagnosis, notes, medical record, and invoice trigger' })
   @Patch(':id/complete')
   completeVisit(
