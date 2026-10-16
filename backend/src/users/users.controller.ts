@@ -6,18 +6,29 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Role } from '@prisma/client';
+import { TestAccountThrottleService } from '../common/services/test-account-throttle.service';
 
 @ApiTags('Staff & Users (RBAC)')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly throttleService: TestAccountThrottleService,
+  ) {}
 
   @ApiOperation({ summary: 'Create staff account (Admin & Super Admin only)' })
   @Roles(Role.ADMIN)
   @Post()
   create(@Body() dto: CreateUserDto, @Req() req: any) {
+    this.throttleService.checkAndIncrement(
+      req?.user,
+      'STAFF_MANAGE',
+      5,
+      'បង្កើតគណនីបុគ្គលិក',
+      'Staff account creation',
+    );
     return this.usersService.create(dto, req.user?.role);
   }
 

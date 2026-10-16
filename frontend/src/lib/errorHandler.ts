@@ -27,6 +27,11 @@ export function getHumanErrorMessage(error: unknown, locale: 'km' | 'en' = 'km')
 
   const lower = rawMsg.toLowerCase();
 
+  // If already formatted in human Khmer, return directly
+  if (isKm && /[\u1780-\u17FF]/.test(rawMsg)) {
+    return rawMsg;
+  }
+
   // 1. Network / Connectivity issues
   if (
     lower.includes('failed to fetch') ||
@@ -39,26 +44,27 @@ export function getHumanErrorMessage(error: unknown, locale: 'km' | 'en' = 'km')
       : 'Unable to connect to the clinic server. Please check your network connection and try again.';
   }
 
-  // 2. Authentication & Authorization
+  // 2. Authentication & Authorization (Never show raw 401 / 403)
   if (
     lower.includes('unauthorized') ||
     lower.includes('invalid email or password') ||
     lower.includes('jwt') ||
-    lower.includes('http error 401')
+    lower.includes('401')
   ) {
     return isKm
-      ? 'អ៊ីមែល ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវទេ សូមពិនិត្យមើលឡើងវិញ'
-      : 'Invalid email or password. Please verify your staff credentials.';
+      ? 'អ៊ីមែល ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវទេ ឬវគ្គប្រើប្រាស់បានផុតកំណត់ សូមចូលគណនីឡើងវិញ'
+      : 'Invalid email or password, or your session has expired. Please sign in again.';
   }
 
   if (
     lower.includes('forbidden') ||
     lower.includes('permission') ||
-    lower.includes('http error 403')
+    lower.includes('403') ||
+    lower.includes('restricted')
   ) {
     return isKm
-      ? 'គណនីលោកអ្នកមិនមានសិទ្ធិអនុវត្តសកម្មភាពនេះទេ'
-      : 'You do not have authorized permission to perform this clinical action.';
+      ? 'គណនីលោកអ្នកមិនទាន់មានសិទ្ធិចូលប្រើប្រាស់មុខងារនេះឡើយ។ សូមទាក់ទងម្ចាស់គ្លីនិក (Owner) ដើម្បីស្នើសុំសិទ្ធិបន្ថែម។'
+      : 'You do not have authorized permission to perform this clinical action. Please contact the clinic owner.';
   }
 
   if (lower.includes('disabled') || lower.includes('inactive')) {

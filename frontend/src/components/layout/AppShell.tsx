@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { AuthProvider, useAuth } from '../../context/AuthContext';
 import { I18nProvider, useTranslation } from '../../context/I18nContext';
 import { ToastProvider } from '../../context/ToastContext';
+import { PermissionModalProvider } from '../../context/PermissionModalContext';
 import { Navbar } from './Navbar';
 import { Sidebar } from './Sidebar';
 import { MobileNavDock } from './MobileNavDock';
@@ -193,7 +194,9 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
     <AuthProvider>
       <I18nProvider>
         <ToastProvider>
-          <AppShellContent>{children}</AppShellContent>
+          <PermissionModalProvider>
+            <AppShellContent>{children}</AppShellContent>
+          </PermissionModalProvider>
         </ToastProvider>
       </I18nProvider>
     </AuthProvider>

@@ -7,6 +7,7 @@ import { useTranslation } from '../../context/I18nContext';
 import { LanguageSwitcher } from '../common/LanguageSwitcher';
 import { ClinicLogo } from '../common/ClinicLogo';
 import { isRouteAllowed } from '../../lib/rbac';
+import { RestrictedActionGuard } from '../common/RestrictedActionGuard';
 import Link from 'next/link';
 
 export const Navbar: React.FC = () => {
@@ -53,38 +54,58 @@ export const Navbar: React.FC = () => {
             <Search className="w-3.5 h-3.5 text-stone-700" />
           </button>
 
-          {mounted && user && isRouteAllowed(user.role, '/reports') && (
-            <Link
-              href="/reports"
-              className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#F5EFE4] hover:bg-[#EFE6D8] text-stone-800 border border-[#DFD6C6] text-xs font-semibold transition-colors shadow-xs"
-              title={locale === 'km' ? 'របាយការណ៍ & ស្ថិតិ' : 'Reports & Analytics'}
+          {mounted && user && (
+            <RestrictedActionGuard
+              isAllowed={isRouteAllowed(user.role, '/reports')}
+              actionNameKh="របាយការណ៍ & ស្ថិតិហិរញ្ញវត្ថុ"
+              actionNameEn="Financial Reports & Analytics"
+              className="hidden sm:inline-block"
             >
-              <span className="hidden md:inline">{locale === 'km' ? 'របាយការណ៍' : 'Reports'}</span>
-              <span className="md:hidden">Report</span>
-            </Link>
+              <Link
+                href={isRouteAllowed(user.role, '/reports') ? '/reports' : '#'}
+                className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#F5EFE4] hover:bg-[#EFE6D8] text-stone-800 border border-[#DFD6C6] text-xs font-semibold transition-colors shadow-xs"
+                title={locale === 'km' ? 'របាយការណ៍ & ស្ថិតិ' : 'Reports & Analytics'}
+              >
+                <span className="hidden md:inline">{locale === 'km' ? 'របាយការណ៍' : 'Reports'}</span>
+                <span className="md:hidden">Report</span>
+              </Link>
+            </RestrictedActionGuard>
           )}
 
-          {mounted && user && isRouteAllowed(user.role, '/queue') && (
-            <Link
-              href="/queue"
-              className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#FAF7F2] hover:bg-[#F2ECE1] text-stone-700 border border-[#E5DFD2] text-xs font-semibold transition-colors shadow-xs"
-              title={locale === 'km' ? 'ក្ដារជួរ & ហៅលេខអ្នកជំងឺ' : 'Patient Queue & Calling Screen'}
+          {mounted && user && (
+            <RestrictedActionGuard
+              isAllowed={isRouteAllowed(user.role, '/queue')}
+              actionNameKh="ក្ដារជួរ & ហៅលេខអ្នកជំងឺ"
+              actionNameEn="Patient Queue Screen"
+              className="hidden sm:inline-block"
             >
-              <Monitor className="w-3.5 h-3.5 text-teal-800" />
-              <span className="hidden md:inline">{t.nav.queue}</span>
-              <span className="md:hidden">Queue</span>
-            </Link>
+              <Link
+                href={isRouteAllowed(user.role, '/queue') ? '/queue' : '#'}
+                className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#FAF7F2] hover:bg-[#F2ECE1] text-stone-700 border border-[#E5DFD2] text-xs font-semibold transition-colors shadow-xs"
+                title={locale === 'km' ? 'ក្ដារជួរ & ហៅលេខអ្នកជំងឺ' : 'Patient Queue & Calling Screen'}
+              >
+                <Monitor className="w-3.5 h-3.5 text-teal-800" />
+                <span className="hidden md:inline">{t.nav.queue}</span>
+                <span className="md:hidden">Queue</span>
+              </Link>
+            </RestrictedActionGuard>
           )}
 
-          {mounted && user && isRouteAllowed(user.role, '/billing') && (
-            <Link
-              href="/billing"
-              className="inline-flex items-center gap-1 px-2 sm:px-3 py-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-900 border border-teal-200/80 text-xs font-semibold transition-colors shadow-xs"
+          {mounted && user && (
+            <RestrictedActionGuard
+              isAllowed={isRouteAllowed(user.role, '/billing')}
+              actionNameKh="វិក្កយបត្រ & ទូទាត់ KHQR"
+              actionNameEn="Invoicing & KHQR POS Settlement"
             >
-              <QrCode className="w-3.5 h-3.5 text-teal-700" />
-              <span className="hidden sm:inline">KHQR & Billing</span>
-              <span className="sm:hidden">KHQR</span>
-            </Link>
+              <Link
+                href={isRouteAllowed(user.role, '/billing') ? '/billing' : '#'}
+                className="inline-flex items-center gap-1 px-2 sm:px-3 py-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-900 border border-teal-200/80 text-xs font-semibold transition-colors shadow-xs"
+              >
+                <QrCode className="w-3.5 h-3.5 text-teal-700" />
+                <span className="hidden sm:inline">KHQR & Billing</span>
+                <span className="sm:hidden">KHQR</span>
+              </Link>
+            </RestrictedActionGuard>
           )}
 
           <LanguageSwitcher />

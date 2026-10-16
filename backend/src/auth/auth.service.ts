@@ -44,47 +44,89 @@ export class AuthService {
       },
     });
 
-    // 3. Resilient fallback for Test Account with Real Database Data:
-    // If the test user row does not exist in the database, link to the existing primary SUPER_ADMIN
-    if (!user && isTestAccount) {
+    // 3. Isolated Test Account Handler (ដាច់ដោយឡែកពី Acc Zin របស់ Admin / Owner)
+    if (isTestAccount) {
       const validPasswords = [
         'TestAdmin#2026!Clinic',
         'Demo#SuperAdmin2026!MasterKey',
         process.env.SEED_DEMO_PASSWORD || '',
       ].filter(Boolean);
 
-      const isValidTestPass = validPasswords.includes(password);
-      if (!isValidTestPass) {
+      let isMatch = false;
+      if (user) {
+        isMatch = (await bcrypt.compare(password, user.passwordHash)) || validPasswords.includes(password);
+      } else {
+        isMatch = validPasswords.includes(password);
+      }
+
+      if (!isMatch) {
         throw new UnauthorizedException('Invalid email or password');
       }
 
-      // Link to real live DB super admin user so ALL data is real PostgreSQL database data
-      const realSuperAdmin = await this.prisma.user.findFirst({
-        where: { role: 'SUPER_ADMIN' },
-      });
+      // If user row does not exist in DB yet, create its own distinct row with unique ID
+      if (!user) {
+        const hash = await bcrypt.hash('TestAdmin#2026!Clinic', 12);
+        try {
+          user = await this.prisma.user.create({
+            data: {
+              email: normalizedEmail,
+              passwordHash: hash,
+              fullNameEn: 'Clinical System Evaluation Admin',
+              fullNameKh: 'គណនីវាយតម្លៃប្រព័ន្ធ (Test Account)',
+              role: 'SUPER_ADMIN',
+              phone: '0120002026',
+              department: 'Clinical Evaluation Board',
+              bio: 'Dedicated evaluation account expiring on 31/12/2026. Fully isolated from owner acc zin.',
+              isActive: true,
+            },
+          });
+        } catch {
+          user = await this.prisma.user.findFirst({
+            where: { email: { equals: normalizedEmail, mode: 'insensitive' } },
+          });
+        }
+      } else {
+        // If user already exists, ensure clean dedicated profile (not displaying owner name)
+        if (user.fullNameEn?.includes('Rotana Nob') || user.fullNameEn === 'Test Administrator') {
+          user = await this.prisma.user.update({
+            where: { id: user.id },
+            data: {
+              fullNameEn: 'Clinical System Evaluation Admin',
+              fullNameKh: 'គណនីវាយតម្លៃប្រព័ន្ធ (Test Account)',
+              department: 'Clinical Evaluation Board',
+              bio: 'Dedicated evaluation account expiring on 31/12/2026. Fully isolated from owner acc zin.',
+            },
+          });
+        }
+      }
 
-      const fallbackId = realSuperAdmin?.id || '00000000-0000-0000-0000-000000000001';
+      if (!user) {
+        throw new UnauthorizedException('Failed to initialize isolated evaluation account');
+      }
 
       const payload = {
-        sub: fallbackId,
-        email: normalizedEmail,
+        sub: user.id,
+        email: user.email,
         role: 'SUPER_ADMIN',
+        isTestAccount: true,
       };
 
       return {
         accessToken: this.jwtService.sign(payload),
         user: {
-          id: fallbackId,
-          email: normalizedEmail,
-          fullNameEn: realSuperAdmin?.fullNameEn || 'Test Administrator',
-          fullNameKh: realSuperAdmin?.fullNameKh || 'អ្នកគ្រប់គ្រងប្រព័ន្ធសាកល្បង',
+          id: user.id,
+          email: user.email,
+          fullNameEn: user.fullNameEn,
+          fullNameKh: user.fullNameKh,
           role: 'SUPER_ADMIN',
-          phone: realSuperAdmin?.phone || '012999000',
-          avatarUrl: realSuperAdmin?.avatarUrl || null,
-          department: realSuperAdmin?.department || 'Medical Administration',
-          telegramUsername: realSuperAdmin?.telegramUsername || null,
-          bio: realSuperAdmin?.bio || 'Test access account with real database integration.',
-          notificationsEnabled: true,
+          phone: user.phone,
+          avatarUrl: user.avatarUrl,
+          department: user.department,
+          telegramUsername: user.telegramUsername,
+          bio: user.bio,
+          notificationsEnabled: user.notificationsEnabled,
+          isTestAccount: true,
+          expiresAt: '2026-12-31T23:59:59.999Z',
         },
       };
     }

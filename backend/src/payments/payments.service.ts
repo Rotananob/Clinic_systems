@@ -32,6 +32,7 @@ function loadKhqrHelper(): any {
 }
 
 import { TelegramService } from '../telegram/telegram.service';
+import { TestAccountThrottleService } from '../common/services/test-account-throttle.service';
 
 const khqrHelper = loadKhqrHelper();
 const { KhqrGateway, verifySettlement, buildKhqr, buildBankDeeplinks, computeMd5 } = khqrHelper;
@@ -47,6 +48,7 @@ export class PaymentsService {
     private configService: ConfigService,
     private paywayDirectService: PaywayDirectService,
     private telegramService: TelegramService,
+    private throttleService: TestAccountThrottleService,
   ) {}
 
   private getGateway(): any {
@@ -64,7 +66,16 @@ export class PaymentsService {
     return this.gatewayInstance;
   }
 
-  async generateInvoiceKhqr(invoiceId: string) {
+  async generateInvoiceKhqr(invoiceId: string, user?: any) {
+    // Enforce 5x/day strict limit for test evaluation account to prevent spam
+    this.throttleService.checkAndIncrement(
+      user,
+      'KHQR_GENERATE',
+      5,
+      'បង្កើត QR Code KHQR',
+      'KHQR generation',
+    );
+
     const invoice = await this.prisma.invoice.findUnique({
       where: { id: invoiceId },
       include: {
@@ -542,14 +553,25 @@ export class PaymentsService {
     return invoice;
   }
 
-  async createQuickInvoice(dto: {
-    nameEn: string;
-    nameKh?: string;
-    phone?: string;
-    amount: number;
-    currency?: string;
-    reason?: string;
-  }) {
+  async createQuickInvoice(
+    dto: {
+      nameEn: string;
+      nameKh?: string;
+      phone?: string;
+      amount: number;
+      currency?: string;
+      reason?: string;
+    },
+    user?: any,
+  ) {
+    this.throttleService.checkAndIncrement(
+      user,
+      'QUICK_INVOICE',
+      10,
+      'បង្កើតវិក្កយបត្ររហ័ស',
+      'Quick invoice creation',
+    );
+
     const year = new Date().getFullYear();
     const phone = dto.phone?.trim() || `012${Math.floor(100000 + Math.random() * 900000)}`;
     const currency = (dto.currency as 'USD' | 'KHR') || 'USD';
@@ -697,7 +719,15 @@ export class PaymentsService {
     };
   }
 
-  async updateInvoice(id: string, dto: any, userId?: string) {
+  async updateInvoice(id: string, dto: any, userId?: string, user?: any) {
+    this.throttleService.checkAndIncrement(
+      user,
+      'INVOICE_EDIT',
+      10,
+      'កែប្រែ ឬលុបវិក្កយបត្រ',
+      'Invoice updates',
+    );
+
     const invoice = await this.prisma.invoice.findUnique({
       where: { id },
       include: { transactions: true, patient: true },
@@ -755,6 +785,18 @@ export class PaymentsService {
 
     this.logger.log(`Invoice ${invoice.invoiceNumber} updated by staff. Status: ${invoice.status} -> ${updated.status}`);
     return updated;
+  }
+
+  getTestQuotaStatus(user?: any) {
+    const khqr = this.throttleService.getUsage(user, 'KHQR_GENERATE', 5);
+    const quickInv = this.throttleService.getUsage(user, 'QUICK_INVOICE', 10);
+    const editInv = this.throttleService.getUsage(user, 'INVOICE_EDIT', 10);
+    return {
+      isTestAccount: khqr.isTestAccount,
+      khqr,
+      quickInv,
+      editInv,
+    };
   }
 }
 

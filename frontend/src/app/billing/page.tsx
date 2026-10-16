@@ -8,6 +8,8 @@ import { ClinicReceiptModal } from '../../components/payments/ClinicReceiptModal
 import { CashPaymentModal } from '../../components/payments/CashPaymentModal';
 import { useTranslation } from '../../context/I18nContext';
 import { useToast } from '../../context/ToastContext';
+import { useAuth } from '../../context/AuthContext';
+import { RestrictedActionGuard } from '../../components/common/RestrictedActionGuard';
 import { getHumanErrorMessage } from '../../lib/errorHandler';
 import { useLiveSync } from '../../lib/useLiveSync';
 import {
@@ -48,8 +50,10 @@ export default function BillingPage() {
   const { locale } = useTranslation();
   const isKm = locale === 'km';
   const toast = useToast();
+  const { user } = useAuth();
   const [invoices, setInvoices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [quotaStatus, setQuotaStatus] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'UNPAID' | 'PENDING' | 'PAID'>('ALL');
   const [timeFilter, setTimeFilter] = useState<'ALL' | 'TODAY' | 'MONTH'>('ALL');
@@ -145,6 +149,15 @@ export default function BillingPage() {
     }
   };
 
+  const fetchQuota = async () => {
+    try {
+      const q = await api.payments.getQuotaStatus();
+      setQuotaStatus(q);
+    } catch {
+      // silently ignore
+    }
+  };
+
   const fetchInvoices = async () => {
     setLoading(true);
     try {
@@ -159,7 +172,43 @@ export default function BillingPage() {
 
   useEffect(() => {
     fetchInvoices();
+    fetchQuota();
   }, [statusFilter]);
+
+  // Permission checks and evaluation account quota restrictions
+  const isBillingStaff = user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN' || user?.role === 'CASHIER';
+
+  const isKhqrQuotaExhausted = Boolean(quotaStatus?.isTestAccount && quotaStatus?.khqr?.remaining <= 0);
+  const canGenerateKhqr = isBillingStaff && !isKhqrQuotaExhausted;
+  const khqrRestrictedMsg = isKhqrQuotaExhausted
+    ? (isKm
+        ? 'គណនីវាយតម្លៃប្រព័ន្ធ (Test Account) បានប្រើប្រាស់កូតាបង្កើត KHQR ចំនួន ៥ ដងក្នុងមួយថ្ងៃអស់ហើយ ដើម្បីការពារការ Spam។ សូមរង់ចាំថ្ងៃស្អែក ឬទូទាត់ជាប្រាក់សុទ្ធ។'
+        : 'Daily KHQR limit (5/day) has been reached for this test account to prevent spam abuse. Please wait until tomorrow or collect cash.')
+    : (!isBillingStaff
+        ? (isKm ? 'អ្នកមិនមានសិទ្ធិបង្កើត ឬដំណើរការការទូទាត់ KHQR ឡើយ។' : 'Your role does not have permission to process KHQR billing.')
+        : undefined);
+
+  const canCollectCash = isBillingStaff;
+
+  const isEditQuotaExhausted = Boolean(quotaStatus?.isTestAccount && quotaStatus?.editInv?.remaining <= 0);
+  const canEditInvoice = isBillingStaff && !isEditQuotaExhausted;
+  const editRestrictedMsg = isEditQuotaExhausted
+    ? (isKm
+        ? 'គណនីវាយតម្លៃប្រព័ន្ធបានប្រើប្រាស់កូតាកែប្រែវិក្កយបត្រចំនួន ១០ ដងក្នុងមួយថ្ងៃអស់ហើយ។'
+        : 'Daily invoice edit quota (10/day) reached for this test account.')
+    : (!isBillingStaff
+        ? (isKm ? 'អ្នកមិនមានសិទ្ធិកែប្រែវិក្កយបត្រឡើយ។' : 'Your role does not have permission to edit invoices.')
+        : undefined);
+
+  const isQuickQuotaExhausted = Boolean(quotaStatus?.isTestAccount && quotaStatus?.quickInv?.remaining <= 0);
+  const canCreateInvoice = isBillingStaff && !isQuickQuotaExhausted;
+  const createInvoiceRestrictedMsg = isQuickQuotaExhausted
+    ? (isKm
+        ? 'គណនីវាយតម្លៃប្រព័ន្ធបានប្រើប្រាស់កូតាបង្កើតវិក្កយបត្ររហ័សចំនួន ១០ ដងក្នុងមួយថ្ងៃអស់ហើយ។'
+        : 'Daily quick invoice creation quota (10/day) reached for this test account.')
+    : (!isBillingStaff
+        ? (isKm ? 'អ្នកមិនមានសិទ្ធិបង្កើតវិក្កយបត្រថ្មីឡើយ។' : 'Your role does not have permission to create invoices.')
+        : undefined);
 
   // Real-time automatic sync listener without requiring page reload
   useLiveSync(fetchInvoices);
@@ -293,16 +342,26 @@ export default function BillingPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setIsQuickModalOpen(true)}
-            className="px-3.5 py-2 bg-teal-700 hover:bg-teal-800 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5"
+          <RestrictedActionGuard
+            isAllowed={canCreateInvoice}
+            actionNameKh="បង្កើតវិក្កយបត្រថ្មី (Add & Pay)"
+            actionNameEn="Create Invoice & Scan"
+            customMessage={createInvoiceRestrictedMsg}
           >
-            <Plus className="w-4 h-4" />
-            <span>{isKm ? 'បង្កើតវិក្កយបត្រថ្មី (Add & Pay)' : 'Create Invoice & Scan'}</span>
-          </button>
+            <button
+              type="button"
+              onClick={() => setIsQuickModalOpen(true)}
+              className="px-3.5 py-2 bg-teal-700 hover:bg-teal-800 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5"
+            >
+              <Plus className="w-4 h-4" />
+              <span>{isKm ? 'បង្កើតវិក្កយបត្រថ្មី (Add & Pay)' : 'Create Invoice & Scan'}</span>
+            </button>
+          </RestrictedActionGuard>
           <button
-            onClick={fetchInvoices}
+            onClick={() => {
+              fetchInvoices();
+              fetchQuota();
+            }}
             className="p-2 text-slate-500 hover:text-slate-700 bg-white border border-slate-200 rounded-lg shadow-sm transition-colors text-xs"
             title="Refresh invoices"
           >
@@ -310,6 +369,39 @@ export default function BillingPage() {
           </button>
         </div>
       </div>
+
+      {/* Test Evaluation Account Daily Quota Pill Banner */}
+      {quotaStatus?.isTestAccount && (
+        <div className="p-3 bg-amber-50/80 border border-amber-200/90 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs shadow-2xs">
+          <div className="flex items-center gap-2.5">
+            <ShieldCheck className="w-4 h-4 text-amber-700 shrink-0" />
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-amber-950">
+                  {isKm ? 'គណនីវាយតម្លៃប្រព័ន្ធ (Test Account Quota)' : 'System Evaluation Account Quota'}
+                </span>
+                <span className="px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 text-[10px] font-bold">
+                  {isKm ? 'ផុតកំណត់ 31/12/2026' : 'Expires 31/12/2026'}
+                </span>
+              </div>
+              <p className="text-amber-800 text-[11px] mt-0.5">
+                {isKm
+                  ? 'កូតាបង្កើតកូដទូទាត់ KHQR ត្រូវបានកំណត់ ៥ ដងក្នុងមួយថ្ងៃ ដើម្បីការពារប្រព័ន្ធពីការ Spam'
+                  : 'KHQR generation is capped at 5 requests/day to prevent spam abuse'}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 font-mono shrink-0">
+            <span className={`px-2.5 py-1 rounded-lg border font-semibold text-[11px] ${
+              (quotaStatus.khqr?.remaining ?? 5) > 0
+                ? 'bg-amber-100/90 border-amber-300 text-amber-900'
+                : 'bg-rose-100 border-rose-300 text-rose-800'
+            }`}>
+              {isKm ? 'KHQR ថ្ងៃនេះ:' : 'KHQR Today:'} {quotaStatus.khqr?.used || 0}/5 ({isKm ? 'នៅសល់' : 'left'}: {quotaStatus.khqr?.remaining ?? 5})
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Financial Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -559,39 +651,59 @@ export default function BillingPage() {
 
                   {inv.status !== 'PAID' ? (
                     <div className="flex items-center gap-1.5">
-                      <button
-                        onClick={() => {
-                          setSelectedInvoice(inv);
-                          setIsCheckoutOpen(true);
-                        }}
-                        className="px-3 py-1.5 bg-teal-700 hover:bg-teal-800 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors flex items-center gap-1"
+                      <RestrictedActionGuard
+                        isAllowed={canGenerateKhqr}
+                        actionNameKh="បង់ប្រាក់ KHQR"
+                        actionNameEn="Pay via KHQR"
+                        customMessage={khqrRestrictedMsg}
                       >
-                        <QrCode className="w-3.5 h-3.5" />
-                        <span>{isKm ? 'បង់ KHQR' : 'KHQR'}</span>
-                      </button>
+                        <button
+                          onClick={() => {
+                            setSelectedInvoice(inv);
+                            setIsCheckoutOpen(true);
+                          }}
+                          className="px-3 py-1.5 bg-teal-700 hover:bg-teal-800 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors flex items-center gap-1"
+                        >
+                          <QrCode className="w-3.5 h-3.5" />
+                          <span>{isKm ? 'បង់ KHQR' : 'KHQR'}</span>
+                        </button>
+                      </RestrictedActionGuard>
 
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setCashInvoice(inv);
-                          setIsCashOpen(true);
-                        }}
-                        className="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1"
-                        title={isKm ? 'ទទួលប្រាក់សុទ្ធ' : 'Collect Cash'}
+                      <RestrictedActionGuard
+                        isAllowed={canCollectCash}
+                        actionNameKh="ទទួលការទូទាត់ប្រាក់សុទ្ធ"
+                        actionNameEn="Collect Cash Payment"
                       >
-                        <Banknote className="w-3.5 h-3.5 text-amber-600" />
-                        <span>{isKm ? 'ប្រាក់សុទ្ធ' : 'Cash'}</span>
-                      </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCashInvoice(inv);
+                            setIsCashOpen(true);
+                          }}
+                          className="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1"
+                          title={isKm ? 'ទទួលប្រាក់សុទ្ធ' : 'Collect Cash'}
+                        >
+                          <Banknote className="w-3.5 h-3.5 text-amber-600" />
+                          <span>{isKm ? 'ប្រាក់សុទ្ធ' : 'Cash'}</span>
+                        </button>
+                      </RestrictedActionGuard>
 
-                      <button
-                        type="button"
-                        onClick={() => handleOpenEdit(inv)}
-                        className="px-2.5 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 rounded-lg text-xs font-medium transition-colors flex items-center gap-1"
-                        title={isKm ? 'កែប្រែស្ថានភាព ឬទឹកប្រាក់' : 'Edit Invoice'}
+                      <RestrictedActionGuard
+                        isAllowed={canEditInvoice}
+                        actionNameKh="កែប្រែទិន្នន័យវិក្កយបត្រ"
+                        actionNameEn="Edit Invoice"
+                        customMessage={editRestrictedMsg}
                       >
-                        <Edit3 className="w-3.5 h-3.5 text-slate-500" />
-                        <span>{isKm ? 'កែប្រែ' : 'Edit'}</span>
-                      </button>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEdit(inv)}
+                          className="px-2.5 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 rounded-lg text-xs font-medium transition-colors flex items-center gap-1"
+                          title={isKm ? 'កែប្រែស្ថានភាព ឬទឹកប្រាក់' : 'Edit Invoice'}
+                        >
+                          <Edit3 className="w-3.5 h-3.5 text-slate-500" />
+                          <span>{isKm ? 'កែប្រែ' : 'Edit'}</span>
+                        </button>
+                      </RestrictedActionGuard>
                     </div>
                   ) : (
                     <div className="flex items-center gap-1.5">

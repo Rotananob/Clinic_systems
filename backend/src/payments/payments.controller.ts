@@ -35,8 +35,8 @@ export class PaymentsController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Post('generate-qr')
-  generateQr(@Body() dto: GenerateInvoiceQrDto) {
-    return this.paymentsService.generateInvoiceKhqr(dto.invoiceId);
+  generateQr(@Body() dto: GenerateInvoiceQrDto, @Request() req: any) {
+    return this.paymentsService.generateInvoiceKhqr(dto.invoiceId, req?.user);
   }
 
   @ApiOperation({ summary: 'Instant settlement verification endpoint for 0.3s webhook / cashier confirm' })
@@ -59,8 +59,8 @@ export class PaymentsController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Post('quick-invoice')
-  createQuickInvoice(@Body() dto: CreateQuickInvoiceDto) {
-    return this.paymentsService.createQuickInvoice(dto);
+  createQuickInvoice(@Body() dto: CreateQuickInvoiceDto, @Request() req: any) {
+    return this.paymentsService.createQuickInvoice(dto, req?.user);
   }
 
   @ApiOperation({ summary: 'Settle invoice via cash collection with change calculation' })
@@ -81,7 +81,15 @@ export class PaymentsController {
     @Request() req: any,
   ) {
     const userId = req.user?.id;
-    return this.paymentsService.updateInvoice(id, dto, userId);
+    return this.paymentsService.updateInvoice(id, dto, userId, req?.user);
+  }
+
+  @ApiOperation({ summary: 'Get current evaluation account daily quota status' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Get('quota-status')
+  getQuotaStatus(@Request() req: any) {
+    return this.paymentsService.getTestQuotaStatus(req?.user);
   }
 }
 

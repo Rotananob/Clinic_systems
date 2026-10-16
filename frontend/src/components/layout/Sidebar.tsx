@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from '../../context/I18nContext';
+import { usePermissionModal } from '../../context/PermissionModalContext';
 import { ClinicLogo } from '../common/ClinicLogo';
 import { isRouteAllowed, getRoleDisplayName } from '../../lib/rbac';
 
@@ -30,6 +31,7 @@ export const Sidebar: React.FC = () => {
   const pathname = usePathname();
   const { user } = useAuth();
   const { t, locale } = useTranslation();
+  const { openRestrictedModal } = usePermissionModal();
   const isKh = locale === 'km';
   const [mounted, setMounted] = React.useState(false);
 
@@ -145,14 +147,20 @@ export const Sidebar: React.FC = () => {
               return (
                 <div
                   key={item.href}
-                  className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-stone-400 bg-stone-100/40 border border-transparent cursor-not-allowed opacity-60"
-                  title={isKh ? 'តួនាទីរបស់អ្នកមិនមានសិទ្ធិចូលប្រើប្រាស់ម៉ូឌុលនេះទេ' : 'Locked for your current role'}
+                  onClick={() =>
+                    openRestrictedModal({
+                      actionName: item.label,
+                      title: isKh ? 'សិទ្ធិត្រូវបានកំណត់ (Locked Module)' : 'Restricted Module Access',
+                    })
+                  }
+                  className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-stone-500 bg-stone-100/50 border border-dashed border-stone-300 cursor-pointer opacity-45 hover:opacity-85 hover:bg-stone-200/50 transition-all select-none group shadow-2xs"
+                  title={isKh ? 'ចុចដើម្បីពិនិត្យព័ត៌មានសិទ្ធិ' : 'Click to inspect access permissions'}
                 >
                   <div className="flex items-center gap-3 truncate">
-                    <Icon className="w-4 h-4 shrink-0 text-stone-300" />
+                    <Icon className="w-4 h-4 shrink-0 text-stone-400 group-hover:text-amber-700 transition-colors" />
                     <span className="truncate">{item.label}</span>
                   </div>
-                  <Lock className="w-3 h-3 text-stone-400 shrink-0" />
+                  <Lock className="w-3.5 h-3.5 text-amber-600 shrink-0" />
                 </div>
               );
             })}

@@ -5,11 +5,15 @@ import { api } from '../../lib/api';
 import { Search, Plus, Phone, Calendar, ArrowRight, ShieldAlert, Loader2, Download } from 'lucide-react';
 import { RegisterPatientDrawer } from './RegisterPatientDrawer';
 import { useTranslation } from '../../context/I18nContext';
+import { useAuth } from '../../context/AuthContext';
+import { RestrictedActionGuard } from '../common/RestrictedActionGuard';
 import { useLiveSync } from '../../lib/useLiveSync';
 
 export const PatientList: React.FC = () => {
   const { t, locale } = useTranslation();
+  const { user } = useAuth();
   const isKm = locale === 'km';
+  const canExportCsv = user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN';
   const [patients, setPatients] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -93,15 +97,26 @@ export const PatientList: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-auto">
-          <button
-            onClick={handleExportCsv}
-            disabled={patients.length === 0}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white hover:bg-slate-50 disabled:opacity-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-semibold transition-colors shadow-2xs"
-            title="Export to Excel / CSV"
+          <RestrictedActionGuard
+            isAllowed={canExportCsv}
+            actionNameKh="ទាញយកឯកសារអ្នកជំងឺ (Excel / CSV)"
+            actionNameEn="Export Patient Records (Excel / CSV)"
+            customMessage={
+              isKm
+                ? 'អ្នកមិនមានសិទ្ធិទាញយកទិន្នន័យឯកជនរបស់អ្នកជំងឺជា CSV/Excel ឡើយ។ សិទ្ធិនេះត្រូវបានអនុញ្ញាតសម្រាប់តែអ្នកគ្រប់គ្រងប៉ុណ្ណោះ។'
+                : 'You do not have permission to export private patient medical records to CSV/Excel. This action is restricted to administrators.'
+            }
           >
-            <Download className="w-3.5 h-3.5 text-slate-500" />
-            <span>{isKm ? 'ទាញយក Excel / CSV' : 'Export Excel / CSV'}</span>
-          </button>
+            <button
+              onClick={handleExportCsv}
+              disabled={patients.length === 0}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white hover:bg-slate-50 disabled:opacity-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-semibold transition-colors shadow-2xs"
+              title="Export to Excel / CSV"
+            >
+              <Download className="w-3.5 h-3.5 text-slate-500" />
+              <span>{isKm ? 'ទាញយក Excel / CSV' : 'Export Excel / CSV'}</span>
+            </button>
+          </RestrictedActionGuard>
 
           <button
             onClick={() => setIsRegisterOpen(true)}

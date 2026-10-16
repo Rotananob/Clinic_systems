@@ -18,9 +18,11 @@ import { TelegramModule } from './telegram/telegram.module';
 import { UploadModule } from './upload/upload.module';
 import { TrackingModule } from './tracking/tracking.module';
 import { RateLimiterMiddleware } from './common/middleware/rate-limiter.middleware';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
+    CommonModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: [

@@ -561,6 +561,7 @@ class ApiClient {
         method: 'PATCH',
         body: JSON.stringify(data),
       }),
+    getQuotaStatus: () => this.request<any>('/payments/quota-status'),
   };
 
   // Follow-ups & Recalls
