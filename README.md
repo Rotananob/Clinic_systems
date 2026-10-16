@@ -2,6 +2,8 @@
 ## Enterprise Clinical Patient Management, KHQR Billing & Telegram Forum Bot System
 ### Version 1.0.0 Production Ready
 
+> សេចក្តីណែនាំសម្រាប់បុគ្គលិក និងម្ចាស់គ្លីនិក៖ សូមមើល [សៀវភៅណែនាំបណ្តុះបណ្តាលបុគ្គលិកជាភាសាខ្មែរ (CLINIC_STAFF_TRAINING_MANUAL_KH.md)](./CLINIC_STAFF_TRAINING_MANUAL_KH.md) សម្រាប់ការបង្រៀន និងអនុវត្តការងារជាក់ស្តែងដោយងាយស្រួល មិនប្រើពាក្យបច្ចេកទេសស្មុគស្មាញ។
+
 A comprehensive, hospital-grade Clinical SaaS Platform engineered for outpatient polyclinics, maternity centers, and medical practices in Cambodia. Built with Next.js 14 App Router, NestJS, Prisma ORM, PostgreSQL, native ESC/POS hardware integration, EMVCo Tag 01=12 dynamic KHQR settlement with Cloudflare edge network optimization, 1-Click Telegram Supergroup Forum Bot automation, and official Word (.doc) medical exports.
 
 ---
