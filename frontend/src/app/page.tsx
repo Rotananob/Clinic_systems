@@ -73,7 +73,7 @@ export default function DashboardPage() {
           <div className="flex items-center gap-2 text-xs text-stone-500 mt-1">
             <span>{t.dashboard.subtitle}</span>
             <span>•</span>
-            <span className="font-medium text-stone-700 font-sans">
+            <span className="font-medium text-stone-700 font-sans" suppressHydrationWarning>
               {new Date().toLocaleDateString(locale === 'km' ? 'km-KH' : 'en-US', {
                 weekday: 'short',
                 year: 'numeric',

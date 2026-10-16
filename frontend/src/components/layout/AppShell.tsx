@@ -25,6 +25,11 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
   const { locale } = useTranslation();
   const isKm = locale === 'km';
   const isLoginPage = pathname === '/login';
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Initialize global hardware peripherals (POS auto-print & barcode scanner)
   useEffect(() => {
@@ -97,6 +102,25 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
           {children}
         </div>
         <PwaRegister />
+      </div>
+    );
+  }
+
+  // Unified SSR & Initial Hydration Guard: ensures server and client render identical loading screen
+  if (!mounted && !isLoginPage) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F7F4EE] text-stone-900 p-4">
+        <div className="flex flex-col items-center max-w-sm text-center space-y-4">
+          <ClinicLogo variant="full" size="md" showSubtitle={false} />
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-stone-100 border border-stone-200 text-stone-600 text-xs font-medium">
+            <Loader2 className="w-3.5 h-3.5 animate-spin text-teal-800" />
+            <span>
+              {isKm
+                ? 'កំពុងផ្ទៀងផ្ទាត់សិទ្ធិសុវត្ថិភាព...'
+                : 'Verifying Clinical Security Session...'}
+            </span>
+          </div>
+        </div>
       </div>
     );
   }

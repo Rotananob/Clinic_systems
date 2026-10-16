@@ -39,32 +39,24 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('clinic_user');
-        if (saved) return JSON.parse(saved);
-      } catch {}
-    }
-    return null;
-  });
-  const [token, setToken] = useState<string | null>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('clinic_access_token');
-    }
-    return null;
-  });
-  const [isLoading, setIsLoading] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
+  const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  // Synchronize cached credentials from localStorage immediately on client mount
+  useEffect(() => {
+    try {
       const savedToken = localStorage.getItem('clinic_access_token');
-      // If no token, user is unauthenticated immediately (no need to spin)
-      if (!savedToken) return false;
       const savedUser = localStorage.getItem('clinic_user');
-      // If both token and user are cached, render immediately without blocking
-      if (savedUser) return false;
-    }
-    return false;
-  });
+      if (savedToken) {
+        setToken(savedToken);
+        if (savedUser) {
+          setUser(JSON.parse(savedUser));
+        }
+      }
+    } catch {}
+    setIsLoading(false);
+  }, []);
 
   const logout = useCallback(() => {
     trackUserAction('USER_LOGOUT');

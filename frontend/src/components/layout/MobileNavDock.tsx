@@ -13,6 +13,13 @@ export const MobileNavDock: React.FC = () => {
   const { user } = useAuth();
   const { locale } = useTranslation();
   const isKh = locale === 'km';
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   const potentialItems = [
     { label: isKh ? 'ទំព័រដើម' : 'Home', href: '/', icon: LayoutDashboard },
