@@ -331,6 +331,18 @@ class ApiClient {
         headers,
       });
 
+      // 1. Handle HTTP 304 Not Modified gracefully (Cloudflare / Express ETag cache)
+      if (response.status === 304) {
+        const cached = await this.getCachedFallback<T>(endpoint, cleanEndpoint);
+        if (cached !== null) return cached;
+        return { status: 'PENDING', message: 'Not modified' } as any;
+      }
+
+      // 2. Handle HTTP 204 No Content
+      if (response.status === 204) {
+        return {} as T;
+      }
+
       if (!response.ok) {
         let errorMessage = `HTTP Error ${response.status}`;
         try {

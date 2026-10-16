@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Patch, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Body, Param, Query, UseGuards, Request, Header } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { PaymentsService } from './payments.service';
 import { GenerateInvoiceQrDto, SettlePaymentDto, CreateQuickInvoiceDto, UpdateInvoiceDto } from './dto/generate-qr.dto';
@@ -49,6 +49,7 @@ export class PaymentsController {
   }
 
   @ApiOperation({ summary: 'Real-time status check for client poller' })
+  @Header('Cache-Control', 'no-store, no-cache, must-revalidate')
   @Get('status/:tranId')
   checkStatus(@Param('tranId') tranId: string, @Query('force') force?: string) {
     const forceFresh = force === 'true' || force === '1';
