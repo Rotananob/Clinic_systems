@@ -33,15 +33,17 @@ interface HardwareConfig {
   paperWidth: 48 | 32;
   scannerMode: 'keyboard-wedge' | 'hid';
   autoPrintOnPayment: boolean;
+  drawerPin: 2 | 5;
 }
 
 const DEFAULT_CONFIG: HardwareConfig = {
-  connectionType: 'serial',
+  connectionType: 'network',
   networkIp: '192.168.1.100',
   networkPort: 9100,
   paperWidth: 48,
   scannerMode: 'keyboard-wedge',
   autoPrintOnPayment: false,
+  drawerPin: 2,
 };
 
 type ConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'error';
@@ -210,8 +212,8 @@ export function HardwareSettingsPanel() {
     setIsOpeningDrawer(true);
     setDrawerResult(null);
     try {
-      await driverRef.current.openDrawer();
-      setDrawerResult('Cash drawer opened.');
+      await driverRef.current.openDrawer(config.drawerPin || 2);
+      setDrawerResult(`Cash drawer opened on Pin ${config.drawerPin || 2}.`);
     } catch (err: unknown) {
       const e = err as Error;
       setDrawerResult(`Failed to open drawer: ${e?.message ?? 'Unknown error'}`);
@@ -319,9 +321,10 @@ export function HardwareSettingsPanel() {
           <div className="flex flex-wrap gap-2">
             {(
               [
-                { val: 'serial', label: 'Web Serial (USB)', icon: <Cpu className="w-3.5 h-3.5" /> },
+                { val: 'network', label: 'Network TCP (LAN/Wi-Fi)', icon: <Wifi className="w-3.5 h-3.5" /> },
                 { val: 'usb', label: 'WebUSB (Direct)', icon: <Usb className="w-3.5 h-3.5" /> },
-                { val: 'network', label: 'Network TCP', icon: <Wifi className="w-3.5 h-3.5" /> },
+                { val: 'bluetooth', label: 'Web Bluetooth (BLE)', icon: <Radio className="w-3.5 h-3.5" /> },
+                { val: 'serial', label: 'Web Serial (COM Port)', icon: <Cpu className="w-3.5 h-3.5" /> },
               ] as const
             ).map(({ val, label, icon }) => (
               <button
@@ -383,6 +386,30 @@ export function HardwareSettingsPanel() {
                 onClick={() => setConfig((c) => ({ ...c, paperWidth: val }))}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
                   config.paperWidth === val
+                    ? 'bg-teal-700 text-white border-teal-700'
+                    : 'bg-white text-slate-600 border-slate-200 hover:border-teal-400'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Cash Drawer Kick Pin */}
+        <div>
+          <label className="block text-xs font-semibold text-slate-700 mb-2">Cash Drawer Kick Pin</label>
+          <div className="flex gap-2">
+            {[
+              { val: 2, label: 'Pin 2 (Standard RJ11/RJ12)' },
+              { val: 5, label: 'Pin 5 (Secondary Drawer)' },
+            ].map(({ val, label }) => (
+              <button
+                key={val}
+                type="button"
+                onClick={() => setConfig((c) => ({ ...c, drawerPin: val as 2 | 5 }))}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+                  config.drawerPin === val
                     ? 'bg-teal-700 text-white border-teal-700'
                     : 'bg-white text-slate-600 border-slate-200 hover:border-teal-400'
                 }`}

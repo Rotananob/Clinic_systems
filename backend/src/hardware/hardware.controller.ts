@@ -45,15 +45,15 @@ export class HardwareController {
 
   @ApiOperation({ summary: 'Send cash drawer open pulse via network printer' })
   @Post('open-drawer')
-  async openDrawer(@Body() body: { ip: string; port: number }) {
-    const { ip, port } = body;
+  async openDrawer(@Body() body: { ip: string; port: number; pin?: 2 | 5 }) {
+    const { ip, port, pin = 2 } = body;
     if (!ip || !port) {
       throw new HttpException('ip and port are required', HttpStatus.BAD_REQUEST);
     }
-    const pulse = this.hardwareService.buildDrawerPulse();
+    const pulse = this.hardwareService.buildDrawerPulse(pin);
     try {
       await this.hardwareService.printToNetworkPrinter(ip, port, pulse);
-      return { success: true };
+      return { success: true, pin };
     } catch (err: unknown) {
       const e = err as Error;
       throw new HttpException(e?.message ?? 'Failed to open drawer', HttpStatus.BAD_GATEWAY);

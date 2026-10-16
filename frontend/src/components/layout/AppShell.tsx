@@ -15,6 +15,7 @@ import { ClinicLogo } from '../common/ClinicLogo';
 import { ShieldCheck, Loader2 } from 'lucide-react';
 import { isRouteAllowed, getRoleDisplayName } from '../../lib/rbac';
 import { trackPageView, trackUserAction } from '../../lib/tracker';
+import { hardwareManager } from '../../lib/hardware/hardwareManager';
 
 const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const pathname = usePathname();
@@ -23,6 +24,11 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
   const { locale } = useTranslation();
   const isKm = locale === 'km';
   const isLoginPage = pathname === '/login';
+
+  // Initialize global hardware peripherals (POS auto-print & barcode scanner)
+  useEffect(() => {
+    hardwareManager.init();
+  }, []);
 
   // Automatically track page view navigation, visitor IP, device and location
   useEffect(() => {

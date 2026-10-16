@@ -4,12 +4,16 @@ import React, { useRef, useEffect, useState } from 'react';
 import { useTranslation } from '../../context/I18nContext';
 import { ClinicLogo } from '../common/ClinicLogo';
 import { loadTemplateConfig, InvoiceTemplateConfig } from '../../lib/invoiceTemplate';
+import { hardwareManager } from '../../lib/hardware/hardwareManager';
 import {
   Printer,
   X,
   CheckCircle2,
   Receipt,
   ShieldCheck,
+  Cpu,
+  Loader2,
+  AlertCircle,
 } from 'lucide-react';
 
 interface ClinicReceiptModalProps {
@@ -72,8 +76,29 @@ export function ClinicReceiptModal({
 
   const cfg = templateConfig;
 
+  const [isHardwarePrinting, setIsHardwarePrinting] = useState(false);
+  const [hardwarePrintSuccess, setHardwarePrintSuccess] = useState<string | null>(null);
+  const [hardwarePrintError, setHardwarePrintError] = useState<string | null>(null);
+
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleDirectHardwarePrint = async () => {
+    setIsHardwarePrinting(true);
+    setHardwarePrintError(null);
+    setHardwarePrintSuccess(null);
+    try {
+      await hardwareManager.printInvoice(invoice as Record<string, unknown>);
+      setHardwarePrintSuccess(isKm ? 'បានបញ្ជូនទៅកាន់ម៉ាស៊ីនបោះពុម្ព POS រួចរាល់' : 'Printed to thermal POS hardware');
+      setTimeout(() => setHardwarePrintSuccess(null), 3500);
+    } catch (err: unknown) {
+      const e = err as Error;
+      setHardwarePrintError(e?.message || (isKm ? 'បរាជ័យក្នុងការភ្ជាប់ម៉ាស៊ីនកម្ដៅ' : 'Failed to connect printer'));
+      setTimeout(() => setHardwarePrintError(null), 5000);
+    } finally {
+      setIsHardwarePrinting(false);
+    }
   };
 
   const amount = Number(invoice.payableAmount || invoice.totalAmount || 0);
@@ -417,26 +442,59 @@ export function ClinicReceiptModal({
         </div>
 
         {/* Modal Bottom Action (Hidden on Print) */}
-        <div className="no-print p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-          <span className="text-[11px] text-slate-400">
-            {isKm ? 'គាំទ្រម៉ាស៊ីនបោះពុម្ព 80mm POS និង A4' : 'Supports 80mm POS receipt printers & A4'}
-          </span>
+        <div className="no-print p-4 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
+            {hardwarePrintSuccess && (
+              <span className="text-[11px] text-teal-700 bg-teal-50 border border-teal-200 px-2.5 py-1 rounded-md flex items-center gap-1 font-medium">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span>{hardwarePrintSuccess}</span>
+              </span>
+            )}
+            {hardwarePrintError && (
+              <span className="text-[11px] text-rose-700 bg-rose-50 border border-rose-200 px-2.5 py-1 rounded-md flex items-center gap-1 font-medium">
+                <AlertCircle className="w-3.5 h-3.5" />
+                <span>{hardwarePrintError}</span>
+              </span>
+            )}
+            {!hardwarePrintSuccess && !hardwarePrintError && (
+              <span className="text-[11px] text-slate-400">
+                {isKm ? 'គាំទ្រម៉ាស៊ីន POS Thermal 80mm/58mm និង A4' : 'Supports 80mm/58mm thermal POS & A4'}
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-medium text-slate-600 hover:text-slate-800 bg-white border border-slate-200 rounded-lg transition-colors"
+              className="px-3 py-2 text-xs font-medium text-slate-600 hover:text-slate-800 bg-white border border-slate-200 rounded-lg transition-colors cursor-pointer"
             >
               {isKm ? 'បិទ' : 'Close'}
             </button>
+
+            <button
+              type="button"
+              onClick={handleDirectHardwarePrint}
+              disabled={isHardwarePrinting}
+              className="px-3.5 py-2 bg-stone-900 hover:bg-black text-white text-xs font-semibold rounded-lg shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              title={isKm ? 'បោះពុម្ពកាត់ក្រដាសផ្ទាល់ទៅកាន់ម៉ាស៊ីន POS (ESC/POS)' : 'Direct ESC/POS Thermal Print'}
+            >
+              {isHardwarePrinting ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-teal-400" />
+              ) : (
+                <Cpu className="w-3.5 h-3.5 text-teal-400" />
+              )}
+              <span>{isKm ? 'ម៉ាស៊ីន POS' : 'Direct POS'}</span>
+            </button>
+
             <button
               type="button"
               onClick={handlePrint}
-              className="px-4 py-2 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors flex items-center gap-1.5"
+              className="px-3.5 py-2 text-white text-xs font-semibold rounded-lg shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
               style={{ backgroundColor: accentColor }}
             >
-              <Printer className="w-4 h-4" />
-              <span>{isKm ? 'បោះពុម្ពវិក្កយបត្រ' : 'Print Receipt'}</span>
+              <Printer className="w-3.5 h-3.5" />
+              <span>{isKm ? 'បោះពុម្ពធម្មតា' : 'Print Receipt'}</span>
             </button>
           </div>
         </div>

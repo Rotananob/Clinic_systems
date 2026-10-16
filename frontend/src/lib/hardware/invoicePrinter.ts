@@ -57,29 +57,52 @@ function wrapText(text: string, width: number): string[] {
   return lines.length ? lines : [''];
 }
 
+function renderKhmerHeaderToCanvas(khmerText: string, widthPixels = 384): HTMLCanvasElement | null {
+  if (typeof document === 'undefined') return null;
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width = widthPixels;
+    canvas.height = 46;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = '#000000';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = 'bold 20px "Kantumruy Pro", "Battambang", "Khmer OS", sans-serif';
+    ctx.fillText(khmerText, canvas.width / 2, canvas.height / 2);
+    return canvas;
+  } catch {
+    return null;
+  }
+}
+
 export async function printClinicInvoice(
   driver: PrinterDriver,
   data: ClinicPrintData,
   config: PrinterConfig,
 ): Promise<void> {
-  const w = config.paperWidth; // 48 or 32
+  const w = config.paperWidth; // 48 chars (80mm) or 32 chars (58mm)
+  const dotWidth = w <= 32 ? 384 : 576;
   const enc = new EscPosEncoder();
 
   // Init
   enc.initialize();
 
   // ---- CLINIC HEADER ----
-  enc.align('center').bold(true).size('double');
-  // Clinic name may be long; use normal size if 58mm
-  if (w <= 32) {
-    enc.size('normal');
-  }
+  enc.align('center').bold(true).size(w <= 32 ? 'normal' : 'double');
   enc.text(data.clinicNameEn).newline();
   enc.size('normal').bold(false);
 
-  // Khmer name if available (ASCII-safe only; Khmer is Unicode so may not render)
+  // Khmer Name via Canvas Rasterizer (guarantees crisp Khmer font rendering without printer firmware limitations)
   if (data.clinicNameKh) {
-    enc.text(data.clinicNameKh).newline();
+    const khmerCanvas = renderKhmerHeaderToCanvas(data.clinicNameKh, dotWidth);
+    if (khmerCanvas) {
+      enc.canvasImage(khmerCanvas);
+    }
   }
 
   // Address wrapped to width
@@ -89,13 +112,15 @@ export async function printClinicInvoice(
   }
 
   enc.text(`Tel: ${data.clinicPhone}`).newline();
-  enc.text(`License: ${data.mohLicense}`).newline();
+  if (data.mohLicense) {
+    enc.text(`MoH License: ${data.mohLicense}`).newline();
+  }
 
   // ---- SEPARATOR ----
   enc.align('left').line('=', w);
 
   // ---- INVOICE INFO ----
-  enc.bold(true).text('OFFICIAL INVOICE / RECEIPT').newline().bold(false);
+  enc.bold(true).text('OFFICIAL MEDICAL RECEIPT').newline().bold(false);
   enc.text(`Invoice #: ${data.invoiceNumber}`).newline();
   enc.text(`Date: ${data.visitDate}`).newline();
 
@@ -103,10 +128,10 @@ export async function printClinicInvoice(
   enc.line('-', w);
   enc.text(`Patient: ${data.patientNameEn}`).newline();
   if (data.patientNameKh) {
-    enc.text(`  ${data.patientNameKh}`).newline();
+    enc.text(`Khmer: ${data.patientNameKh}`).newline();
   }
   if (data.patientCode) {
-    enc.text(`Code: ${data.patientCode}`).newline();
+    enc.text(`Patient ID: ${data.patientCode}`).newline();
   }
   if (data.doctorName) {
     enc.text(`Doctor: ${data.doctorName}`).newline();
@@ -114,7 +139,7 @@ export async function printClinicInvoice(
 
   // ---- LINE ITEMS ----
   enc.line('-', w);
-  enc.bold(true).text('Services / Items').newline().bold(false);
+  enc.bold(true).text('Services & Items').newline().bold(false);
   enc.line('-', w);
 
   for (const item of data.lineItems) {
@@ -134,13 +159,19 @@ export async function printClinicInvoice(
     .newline()
     .align('left');
 
-  // ---- PAYMENT ----
+  // ---- PAYMENT & TRAN ID ----
   enc.line('-', w);
-  enc.text(`Payment: ${data.paymentMethod}`).newline();
-  enc.text(`Status: ${data.status}`).newline();
+  enc.text(`Payment Method: ${data.paymentMethod}`).newline();
+  enc.text(`Payment Status: ${data.status}`).newline();
   if (data.tranId) {
-    enc.text(`Tran ID: ${data.tranId}`).newline();
+    enc.text(`TranID: ${data.tranId}`).newline();
   }
+
+  // ---- NATIVE 2D QR CODE FOR DIGITAL VERIFICATION ----
+  const qrPayload = data.tranId || data.invoiceNumber || `REC-${Date.now()}`;
+  enc.newline().align('center');
+  enc.qrCode(qrPayload, w <= 32 ? 4 : 5);
+  enc.text('Scan for Verification / KHQR').newline();
 
   // ---- FOOTER ----
   enc.line('=', w);
