@@ -7,7 +7,7 @@ import { useTranslation } from '../../context/I18nContext';
 import { useToast } from '../../context/ToastContext';
 import { api } from '../../lib/api';
 import {
-  Crown,
+  Building2,
   ShieldCheck,
   ShieldAlert,
   Key,
@@ -97,8 +97,8 @@ export default function OwnerConsolePage() {
     if (permissions[roleIndex].role === 'SUPER_ADMIN') {
       toast.info(
         isKm
-          ? 'សិទ្ធិមហាសិទ្ធ (SUPER ADMIN) មិនអាចបិទបានឡើយ'
-          : 'Super Admin master privileges cannot be restricted',
+          ? 'សិទ្ធិម្ចាស់ប្រព័ន្ធ (SUPER ADMIN) មិនអាចបិទបានឡើយ'
+          : 'Super Admin privileges cannot be restricted',
       );
       return;
     }
@@ -151,7 +151,7 @@ export default function OwnerConsolePage() {
           <p className="text-xs text-stone-600">
             {isKm
               ? 'ទំព័រនេះតម្រូវឱ្យមានសិទ្ធិកម្រិត SUPER_ADMIN (ម្ចាស់ប្រព័ន្ធ) ជាដាច់ខាត។'
-              : 'This master console requires SUPER_ADMIN authority.'}
+              : 'This console requires SUPER_ADMIN authority.'}
           </p>
         </div>
       </div>
@@ -160,7 +160,7 @@ export default function OwnerConsolePage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-12">
-      {/* Executive Master Banner */}
+      {/* Executive Owner Banner */}
       <div className="relative overflow-hidden rounded-3xl bg-stone-900 text-stone-100 p-6 sm:p-8 border border-amber-900/40 shadow-xl">
         <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -168,12 +168,12 @@ export default function OwnerConsolePage() {
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-start sm:items-center gap-4">
             <div className="w-14 h-14 rounded-2xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300 shrink-0 shadow-inner">
-              <Crown className="w-8 h-8" />
+              <Building2 className="w-8 h-8" />
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 text-[10px] font-mono font-bold tracking-wider uppercase border border-amber-400/30">
-                  {isKm ? 'មហាសិទ្ធកំពូល (SUPER ADMIN)' : 'MASTER SYSTEM OWNER'}
+                  {isKm ? 'ម្ចាស់ប្រព័ន្ធ (SUPER ADMIN)' : 'SYSTEM OWNER'}
                 </span>
                 <span className="px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 text-[10px] font-mono font-bold border border-teal-400/30">
                   LICENSE: PERPETUAL ENTERPRISE
@@ -181,8 +181,8 @@ export default function OwnerConsolePage() {
               </div>
               <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white mt-1">
                 {isKm
-                  ? 'មជ្ឈមណ្ឌលបញ្ជាមហាសិទ្ធ & គ្រប់គ្រងសិទ្ធិប្រព័ន្ធ'
-                  : 'System Owner Master Governance Console'}
+                  ? 'ផ្ទាំងគ្រប់គ្រងរដ្ឋបាល & សិទ្ធិប្រព័ន្ធ'
+                  : 'System Owner Governance Console'}
               </h1>
               <p className="text-xs text-stone-300 mt-1 max-w-2xl font-medium">
                 {isKm
@@ -296,7 +296,7 @@ export default function OwnerConsolePage() {
           }`}
         >
           <Database className="w-4 h-4 text-sky-700" />
-          <span>{isKm ? 'ថែទាំ & សង្គ្រោះបន្ទាន់ (Maintenance)' : 'Master Maintenance'}</span>
+          <span>{isKm ? 'ថែទាំ & សង្គ្រោះបន្ទាន់ (Maintenance)' : 'System Maintenance'}</span>
         </button>
       </div>
 
@@ -334,7 +334,7 @@ export default function OwnerConsolePage() {
                   <th className="p-3 text-center whitespace-nowrap">{isKm ? 'គិតលុយ & KHQR' : 'Billing & KHQR'}</th>
                   <th className="p-3 text-center whitespace-nowrap">{isKm ? 'គ្រប់គ្រងបុគ្គលិក' : 'Staff Governance'}</th>
                   <th className="p-3 text-center whitespace-nowrap">{isKm ? 'គ្រប់គ្រង Admin' : 'Admin Governance'}</th>
-                  <th className="p-3 text-center whitespace-nowrap">{isKm ? 'Backup ប្រព័ន្ធ' : 'Master Backup'}</th>
+                  <th className="p-3 text-center whitespace-nowrap">{isKm ? 'Backup ប្រព័ន្ធ' : 'System Backup'}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#EAE4D7]">
@@ -351,7 +351,7 @@ export default function OwnerConsolePage() {
                     >
                       <td className="p-3 whitespace-nowrap">
                         <div className="flex items-center gap-2">
-                          {isOwner && <Crown className="w-3.5 h-3.5 text-amber-600 shrink-0" />}
+                          {isOwner && <ShieldCheck className="w-3.5 h-3.5 text-amber-700 shrink-0" />}
                           {isAdmin && <ShieldCheck className="w-3.5 h-3.5 text-purple-600 shrink-0" />}
                           <div>
                             <div className="font-bold text-stone-900">
@@ -454,11 +454,11 @@ export default function OwnerConsolePage() {
                         )}
                       </td>
 
-                      {/* Can Trigger Master Backup */}
+                      {/* Can Trigger System Backup */}
                       <td className="p-3 text-center">
                         {isOwner ? (
                           <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">
-                            <CheckCircle2 className="w-3 h-3" /> Master
+                            <CheckCircle2 className="w-3 h-3" /> Full
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-rose-50 text-rose-600 text-[10px] font-bold">
@@ -552,7 +552,7 @@ export default function OwnerConsolePage() {
         <div className="bg-[#FDFBF7] rounded-3xl border border-amber-300/80 p-8 shadow-md relative overflow-hidden animate-in fade-in duration-200">
           <div className="max-w-2xl mx-auto text-center space-y-6">
             <div className="w-20 h-20 rounded-full bg-amber-100 border-2 border-amber-400 text-amber-800 flex items-center justify-center mx-auto shadow-inner">
-              <Crown className="w-10 h-10" />
+              <Building2 className="w-10 h-10" />
             </div>
 
             <div className="space-y-2">
@@ -563,7 +563,7 @@ export default function OwnerConsolePage() {
                 Rotana Medical Center & Polyclinic Platform
               </h2>
               <p className="text-xs text-stone-500 uppercase tracking-widest font-mono">
-                Certificate ID: ROTANA-SYS-OWNER-2026-MASTER-001
+                Certificate ID: ROTANA-SYS-OWNER-2026-001
               </p>
             </div>
 
@@ -573,7 +573,7 @@ export default function OwnerConsolePage() {
                 <span className="text-xs font-bold text-stone-900">Rotana Nob (លោក ណុប រតនា)</span>
               </div>
               <div className="flex justify-between py-2 border-b border-[#E7E1D4]">
-                <span className="text-xs text-stone-500">{isKm ? 'តួនាទីកំពូល' : 'Master Designation'}:</span>
+                <span className="text-xs text-stone-500">{isKm ? 'តួនាទីចម្បង' : 'Primary Designation'}:</span>
                 <span className="text-xs font-bold text-amber-900">Platform Director & System Owner (SUPER_ADMIN)</span>
               </div>
               <div className="flex justify-between py-2 border-b border-[#E7E1D4]">
@@ -602,12 +602,12 @@ export default function OwnerConsolePage() {
         </div>
       )}
 
-      {/* TAB 4: Master Maintenance */}
+      {/* TAB 4: System Maintenance */}
       {activeTab === 'maintenance' && (
         <div className="bg-[#FDFBF7] rounded-2xl border border-[#E7E1D4] p-6 shadow-xs space-y-6 animate-in fade-in duration-200">
           <div>
             <h3 className="text-sm font-bold text-stone-900">
-              {isKm ? 'ប្រតិបត្តិការថែទាំស្នូល និងការសង្គ្រោះបន្ទាន់' : 'Master Maintenance & Emergency Disaster Recovery'}
+              {isKm ? 'ប្រតិបត្តិការថែទាំស្នូល និងការសង្គ្រោះបន្ទាន់' : 'System Maintenance & Disaster Recovery'}
             </h3>
             <p className="text-xs text-stone-500">
               {isKm

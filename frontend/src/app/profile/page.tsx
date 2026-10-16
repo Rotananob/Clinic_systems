@@ -18,7 +18,7 @@ import {
   Volume2,
   Globe,
   KeyRound,
-  Crown,
+  ShieldCheck,
   Check,
   X,
   LogOut,
@@ -297,7 +297,7 @@ export default function ProfilePage() {
               </h1>
               {isSuperAdmin ? (
                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 text-xs font-bold shadow-2xs">
-                  <Crown className="w-3.5 h-3.5 text-amber-700" />
+                  <ShieldCheck className="w-3.5 h-3.5 text-amber-700" />
                   <span>{getRoleDisplayName(user?.role, isKh)}</span>
                 </span>
               ) : (
@@ -749,7 +749,7 @@ export default function ProfilePage() {
             </div>
             {isSuperAdmin && (
               <span className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-bold border border-amber-300">
-                {isKh ? 'សិទ្ធិទាំងអស់ (Master Access)' : 'Unrestricted Access'}
+                {isKh ? 'សិទ្ធិពេញលេញ (Full Access)' : 'Full Access'}
               </span>
             )}
           </div>

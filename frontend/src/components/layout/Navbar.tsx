@@ -136,7 +136,7 @@ export const Navbar: React.FC = () => {
                   <div className="text-[10px] font-mono font-semibold uppercase">
                     {user.role === 'SUPER_ADMIN' ? (
                       <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-amber-100 text-amber-900 border border-amber-300 font-bold text-[9px] tracking-wide">
-                        {locale === 'km' ? 'មហាសិទ្ធ (OWNER)' : 'SUPER ADMIN'}
+                        {locale === 'km' ? 'ម្ចាស់គ្លីនិក (OWNER)' : 'SUPER ADMIN'}
                       </span>
                     ) : (
                       <span className="text-teal-800 font-semibold">{user.role}</span>

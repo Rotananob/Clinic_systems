@@ -107,10 +107,10 @@ export const ROUTE_PERMISSIONS: RoutePermission[] = [
   {
     path: '/owner',
     allowedRoles: ['SUPER_ADMIN'],
-    labelEn: 'Owner Master Control & Database',
-    labelKh: 'មហាសិទ្ធិម្ចាស់ប្រព័ន្ធ & ទិន្នន័យ',
-    descriptionEn: 'Super Admin master governance, security audit logs, full export',
-    descriptionKh: 'ការគ្រប់គ្រងកម្រិតកំពូល កំណត់ហេតុសុវត្ថិភាព និងបម្រុងទុកទិន្នន័យ',
+    labelEn: 'Owner Governance & Database',
+    labelKh: 'ការគ្រប់គ្រងម្ចាស់ប្រព័ន្ធ & ទិន្នន័យ',
+    descriptionEn: 'Super Admin governance, security audit logs, full export',
+    descriptionKh: 'ការគ្រប់គ្រងជាន់ខ្ពស់ កំណត់ហេតុសុវត្ថិភាព និងបម្រុងទុកទិន្នន័យ',
   },
   {
     path: '/invoice-template',
@@ -152,7 +152,7 @@ export function isRouteAllowed(role: string | undefined | null, pathname: string
 export function getRoleDisplayName(role: string | undefined | null, isKh: boolean): string {
   switch (role) {
     case 'SUPER_ADMIN':
-      return isKh ? 'មហាសិទ្ធ (ម្ចាស់គ្លីនិក)' : 'SUPER ADMIN (OWNER)';
+      return isKh ? 'ម្ចាស់គ្លីនិក (Owner)' : 'SUPER ADMIN (OWNER)';
     case 'ADMIN':
       return isKh ? 'អ្នកគ្រប់គ្រងទូទៅ' : 'CLINIC ADMIN';
     case 'DOCTOR':

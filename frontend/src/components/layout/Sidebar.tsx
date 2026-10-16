@@ -17,7 +17,7 @@ import {
   Settings,
   BarChart3,
   LayoutTemplate,
-  Crown,
+  Building2,
   Lock,
   UserCheck,
 } from 'lucide-react';
@@ -51,7 +51,7 @@ export const Sidebar: React.FC = () => {
     { label: t.nav.followUps, href: '/follow-ups', icon: CalendarDays },
     { label: t.nav.documents, href: '/documents', icon: FolderOpen },
     { label: t.nav.staff, href: '/staff', icon: ShieldCheck },
-    { label: t.nav.ownerControl, href: '/owner', icon: Crown },
+    { label: t.nav.ownerControl, href: '/owner', icon: Building2 },
     { label: t.nav.invoiceTemplate, href: '/invoice-template', icon: LayoutTemplate },
     { label: t.nav.settings, href: '/settings', icon: Settings },
     { label: isKh ? 'ព័ត៌មានផ្ទាល់ខ្លួន' : 'My Profile', href: '/profile', icon: UserCheck },
@@ -87,13 +87,13 @@ export const Sidebar: React.FC = () => {
             {isKh ? 'តួនាទីបច្ចុប្បន្ន' : 'Current Role'}
           </div>
           <div className="text-xs font-bold text-stone-900 truncate flex items-center gap-1.5 mt-0.5">
-            {isSuperAdmin && <Crown className="w-3.5 h-3.5 text-amber-600 shrink-0" />}
+            {isSuperAdmin && <ShieldCheck className="w-3.5 h-3.5 text-amber-700 shrink-0" />}
             <span className="truncate">{getRoleDisplayName(role, isKh)}</span>
           </div>
         </div>
         {isSuperAdmin ? (
           <span className="px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-800 text-[10px] font-bold border border-amber-500/30 shrink-0">
-            {isKh ? 'សិទ្ធិ ALL' : 'MASTER'}
+            {isKh ? 'ម្ចាស់ប្រព័ន្ធ' : 'OWNER'}
           </span>
         ) : (
           <span className="px-1.5 py-0.5 rounded bg-teal-50 text-teal-800 text-[10px] font-bold border border-teal-200 shrink-0">

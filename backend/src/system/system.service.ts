@@ -36,7 +36,7 @@ export class SystemService {
     ]);
 
     return {
-      platformName: 'Rotana Medical Center & Polyclinic Master Platform',
+      platformName: 'Rotana Medical Center & Polyclinic Enterprise Platform',
       ownerName: 'Rotana Nob (System Owner & Director)',
       ownerNameKh: 'លោក ណុប រតនា (ម្ចាស់ប្រព័ន្ធ និងនាយកប្រតិបត្តិ)',
       version: '2.4.0-ENTERPRISE-PRO',
@@ -65,8 +65,8 @@ export class SystemService {
     return [
       {
         role: 'SUPER_ADMIN',
-        labelEn: 'System Owner & Director (Master)',
-        labelKh: 'ម្ចាស់ប្រព័ន្ធ & នាយកប្រតិបត្តិ (មហាសិទ្ធ)',
+        labelEn: 'System Owner & Director',
+        labelKh: 'ម្ចាស់ប្រព័ន្ធ & នាយកប្រតិបត្តិ',
         canViewPatients: true,
         canCreatePatients: true,
         canEditPatients: true,
