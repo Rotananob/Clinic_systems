@@ -725,6 +725,7 @@ class ApiClient {
         method: 'POST',
         body: JSON.stringify({ category }),
       }),
+    lockProfile: () => this.request<any>('/telegram/lock-profile', { method: 'POST' }),
   };
 
   // Visitor & Activity Telemetry Tracking

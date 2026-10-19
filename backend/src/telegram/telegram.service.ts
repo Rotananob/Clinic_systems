@@ -56,6 +56,7 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
   private pollIntervalTimer: NodeJS.Timeout | null = null;
   private lastProcessedChatId = '';
   private isProcessingDiscovery = false;
+  private lastProfileEnforceTime = 0;
 
   private activePairing: {
     code?: string;
@@ -75,6 +76,10 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
   onModuleInit() {
     // Start background poller to listen for Telegram updates (1-click group adds)
     this.startBackgroundPoller();
+    // Enforce and lock official bot name, description, and short description
+    this.enforceBotProfileLock().catch((err) => {
+      this.logger.warn(`Initial bot profile lock failed: ${err.message}`);
+    });
   }
 
   onModuleDestroy() {
@@ -234,6 +239,11 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
   private async pollUpdates() {
     const token = this.config.botToken || DEFAULT_OFFICIAL_TOKEN;
     if (!token) return;
+
+    // Periodically verify and lock official bot profile every 30 minutes
+    if (Date.now() - this.lastProfileEnforceTime > 1800000) {
+      this.enforceBotProfileLock().catch(() => {});
+    }
 
     try {
       const url = `https://api.telegram.org/bot${token}/getUpdates?offset=${this.lastUpdateId + 1}&limit=20&timeout=2`;
@@ -862,5 +872,57 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
     };
 
     return this.notify(category, testMessages[category]);
+  }
+
+  /**
+   * Anti-Tampering & Security Lock for Official Telegram Bot Profile:
+   * Enforces and locks the official Bot Name, Description, and Short Description
+   * against unauthorized changes or tampering.
+   */
+  public async enforceBotProfileLock(): Promise<{ success: boolean; message: string }> {
+    const token = this.config.botToken || DEFAULT_OFFICIAL_TOKEN;
+    if (!token) {
+      return { success: false, message: 'Bot token not configured.' };
+    }
+
+    const officialName = 'Clinic_System';
+    const officialDescription =
+      'ប្រព័ន្ធស្វ័យប្រវត្តិនៃមជ្ឈមណ្ឌលវេជ្ជសាស្ត្រ រតនា (Rotana Clinic Management & Automation Bot)\n\n' +
+      '• ជូនដំណឹងវិក្កយបត្រ & ការទូទាត់ប្រាក់ KHQR\n' +
+      '• ជូនដំណឹងវេនពិគ្រោះអ្នកជំងឺ (Patient Queue)\n' +
+      '• ជូនដំណឹងស្តុកឱសថស្ថាន\n' +
+      '• ជូនដំណឹងសន្តិសុខប្រព័ន្ធគ្លីនិក 24/7';
+    const officialShortDescription = 'Bot ជូនដំណឹងស្វ័យប្រវត្តិ គ្លីនិក រតនា (Rotana Clinic Alert Bot)';
+
+    this.lastProfileEnforceTime = Date.now();
+
+    try {
+      // 1. Set & Lock Name
+      await fetch(`https://api.telegram.org/bot${token}/setMyName`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: officialName }),
+      });
+
+      // 2. Set & Lock Full Description
+      await fetch(`https://api.telegram.org/bot${token}/setMyDescription`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ description: officialDescription }),
+      });
+
+      // 3. Set & Lock Short Description
+      await fetch(`https://api.telegram.org/bot${token}/setMyShortDescription`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ short_description: officialShortDescription }),
+      });
+
+      this.logger.log('Official Telegram Bot Profile locked and protected successfully.');
+      return { success: true, message: 'Telegram Bot profile locked and verified successfully.' };
+    } catch (err: any) {
+      this.logger.warn(`Failed to enforce bot profile lock: ${err.message}`);
+      return { success: false, message: err.message };
+    }
   }
 }

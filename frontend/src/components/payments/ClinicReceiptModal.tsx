@@ -101,15 +101,21 @@ export function ClinicReceiptModal({
     }
   };
 
-  const amount = Number(invoice.payableAmount || invoice.totalAmount || 0);
+  const rawAmount = Number(invoice.payableAmount || invoice.totalAmount || 0);
+  const amount = isNaN(rawAmount) ? 0 : rawAmount;
   const currency = invoice.currency || 'USD';
   const amountKhr = currency === 'USD' ? Math.round(amount * 4100) : amount;
   const isPaid = invoice.status === 'PAID';
-  const issueDate = invoice.paidAt
-    ? new Date(invoice.paidAt).toLocaleString()
-    : new Date(invoice.createdAt || Date.now()).toLocaleString();
-  const latestTxn = invoice.transactions?.[0];
-  const tranId = latestTxn?.tranId || 'N/A';
+  const issueDate = (() => {
+    try {
+      const d = invoice.paidAt || invoice.createdAt;
+      return d ? new Date(d).toLocaleString() : new Date().toLocaleString();
+    } catch {
+      return new Date().toLocaleString();
+    }
+  })();
+  const latestTxn = Array.isArray(invoice.transactions) ? invoice.transactions[0] : undefined;
+  const tranId = typeof latestTxn === 'object' && latestTxn !== null && 'tranId' in latestTxn ? (latestTxn as any).tranId : (typeof latestTxn === 'string' ? latestTxn : 'N/A');
 
   // Derive styling from template config with fallbacks
   const accentColor = cfg?.accentColor ?? '#0f766e';
@@ -153,7 +159,9 @@ export function ClinicReceiptModal({
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
       {/* Print Styles Injection */}
-      <style jsx global>{`
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         @media print {
           @page {
             size: ${isThermal ? '80mm auto' : cfg?.paperSize === 'A5_HALF' ? '148mm 210mm' : 'A4 portrait'};
@@ -190,7 +198,9 @@ export function ClinicReceiptModal({
             display: none !important;
           }
         }
-      `}</style>
+      `,
+        }}
+      />
 
       <div
         className={`bg-white rounded-2xl shadow-2xl ${paperSizeClass} w-full overflow-hidden ${showBorder ? 'border border-slate-200' : ''} animate-in fade-in zoom-in-95 duration-150 my-6`}
@@ -365,15 +375,18 @@ export function ClinicReceiptModal({
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-sans">
                   {(cfg?.showItemizedServices ?? false) && invoice.lineItems && invoice.lineItems.length > 0 ? (
-                    invoice.lineItems.map((item, idx) => (
-                      <tr key={idx}>
-                        <td className="py-2.5 px-3 text-slate-900 font-medium">{item.description}</td>
-                        <td className="py-2.5 px-2 text-center text-slate-600 font-mono">1</td>
-                        <td className="py-2.5 px-3 text-right font-mono font-semibold text-slate-900">
-                          ${item.amount.toFixed(2)}
-                        </td>
-                      </tr>
-                    ))
+                    invoice.lineItems.map((item, idx) => {
+                      const itemAmt = Number(item?.amount || 0);
+                      return (
+                        <tr key={idx}>
+                          <td className="py-2.5 px-3 text-slate-900 font-medium">{item?.description || 'Service'}</td>
+                          <td className="py-2.5 px-2 text-center text-slate-600 font-mono">1</td>
+                          <td className="py-2.5 px-3 text-right font-mono font-semibold text-slate-900">
+                            ${(isNaN(itemAmt) ? 0 : itemAmt).toFixed(2)}
+                          </td>
+                        </tr>
+                      );
+                    })
                   ) : (
                     <tr>
                       <td className="py-2.5 px-3 text-slate-900 font-medium">

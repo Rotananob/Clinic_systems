@@ -100,6 +100,7 @@ export function KhqrCheckoutModal({
   const pollTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isPollingRef = useRef<boolean>(false);
   const isCheckInFlightRef = useRef<boolean>(false);
+  const currentPollCycleRef = useRef<number>(0);
   const lastVisibilityTriggerRef = useRef<number>(0);
   const activeRequestRef = useRef<number>(0);
   const consecutiveErrorsRef = useRef<number>(0);
@@ -120,7 +121,9 @@ export function KhqrCheckoutModal({
   }, []);
 
   const clearPolling = () => {
+    currentPollCycleRef.current += 1;
     isPollingRef.current = false;
+    isCheckInFlightRef.current = false;
     if (pollTimerRef.current) {
       clearTimeout(pollTimerRef.current);
       pollTimerRef.current = null;
@@ -152,12 +155,13 @@ export function KhqrCheckoutModal({
   const handleSuccess = (customTranId?: string) => {
     clearPolling();
     const effectiveTranId = customTranId || qrData?.tranId || 'TXN-' + Date.now();
+    const numAmount = Number(qrData?.amount ?? invoice?.payableAmount ?? 0);
     const settledInv = {
       ...(invoice || {}),
       ...(qrData || {}),
       id: activeInvoiceId,
-      invoiceNumber: qrData?.invoiceNumber || invoice?.invoiceNumber,
-      payableAmount: qrData?.amount || invoice?.payableAmount,
+      invoiceNumber: qrData?.invoiceNumber || invoice?.invoiceNumber || 'INV-000',
+      payableAmount: isNaN(numAmount) ? 0 : numAmount,
       currency: qrData?.currency || invoice?.currency || 'USD',
       status: 'PAID',
       paidAt: new Date().toISOString(),
@@ -168,7 +172,7 @@ export function KhqrCheckoutModal({
     setSettledInvoiceData(settledInv);
     setSettled(true);
     setSettling(false);
-    setAutoOpeningReceipt(true);
+    setAutoOpeningReceipt(false);
 
     if (soundEnabled) {
       playPaymentSuccessChime();
@@ -185,25 +189,20 @@ export function KhqrCheckoutModal({
       currency: settledInv.currency,
       tranId: effectiveTranId,
     });
-
-    // Auto-launch the real-time invoice receipt modal after 1.8 seconds so cashier sees confirmation popup first
-    if (autoOpenTimerRef.current) clearTimeout(autoOpenTimerRef.current);
-    autoOpenTimerRef.current = setTimeout(() => {
-      setShowReceiptModal(true);
-      setAutoOpeningReceipt(false);
-    }, 1800);
   };
 
-  // Safe polite polling with recursive setTimeout (2.5s interval) to prevent request overlapping or server spam
+  // Safe polite polling with recursive setTimeout (2.5s interval) and strict cycle protection
   const startPolling = (tranId: string, initialDelay = 2500) => {
     clearPolling();
+    const cycleId = ++currentPollCycleRef.current;
     isPollingRef.current = true;
 
     const poll = async () => {
-      if (!isPollingRef.current) return;
+      // Abort if poll loop was superseded or cancelled
+      if (!isPollingRef.current || cycleId !== currentPollCycleRef.current) return;
+
       if (isCheckInFlightRef.current) {
-        // A check is already in-flight; reschedule politely without stacking
-        if (isPollingRef.current) {
+        if (isPollingRef.current && cycleId === currentPollCycleRef.current) {
           pollTimerRef.current = setTimeout(poll, 2500);
         }
         return;
@@ -212,12 +211,16 @@ export function KhqrCheckoutModal({
       isCheckInFlightRef.current = true;
       try {
         const statusRes = await api.payments.checkStatus(tranId);
+        // Verify cycle is still active after awaiting network
+        if (!isPollingRef.current || cycleId !== currentPollCycleRef.current) return;
+
         consecutiveErrorsRef.current = 0;
         if (statusRes.status === 'SUCCESS' || statusRes.invoiceStatus === 'PAID') {
-          handleSuccess();
+          handleSuccess(tranId);
           return;
         }
       } catch {
+        if (!isPollingRef.current || cycleId !== currentPollCycleRef.current) return;
         consecutiveErrorsRef.current += 1;
         if (consecutiveErrorsRef.current >= 6) {
           clearPolling();
@@ -227,7 +230,7 @@ export function KhqrCheckoutModal({
         isCheckInFlightRef.current = false;
       }
 
-      if (isPollingRef.current) {
+      if (isPollingRef.current && cycleId === currentPollCycleRef.current) {
         pollTimerRef.current = setTimeout(poll, 2500);
       }
     };
@@ -628,18 +631,6 @@ export function KhqrCheckoutModal({
                 </span>
               </div>
             </div>
-
-            {/* Auto-opening banner */}
-            {autoOpeningReceipt && (
-              <div className="p-2.5 bg-teal-50 border border-teal-200 rounded-xl text-xs text-teal-800 flex items-center justify-center gap-2 animate-pulse">
-                <RefreshCw className="w-3.5 h-3.5 animate-spin text-teal-700" />
-                <span>
-                  {isKm
-                    ? 'កំពុងបើកវិក្កយបត្រ Real-Time ដោយស្វ័យប្រវត្តិ...'
-                    : 'Auto-opening real-time receipt in a moment...'}
-                </span>
-              </div>
-            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
               <button

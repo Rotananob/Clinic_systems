@@ -12,6 +12,7 @@ import {
   Power,
   Bell,
   Shield,
+  ShieldCheck,
   Pill,
   Calendar,
   DollarSign,
@@ -33,6 +34,7 @@ export const TelegramSettingsPanel: React.FC = () => {
   const [pairingDeepLink, setPairingDeepLink] = useState<string | null>(null);
   const [testingCategory, setTestingCategory] = useState<string | null>(null);
   const [checkingAdmin, setCheckingAdmin] = useState(false);
+  const [lockingProfile, setLockingProfile] = useState(false);
 
   const [botStatus, setBotStatus] = useState<any>(null);
   const [manualChatId, setManualChatId] = useState('');
@@ -204,6 +206,27 @@ export const TelegramSettingsPanel: React.FC = () => {
     }
   };
 
+  const handleLockProfile = async () => {
+    try {
+      setLockingProfile(true);
+      const res = await api.telegram.lockProfile();
+      if (res.success) {
+        toast.success(
+          isKm
+            ? 'បានចាក់សោរ និងការពារ Bot Profile រួចរាល់ដោយសុវត្ថិភាព!'
+            : 'Telegram Bot profile locked and protected successfully!',
+          isKm ? 'ចាក់សោរជោគជ័យ' : 'Profile Locked',
+        );
+      } else {
+        toast.info(res.message || 'Operation completed', 'Telegram Bot');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to lock profile', 'Error');
+    } finally {
+      setLockingProfile(false);
+    }
+  };
+
   const handleTestNotification = async (category: 'PAYMENTS' | 'QUEUE' | 'PHARMACY' | 'SECURITY') => {
     try {
       setTestingCategory(category);
@@ -312,8 +335,18 @@ export const TelegramSettingsPanel: React.FC = () => {
             </div>
           </div>
 
-          {isConnected && (
-            <div className="flex items-center gap-2 self-start sm:self-auto">
+          <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+            <button
+              type="button"
+              disabled={lockingProfile}
+              onClick={handleLockProfile}
+              className="px-3.5 py-2 bg-white hover:bg-teal-50 text-teal-800 border border-teal-200 rounded-xl text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-colors disabled:opacity-60"
+              title={isKm ? 'ចាក់សោរព័ត៌មាន Bot និងការពារ Hacker កែសម្រួល' : 'Lock Bot Description & Brand Info'}
+            >
+              {lockingProfile ? <RefreshCw className="w-3.5 h-3.5 animate-spin text-teal-700" /> : <ShieldCheck className="w-3.5 h-3.5 text-teal-700" />}
+              <span>{isKm ? 'ចាក់សោរ & ការពារ Bot Profile' : 'Lock & Protect Profile'}</span>
+            </button>
+            {isConnected && (
               <button
                 type="button"
                 onClick={handleDisconnect}
@@ -322,8 +355,8 @@ export const TelegramSettingsPanel: React.FC = () => {
                 <Power className="w-3.5 h-3.5" />
                 <span>{isKm ? 'ផ្ដាច់ការតភ្ជាប់' : 'Disconnect'}</span>
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {/* Warning banner if bot is added but not admin yet */}

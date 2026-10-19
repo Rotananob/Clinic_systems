@@ -1195,7 +1195,7 @@ export default function BillingPage() {
               </p>
               <div className="mt-1 flex items-center gap-2 text-xs">
                 <span className="font-bold text-emerald-800 font-mono text-sm">
-                  ${Number(paymentSuccessNotice.amount).toFixed(2)}
+                  ${(isNaN(Number(paymentSuccessNotice.amount)) ? 0 : Number(paymentSuccessNotice.amount)).toFixed(2)}
                 </span>
                 <span className="text-[10px] text-slate-400 font-mono">
                   [TranID: {paymentSuccessNotice.tranId || 'N/A'}]

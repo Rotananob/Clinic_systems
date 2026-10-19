@@ -69,6 +69,13 @@ export class TelegramController {
     return this.telegramService.updateSettings(settings);
   }
 
+  @ApiOperation({ summary: 'Enforce and lock official Telegram Bot name and descriptions' })
+  @Post('lock-profile')
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  lockProfile() {
+    return this.telegramService.enforceBotProfileLock();
+  }
+
   @ApiOperation({ summary: 'Send test notification to specified topic' })
   @Post('test')
   @Roles(Role.SUPER_ADMIN, Role.ADMIN)
