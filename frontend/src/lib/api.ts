@@ -940,6 +940,51 @@ class ApiClient {
     getReceipt: (subscriptionId: string) =>
       this.request<any>(`/subscriptions/invoices/${subscriptionId}/receipt`),
   };
+
+  // Step 21 & Step 22: Platform Super Admin Fleet & Remote Governance
+  superAdmin = {
+    getMetrics: () => this.request<any>('/super-admin/metrics'),
+    getTenants: () => this.request<any[]>('/super-admin/tenants'),
+    freezeTenant: (id: string, reason?: string) =>
+      this.request<any>(`/super-admin/tenants/${id}/freeze`, {
+        method: 'PATCH',
+        body: JSON.stringify({ reason }),
+      }),
+    unfreezeTenant: (id: string) =>
+      this.request<any>(`/super-admin/tenants/${id}/unfreeze`, {
+        method: 'PATCH',
+      }),
+    overridePlan: (
+      id: string,
+      data: {
+        planTier?: string;
+        addDays?: number;
+        newExpiryDate?: string;
+        maxDailyKhqr?: number;
+        maxMonthlyPatients?: number;
+        maxStaffAccounts?: number;
+        reason?: string;
+      },
+    ) =>
+      this.request<any>(`/super-admin/tenants/${id}/override-plan`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }),
+    purgeDemoData: (id: string) =>
+      this.request<any>(`/super-admin/tenants/${id}/purge-demo-data`, {
+        method: 'POST',
+      }),
+    getMaintenanceMode: () => this.request<any>('/super-admin/maintenance-mode'),
+    setMaintenanceMode: (data: { enabled: boolean; messageKh?: string; messageEn?: string }) =>
+      this.request<any>('/super-admin/maintenance-mode', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    impersonate: (id: string) =>
+      this.request<any>(`/super-admin/tenants/${id}/impersonate`, {
+        method: 'POST',
+      }),
+  };
 }
 
 export const api = new ApiClient();

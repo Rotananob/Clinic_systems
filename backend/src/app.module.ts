@@ -19,6 +19,7 @@ import { UploadModule } from './upload/upload.module';
 import { TrackingModule } from './tracking/tracking.module';
 import { TenantsModule } from './tenants/tenants.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
+import { SuperAdminModule } from './super-admin/super-admin.module';
 import { RateLimiterMiddleware } from './common/middleware/rate-limiter.middleware';
 import { TenantContextMiddleware } from './common/middleware/tenant-context.middleware';
 import { CommonModule } from './common/common.module';
@@ -54,6 +55,7 @@ import { CommonModule } from './common/common.module';
     TrackingModule,
     TenantsModule,
     SubscriptionsModule,
+    SuperAdminModule,
   ],
 })
 export class AppModule implements NestModule {

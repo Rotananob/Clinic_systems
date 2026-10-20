@@ -2,6 +2,7 @@ import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import { PrismaService } from '../../prisma/prisma.service';
 import { TenantContextService } from '../services/tenant-context.service';
+import { SuperAdminService } from '../../super-admin/super-admin.service';
 
 interface CachedTenant {
   tenantId: string;
@@ -109,6 +110,25 @@ export class TenantContextMiddleware implements NestMiddleware {
     // 5. Attach tenant details to the Express Request
     (req as any).tenantId = tenantId;
     (req as any).tenantSlug = tenantSlug;
+
+    // Step 22: Platform Maintenance Mode Guard (Exempts SUPER_ADMIN and health checks)
+    if (SuperAdminService.isMaintenanceModeActive() && !isSuperAdminBypass) {
+      const path = req.path || req.url || '';
+      const isExempt =
+        path.includes('/auth/login') ||
+        path.includes('/super-admin') ||
+        path.includes('/health');
+      if (!isExempt) {
+        const { messageKh, messageEn } = SuperAdminService.getMaintenanceMessage();
+        res.status(503).json({
+          statusCode: 503,
+          error: 'MAINTENANCE_MODE',
+          messageKh,
+          messageEn,
+        });
+        return;
+      }
+    }
 
     // 6. Execute request within AsyncLocalStorage scope
     this.tenantContextService.run(
