@@ -137,6 +137,14 @@ export const ROUTE_PERMISSIONS: RoutePermission[] = [
     descriptionKh: 'ក្ដារហៅលេខអ្នកជំងឺតាមទូរទស្សន៍ពេញអេក្រង់ ជាមួយសំឡេងខ្មែរ',
   },
   {
+    path: '/lab',
+    allowedRoles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR'],
+    labelEn: 'Laboratory Information System (LIS)',
+    labelKh: 'មន្ទីរពិសោធន៍ & តេស្តឈាម LIS',
+    descriptionEn: 'ASTM/HL7 automated analyzer interfacing, delta checks, panic alerts',
+    descriptionKh: 'ភ្ជាប់ម៉ាស៊ីនវិភាគឈាមស្វ័យប្រវត្តិតាម ASTM/HL7 និងតាមដានតម្លៃអាសន្ន',
+  },
+  {
     path: '/staff',
     allowedRoles: ['SUPER_ADMIN', 'ADMIN'],
     labelEn: 'Staff & Role Management',

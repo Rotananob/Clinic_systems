@@ -1214,6 +1214,53 @@ class ApiClient {
         body: JSON.stringify(data),
       }),
   };
+  // Laboratory Information System & Analyzer Interfacing (Phase 12)
+  lis = {
+    getOrders: (params?: { status?: string; patientId?: string; hasPanic?: boolean }) => {
+      const sp = new URLSearchParams();
+      if (params?.status) sp.append('status', params.status);
+      if (params?.patientId) sp.append('patientId', params.patientId);
+      if (params?.hasPanic !== undefined) sp.append('hasPanic', String(params.hasPanic));
+      const q = sp.toString() ? '?' + sp.toString() : '';
+      return this.request<any[]>('/lis/orders' + q);
+    },
+    getOrder: (orderId: string) =>
+      this.request<any>('/lis/orders/' + encodeURIComponent(orderId)),
+    createAccession: (data: {
+      patientId: string;
+      patientName: string;
+      panelCode: string;
+      panelNameEn: string;
+      panelNameKh: string;
+      tubeType: string;
+      orderingDoctor: string;
+      phlebotomist: string;
+    }) =>
+      this.request<any>('/lis/accession', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    ingestResults: (
+      orderId: string,
+      data: {
+        rawProtocolPacket?: string;
+        directAnalyteResults?: Array<{ code: string; value: number }>;
+        analyzerModel?: string;
+        protocol?: string;
+      },
+    ) =>
+      this.request<any>('/lis/orders/' + encodeURIComponent(orderId) + '/ingest', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    verifyOrder: (orderId: string, data: { pathologistName: string; notes?: string }) =>
+      this.request<any>('/lis/orders/' + encodeURIComponent(orderId) + '/verify', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    getReferenceRanges: () =>
+      this.request<Record<string, any>>('/lis/reference-ranges'),
+  };
 };
 
 export const api = new ApiClient();
