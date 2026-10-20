@@ -67,29 +67,24 @@ export const TelegramSettingsPanel: React.FC = () => {
       setPairingStep('WAITING_ADD');
 
       const session = await api.telegram.startPairing();
-      // Open Telegram app / web directly to add bot to group
+      // Open Telegram app / web safely in a new tab without destroying the current web app
       if (session.deepLink) {
         setPairingDeepLink(session.deepLink);
         try {
-          const opened = window.open(session.deepLink, '_blank', 'noopener,noreferrer');
-          if (!opened || opened.closed || typeof opened.closed === 'undefined') {
-            window.location.href = session.deepLink;
-          }
+          window.open(session.deepLink, '_blank', 'noopener,noreferrer');
         } catch {
-          window.location.href = session.deepLink;
+          // Keep user in clinic app so polling continues uninterrupted
         }
       }
 
       toast.info(
         isKm
-          ? 'កំពុងបើក Telegram... សូមជ្រើសរើសក្រុមដែលអ្នកចង់ Add Bot ចូល'
-          : 'Opening Telegram... Please select the group to add the bot.',
+          ? 'កំពុងភ្ជាប់... សូមជ្រើសរើស Telegram Group ឬចុចប៊ូតុង "បើកកម្មវិធី Telegram"'
+          : 'Connecting... Please select your Telegram group or click "Open Telegram App".',
         isKm ? 'បើក Telegram' : 'Opening Telegram',
       );
 
-      // Start polling for group addition
-      if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-      pollIntervalRef.current = setInterval(async () => {
+      const checkNow = async () => {
         try {
           const res = await api.telegram.getPairingStatus();
           if (res.paired) {
@@ -117,7 +112,13 @@ export const TelegramSettingsPanel: React.FC = () => {
         } catch {
           // Ignore polling errors
         }
-      }, 2500);
+      };
+
+      // Start polling for group addition every 2 seconds
+      if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+      pollIntervalRef.current = setInterval(checkNow, 2000);
+      // Run immediately as well
+      checkNow();
     } catch (err: any) {
       setPairingActive(false);
       setPairingStep('IDLE');
@@ -483,6 +484,40 @@ export const TelegramSettingsPanel: React.FC = () => {
                     <span>{isKm ? 'បើក Telegram ឡើងវិញ' : 'Re-open Telegram'}</span>
                   </button>
                 )}
+
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      const res = await api.telegram.getPairingStatus();
+                      if (res.paired) {
+                        if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+                        setPairingActive(false);
+                        setPairingStep('PAIRED');
+                        await fetchStatus();
+                        toast.success(
+                          isKm
+                            ? `បានតភ្ជាប់ជាមួយ ${res.chatTitle || 'ក្រុម'} និងបង្កើត Topics រួចរាល់!`
+                            : `Connected to ${res.chatTitle || 'group'} and initialized forum topics!`,
+                          isKm ? 'តភ្ជាប់ជោគជ័យ' : 'Connected Successfully',
+                        );
+                      } else {
+                        toast.info(
+                          isKm
+                            ? 'មិនទាន់រកឃើញការ Add Bot ចូលក្រុមនៅឡើយទេ។ សូម Add Bot ចូលក្នុង Telegram Group ឬវាយពាក្យ /start ក្នុងក្រុម រួចចុចពិនិត្យម្ដងទៀត។'
+                            : 'Bot not detected yet. Please add bot to your group or type /start in the group, then check again.',
+                          isKm ? 'កំពុងរង់ចាំ' : 'Waiting',
+                        );
+                      }
+                    } catch (err: any) {
+                      toast.error(err.message, 'Check Failed');
+                    }
+                  }}
+                  className="px-3.5 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                >
+                  <RefreshCw className="w-3.5 h-3.5 text-teal-700" />
+                  <span>{isKm ? 'ពិនិត្យការតភ្ជាប់ឥឡូវនេះ' : 'Check Status Now'}</span>
+                </button>
 
                 <button
                   type="button"

@@ -270,7 +270,7 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
           const memberUsername = newMember?.user?.username?.toLowerCase();
           const targetUsername = (this.config.botUsername || DEFAULT_OFFICIAL_USERNAME).toLowerCase();
 
-          if (memberUserId === OFFICIAL_BOT_ID || memberUsername === targetUsername) {
+          if (String(memberUserId) === String(OFFICIAL_BOT_ID) || memberUsername === targetUsername || newMember?.user?.is_bot) {
             const isMemberOrAdmin = ['member', 'administrator', 'creator'].includes(newMember.status);
             if (isMemberOrAdmin) {
               this.logger.log(`Bot membership updated in ${chat.title || 'group'} (${chat.id}): ${newMember.status}`);
@@ -291,7 +291,7 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
             const isCommand = text.startsWith('/start') || text.startsWith('/connect') || text.startsWith('/setup') || text.startsWith('/topics');
             const containsActiveCode = Boolean(activeCode && text.includes(activeCode));
             const isBotAdded = newMembers.some((m: any) => 
-              m.id === OFFICIAL_BOT_ID || 
+              String(m.id) === String(OFFICIAL_BOT_ID) || 
               m.username?.toLowerCase() === (this.config.botUsername || DEFAULT_OFFICIAL_USERNAME).toLowerCase()
             );
 
@@ -399,7 +399,7 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
           chatTitle: chatInfo.title || chatTitle,
           isForum: true,
           pendingAdmin: false,
-          topics: { ...this.config.topics, ...topics },
+          topics: { ...topics },
           connectedAt: new Date().toISOString(),
         };
         this.saveConfig();
@@ -417,7 +417,14 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
           `<i>រាល់ការទូទាត់ KHQR និងការជូនដំណឹងសំខាន់ៗ នឹងរត់ចូលតាម Topics នីមួយៗដោយស្វ័យប្រវត្ត។</i>`,
         ].join('\n');
 
-        await this.sendMessageDirect(token, chatId, successMessage, topics.securityThreadId || topics.paymentsThreadId);
+        if (topics.paymentsThreadId) {
+          await this.sendMessageDirect(token, chatId, successMessage, topics.paymentsThreadId);
+        }
+        if (topics.securityThreadId && topics.securityThreadId !== topics.paymentsThreadId) {
+          await this.sendMessageDirect(token, chatId, successMessage, topics.securityThreadId);
+        }
+        // Also send confirmation to general topic thread (null or 1) so everyone sees it
+        await this.sendMessageDirect(token, chatId, successMessage);
 
         this.activePairing = {
           paired: true,
