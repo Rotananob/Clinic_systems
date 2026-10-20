@@ -540,6 +540,18 @@ class ApiClient {
       this.request<any>(`/prescriptions/${id}/dispense`, {
         method: 'PATCH',
       }),
+    evaluateCdss: (data: { medications: string[]; patientAllergies?: string; patientConditions?: string[]; vitals?: any }) =>
+      this.request<any>('/prescriptions/cdss/evaluate', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    searchIcd11: (query: string) =>
+      this.request<any[]>(`/prescriptions/cdss/icd11?query=${encodeURIComponent(query)}`),
+    calculateTriage: (vitals: any) =>
+      this.request<any>('/prescriptions/cdss/triage', {
+        method: 'POST',
+        body: JSON.stringify(vitals),
+      }),
   };
 
 

@@ -69,7 +69,7 @@ export class VisitsService {
       orderBy: { createdAt: 'desc' },
       include: {
         patient: {
-          select: { id: true, patientCode: true, nameEn: true, nameKh: true, phone: true, gender: true },
+          select: { id: true, patientCode: true, nameEn: true, nameKh: true, phone: true, gender: true, allergies: true },
         },
         doctor: {
           select: { id: true, fullNameEn: true, fullNameKh: true },
@@ -137,7 +137,7 @@ export class VisitsService {
       data: { status },
       include: {
         patient: {
-          select: { id: true, patientCode: true, nameEn: true, nameKh: true, phone: true, gender: true },
+          select: { id: true, patientCode: true, nameEn: true, nameKh: true, phone: true, gender: true, allergies: true },
         },
         doctor: {
           select: { id: true, fullNameEn: true, fullNameKh: true },

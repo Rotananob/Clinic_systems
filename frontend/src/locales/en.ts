@@ -543,6 +543,24 @@ export const en = {
     icdCodeLabel: 'International Classification of Diseases',
     telegramVoiceHelp: 'Doctors can also record Telegram voice memos directly to the official clinic bot for instant SOAP structuring.',
   },
+  cdss: {
+    allSafeVerified: 'Clinical Decision Support (CDSS): 100% verified safe. No adverse drug interactions or allergy conflicts detected.',
+    severeDangerTitle: 'Clinical Safety Alert: Severe Risk Detected',
+    severeDangerDesc: 'Potentially fatal drug-drug interaction or documented patient allergy conflict.',
+    moderateWarningTitle: 'Clinical Decision Support: Safety Warnings',
+    moderateWarningDesc: 'Interaction cautions or elevated physiological triage score detected.',
+    overriddenBadge: 'Overridden by Clinician',
+    blockedNotice: 'Prescription submission locked due to safety warnings.',
+    overrideAction: 'Override with Justification',
+    overrideModalTitle: 'Doctor Clinical Override Confirmation',
+    overrideModalDesc: 'You are overriding a severe clinical warning. Please provide explicit clinical justification. This action will be permanently logged in the audit trail.',
+    overridePlaceholder: 'Enter medical justification (e.g. Inpatient monitored with gastroprotection prescribed)...',
+    confirmOverride: 'Confirm Override',
+    cancel: 'Cancel',
+    ddiTitle: 'Drug-Drug Interaction Guard',
+    allergyTitle: 'Allergy & Contraindication Cross-Check',
+    triageTitle: 'NEWS2 Physiological Early Warning Score',
+  },
 };
 
 export type TranslationKey = typeof en;
