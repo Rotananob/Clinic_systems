@@ -43,4 +43,23 @@ export class PlatformMasterBotController {
   testMessage() {
     return this.platformMasterBotService.testConnection();
   }
+
+  @ApiOperation({ summary: 'Execute administrative Master Bot command' })
+  @Post('command')
+  async executeCommand(@Body() dto: { command: string }) {
+    const reply = await this.platformMasterBotService.executeAdminCommand(dto.command || '/help');
+    return { success: true, reply };
+  }
+
+  @ApiOperation({ summary: 'Enforce and lock official Platform Master Bot profile' })
+  @Post('lock-profile')
+  lockProfile() {
+    return this.platformMasterBotService.enforceMasterBotProfileLock();
+  }
+
+  @ApiOperation({ summary: 'Verify Platform Master Bot integrity and auto-heal if tampered' })
+  @Post('verify-integrity')
+  verifyIntegrity() {
+    return this.platformMasterBotService.verifyAndHealProfile();
+  }
 }

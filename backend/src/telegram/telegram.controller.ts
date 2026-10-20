@@ -66,6 +66,12 @@ export class TelegramController {
     return this.telegramService.enforceBotProfileLock();
   }
 
+  @ApiOperation({ summary: 'Verify Clinic Alert Bot integrity and auto-heal if tampered' })
+  @Post('verify-integrity')
+  verifyIntegrity() {
+    return this.telegramService.verifyAndHealProfile();
+  }
+
   @ApiOperation({ summary: 'Send test notification to specified topic' })
   @Post('test')
   async sendTest(

@@ -141,6 +141,18 @@ export class AuthService {
       throw new UnauthorizedException('This account is disabled');
     }
 
+    if (user.tenantId) {
+      const tenant = await this.prisma.tenant.findUnique({
+        where: { id: user.tenantId },
+        select: { isActive: true, clinicNameKh: true, clinicNameEn: true },
+      });
+      if (tenant && !tenant.isActive) {
+        throw new UnauthorizedException(
+          'គណនីគ្លីនិកនេះត្រូវបានផ្អាកដំណើរការជាបណ្ដោះអាសន្ន។ សូមទាក់ទង Super Admin (Clinic workspace is currently suspended).',
+        );
+      }
+    }
+
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) {
       throw new UnauthorizedException('Invalid email or password');

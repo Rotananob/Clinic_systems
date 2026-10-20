@@ -1,7 +1,8 @@
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, OnModuleDestroy, Optional, Inject, forwardRef } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 import { TenantContextService } from '../common/services/tenant-context.service';
+import { PlatformMasterBotService } from './platform-master-bot.service';
 
 export interface TelegramTopicConfig {
   paymentsThreadId?: number;
@@ -42,6 +43,21 @@ export interface TelegramConfig {
   notifyOnSecurityAudit: boolean;
   connectedAt?: string;
 }
+
+export const OFFICIAL_CLINIC_BOT_NAME = 'Clinic_System';
+export const OFFICIAL_CLINIC_BOT_DESCRIPTION =
+  'ប្រព័ន្ធស្វ័យប្រវត្តិនៃមជ្ឈមណ្ឌលវេជ្ជសាស្ត្រ រតនា (Rotana Clinic Management & Automation Bot)\n\n' +
+  '• ជូនដំណឹងវិក្កយបត្រ & ការទូទាត់ប្រាក់ KHQR\n' +
+  '• ជូនដំណឹងវេនពិគ្រោះអ្នកជំងឺ (Patient Queue)\n' +
+  '• ជូនដំណឹងស្តុកឱសថស្ថាន\n' +
+  '• ជូនដំណឹងសន្តិសុខប្រព័ន្ធគ្លីនិក 24/7';
+export const OFFICIAL_CLINIC_BOT_SHORT_DESC = 'Bot ជូនដំណឹងស្វ័យប្រវត្តិ គ្លីនិក រតនា (Rotana Clinic Alert Bot)';
+export const OFFICIAL_CLINIC_BOT_COMMANDS = [
+  { command: 'start', description: 'ភ្ជាប់ និងពិនិត្យស្ថានភាពគ្លីនិក' },
+  { command: 'topics', description: 'ពិនិត្យបញ្ជី Forum Topics ផ្លូវការ' },
+  { command: 'lock', description: 'ចាក់សោរ និងការពារ Bot Profile' },
+  { command: 'help', description: 'ការណែនាំអំពីប្រព័ន្ធគ្លីនិក' },
+];
 
 const DEFAULT_OFFICIAL_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8822219627:AAHjLV4FeVD5XS55BpUil24UgLdR3WsiUsg';
 const DEFAULT_OFFICIAL_USERNAME = process.env.TELEGRAM_BOT_USERNAME || 'Clinic_systemBot';
@@ -97,13 +113,19 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
     error?: string;
   }>();
 
-  constructor() {
+  private watchdogTimer: NodeJS.Timeout | null = null;
+
+  constructor(
+    @Optional() @Inject(forwardRef(() => PlatformMasterBotService)) private readonly masterBotService?: PlatformMasterBotService,
+  ) {
     this.loadConfig();
   }
 
   onModuleInit() {
     // Start background poller to listen for Telegram updates (1-click group adds)
     this.startBackgroundPoller();
+    // Start 60-second anti-tamper watchdog
+    this.startWatchdog();
     // Enforce and lock official bot name, description, and short description
     this.enforceBotProfileLock().catch((err) => {
       this.logger.warn(`Initial bot profile lock failed: ${err.message}`);
@@ -112,6 +134,24 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
 
   onModuleDestroy() {
     this.stopBackgroundPoller();
+    this.stopWatchdog();
+  }
+
+  public startWatchdog() {
+    if (this.watchdogTimer) return;
+    this.watchdogTimer = setInterval(() => {
+      this.verifyAndHealProfile().catch((err) => {
+        this.logger.debug(`Clinic bot watchdog cycle skipped: ${err.message}`);
+      });
+    }, 60000);
+    this.logger.log('Clinic Alert Bot anti-tamper watchdog active (60s cycle).');
+  }
+
+  public stopWatchdog() {
+    if (this.watchdogTimer) {
+      clearInterval(this.watchdogTimer);
+      this.watchdogTimer = null;
+    }
   }
 
   private loadConfig() {
@@ -1056,15 +1096,6 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
       return { success: false, message: 'Bot token not configured.' };
     }
 
-    const officialName = 'Clinic_System';
-    const officialDescription =
-      'ប្រព័ន្ធស្វ័យប្រវត្តិនៃមជ្ឈមណ្ឌលវេជ្ជសាស្ត្រ រតនា (Rotana Clinic Management & Automation Bot)\n\n' +
-      '• ជូនដំណឹងវិក្កយបត្រ & ការទូទាត់ប្រាក់ KHQR\n' +
-      '• ជូនដំណឹងវេនពិគ្រោះអ្នកជំងឺ (Patient Queue)\n' +
-      '• ជូនដំណឹងស្តុកឱសថស្ថាន\n' +
-      '• ជូនដំណឹងសន្តិសុខប្រព័ន្ធគ្លីនិក 24/7';
-    const officialShortDescription = 'Bot ជូនដំណឹងស្វ័យប្រវត្តិ គ្លីនិក រតនា (Rotana Clinic Alert Bot)';
-
     this.lastProfileEnforceTime = Date.now();
 
     try {
@@ -1072,34 +1103,28 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
       await fetch(`https://api.telegram.org/bot${token}/setMyName`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: officialName }),
+        body: JSON.stringify({ name: OFFICIAL_CLINIC_BOT_NAME }),
       });
 
       // 2. Set & Lock Full Description
       await fetch(`https://api.telegram.org/bot${token}/setMyDescription`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ description: officialDescription }),
+        body: JSON.stringify({ description: OFFICIAL_CLINIC_BOT_DESCRIPTION }),
       });
 
       // 3. Set & Lock Short Description
       await fetch(`https://api.telegram.org/bot${token}/setMyShortDescription`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ short_description: officialShortDescription }),
+        body: JSON.stringify({ short_description: OFFICIAL_CLINIC_BOT_SHORT_DESC }),
       });
 
       // 4. Set & Lock Official Menu Commands
-      const officialCommands = [
-        { command: 'start', description: 'ភ្ជាប់ និងពិនិត្យស្ថានភាពគ្លីនិក' },
-        { command: 'topics', description: 'ពិនិត្យបញ្ជី Forum Topics ផ្លូវការ' },
-        { command: 'lock', description: 'ចាក់សោរ និងការពារ Bot Profile' },
-        { command: 'help', description: 'ការណែនាំអំពីប្រព័ន្ធគ្លីនិក' },
-      ];
       await fetch(`https://api.telegram.org/bot${token}/setMyCommands`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ commands: officialCommands }),
+        body: JSON.stringify({ commands: OFFICIAL_CLINIC_BOT_COMMANDS }),
       });
 
       this.logger.log('Official Telegram Bot Profile locked and protected successfully.');
@@ -1107,6 +1132,74 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
     } catch (err: any) {
       this.logger.warn(`Failed to enforce bot profile lock: ${err.message}`);
       return { success: false, message: err.message };
+    }
+  }
+
+  /**
+   * Watchdog Integrity Check: detects tampering on Clinic Alert Bot and restores immediately
+   */
+  public async verifyAndHealProfile(): Promise<{
+    verified: boolean;
+    healed: boolean;
+    tamperDetected: boolean;
+    message: string;
+  }> {
+    const token = this.config.botToken || DEFAULT_OFFICIAL_TOKEN;
+    if (!token) {
+      return { verified: false, healed: false, tamperDetected: false, message: 'Bot token not configured.' };
+    }
+
+    try {
+      const descRes = await fetch(`https://api.telegram.org/bot${token}/getMyDescription`);
+      const descData = await descRes.json();
+      const currentDesc = descData?.result?.description || '';
+
+      const shortRes = await fetch(`https://api.telegram.org/bot${token}/getMyShortDescription`);
+      const shortData = await shortRes.json();
+      const currentShort = shortData?.result?.short_description || '';
+
+      const nameRes = await fetch(`https://api.telegram.org/bot${token}/getMyName`);
+      const nameData = await nameRes.json();
+      const currentName = nameData?.result?.name || '';
+
+      const isNameTampered = currentName && currentName !== OFFICIAL_CLINIC_BOT_NAME;
+      const isDescTampered = currentDesc && currentDesc !== OFFICIAL_CLINIC_BOT_DESCRIPTION;
+      const isShortTampered = currentShort && currentShort !== OFFICIAL_CLINIC_BOT_SHORT_DESC;
+
+      if (isNameTampered || isDescTampered || isShortTampered) {
+        this.logger.warn('[SECURITY] Clinic Alert Bot profile tamper detected! Restoring official lock immediately...');
+        await this.enforceBotProfileLock();
+
+        if (this.masterBotService) {
+          await this.masterBotService.notifySystemSecurityAlert({
+            title: 'CLINIC_BOT_PROFILE_TAMPER_DETECTED',
+            severity: 'HIGH',
+            message: 'Unauthorized alteration to Clinic Alert Bot profile detected. Watchdog auto-restored official locked values.',
+          });
+        }
+
+        return {
+          verified: false,
+          healed: true,
+          tamperDetected: true,
+          message: 'Tampering detected and auto-healed to official profile.',
+        };
+      }
+
+      return {
+        verified: true,
+        healed: false,
+        tamperDetected: false,
+        message: 'Clinic Alert Bot profile integrity verified.',
+      };
+    } catch (err: any) {
+      this.logger.debug(`Clinic watchdog check skipped: ${err.message}`);
+      return {
+        verified: false,
+        healed: false,
+        tamperDetected: false,
+        message: `Watchdog check error: ${err.message}`,
+      };
     }
   }
 }
