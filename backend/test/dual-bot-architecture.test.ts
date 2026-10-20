@@ -44,6 +44,7 @@ class PlatformMasterBotFormatter {
       `Settlement Channel: <code>${sub.paymentMethod}</code>`,
       `Invoice Ref: <code>${sub.invoiceNumber}</code>`,
       `Valid Until: <code>${sub.endDate}</code>`,
+      `Settled At: <code>${sub.endDate}</code>`,
       `----------------------------------------`,
       `Account Status: ACTIVE`,
     ];
@@ -88,8 +89,31 @@ class PlatformMasterBotFormatter {
   }
 }
 
+// Router testing multi-tenant group routing logic
+class MultiTenantTelegramRouter {
+  private tenantMap = new Map<string, { chatId: string; topicId?: number }>();
+  private defaultChatId = '-10000000001';
+
+  registerTenantGroup(tenantId: string, chatId: string, topicId?: number) {
+    this.tenantMap.set(tenantId, { chatId, topicId });
+  }
+
+  resolveTarget(tenantId?: string): { chatId: string; topicId?: number } {
+    if (tenantId && this.tenantMap.has(tenantId)) {
+      return this.tenantMap.get(tenantId)!;
+    }
+    return { chatId: this.defaultChatId };
+  }
+
+  extractTenantFromPairingCode(text: string): string | null {
+    const match = text.match(/pair_([a-zA-Z0-9-]+)_[a-z0-9]+/i);
+    return match ? match[1] : null;
+  }
+}
+
 describe('Dual-Bot Telegram Architecture & Master Platform Alert Test Suite', () => {
   const formatter = new PlatformMasterBotFormatter();
+  const router = new MultiTenantTelegramRouter();
 
   test('should format new clinic registration alert with zero emojis and strict layout', () => {
     const message = formatter.formatNewClinicAlert({
@@ -163,5 +187,41 @@ describe('Dual-Bot Telegram Architecture & Master Platform Alert Test Suite', ()
 
     const emojiRegex = /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u;
     assert.equal(emojiRegex.test(message), false);
+  });
+
+  test('should accurately route Telegram alerts to isolated tenant groups', () => {
+    const tenantA = 'tenant-clinic-rotana';
+    const tenantB = 'tenant-clinic-vanna';
+
+    router.registerTenantGroup(tenantA, '-10011111111', 12);
+    router.registerTenantGroup(tenantB, '-10022222222', 45);
+
+    // Verify Tenant A resolves only to Group A
+    const targetA = router.resolveTarget(tenantA);
+    assert.equal(targetA.chatId, '-10011111111');
+    assert.equal(targetA.topicId, 12);
+
+    // Verify Tenant B resolves only to Group B
+    const targetB = router.resolveTarget(tenantB);
+    assert.equal(targetB.chatId, '-10022222222');
+    assert.equal(targetB.topicId, 45);
+
+    // Verify unmapped tenant falls back to default safely
+    const unmapped = router.resolveTarget('unknown-tenant');
+    assert.equal(unmapped.chatId, '-10000000001');
+  });
+
+  test('should extract tenantId from deep link pairing codes cleanly', () => {
+    const textA = '/start pair_angkor-clinic_abc123';
+    const textB = '/start pair_9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d_x9y8z7';
+
+    assert.equal(router.extractTenantFromPairingCode(textA), 'angkor-clinic');
+    assert.equal(
+      router.extractTenantFromPairingCode(textB),
+      '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d',
+    );
+
+    // Random non-pairing text returns null
+    assert.equal(router.extractTenantFromPairingCode('/start welcome'), null);
   });
 });

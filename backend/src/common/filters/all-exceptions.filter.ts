@@ -7,10 +7,13 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { PlatformMasterBotService } from '../../telegram/platform-master-bot.service';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
   private readonly logger = new Logger(AllExceptionsFilter.name);
+
+  constructor(private readonly platformMasterBotService?: PlatformMasterBotService) {}
 
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
@@ -55,7 +58,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       message = exception.message;
     }
 
-    // Humanize standard HTTP authorization messages (No raw 401/403 or 'Forbidden resource')
+    // Humanize standard HTTP authorization messages
     if (status === HttpStatus.FORBIDDEN && (message === 'Forbidden resource' || !message)) {
       message = 'គណនីលោកអ្នកមិនទាន់មានសិទ្ធិអនុវត្តសកម្មភាពនេះឡើយ។ សូមទាក់ទងម្ចាស់គ្លីនិក (Owner) ដើម្បីស្នើសុំសិទ្ធិបន្ថែម។ (Access restricted. Please contact clinic owner.)';
     } else if (status === HttpStatus.UNAUTHORIZED && (message === 'Unauthorized' || !message)) {
@@ -70,6 +73,17 @@ export class AllExceptionsFilter implements ExceptionFilter {
         }`,
       );
       message = 'The clinic server encountered a temporary technical issue. Please try again.';
+
+      // Dispatch alert to Platform Master Bot for Super Admin
+      if (this.platformMasterBotService) {
+        this.platformMasterBotService
+          .notifySystemError({
+            title: `HTTP ${status} Internal Server Error`,
+            route: `[${request.method}] ${request.url}`,
+            error: exception instanceof Error ? exception.message : String(exception),
+          })
+          .catch(() => {});
+      }
     } else {
       this.logger.warn(
         `[${request.method}] ${request.url} - Status ${status} - Message: ${message}`,
