@@ -153,6 +153,14 @@ export const ROUTE_PERMISSIONS: RoutePermission[] = [
     descriptionKh: 'គ្រប់គ្រងគ្រែសម្រាក ការផ្តល់ថ្នាំ Five Rights និងតុល្យភាពជាតិទឹក',
   },
   {
+    path: '/finance',
+    allowedRoles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR'],
+    labelEn: 'Finance & Doctor Commission P&L',
+    labelKh: 'ហិរញ្ញវត្ថុ & កម្រៃជើងសារ P&L',
+    descriptionEn: 'Doctor commissions, operational expense ledger, and real-time EBITDA analytics',
+    descriptionKh: 'កម្រៃជើងសារវេជ្ជបណ្ឌិត សៀវភៅចំណាយប្រតិបត្តិការ និងការវិភាគប្រាក់ចំណេញ EBITDA',
+  },
+  {
     path: '/staff',
     allowedRoles: ['SUPER_ADMIN', 'ADMIN'],
     labelEn: 'Staff & Role Management',

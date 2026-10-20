@@ -1324,6 +1324,59 @@ class ApiClient {
         body: JSON.stringify(data),
       }),
   };
+  // Doctor Commission & Real-Time Clinic P&L Financial Engine (Phase 14)
+  finance = {
+    getSummary: () => this.request<any>('/finance/summary'),
+    getPnlReport: (period?: string) => {
+      const q = period ? '?period=' + encodeURIComponent(period) : '';
+      return this.request<any>('/finance/pnl' + q);
+    },
+    getExpenses: (params?: { category?: string; startDate?: string; endDate?: string }) => {
+      const sp = new URLSearchParams();
+      if (params?.category) sp.append('category', params.category);
+      if (params?.startDate) sp.append('startDate', params.startDate);
+      if (params?.endDate) sp.append('endDate', params.endDate);
+      const q = sp.toString() ? '?' + sp.toString() : '';
+      return this.request<any>('/finance/expenses' + q);
+    },
+    createExpense: (data: any) =>
+      this.request<any>('/finance/expenses', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    deleteExpense: (id: string) =>
+      this.request<any>('/finance/expenses/' + encodeURIComponent(id), {
+        method: 'DELETE',
+      }),
+    getDoctorRules: () => this.request<any[]>('/finance/commissions/rules'),
+    updateDoctorRule: (doctorId: string, data: any) =>
+      this.request<any>('/finance/commissions/rules/' + encodeURIComponent(doctorId), {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }),
+    getCommissionStatements: (params?: { doctorId?: string; period?: string }) => {
+      const sp = new URLSearchParams();
+      if (params?.doctorId) sp.append('doctorId', params.doctorId);
+      if (params?.period) sp.append('period', params.period);
+      const q = sp.toString() ? '?' + sp.toString() : '';
+      return this.request<any>('/finance/commissions' + q);
+    },
+    calculateCommission: (doctorId: string, period?: string) =>
+      this.request<any>('/finance/commissions/calculate', {
+        method: 'POST',
+        body: JSON.stringify({ doctorId, period }),
+      }),
+    approveCommission: (statementId: string, approvedBy: string) =>
+      this.request<any>('/finance/commissions/' + encodeURIComponent(statementId) + '/approve', {
+        method: 'POST',
+        body: JSON.stringify({ approvedBy }),
+      }),
+    payoutCommission: (statementId: string, data: { paymentMethod: string; paymentRef: string }) =>
+      this.request<any>('/finance/commissions/' + encodeURIComponent(statementId) + '/payout', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+  };
 };
 
 export const api = new ApiClient();
