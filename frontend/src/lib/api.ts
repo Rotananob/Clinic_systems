@@ -1119,6 +1119,43 @@ class ApiClient {
       return this.request<any[]>('/pacs/presets' + q);
     },
   };
+  // Cambodian NSSF & Commercial Insurance (Phase 9)
+  insurance = {
+    verifyPolicy: (policyNumber: string, provider?: string) => {
+      const q = provider ? '?provider=' + encodeURIComponent(provider) : '';
+      return this.request<any>('/insurance/policies/verify/' + encodeURIComponent(policyNumber) + q);
+    },
+    calculateSplitInvoice: (data: {
+      policyNumber: string;
+      items: Array<{ category: string; description: string; unitPriceUsd: number; quantity: number }>;
+    }) =>
+      this.request<any>('/insurance/split-invoice/calculate', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    submitClaim: (data: any) =>
+      this.request<any>('/insurance/claims/submit', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    getClaims: (params?: { provider?: string; status?: string; search?: string }) => {
+      const q = new URLSearchParams();
+      if (params?.provider) q.append('provider', params.provider);
+      if (params?.status) q.append('status', params.status);
+      if (params?.search) q.append('search', params.search);
+      const queryStr = q.toString() ? '?' + q.toString() : '';
+      return this.request<any[]>('/insurance/claims' + queryStr);
+    },
+    settleClaim: (claimNumber: string, data: { settlementRef: string; settledAmountUsd: number }) =>
+      this.request<any>('/insurance/claims/' + encodeURIComponent(claimNumber) + '/settle', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    exportNssfBatch: (batchId?: string) => {
+      const q = batchId ? '?batchId=' + encodeURIComponent(batchId) : '';
+      return this.request<any>('/insurance/nssf/export' + q);
+    },
+  };
 };
 
 export const api = new ApiClient();
