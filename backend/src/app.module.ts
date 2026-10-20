@@ -23,6 +23,7 @@ import { SuperAdminModule } from './super-admin/super-admin.module';
 import { PortalModule } from './portal/portal.module';
 import { WarehouseModule } from './warehouse/warehouse.module';
 import { ComplianceModule } from './compliance/compliance.module';
+import { PacsModule } from './pacs/pacs.module';
 import { RateLimiterMiddleware } from './common/middleware/rate-limiter.middleware';
 import { TenantContextMiddleware } from './common/middleware/tenant-context.middleware';
 import { CommonModule } from './common/common.module';
@@ -62,6 +63,7 @@ import { CommonModule } from './common/common.module';
     PortalModule,
     WarehouseModule,
     ComplianceModule,
+    PacsModule,
   ],
 })
 export class AppModule implements NestModule {

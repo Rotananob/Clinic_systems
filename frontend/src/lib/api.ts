@@ -1082,6 +1082,43 @@ class ApiClient {
     },
     getTrackedDiseases: () => this.request<any[]>('/compliance/dhis2/diseases'),
   };
+  // DICOM PACS Medical Imaging (Phase 8)
+  pacs = {
+    getAllStudies: (params?: { modality?: string; status?: string; search?: string }) => {
+      const q = new URLSearchParams();
+      if (params?.modality) q.append('modality', params.modality);
+      if (params?.status) q.append('status', params.status);
+      if (params?.search) q.append('search', params.search);
+      const queryStr = q.toString() ? '?' + q.toString() : '';
+      return this.request<any[]>('/pacs/studies' + queryStr);
+    },
+    getStudyByUid: (studyInstanceUid: string) =>
+      this.request<any>('/pacs/studies/' + encodeURIComponent(studyInstanceUid)),
+    saveReport: (studyInstanceUid: string, data: any) =>
+      this.request<any>('/pacs/studies/' + encodeURIComponent(studyInstanceUid) + '/report', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    uploadStudy: (data: any) =>
+      this.request<any>('/pacs/studies/upload', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    calculateCtr: (data: { cardiacWidthMm: number; thoracicWidthMm: number }) =>
+      this.request<any>('/pacs/measurements/ctr', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    calculateCobbAngle: (data: { upperEndplateSlopeDeg: number; lowerEndplateSlopeDeg: number }) =>
+      this.request<any>('/pacs/measurements/cobb-angle', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    getWindowPresets: (modality?: string) => {
+      const q = modality ? '?modality=' + encodeURIComponent(modality) : '';
+      return this.request<any[]>('/pacs/presets' + q);
+    },
+  };
 };
 
 export const api = new ApiClient();
