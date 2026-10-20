@@ -1193,6 +1193,27 @@ class ApiClient {
         body: JSON.stringify(data),
       }),
   };
+  // Smart Clinic Queueing & Digital Signage (Phase 11)
+  signage = {
+    getBoard: (tenantId?: string) => {
+      const q = tenantId ? '?tenantId=' + encodeURIComponent(tenantId) : '';
+      return this.request<any>('/signage/board' + q);
+    },
+    callTicket: (ticketId: string, data: { station: string; staffName?: string }) =>
+      this.request<any>('/signage/tickets/' + encodeURIComponent(ticketId) + '/call', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    completeTicket: (ticketId: string) =>
+      this.request<any>('/signage/tickets/' + encodeURIComponent(ticketId) + '/complete', {
+        method: 'POST',
+      }),
+    issueTicket: (data: { patientName: string; department: string; priority?: string; tenantId?: string }) =>
+      this.request<any>('/signage/kiosk/issue', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+  };
 };
 
 export const api = new ApiClient();
