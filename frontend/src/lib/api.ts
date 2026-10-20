@@ -1065,6 +1065,24 @@ class ApiClient {
         body: JSON.stringify(data),
       }),
   };
-}
+  // MoH & Cryptographic Compliance (Phase 7)
+  compliance = {
+    signCertificate: (data: any) =>
+      this.request<any>('/compliance/certificates/sign', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    verifyCertificate: (certNumber: string, sig?: string) => {
+      const q = sig ? '?sig=' + encodeURIComponent(sig) : '';
+      return this.request<any>('/compliance/certificates/verify/' + encodeURIComponent(certNumber) + q);
+    },
+    exportDhis2Surveillance: (period?: string) => {
+      const q = period ? '?period=' + encodeURIComponent(period) : '';
+      return this.request<any>('/compliance/dhis2/export' + q);
+    },
+    getTrackedDiseases: () => this.request<any[]>('/compliance/dhis2/diseases'),
+  };
+};
 
 export const api = new ApiClient();
+
