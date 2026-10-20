@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Patch, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, Param, Query, UseGuards, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { VisitsService } from './visits.service';
+import { VoiceMedicalNlpService, SoapNoteStructure } from './voice-medical-nlp.service';
 import { CreateVisitDto } from './dto/create-visit.dto';
 import { UpdateVitalsDto } from './dto/update-vitals.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -11,7 +12,10 @@ import { VisitStatus } from '@prisma/client';
 @UseGuards(JwtAuthGuard)
 @Controller('visits')
 export class VisitsController {
-  constructor(private readonly visitsService: VisitsService) {}
+  constructor(
+    private readonly visitsService: VisitsService,
+    private readonly voiceNlpService: VoiceMedicalNlpService,
+  ) {}
 
   @ApiOperation({ summary: 'Register a patient visit (Check-in)' })
   @Post()
@@ -30,6 +34,27 @@ export class VisitsController {
     @Query('doctorId') doctorId?: string,
   ) {
     return this.visitsService.findAll({ status, patientId, doctorId });
+  }
+
+  @ApiOperation({ summary: 'Transcribe medical voice dictation into structured SOAP clinical note' })
+  @Post('voice-transcribe')
+  transcribeVoiceDictation(
+    @Body() body: { transcript: string; doctorName?: string },
+    @Req() req: any,
+  ) {
+    const doctorName = body.doctorName || req.user?.fullNameEn || req.user?.username || 'Doctor';
+    return this.voiceNlpService.parseClinicalDictation(body.transcript, doctorName);
+  }
+
+  @ApiOperation({ summary: 'Apply parsed SOAP notes directly to active patient visit chart' })
+  @Post(':id/apply-soap')
+  applySoapToVisit(
+    @Param('id') id: string,
+    @Body() body: { soapNote: SoapNoteStructure; doctorId?: string },
+    @Req() req: any,
+  ) {
+    const doctorId = body.doctorId || req.user?.id;
+    return this.visitsService.applySoapToVisit(id, body.soapNote, doctorId);
   }
 
   @ApiOperation({ summary: 'Get specific visit details with clinical attachments' })

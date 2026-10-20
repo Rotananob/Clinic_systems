@@ -2,7 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateVisitDto } from './dto/create-visit.dto';
 import { UpdateVitalsDto } from './dto/update-vitals.dto';
-import { VisitStatus, InvoiceStatus, PaymentMethod } from '@prisma/client';
+import { VisitStatus, InvoiceStatus, PaymentMethod, PrescriptionStatus } from '@prisma/client';
+import { SoapNoteStructure } from './voice-medical-nlp.service';
 
 @Injectable()
 export class VisitsService {
@@ -45,7 +46,7 @@ export class VisitsService {
         temperature: createVisitDto.temperature,
         weightKg: createVisitDto.weightKg,
         heightCm: createVisitDto.heightCm,
-        consultationFee: createVisitDto.consultationFee || 5.00,
+        consultationFee: createVisitDto.consultationFee || 5.0,
         status: VisitStatus.WAITING,
       },
       include: {
@@ -200,7 +201,7 @@ export class VisitsService {
 
         if (!existingInvoice) {
           const invoiceNumber = await this.generateNextInvoiceNumber();
-          const fee = Number(visit.consultationFee) || 5.00;
+          const fee = Number(visit.consultationFee) || 5.0;
 
           await tx.invoice.create({
             data: {
@@ -216,6 +217,93 @@ export class VisitsService {
             },
           });
         }
+      }
+
+      return updatedVisit;
+    });
+  }
+
+  async applySoapToVisit(id: string, soap: SoapNoteStructure, doctorId?: string) {
+    const visit = await this.findOne(id);
+    const vitals = soap.objective.vitals;
+
+    return this.prisma.$transaction(async (tx) => {
+      // 1. Update visit vitals, symptoms, diagnosis
+      const updatedVisit = await tx.visit.update({
+        where: { id },
+        data: {
+          symptoms: soap.subjective.symptoms.join(', ') || visit.symptoms,
+          reason: soap.subjective.chiefComplaint || visit.reason,
+          diagnosis: soap.assessment.primaryDiagnosis || visit.diagnosis,
+          bloodPressure: vitals.bloodPressure || visit.bloodPressure,
+          heartRate: vitals.heartRate || visit.heartRate,
+          temperature: vitals.temperature || visit.temperature,
+          weightKg: vitals.weightKg || visit.weightKg,
+          heightCm: vitals.heightCm || visit.heightCm,
+          doctorId: doctorId || visit.doctorId,
+          status: VisitStatus.IN_CONSULTATION,
+        },
+      });
+
+      // 2. Upsert MedicalRecord
+      const physicalExam = soap.objective.physicalExamFindings.join('; ');
+      const assessmentText = `${soap.assessment.primaryDiagnosis} (ICD-11: ${soap.assessment.icd11Code || 'N/A'}, ICD-10: ${soap.assessment.icd10Code || 'N/A'}) - Severity: ${soap.assessment.severity || 'MILD'}`;
+      const treatmentPlan = soap.plan.treatmentAdvice.join('; ');
+
+      await tx.medicalRecord.upsert({
+        where: { visitId: id },
+        create: {
+          visitId: id,
+          patientId: visit.patientId,
+          physicalExam: physicalExam || null,
+          assessment: assessmentText,
+          treatmentPlan: treatmentPlan || null,
+          notes: soap.formattedSoapKhmer,
+        },
+        update: {
+          physicalExam: physicalExam || null,
+          assessment: assessmentText,
+          treatmentPlan: treatmentPlan || null,
+          notes: soap.formattedSoapKhmer,
+        },
+      });
+
+      // 3. If prescriptions are present, generate a draft prescription
+      if (soap.plan.prescriptions && soap.plan.prescriptions.length > 0) {
+        const year = new Date().getFullYear();
+        const count = await tx.prescription.count();
+        const prescriptionCode = `RX-${year}-${(count + 1).toString().padStart(4, '0')}`;
+
+        const createdRx = await tx.prescription.create({
+          data: {
+            prescriptionCode,
+            visitId: id,
+            patientId: visit.patientId,
+            doctorId: doctorId || visit.doctorId || (visit as any).doctor?.id,
+            status: PrescriptionStatus.PENDING,
+            notes: soap.plan.treatmentAdvice.join('; '),
+            items: {
+              create: soap.plan.prescriptions.map((rx) => ({
+                medicineName: rx.medicineName,
+                dosage: rx.dosage,
+                quantity: rx.quantity,
+                route: rx.route,
+                frequency: rx.frequency,
+                duration: `${rx.durationDays} days`,
+                instructions: rx.instructions,
+              })),
+            },
+          },
+          include: {
+            items: true,
+          },
+        });
+
+        return {
+          ...updatedVisit,
+          medicalRecord: { physicalExam, assessment: assessmentText, treatmentPlan },
+          prescription: createdRx,
+        };
       }
 
       return updatedVisit;

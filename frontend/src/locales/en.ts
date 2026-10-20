@@ -525,6 +525,24 @@ export const en = {
     resolveKeepServer: 'Accept Cloud Version',
     resolveKeepClient: 'Force Local Version',
   },
+  voiceMedical: {
+    title: 'Voice Medical Dictation & SOAP Structuring',
+    subtitle: 'Khmer & English AI Speech Recognition for Clinical Consultations',
+    startRecording: 'Start Dictation',
+    stopRecording: 'Stop Dictation',
+    transcribing: 'Transcribing & Structuring SOAP...',
+    structureNow: 'Analyze & Structure SOAP',
+    placeholderDictation: 'Dictate patient symptoms, vitals (BP, Temp, HR), diagnosis, and prescriptions in Khmer or English...',
+    subjectiveTitle: 'S - Subjective (Symptoms & History)',
+    objectiveTitle: 'O - Objective (Vitals & Physical Exam)',
+    assessmentTitle: 'A - Assessment (Diagnosis & ICD Codes)',
+    planTitle: 'P - Plan (Prescriptions & Advice)',
+    applyToVisit: 'Apply to Patient Visit Chart',
+    appliedSuccess: 'SOAP notes and prescriptions applied successfully',
+    confidenceLabel: 'AI Clinical Confidence',
+    icdCodeLabel: 'International Classification of Diseases',
+    telegramVoiceHelp: 'Doctors can also record Telegram voice memos directly to the official clinic bot for instant SOAP structuring.',
+  },
 };
 
 export type TranslationKey = typeof en;

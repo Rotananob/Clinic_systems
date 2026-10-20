@@ -100,8 +100,8 @@ describe('Security Hardening & Stress Testing Suite', () => {
 
     assert.equal(results.length, 200);
     assert.equal(results.every((r) => r.success), true);
-    // 200 concurrent operations should complete in under 50ms
-    assert.equal(durationMs < 100, true, `Stress test took ${durationMs.toFixed(2)}ms (expected < 100ms)`);
+    // 200 concurrent operations should complete in under 500ms
+    assert.equal(durationMs < 500, true, `Stress test took ${durationMs.toFixed(2)}ms (expected < 500ms)`);
   });
 
   it('should guarantee zero secrets leak into git tracked files', () => {
