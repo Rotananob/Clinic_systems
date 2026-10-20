@@ -997,6 +997,33 @@ class ApiClient {
         method: 'POST',
       }),
   };
+
+  // Patient Portal & Telegram Mini App (TMA)
+  portal = {
+    getPatient: (identifier: string, tenantId?: string) => {
+      const q = tenantId ? `?tenantId=${tenantId}` : '';
+      return this.request<any>(`/portal/patient/${encodeURIComponent(identifier)}${q}`);
+    },
+    getLiveQueue: (tenantId?: string) => {
+      const q = tenantId ? `?tenantId=${tenantId}` : '';
+      return this.request<any>(`/portal/queue/live${q}`);
+    },
+    formatMedicationReminder: (data: any) =>
+      this.request<any>('/portal/reminders/medication', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    formatAppointmentReminder: (data: any) =>
+      this.request<any>('/portal/reminders/appointment', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    formatQueueCall: (data: any) =>
+      this.request<any>('/portal/reminders/queue-call', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+  };
 }
 
 export const api = new ApiClient();

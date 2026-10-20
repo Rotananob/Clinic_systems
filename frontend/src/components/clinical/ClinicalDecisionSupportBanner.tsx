@@ -177,7 +177,7 @@ export const ClinicalDecisionSupportBanner: React.FC<ClinicalDecisionSupportBann
                 </span>
               </div>
               <p className="font-semibold text-slate-800 dark:text-slate-200">
-                {al.offendingMedication} -> {al.matchedAllergy}
+                {al.offendingMedication} {'->'} {al.matchedAllergy}
               </p>
               <p className="text-slate-600 dark:text-slate-400">{al.recommendation}</p>
             </div>
