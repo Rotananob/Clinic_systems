@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger, Optional } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { InvoiceStatus, PaymentStatus, PaymentMethod } from '@prisma/client';
@@ -33,6 +33,7 @@ function loadKhqrHelper(): any {
 
 import { TelegramService } from '../telegram/telegram.service';
 import { TestAccountThrottleService } from '../common/services/test-account-throttle.service';
+import { QuotaGuardService } from '../subscriptions/quota-guard.service';
 
 const khqrHelper = loadKhqrHelper();
 const { KhqrGateway, verifySettlement, buildKhqr, buildBankDeeplinks, computeMd5 } = khqrHelper;
@@ -55,6 +56,7 @@ export class PaymentsService {
     private paywayDirectService: PaywayDirectService,
     private telegramService: TelegramService,
     private throttleService: TestAccountThrottleService,
+    @Optional() private quotaGuardService?: QuotaGuardService,
   ) {}
 
   private getGateway(): any {
@@ -94,6 +96,11 @@ export class PaymentsService {
 
     if (!invoice) {
       throw new NotFoundException(`Invoice with ID ${invoiceId} not found`);
+    }
+
+    // Step 19: Check & enforce daily KHQR quota for the clinic tenant
+    if (invoice.tenantId && this.quotaGuardService) {
+      await this.quotaGuardService.checkAndEnforceKhqrQuota(invoice.tenantId);
     }
 
     if (invoice.status === InvoiceStatus.PAID) {
@@ -732,6 +739,11 @@ export class PaymentsService {
 
     if (!invoice) {
       throw new NotFoundException(`Invoice with ID ${invoiceId} not found`);
+    }
+
+    // Step 19: Check & enforce daily KHQR quota for the clinic tenant
+    if (invoice.tenantId && this.quotaGuardService) {
+      await this.quotaGuardService.checkAndEnforceKhqrQuota(invoice.tenantId);
     }
 
     if (invoice.status === InvoiceStatus.PAID) {

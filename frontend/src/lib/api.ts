@@ -907,6 +907,38 @@ class ApiClient {
         method: 'POST',
         body: JSON.stringify(data),
       }),
+    getQuotaStatus: () =>
+      this.request<{
+        planTier: string;
+        planNameEn: string;
+        planNameKh: string;
+        dailyKhqr: {
+          used: number;
+          limit: number;
+          remaining: number;
+          percent: number;
+          isApproachingLimit: boolean;
+          isExceeded: boolean;
+        };
+        monthlyPatients: {
+          used: number;
+          limit: number;
+          remaining: number;
+          percent: number;
+          isApproachingLimit: boolean;
+          isExceeded: boolean;
+        };
+        staffAccounts: {
+          used: number;
+          limit: number;
+          remaining: number;
+          percent: number;
+          isApproachingLimit: boolean;
+          isExceeded: boolean;
+        };
+      }>('/subscriptions/quota-status'),
+    getReceipt: (subscriptionId: string) =>
+      this.request<any>(`/subscriptions/invoices/${subscriptionId}/receipt`),
   };
 }
 

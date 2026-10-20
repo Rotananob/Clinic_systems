@@ -3,13 +3,17 @@ import {
   Get,
   Post,
   Body,
+  Param,
   UseGuards,
   Request,
   ForbiddenException,
+  Header,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { BillingCycleService } from './billing-cycle.service';
 import { SubscriptionPaymentService } from './subscription-payment.service';
+import { QuotaGuardService } from './quota-guard.service';
+import { SubscriptionInvoiceService } from './subscription-invoice.service';
 import { CreateSubscriptionCheckoutDto } from './dto/create-subscription-checkout.dto';
 import { VerifySubscriptionSettlementDto } from './dto/verify-subscription-settlement.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -20,6 +24,8 @@ export class SubscriptionsController {
   constructor(
     private readonly billingCycleService: BillingCycleService,
     private readonly subscriptionPaymentService: SubscriptionPaymentService,
+    private readonly quotaGuardService: QuotaGuardService,
+    private readonly subscriptionInvoiceService: SubscriptionInvoiceService,
   ) {}
 
   @ApiOperation({ summary: 'Get current clinic subscription status, days remaining, and plan quotas' })
@@ -44,6 +50,18 @@ export class SubscriptionsController {
       throw new ForbiddenException('Tenant context required');
     }
     return this.billingCycleService.getSubscriptionHistory(tenantId);
+  }
+
+  @ApiOperation({ summary: 'Step 19: Get real-time usage quotas vs limits for KHQR, patients, and staff' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Get('quota-status')
+  getQuotaStatus(@Request() req: any) {
+    const tenantId = req.user?.tenantId;
+    if (!tenantId) {
+      throw new ForbiddenException('Tenant context required');
+    }
+    return this.quotaGuardService.getQuotaStatus(tenantId);
   }
 
   @ApiOperation({ summary: 'Trigger manual billing cycle check (Super Admin or Scheduled Runner)' })
@@ -82,5 +100,30 @@ export class SubscriptionsController {
       throw new ForbiddenException('Tenant context required');
     }
     return this.subscriptionPaymentService.verifyAndActivateSettlement(tenantId, dto);
+  }
+
+  @ApiOperation({ summary: 'Step 20: Get official electronic tax receipt JSON data for subscription invoice' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Get('invoices/:id/receipt')
+  getSubscriptionReceipt(@Request() req: any, @Param('id') id: string) {
+    const tenantId = req.user?.tenantId;
+    if (!tenantId) {
+      throw new ForbiddenException('Tenant context required');
+    }
+    return this.subscriptionInvoiceService.getSubscriptionReceipt(tenantId, id);
+  }
+
+  @ApiOperation({ summary: 'Step 20: Render printable official tax invoice HTML page' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Header('Content-Type', 'text/html')
+  @Get('invoices/:id/html')
+  renderHtmlReceipt(@Request() req: any, @Param('id') id: string) {
+    const tenantId = req.user?.tenantId;
+    if (!tenantId) {
+      throw new ForbiddenException('Tenant context required');
+    }
+    return this.subscriptionInvoiceService.renderHtmlReceipt(tenantId, id);
   }
 }

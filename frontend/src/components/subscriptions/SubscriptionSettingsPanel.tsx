@@ -18,6 +18,8 @@ import {
 import { useTranslation } from '../../context/I18nContext';
 import { api } from '../../lib/api';
 import { SubscriptionCheckoutModal } from './SubscriptionCheckoutModal';
+import { SubscriptionTaxInvoiceModal } from './SubscriptionTaxInvoiceModal';
+import { QuotaGuardBanner } from './QuotaGuardBanner';
 
 export const SubscriptionSettingsPanel: React.FC = () => {
   const { locale } = useTranslation();
@@ -30,6 +32,10 @@ export const SubscriptionSettingsPanel: React.FC = () => {
   const [selectedPlanForModal, setSelectedPlanForModal] = useState<
     'STARTER_5' | 'PRO_8' | 'ENTERPRISE_12'
   >('PRO_8');
+  const [selectedInvoiceIdForReceipt, setSelectedInvoiceIdForReceipt] = useState<string | null>(
+    null,
+  );
+  const [isReceiptModalOpen, setIsReceiptModalOpen] = useState<boolean>(false);
 
   const fetchSubscriptionDetails = async () => {
     try {
@@ -222,6 +228,9 @@ export const SubscriptionSettingsPanel: React.FC = () => {
         </div>
       </div>
 
+      {/* Real-Time Operational Quota Guard */}
+      <QuotaGuardBanner onUpgradeClick={() => openUpgradeModal()} />
+
       {/* Available Plans Upgrade Options */}
       <div className="bg-white rounded-2xl border border-stone-200 p-6 shadow-xs space-y-4">
         <div>
@@ -367,6 +376,7 @@ export const SubscriptionSettingsPanel: React.FC = () => {
                   <th className="py-2.5 px-3">Method</th>
                   <th className="py-2.5 px-3">Date</th>
                   <th className="py-2.5 px-3">Status</th>
+                  <th className="py-2.5 px-3 text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-100">
@@ -392,6 +402,20 @@ export const SubscriptionSettingsPanel: React.FC = () => {
                         {inv.status}
                       </span>
                     </td>
+                    <td className="py-3 px-3 text-right">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedInvoiceIdForReceipt(inv.id);
+                          setIsReceiptModalOpen(true);
+                        }}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-stone-300 hover:bg-stone-100 text-stone-700 text-xs font-semibold transition-colors shadow-2xs"
+                        title={isKm ? 'មើលវិក្កយបត្រពន្ធផ្លូវការ' : 'View official tax receipt'}
+                      >
+                        <FileText className="w-3.5 h-3.5 text-teal-800" />
+                        <span>{isKm ? 'វិក្កយបត្រ' : 'Receipt'}</span>
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -408,6 +432,16 @@ export const SubscriptionSettingsPanel: React.FC = () => {
         onActivated={() => {
           fetchSubscriptionDetails();
         }}
+      />
+
+      {/* SaaS Subscription Tax Receipt Modal */}
+      <SubscriptionTaxInvoiceModal
+        isOpen={isReceiptModalOpen}
+        onClose={() => {
+          setIsReceiptModalOpen(false);
+          setSelectedInvoiceIdForReceipt(null);
+        }}
+        subscriptionId={selectedInvoiceIdForReceipt}
       />
     </div>
   );

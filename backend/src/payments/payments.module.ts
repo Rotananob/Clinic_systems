@@ -4,9 +4,10 @@ import { PaymentsService } from './payments.service';
 import { PaymentsController } from './payments.controller';
 import { PaywayDirectService } from './payway-direct.service';
 import { TelegramModule } from '../telegram/telegram.module';
+import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
 
 @Module({
-  imports: [ConfigModule, TelegramModule],
+  imports: [ConfigModule, TelegramModule, SubscriptionsModule],
   controllers: [PaymentsController],
   providers: [PaymentsService, PaywayDirectService],
   exports: [PaymentsService, PaywayDirectService],

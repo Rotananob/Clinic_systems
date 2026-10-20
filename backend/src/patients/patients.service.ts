@@ -1,10 +1,14 @@
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException, Optional } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePatientDto } from './dto/create-patient.dto';
+import { QuotaGuardService } from '../subscriptions/quota-guard.service';
 
 @Injectable()
 export class PatientsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Optional() private quotaGuardService?: QuotaGuardService,
+  ) {}
 
   private async generateNextPatientCode(): Promise<string> {
     const year = new Date().getFullYear();
@@ -41,6 +45,11 @@ export class PatientsService {
   }
 
   async create(createPatientDto: CreatePatientDto) {
+    const tenantId = (createPatientDto as any)?.tenantId || (this.prisma as any)?.getTenantId?.();
+    if (tenantId && this.quotaGuardService) {
+      await this.quotaGuardService.checkAndEnforcePatientQuota(tenantId);
+    }
+
     const duplicate = await this.checkDuplicate(
       createPatientDto.phone,
       createPatientDto.nationalId,
