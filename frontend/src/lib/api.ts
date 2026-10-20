@@ -1156,6 +1156,43 @@ class ApiClient {
       return this.request<any>('/insurance/nssf/export' + q);
     },
   };
+  // Clinical Care Concierge & Adherence (Phase 10)
+  concierge = {
+    getThreads: (params?: { status?: string; protocol?: string; search?: string }) => {
+      const q = new URLSearchParams();
+      if (params?.status) q.append('status', params.status);
+      if (params?.protocol) q.append('protocol', params.protocol);
+      if (params?.search) q.append('search', params.search);
+      const queryStr = q.toString() ? '?' + q.toString() : '';
+      return this.request<any[]>('/concierge/threads' + queryStr);
+    },
+    triggerProtocol: (data: any) =>
+      this.request<any>('/concierge/protocols/trigger', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    processInbound: (threadId: string, data: { senderName: string; content: string }) =>
+      this.request<any>('/concierge/threads/' + encodeURIComponent(threadId) + '/inbound', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    sendDoctorReply: (threadId: string, data: { doctorName: string; replyText: string }) =>
+      this.request<any>('/concierge/threads/' + encodeURIComponent(threadId) + '/reply', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    recordDose: (threadId: string, data: { confirmed: boolean }) =>
+      this.request<any>('/concierge/threads/' + encodeURIComponent(threadId) + '/adherence', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    getRedFlags: () => this.request<any[]>('/concierge/red-flags'),
+    acknowledgeAlert: (alertId: string, data: { doctorName: string }) =>
+      this.request<any>('/concierge/red-flags/' + encodeURIComponent(alertId) + '/acknowledge', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+  };
 };
 
 export const api = new ApiClient();
