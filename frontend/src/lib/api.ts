@@ -1377,6 +1377,40 @@ class ApiClient {
         body: JSON.stringify(data),
       }),
   };
+  // Dental Odontogram Interactive Charting & Tooth Treatment Planner (Phase 15)
+  dental = {
+    getProcedures: () => this.request<any[]>('/dental/procedures'),
+    getChart: (patientId: string) =>
+      this.request<any>('/dental/patients/' + encodeURIComponent(patientId) + '/chart'),
+    saveChart: (patientId: string, data: any) =>
+      this.request<any>('/dental/patients/' + encodeURIComponent(patientId) + '/chart', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    updateTooth: (patientId: string, toothNumber: number, data: any) =>
+      this.request<any>(
+        '/dental/patients/' + encodeURIComponent(patientId) + '/teeth/' + encodeURIComponent(toothNumber),
+        {
+          method: 'PUT',
+          body: JSON.stringify(data),
+        },
+      ),
+    getTreatmentPlans: (patientId: string) =>
+      this.request<any[]>('/dental/patients/' + encodeURIComponent(patientId) + '/plans'),
+    createTreatmentPlan: (patientId: string, data: any) =>
+      this.request<any>('/dental/patients/' + encodeURIComponent(patientId) + '/plans', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    updateTreatmentItemStatus: (planId: string, itemId: string, status: 'DONE' | 'CANCELLED') =>
+      this.request<any>(
+        '/dental/plans/' + encodeURIComponent(planId) + '/items/' + encodeURIComponent(itemId),
+        {
+          method: 'PUT',
+          body: JSON.stringify({ status }),
+        },
+      ),
+  };
 };
 
 export const api = new ApiClient();

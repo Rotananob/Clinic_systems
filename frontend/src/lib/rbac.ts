@@ -161,6 +161,14 @@ export const ROUTE_PERMISSIONS: RoutePermission[] = [
     descriptionKh: 'កម្រៃជើងសារវេជ្ជបណ្ឌិត សៀវភៅចំណាយប្រតិបត្តិការ និងការវិភាគប្រាក់ចំណេញ EBITDA',
   },
   {
+    path: '/dental',
+    allowedRoles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR'],
+    labelEn: 'Dental Odontogram & Treatment Planner',
+    labelKh: 'ដ្យាក្រាមធ្មេញ & ផែនការព្យាបាលទន្តសាស្ត្រ',
+    descriptionEn: '32-tooth anatomical FDI charting, 5-surface lesion tracking, and WHO DMFT index',
+    descriptionKh: 'ដ្យាក្រាមធ្មេញមនុស្សពេញវ័យ ៣២ ធ្មេញតាម FDI និងសន្ទស្សន៍ពុកធ្មេញ WHO DMFT',
+  },
+  {
     path: '/staff',
     allowedRoles: ['SUPER_ADMIN', 'ADMIN'],
     labelEn: 'Staff & Role Management',
