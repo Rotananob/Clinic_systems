@@ -1,0 +1,32 @@
+{
+    email admin@clinicos.app
+}
+
+# Wildcard and apex domain routing with automated Let's Encrypt / ZeroSSL
+*.clinicos.app, clinicos.app {
+    # Extract subdomain for tenant isolation
+    @subdomain {
+        header_regexp tenant Host ^([a-zA-Z0-9-]+)\.clinicos\.app$
+    }
+
+    # Pass tenant slug to downstream services
+    request_header X-Tenant-Slug {re.tenant.1}
+
+    # Security headers
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+        Referrer-Policy "strict-origin-when-cross-origin"
+    }
+
+    # API requests route to backend
+    handle /api/* {
+        reverse_proxy clinic_backend:4000
+    }
+
+    # All web app requests route to frontend
+    handle {
+        reverse_proxy clinic_frontend:3000
+    }
+}
