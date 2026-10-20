@@ -109,6 +109,7 @@ export class AuthService {
         email: user.email,
         role: 'SUPER_ADMIN',
         isTestAccount: true,
+        tenantId: user.tenantId || null,
       };
 
       return {
@@ -127,6 +128,7 @@ export class AuthService {
           notificationsEnabled: user.notificationsEnabled,
           isTestAccount: true,
           expiresAt: '2026-12-31T23:59:59.999Z',
+          tenantId: user.tenantId || null,
         },
       };
     }
@@ -148,6 +150,7 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       role: user.role,
+      tenantId: user.tenantId || null,
     };
 
     return {
@@ -164,6 +167,7 @@ export class AuthService {
         telegramUsername: user.telegramUsername,
         bio: user.bio,
         notificationsEnabled: user.notificationsEnabled,
+        tenantId: user.tenantId || null,
       },
     };
   }
