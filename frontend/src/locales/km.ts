@@ -512,4 +512,17 @@ export const km = {
     testSuccessPulse: 'បានបញ្ជូនសញ្ញា Pulse បើកថតប្រាក់ដោយជោគជ័យ។',
     testSuccessPrint: 'បានបញ្ជូនវិក្កយបត្រសាកល្បងទៅកាន់ម៉ាស៊ីនបោះពុម្ពរួចរាល់។',
   },
+  offlineResiliency: {
+    bannerOffline: 'របៀបក្រៅបណ្ដាញ៖ ប្រព័ន្ធកំពុងរក្សាទុកទិន្នន័យលើឧបករណ៍មូលដ្ឋាន',
+    bannerSyncing: 'កំពុងធ្វើសមកាលកម្មទិន្នន័យទៅម៉ាស៊ីនបម្រើ Cloud...',
+    bannerSynced: 'ទិន្នន័យទាំងអស់ត្រូវបានធ្វើសមកាលកម្មរួចរាល់ ១០០%',
+    bannerConflict: 'មានការប៉ះទង្គិចទិន្នន័យរវាងឧបករណ៍មូលដ្ឋាន និងម៉ាស៊ីនបម្រើ Cloud',
+    syncNow: 'សមកាលកម្មឥឡូវនេះ',
+    queuedItems: 'បញ្ជីរង់ចាំសមកាលកម្ម',
+    offlineQueueBadge: 'ប័ណ្ណរង់ចាំក្រៅបណ្ដាញ',
+    localCacheSecured: 'ទិន្នន័យមូលដ្ឋាន៖ បានអ៊ីនគ្រីប AES-256',
+    lastSyncedAt: 'សមកាលកម្មចុងក្រោយ',
+    resolveKeepServer: 'យល់ព្រមយកទិន្នន័យលើ Cloud',
+    resolveKeepClient: 'រក្សាទុកទិន្នន័យលើឧបករណ៍មូលដ្ឋាន',
+  },
 };

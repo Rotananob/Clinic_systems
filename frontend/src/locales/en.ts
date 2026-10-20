@@ -512,6 +512,19 @@ export const en = {
     testSuccessPulse: 'Cash drawer trigger pulse sent successfully.',
     testSuccessPrint: 'Test receipt sent to thermal printer.',
   },
+  offlineResiliency: {
+    bannerOffline: 'Offline Mode: Local-First edge data storage active',
+    bannerSyncing: 'Synchronizing local modifications to server...',
+    bannerSynced: 'All modifications synchronized with cloud server',
+    bannerConflict: 'Concurrency conflict detected between local station and cloud',
+    syncNow: 'Sync Now',
+    queuedItems: 'Queued Modifications',
+    offlineQueueBadge: 'Offline Queue Ticket',
+    localCacheSecured: 'Local Clinical Cache: AES-256 Encrypted',
+    lastSyncedAt: 'Last Cloud Sync',
+    resolveKeepServer: 'Accept Cloud Version',
+    resolveKeepClient: 'Force Local Version',
+  },
 };
 
 export type TranslationKey = typeof en;
