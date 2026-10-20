@@ -25,6 +25,12 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
   const { locale } = useTranslation();
   const isKm = locale === 'km';
   const isLoginPage = pathname === '/login';
+  const isPublicRoute =
+    pathname === '/login' ||
+    pathname === '/landing' ||
+    pathname === '/pricing' ||
+    pathname?.startsWith('/landing') ||
+    pathname?.startsWith('/pricing');
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
@@ -43,20 +49,20 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
 
   // Track unauthorized access attempts to restricted modules
   useEffect(() => {
-    if (user && !isLoginPage && !isRouteAllowed(user.role, pathname)) {
+    if (user && !isPublicRoute && !isRouteAllowed(user.role, pathname)) {
       trackUserAction('RESTRICTED_ACCESS_ATTEMPT', {
         attemptedPath: pathname,
         userRole: user.role,
         userEmail: user.email,
       });
     }
-  }, [user, pathname, isLoginPage]);
+  }, [user, pathname, isPublicRoute]);
 
   // Strict browser history lock & back-button bypass defense
   useEffect(() => {
     const enforceAuthLock = () => {
       const token = typeof window !== 'undefined' ? localStorage.getItem('clinic_access_token') : null;
-      if (!token && !isLoginPage) {
+      if (!token && !isPublicRoute) {
         if (typeof window !== 'undefined') {
           window.location.replace('/login');
         }
@@ -80,20 +86,20 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
       window.removeEventListener('popstate', handlePopState);
       window.removeEventListener('pageshow', handlePageShow);
     };
-  }, [isLoginPage, pathname]);
+  }, [isPublicRoute, pathname]);
 
   useEffect(() => {
-    if (!isLoading && !user && !isLoginPage) {
+    if (!isLoading && !user && !isPublicRoute) {
       if (typeof window !== 'undefined') {
         window.location.replace('/login');
       } else {
         router.replace('/login');
       }
     }
-  }, [isLoading, user, isLoginPage, router]);
+  }, [isLoading, user, isPublicRoute, router]);
 
-  // If on login page, render clean focused layout without sidebar/navbar
-  if (isLoginPage) {
+  // If on public pages (login, landing, pricing), render clean layout without sidebar/navbar
+  if (isPublicRoute) {
     return (
       <div className="min-h-screen flex flex-col bg-[#F7F4EE] text-stone-900 w-full relative">
         <div className="fixed top-[-10%] right-[-5%] w-[450px] h-[450px] rounded-full bg-[#EADDC9]/30 blur-[100px] pointer-events-none animate-ambient-drift z-0" />
@@ -107,7 +113,7 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
   }
 
   // Unified SSR & Initial Hydration Guard: ensures server and client render identical loading screen
-  if (!mounted && !isLoginPage) {
+  if (!mounted && !isPublicRoute) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#F7F4EE] text-stone-900 p-4">
         <div className="flex flex-col items-center max-w-sm text-center space-y-4">
