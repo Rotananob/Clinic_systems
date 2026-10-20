@@ -1261,6 +1261,69 @@ class ApiClient {
     getReferenceRanges: () =>
       this.request<Record<string, any>>('/lis/reference-ranges'),
   };
+  // Inpatient (IPD) Admission, Bed Management & Nurse e-MAR (Phase 13)
+  ipd = {
+    getBeds: (params?: { ward?: string; status?: string }) => {
+      const sp = new URLSearchParams();
+      if (params?.ward) sp.append('ward', params.ward);
+      if (params?.status) sp.append('status', params.status);
+      const q = sp.toString() ? '?' + sp.toString() : '';
+      return this.request<any[]>('/ipd/beds' + q);
+    },
+    getBedMetrics: () => this.request<any>('/ipd/beds/metrics'),
+    admitPatient: (data: any) =>
+      this.request<any>('/ipd/admissions', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    getAdmissions: (status?: string) => {
+      const q = status ? '?status=' + encodeURIComponent(status) : '';
+      return this.request<any[]>('/ipd/admissions' + q);
+    },
+    getAdmission: (admissionId: string) =>
+      this.request<any>('/ipd/admissions/' + encodeURIComponent(admissionId)),
+    transferBed: (admissionId: string, data: { targetBedId: string; transferNote?: string }) =>
+      this.request<any>('/ipd/admissions/' + encodeURIComponent(admissionId) + '/transfer', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    dischargePatient: (admissionId: string, data?: { dischargeSummary?: string }) =>
+      this.request<any>('/ipd/admissions/' + encodeURIComponent(admissionId) + '/discharge', {
+        method: 'POST',
+        body: JSON.stringify(data || {}),
+      }),
+    markBedCleaned: (bedId: string) =>
+      this.request<any>('/ipd/beds/' + encodeURIComponent(bedId) + '/clean', {
+        method: 'POST',
+      }),
+    getEmar: (admissionId: string) =>
+      this.request<any[]>('/ipd/admissions/' + encodeURIComponent(admissionId) + '/emar'),
+    scheduleMedication: (admissionId: string, data: any) =>
+      this.request<any>('/ipd/admissions/' + encodeURIComponent(admissionId) + '/emar/schedule', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    administerMedication: (admissionId: string, emarId: string, data: any) =>
+      this.request<any>(
+        '/ipd/admissions/' + encodeURIComponent(admissionId) + '/emar/' + encodeURIComponent(emarId) + '/administer',
+        {
+          method: 'POST',
+          body: JSON.stringify(data),
+        },
+      ),
+    getFluidBalance: (admissionId: string) =>
+      this.request<any[]>('/ipd/admissions/' + encodeURIComponent(admissionId) + '/fluid-balance'),
+    recordFluidBalance: (admissionId: string, data: any) =>
+      this.request<any>('/ipd/admissions/' + encodeURIComponent(admissionId) + '/fluid-balance', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    calculateIvDrip: (data: { volumeMl: number; durationHours: number; dropFactorGttPerMl?: number }) =>
+      this.request<any>('/ipd/calculator/iv-drip', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+  };
 };
 
 export const api = new ApiClient();

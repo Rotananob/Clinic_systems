@@ -145,6 +145,14 @@ export const ROUTE_PERMISSIONS: RoutePermission[] = [
     descriptionKh: 'ភ្ជាប់ម៉ាស៊ីនវិភាគឈាមស្វ័យប្រវត្តិតាម ASTM/HL7 និងតាមដានតម្លៃអាសន្ន',
   },
   {
+    path: '/ipd',
+    allowedRoles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR'],
+    labelEn: 'Inpatient (IPD) Admission & e-MAR',
+    labelKh: 'ប្រព័ន្ធសម្រាកពេទ្យ & ថែទាំ e-MAR',
+    descriptionEn: 'Bed management, Five Rights e-MAR verification, and 24h fluid balance',
+    descriptionKh: 'គ្រប់គ្រងគ្រែសម្រាក ការផ្តល់ថ្នាំ Five Rights និងតុល្យភាពជាតិទឹក',
+  },
+  {
     path: '/staff',
     allowedRoles: ['SUPER_ADMIN', 'ADMIN'],
     labelEn: 'Staff & Role Management',

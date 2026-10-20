@@ -28,6 +28,7 @@ import { InsuranceModule } from './insurance/insurance.module';
 import { ConciergeModule } from './concierge/concierge.module';
 import { SignageModule } from './signage/signage.module';
 import { LisModule } from './lis/lis.module';
+import { IpdModule } from './ipd/ipd.module';
 import { RateLimiterMiddleware } from './common/middleware/rate-limiter.middleware';
 import { TenantContextMiddleware } from './common/middleware/tenant-context.middleware';
 import { CommonModule } from './common/common.module';
@@ -72,6 +73,7 @@ import { CommonModule } from './common/common.module';
     ConciergeModule,
     SignageModule,
     LisModule,
+    IpdModule,
   ],
 })
 export class AppModule implements NestModule {
