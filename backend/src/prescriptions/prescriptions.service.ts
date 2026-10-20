@@ -78,7 +78,7 @@ export class PrescriptionsService {
       orderBy: { createdAt: 'desc' },
       include: {
         items: true,
-        patient: { select: { id: true, nameEn: true, nameKh: true, phone: true, patientCode: true } },
+        patient: { select: { id: true, nameEn: true, nameKh: true, phone: true, patientCode: true, allergies: true } },
         doctor: { select: { id: true, fullNameEn: true, fullNameKh: true } },
         visit: { select: { id: true, visitCode: true } },
       },

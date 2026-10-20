@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { TenantContextService } from '../common/services/tenant-context.service';
 import { PlatformMasterBotService } from './platform-master-bot.service';
+import { VoiceMedicalNlpService } from '../visits/voice-medical-nlp.service';
 
 export interface TelegramTopicConfig {
   paymentsThreadId?: number;
@@ -90,6 +91,7 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
   private lastProcessedChatId = '';
   private isProcessingDiscovery = false;
   private lastProfileEnforceTime = 0;
+  private readonly voiceNlpService = new VoiceMedicalNlpService();
 
   private activePairing: {
     code?: string;
@@ -1202,4 +1204,69 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
       };
     }
   }
+
+  /**
+   * Handle incoming medical voice memo or doctor clinical dictation
+   */
+  async handleIncomingMedicalVoiceOrNote(
+    msg: any,
+    detectedTenantId?: string | null,
+  ): Promise<void> {
+    const token = this.config.botToken;
+    if (!token) return;
+
+    try {
+      const chatId = String(msg.chat.id);
+      const doctorName = [msg.from?.first_name, msg.from?.last_name].filter(Boolean).join(' ') || msg.from?.username || 'Doctor';
+      const rawContent = (msg.caption || msg.text || '').trim();
+
+      // If audio/voice without caption, acknowledge voice memo
+      const transcript = rawContent || `Voice Note Dictation (${msg.voice?.duration || msg.audio?.duration || 15}s) from Dr. ${doctorName}`;
+
+      // Structure via VoiceMedicalNlpService
+      const soapResult = this.voiceNlpService.parseClinicalDictation(transcript, doctorName);
+
+      const messageHtml = [
+        `<b>[កំណត់ត្រាវេជ្ជសាស្ត្រ SOAP ពីសំឡេង]</b>`,
+        `វេជ្ជបណ្ឌិត៖ <b>${doctorName}</b>`,
+        `កាលបរិច្ឆេទ៖ <code>${new Date().toLocaleDateString('km-KH')} ${new Date().toLocaleTimeString('km-KH', { hour: '2-digit', minute: '2-digit' })}</code>`,
+        ``,
+        `<b>1. Subjective (រោគសញ្ញា)៖</b>`,
+        `• ${soapResult.subjective.chiefComplaint}`,
+        soapResult.subjective.duration ? `• រយៈពេល៖ ${soapResult.subjective.duration}` : '',
+        ``,
+        `<b>2. Objective (ការពិនិត្យ & សញ្ញាជីវិត)៖</b>`,
+        `• សម្ពាធឈាម (BP)៖ <code>${soapResult.objective.vitals.bloodPressure || 'N/A'}</code>`,
+        `• ចង្វាក់បេះដូង (HR)៖ <code>${soapResult.objective.vitals.heartRate ? `${soapResult.objective.vitals.heartRate} bpm` : 'N/A'}</code>`,
+        `• កម្ដៅ (Temp)៖ <code>${soapResult.objective.vitals.temperature ? `${soapResult.objective.vitals.temperature} C` : 'N/A'}</code>`,
+        soapResult.objective.physicalExamFindings.length > 0 ? `• លទ្ធផលពិនិត្យ៖ ${soapResult.objective.physicalExamFindings.join(', ')}` : '',
+        ``,
+        `<b>3. Assessment (រោគវិនិច្ឆ័យ)៖</b>`,
+        `• <b>${soapResult.assessment.primaryDiagnosis}</b>`,
+        `• កូដរោគវិនិច្ឆ័យ៖ ICD-11: <code>${soapResult.assessment.icd11Code || 'N/A'}</code> | ICD-10: <code>${soapResult.assessment.icd10Code || 'N/A'}</code>`,
+        ``,
+        `<b>4. Plan (ផែនការព្យាបាល & ថ្នាំ)៖</b>`,
+        soapResult.plan.prescriptions.map((rx, i) => `  ${i + 1}. ${rx.instructions} (ចំនួន ${rx.quantity})`).join('\n') || '• គ្មានថ្នាំចេញបន្ថែម',
+        soapResult.plan.treatmentAdvice.length > 0 ? `\n• ការណែនាំ៖ ${soapResult.plan.treatmentAdvice.join('; ')}` : '',
+        ``,
+        `<i>ពិន្ទុភាពច្បាស់លាស់ (AI Confidence)៖ ${soapResult.confidenceScore}%</i>`,
+      ].filter(Boolean).join('\n');
+
+      const targetTopics = (detectedTenantId && this.config.tenantGroupMap && this.config.tenantGroupMap[detectedTenantId] && this.config.tenantGroupMap[detectedTenantId].topics) || (this.config.groupTopicsMap && this.config.groupTopicsMap[chatId]) || this.config.topics; const threadId = targetTopics ? targetTopics.queueThreadId : undefined;
+
+      await this.sendMessageDirect(token, chatId, messageHtml, threadId, {
+        inline_keyboard: [
+          [
+            {
+              text: 'ពិនិត្យ និងរក្សាទុកក្នុងប្រព័ន្ធ (Review & Save)',
+              url: `https://clinicos.app/visits?doctor=${encodeURIComponent(doctorName)}`,
+            },
+          ],
+        ],
+      });
+    } catch (err: any) {
+      this.logger.error(`Failed to process medical voice or dictation: ${err.message}`);
+    }
+  }
+
 }

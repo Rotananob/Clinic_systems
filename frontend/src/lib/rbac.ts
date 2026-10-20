@@ -57,6 +57,14 @@ export const ROUTE_PERMISSIONS: RoutePermission[] = [
     descriptionKh: 'ចេញវេជ្ជបញ្ជា និងបើកថ្នាំតាមវេជ្ជបញ្ជា',
   },
   {
+    path: '/inventory',
+    allowedRoles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR', 'PHARMACIST'],
+    labelEn: 'Warehouse & Multi-Branch Network',
+    labelKh: 'ឃ្លាំង & បណ្តាញសាខា',
+    descriptionEn: 'Central inventory depot, inter-branch transfers, and FEFO expiration tracking',
+    descriptionKh: 'ឃ្លាំងស្តុកកណ្តាល ការផ្ទេរថ្នាំរវាងសាខា និងតាមដានការផុតកំណត់ FEFO',
+  },
+  {
     path: '/billing',
     allowedRoles: ['SUPER_ADMIN', 'ADMIN', 'CASHIER'],
     labelEn: 'Invoicing & KHQR POS Settlement',

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { KhqrCheckoutModal } from '../../components/payments/KhqrCheckoutModal';
 import { ClinicReceiptModal } from '../../components/payments/ClinicReceiptModal';
 import { CashPaymentModal } from '../../components/payments/CashPaymentModal';
+import { HardwareSettingsModal } from '../../components/hardware/HardwareSettingsModal';
 import { useTranslation } from '../../context/I18nContext';
 import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
@@ -81,6 +82,7 @@ export default function BillingPage() {
 
   // Official Receipt modal
   const [receiptInvoice, setReceiptInvoice] = useState<any>(null);
+  const [isHardwareModalOpen, setIsHardwareModalOpen] = useState(false);
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
 
   // Edit & Correct Invoice modal
@@ -366,6 +368,15 @@ export default function BillingPage() {
             title="Refresh invoices"
           >
             <RefreshCw className="w-4 h-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsHardwareModalOpen(true)}
+            className="px-3 py-2 text-slate-700 hover:text-slate-900 bg-white border border-slate-200 rounded-lg shadow-sm transition-colors text-xs font-medium flex items-center gap-1.5"
+            title={isKm ? 'ការកំណត់ឧបករណ៍ POS & ម៉ាស៊ីនបោះពុម្ព' : 'POS Hardware & Printer Settings'}
+          >
+            <Printer className="w-4 h-4 text-slate-600" />
+            <span className="hidden sm:inline">{isKm ? 'ឧបករណ៍ POS' : 'POS Hardware'}</span>
           </button>
         </div>
       </div>

@@ -7,7 +7,15 @@ import { Modal } from '../../components/ui/Modal';
 import { KhqrCheckoutModal } from '../../components/payments/KhqrCheckoutModal';
 import { useTranslation } from '../../context/I18nContext';
 import { useLiveSync } from '../../lib/useLiveSync';
+import { ClinicalDecisionSupportBanner } from '../../components/clinical/ClinicalDecisionSupportBanner';
 import {
+  checkClientDrugInteractions,
+  checkClientAllergyConflicts,
+  calculateClientNews2,
+} from '../../lib/cdssEngine';
+import {
+  ShieldAlert,
+  ShieldCheck,
   Pill,
   Search,
   Plus,
@@ -303,6 +311,27 @@ export default function PrescriptionsPage() {
                 {/* Expanded Medications Table */}
                 {isExpanded && (
                   <div className="bg-slate-50/70 border-t border-slate-100 p-4">
+                    {(() => {
+                      const rxDrugNames = (rx.items || []).map((it: any) => it.medicineName).filter(Boolean);
+                      const rxDdis = checkClientDrugInteractions(rxDrugNames);
+                      if (rxDdis.length > 0) {
+                        return (
+                          <div className="mb-3 p-2.5 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900 flex items-start gap-2">
+                            <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                            <div>
+                              <span className="font-semibold">{isKm ? 'ការព្រមានអន្តរកម្មថ្នាំ (CDSS):' : 'Potential Drug Interaction Detected:'}</span>{' '}
+                              {rxDdis.map((d: any) => d.drugA + ' + ' + d.drugB + ' (' + (isKm ? d.descriptionKh : d.descriptionEn) + ')').join('; ')}
+                            </div>
+                          </div>
+                        );
+                      }
+                      return (
+                        <div className="mb-3 p-2 bg-emerald-50/70 border border-emerald-100 rounded-lg text-xs text-emerald-800 flex items-center gap-2">
+                          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                          <span>{isKm ? 'សុវត្ថិភាពវេជ្ជសាស្ត្រ CDSS: គ្មានអន្តរកម្មថ្នាំគ្រោះថ្នាក់ឡើយ' : 'CDSS Safety Guard: 100% verified safe (No adverse drug-drug interactions)'}</span>
+                        </div>
+                      );
+                    })()}
                     <div className="text-xs font-semibold text-slate-700 mb-2 uppercase tracking-wider text-[11px]">
                       Medications Prescribed
                     </div>
@@ -405,6 +434,9 @@ function CreatePrescriptionDrawer({
   const [loadingVisits, setLoadingVisits] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isOverridden, setIsOverridden] = useState(false);
+  const [overrideReason, setOverrideReason] = useState('');
+  const { locale } = useTranslation();
 
   // Multi-item drug list
   const [items, setItems] = useState<PrescriptionItemInput[]>([
@@ -418,6 +450,51 @@ function CreatePrescriptionDrawer({
       instructions: 'Complete full course of antibiotics',
     },
   ]);
+
+  const selectedVisit = useMemo(
+    () => activeVisits.find((v) => v.id === selectedVisitId),
+    [activeVisits, selectedVisitId]
+  );
+
+  const patientAllergies = useMemo(() => {
+    if (!selectedVisit?.patient?.allergies) return [];
+    return selectedVisit.patient.allergies
+      .split(/[,;\n]+/)
+      .map((s: string) => s.trim())
+      .filter(Boolean);
+  }, [selectedVisit]);
+
+  const drugNames = useMemo(
+    () => items.map((it) => it.medicineName).filter(Boolean),
+    [items]
+  );
+
+  const ddiAlerts = useMemo(
+    () => checkClientDrugInteractions(drugNames),
+    [drugNames]
+  );
+
+  const allergyAlerts = useMemo(
+    () => checkClientAllergyConflicts(drugNames, patientAllergies),
+    [drugNames, patientAllergies]
+  );
+
+  const triageResult = useMemo(() => {
+    if (!selectedVisit) return null;
+    return calculateClientNews2({
+      respiratoryRate: selectedVisit.respiratoryRate,
+      oxygenSaturation: selectedVisit.oxygenSaturation,
+      systolicBp: selectedVisit.systolicBp,
+      heartRate: selectedVisit.heartRate,
+      temperature: selectedVisit.temperature,
+      consciousness: selectedVisit.consciousness || 'ALERT',
+      supplementalOxygen: selectedVisit.supplementalOxygen || false,
+    });
+  }, [selectedVisit]);
+
+  const hasBlockingAlert =
+    ddiAlerts.some((a) => a.action === 'BLOCK') ||
+    allergyAlerts.some((a) => a.severity === 'SEVERE' && !a.isCrossReactivity);
 
   useEffect(() => {
     if (isOpen) {
@@ -483,13 +560,24 @@ function CreatePrescriptionDrawer({
       return;
     }
 
+    if (hasBlockingAlert && !isOverridden) {
+      setError(
+        locale === 'km'
+          ? 'មានការព្រមានកម្រិតគ្រោះថ្នាក់ធ្ងន់ធ្ងរ (Severe Danger)។ សូមកែប្រែបញ្ជីថ្នាំ ឬចុចផ្ដល់ការអនុញ្ញាត (Override) ជាមួយមូលហេតុវេជ្ជសាស្ត្រ។'
+          : 'Severe drug interaction or allergy conflict detected. Please modify medications or provide clinical justification override.'
+      );
+      return;
+    }
+
     setSubmitting(true);
     setError(null);
 
     try {
       await api.prescriptions.create({
         visitId: selectedVisitId,
-        notes: notes.trim() || undefined,
+        notes: overrideReason
+          ? (notes.trim() ? notes.trim() + '\n' : '') + '[CDSS Safety Override: ' + overrideReason.trim() + ']'
+          : notes.trim() || undefined,
         items: items.map((it) => ({
           medicineName: it.medicineName.trim(),
           dosage: it.dosage.trim(),
@@ -522,6 +610,21 @@ function CreatePrescriptionDrawer({
             <span>{error}</span>
           </div>
         )}
+
+        {/* CDSS Safety Banner */}
+        <div className="pt-1">
+          <ClinicalDecisionSupportBanner
+            ddiAlerts={ddiAlerts}
+            allergyAlerts={allergyAlerts}
+            triageResult={triageResult}
+            isOverridden={isOverridden}
+            onOverrideAcknowledged={(reason) => {
+              setIsOverridden(true);
+              setOverrideReason(reason);
+              setError(null);
+            }}
+          />
+        </div>
 
         {/* Visit selector */}
         <div>

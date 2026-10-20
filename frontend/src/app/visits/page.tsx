@@ -6,7 +6,9 @@ import Link from 'next/link';
 import { Modal } from '../../components/ui/Modal';
 import { useTranslation } from '../../context/I18nContext';
 import { useLiveSync } from '../../lib/useLiveSync';
+import { VoiceConsultationModal } from '../../components/clinical/VoiceConsultationModal';
 import {
+  Mic,
   Activity,
   User,
   Clock,
@@ -38,6 +40,7 @@ export default function VisitsPage() {
   const [isCheckinOpen, setIsCheckinOpen] = useState(false);
   const [isVitalsOpen, setIsVitalsOpen] = useState(false);
   const [isConsultOpen, setIsConsultOpen] = useState(false);
+  const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
   const [selectedVisit, setSelectedVisit] = useState<any>(null);
 
   // Doctors list for checkin / consultation
@@ -130,6 +133,17 @@ export default function VisitsPage() {
           >
             <Plus className="w-4 h-4" />
             <span>{t.visits.checkin}</span>
+          </button>
+          <button
+            onClick={() => {
+              setSelectedVisit(null);
+              setIsVoiceModalOpen(true);
+            }}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors"
+            title={(t as any).voiceMedical?.title || 'Voice Dictation'}
+          >
+            <Mic className="w-4 h-4" />
+            <span>{(t as any).voiceMedical?.startRecording || 'Voice SOAP'}</span>
           </button>
         </div>
       </div>
@@ -394,6 +408,15 @@ export default function VisitsPage() {
           }}
         />
       )}
+      <VoiceConsultationModal
+        isOpen={isVoiceModalOpen}
+        onClose={() => setIsVoiceModalOpen(false)}
+        activeVisitId={selectedVisit?.id}
+        patientName={selectedVisit?.patient?.nameKh || selectedVisit?.patient?.nameEn}
+        onApplySuccess={() => {
+          fetchVisits();
+        }}
+      />
 
       {/* Drawer 3: Doctor Consultation */}
       {selectedVisit && (

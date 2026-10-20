@@ -540,6 +540,18 @@ class ApiClient {
       this.request<any>(`/prescriptions/${id}/dispense`, {
         method: 'PATCH',
       }),
+    evaluateCdss: (data: { medications: string[]; patientAllergies?: string; patientConditions?: string[]; vitals?: any }) =>
+      this.request<any>('/prescriptions/cdss/evaluate', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    searchIcd11: (query: string) =>
+      this.request<any[]>(`/prescriptions/cdss/icd11?query=${encodeURIComponent(query)}`),
+    calculateTriage: (vitals: any) =>
+      this.request<any>('/prescriptions/cdss/triage', {
+        method: 'POST',
+        body: JSON.stringify(vitals),
+      }),
   };
 
 
@@ -985,6 +997,92 @@ class ApiClient {
         method: 'POST',
       }),
   };
-}
+
+  // Patient Portal & Telegram Mini App (TMA)
+  portal = {
+    getPatient: (identifier: string, tenantId?: string) => {
+      const q = tenantId ? `?tenantId=${tenantId}` : '';
+      return this.request<any>(`/portal/patient/${encodeURIComponent(identifier)}${q}`);
+    },
+    getLiveQueue: (tenantId?: string) => {
+      const q = tenantId ? `?tenantId=${tenantId}` : '';
+      return this.request<any>(`/portal/queue/live${q}`);
+    },
+    formatMedicationReminder: (data: any) =>
+      this.request<any>('/portal/reminders/medication', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    formatAppointmentReminder: (data: any) =>
+      this.request<any>('/portal/reminders/appointment', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    formatQueueCall: (data: any) =>
+      this.request<any>('/portal/reminders/queue-call', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+  };
+
+  // Multi-Branch Chain & Central Warehouse
+  warehouse = {
+    getHqOverview: () => this.request<any>('/warehouse/hq/overview'),
+    getBranches: () => this.request<any[]>('/warehouse/branches'),
+    getBranchById: (id: string) => this.request<any>('/warehouse/branches/' + encodeURIComponent(id)),
+    getInventoryBatches: (branchId?: string) => {
+      const q = branchId ? '?branchId=' + encodeURIComponent(branchId) : '';
+      return this.request<any[]>('/warehouse/inventory' + q);
+    },
+    getExpiringBatches: (branchId?: string, thresholdDays = 90) => {
+      const p = new URLSearchParams();
+      if (branchId) p.set('branchId', branchId);
+      if (thresholdDays) p.set('thresholdDays', String(thresholdDays));
+      const qs = p.toString() ? '?' + p.toString() : '';
+      return this.request<{ batches: any[]; summary: any }>('/warehouse/inventory/expiring' + qs);
+    },
+    getTransfers: (branchId?: string, status?: string) => {
+      const p = new URLSearchParams();
+      if (branchId) p.set('branchId', branchId);
+      if (status) p.set('status', status);
+      const qs = p.toString() ? '?' + p.toString() : '';
+      return this.request<any[]>('/warehouse/transfers' + qs);
+    },
+    getTransferById: (id: string) => this.request<any>('/warehouse/transfers/' + encodeURIComponent(id)),
+    createTransfer: (data: any) =>
+      this.request<any>('/warehouse/transfers', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    dispatchTransfer: (id: string, data: { dispatchedBy: string; scannedBarcode?: string }) =>
+      this.request<any>('/warehouse/transfers/' + encodeURIComponent(id) + '/dispatch', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    verifyAndReceiveTransfer: (id: string, data: any) =>
+      this.request<any>('/warehouse/transfers/' + encodeURIComponent(id) + '/receive', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+  };
+  // MoH & Cryptographic Compliance (Phase 7)
+  compliance = {
+    signCertificate: (data: any) =>
+      this.request<any>('/compliance/certificates/sign', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    verifyCertificate: (certNumber: string, sig?: string) => {
+      const q = sig ? '?sig=' + encodeURIComponent(sig) : '';
+      return this.request<any>('/compliance/certificates/verify/' + encodeURIComponent(certNumber) + q);
+    },
+    exportDhis2Surveillance: (period?: string) => {
+      const q = period ? '?period=' + encodeURIComponent(period) : '';
+      return this.request<any>('/compliance/dhis2/export' + q);
+    },
+    getTrackedDiseases: () => this.request<any[]>('/compliance/dhis2/diseases'),
+  };
+};
 
 export const api = new ApiClient();
+

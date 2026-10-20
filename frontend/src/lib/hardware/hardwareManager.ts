@@ -74,19 +74,29 @@ class HardwareManagerService {
     if (typeof window === 'undefined' || this.isInitialized) return;
     this.isInitialized = true;
 
-    // 1. Global Auto-Print Listener for settled invoices
+    // 1. Global Auto-Print and Cash Drawer Kick Listener for settled invoices
     window.addEventListener('payment-confirmed', async (e: Event) => {
       const cfg = this.getConfig();
-      if (!cfg.autoPrintOnPayment) return;
-
       const customEvent = e as CustomEvent<{ invoice: Record<string, unknown> }>;
       const invoice = customEvent.detail?.invoice;
       if (!invoice) return;
 
-      try {
-        await this.printInvoice(invoice);
-      } catch (err) {
-        console.warn('[HardwareManager] Auto-print skipped or failed:', err);
+      // Automatically trigger cash drawer kick for cash settlements
+      const method = String(invoice.paymentMethod || '').toUpperCase();
+      if (cfg.drawerPin && (method === 'CASH' || method === '')) {
+        try {
+          await this.openCashDrawer();
+        } catch (err) {
+          console.warn('[HardwareManager] Cash drawer kick skipped or failed:', err);
+        }
+      }
+
+      if (cfg.autoPrintOnPayment) {
+        try {
+          await this.printInvoice(invoice);
+        } catch (err) {
+          console.warn('[HardwareManager] Auto-print skipped or failed:', err);
+        }
       }
     });
 

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { syncManager, SyncStatusInfo } from '../../lib/syncManager';
-import { WifiOff, RefreshCw, CheckCircle2, AlertCircle, Database } from 'lucide-react';
+import { WifiOff, RefreshCw, CheckCircle2, AlertCircle, Database, ShieldAlert } from 'lucide-react';
 import { useI18n } from '../../context/I18nContext';
 
 export const OfflineSyncBanner: React.FC = () => {
@@ -11,7 +11,9 @@ export const OfflineSyncBanner: React.FC = () => {
     state: 'SYNCED',
     isOnline: true,
     pendingCount: 0,
+    conflictCount: 0,
     lastSyncedAt: null,
+    activeTenant: 'default',
   });
   const [isManualSyncing, setIsManualSyncing] = useState(false);
   const [justSynced, setJustSynced] = useState(false);
@@ -46,26 +48,38 @@ export const OfflineSyncBanner: React.FC = () => {
     }
   };
 
-  // Only show banner if offline, has pending mutations, syncing, failed, or justSynced
-  if (status.isOnline && status.pendingCount === 0 && status.state === 'SYNCED' && !justSynced) {
+  // Only show banner if offline, has pending mutations, conflicts, syncing, failed, or justSynced
+  if (
+    status.isOnline &&
+    status.pendingCount === 0 &&
+    status.conflictCount === 0 &&
+    status.state === 'SYNCED' &&
+    !justSynced
+  ) {
     return null;
   }
 
   const isKm = locale === 'km';
 
   return (
-    <div className={`w-full py-2 px-4 transition-colors text-xs md:text-sm font-medium border-b flex flex-wrap items-center justify-between gap-2 z-30 ${
-      !status.isOnline
-        ? 'bg-amber-500/10 border-amber-500/20 text-amber-700 dark:text-amber-300'
-        : status.state === 'SYNCING' || isManualSyncing
-        ? 'bg-blue-500/10 border-blue-500/20 text-blue-700 dark:text-blue-300'
-        : status.state === 'SYNC_FAILED'
-        ? 'bg-rose-500/10 border-rose-500/20 text-rose-700 dark:text-rose-300'
-        : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-300'
-    }`}>
+    <div
+      className={`w-full py-2 px-4 transition-colors text-xs md:text-sm font-medium border-b flex flex-wrap items-center justify-between gap-2 z-30 ${
+        !status.isOnline
+          ? 'bg-amber-500/10 border-amber-500/20 text-amber-700 dark:text-amber-300'
+          : status.conflictCount > 0 || status.state === 'CONFLICT'
+          ? 'bg-purple-500/10 border-purple-500/20 text-purple-700 dark:text-purple-300'
+          : status.state === 'SYNCING' || isManualSyncing
+          ? 'bg-blue-500/10 border-blue-500/20 text-blue-700 dark:text-blue-300'
+          : status.state === 'SYNC_FAILED'
+          ? 'bg-rose-500/10 border-rose-500/20 text-rose-700 dark:text-rose-300'
+          : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-300'
+      }`}
+    >
       <div className="flex items-center gap-2.5">
         {!status.isOnline ? (
           <WifiOff className="w-4 h-4 shrink-0 text-amber-600" />
+        ) : status.conflictCount > 0 || status.state === 'CONFLICT' ? (
+          <ShieldAlert className="w-4 h-4 shrink-0 text-purple-600" />
         ) : status.state === 'SYNCING' || isManualSyncing ? (
           <RefreshCw className="w-4 h-4 shrink-0 animate-spin text-blue-600" />
         ) : status.state === 'SYNC_FAILED' ? (
@@ -81,6 +95,10 @@ export const OfflineSyncBanner: React.FC = () => {
             isKm
               ? `របៀបក្រៅបណ្តាញ (Offline) - ទិន្នន័យត្រូវបានរក្សាទុកក្នុងឧបករណ៍ (${status.pendingCount} ការផ្លាស់ប្តូរ)`
               : `Offline Mode - Local-first active (${status.pendingCount} local changes pending)`
+          ) : status.conflictCount > 0 || status.state === 'CONFLICT' ? (
+            isKm
+              ? `មានការប៉ះទង្គិចទិន្នន័យ (${status.conflictCount} Conflict) ត្រូវការការផ្ទៀងផ្ទាត់`
+              : `Concurrency conflict detected (${status.conflictCount} items). Manual review available.`
           ) : status.state === 'SYNCING' || isManualSyncing ? (
             isKm ? 'កំពុងធ្វើសមកាលកម្មទិន្នន័យទៅម៉ាស៊ីនបម្រើ...' : 'Synchronizing local changes to server...'
           ) : status.state === 'SYNC_FAILED' ? (
@@ -95,11 +113,17 @@ export const OfflineSyncBanner: React.FC = () => {
               : `${status.pendingCount} modifications saved locally, ready to sync`
           )}
         </span>
+
+        {status.activeTenant && status.activeTenant !== 'default' && (
+          <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-slate-200/60 dark:bg-slate-700/60 text-slate-700 dark:text-slate-300">
+            {status.activeTenant}
+          </span>
+        )}
       </div>
 
       <div className="flex items-center gap-2 ml-auto">
         {status.lastSyncedAt && (
-          <span className="text-[11px] opacity-75 hidden sm:inline">
+          <span className="text-[11px] opacity-75 hidden sm:inline font-mono">
             {isKm ? `សមកាលកម្មចុងក្រោយ: ${status.lastSyncedAt}` : `Last sync: ${status.lastSyncedAt}`}
           </span>
         )}
@@ -108,10 +132,9 @@ export const OfflineSyncBanner: React.FC = () => {
           <button
             onClick={handleManualSync}
             disabled={isManualSyncing || status.state === 'SYNCING'}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 text-xs font-medium hover:opacity-90 disabled:opacity-50 transition"
+            className="px-2.5 py-1 rounded bg-white/80 hover:bg-white dark:bg-slate-800/80 dark:hover:bg-slate-800 text-[11px] font-semibold border border-black/5 dark:border-white/10 shadow-2xs transition disabled:opacity-50"
           >
-            <RefreshCw className={`w-3 h-3 ${isManualSyncing ? 'animate-spin' : ''}`} />
-            <span>{isKm ? 'ធ្វើសមកាលកម្មឥឡូវ' : 'Sync Now'}</span>
+            {isKm ? 'សមកាលកម្មឥឡូវនេះ (Sync)' : 'Sync Now'}
           </button>
         )}
       </div>
