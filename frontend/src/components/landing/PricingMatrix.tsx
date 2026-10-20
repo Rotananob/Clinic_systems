@@ -339,7 +339,7 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
               {/* Action Button */}
               <div className="pt-6">
                 <Link
-                  href="/login"
+                  href={`/register?plan=${p.id}`}
                   className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-95 ${
                     p.isPopular
                       ? 'bg-teal-800 hover:bg-teal-900 text-white shadow-md'

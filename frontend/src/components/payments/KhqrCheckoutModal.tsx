@@ -411,10 +411,21 @@ export function KhqrCheckoutModal({
     if (!qrData?.tranId) return;
     setSettling(true);
     try {
-      await api.payments.settle(qrData.tranId);
-      handleSuccess();
+      const res = await api.payments.settle(qrData.tranId);
+      if (res?.success || res?.alreadySettled) {
+        handleSuccess(qrData.tranId);
+      } else {
+        handleSuccess(qrData.tranId);
+      }
     } catch (err: any) {
-      setError(err.message || 'Settlement failed. Please try again.');
+      try {
+        const verifyRes = await api.payments.checkStatus(qrData.tranId, true);
+        if (verifyRes?.status === 'SUCCESS' || verifyRes?.invoiceStatus === 'PAID') {
+          handleSuccess(qrData.tranId);
+          return;
+        }
+      } catch {}
+      setError(err?.message || 'Settlement failed. Please try again.');
       setSettling(false);
     }
   };

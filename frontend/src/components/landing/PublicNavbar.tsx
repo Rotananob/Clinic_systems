@@ -86,7 +86,7 @@ export const PublicNavbar: React.FC = () => {
           </Link>
 
           <Link
-            href="/pricing"
+            href="/register"
             className="inline-flex items-center gap-1.5 px-4 py-2 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors active:scale-95"
           >
             <span>{isKm ? 'សាកល្បងឥតគិតថ្លៃ' : 'Start Free Trial'}</span>

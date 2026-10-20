@@ -101,6 +101,7 @@ model Tenant {
   bakongAccountId    String?            // e.g. "my_clinic@aba"
   merchantName       String?            // KHQR display merchant name
   merchantCity       String?            @default("Phnom Penh")
+  paywayPaymentUrl   String?            // Optional ABA PayWay checkout URL e.g. "https://link.payway.com.kh/..."
 
   // SaaS Subscription Details
   planTier           PlanTier           @default(FREE)

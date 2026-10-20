@@ -422,6 +422,25 @@ class ApiClient {
         method: 'POST',
         body: JSON.stringify(credentials),
       }),
+    registerClinic: (data: {
+      clinicNameKh: string;
+      clinicNameEn: string;
+      phone: string;
+      email: string;
+      password: string;
+      adminName?: string;
+      planTier?: string;
+    }) =>
+      this.request<{
+        success: boolean;
+        accessToken: string;
+        user: any;
+        tenant: any;
+        message: string;
+      }>('/auth/register-clinic', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
     me: () => this.request<any>('/auth/me'),
     changePassword: (data: { oldPassword: string; newPassword: string }) =>
       this.request<any>('/auth/change-password', {
@@ -757,6 +776,45 @@ class ApiClient {
         body: JSON.stringify(data),
       }),
     getStats: () => this.request<any>('/tracking/stats'),
+  };
+
+  // SaaS Multi-Tenant & Merchant Setup
+  tenants = {
+    getProfile: () => this.request<{ success: boolean; tenant: any; subscription: any; usage: any }>('/tenants/me'),
+    setupMerchant: (data: {
+      bakongAccountId: string;
+      merchantName: string;
+      merchantCity?: string;
+      paywayPaymentUrl?: string;
+    }) =>
+      this.request<{ success: boolean; message: string; tenant: any }>('/tenants/setup-merchant', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    testMerchantKhqr: (data: {
+      bakongAccountId: string;
+      merchantName: string;
+      merchantCity?: string;
+      paywayPaymentUrl?: string;
+    }) =>
+      this.request<{
+        success: boolean;
+        testMode: boolean;
+        qrString: string;
+        md5: string;
+        bakongId: string;
+        merchantName: string;
+        merchantCity: string;
+        amount: number;
+        currency: string;
+        billNumber: string;
+        deeplinks: any;
+        paywayPaymentUrl?: string;
+        message: string;
+      }>('/tenants/test-merchant-khqr', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
   };
 }
 

@@ -66,7 +66,7 @@ export const LandingHero: React.FC = () => {
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
             <Link
-              href="/pricing"
+              href="/register"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs sm:text-sm font-bold shadow-md transition-all hover:shadow-lg active:scale-95"
             >
               <span>{isKm ? 'សាកល្បងប្រើប្រាស់ឥតគិតថ្លៃ' : 'Start 14-Day Free Trial'}</span>
