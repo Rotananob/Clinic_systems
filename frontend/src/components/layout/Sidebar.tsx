@@ -20,6 +20,7 @@ import {
   Building2,
   Lock,
   UserCheck,
+  Globe,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from '../../context/I18nContext';
@@ -51,6 +52,7 @@ export const Sidebar: React.FC = () => {
     { label: t.nav.followUps, href: '/follow-ups', icon: CalendarDays },
     { label: t.nav.documents, href: '/documents', icon: FolderOpen },
     { label: t.nav.staff, href: '/staff', icon: ShieldCheck },
+    { label: isKh ? 'បណ្តាញគ្លីនិក (Fleet)' : 'Platform Fleet', href: '/super-admin', icon: Globe },
     { label: t.nav.ownerControl, href: '/owner', icon: Building2 },
     { label: t.nav.invoiceTemplate, href: '/invoice-template', icon: LayoutTemplate },
     { label: t.nav.settings, href: '/settings', icon: Settings },

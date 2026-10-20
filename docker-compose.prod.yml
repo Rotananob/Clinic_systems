@@ -1,0 +1,124 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: clinic_postgres_prod
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Error: POSTGRES_PASSWORD required}
+      POSTGRES_DB: ${POSTGRES_DB:-clinic_systems}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - pgdata_prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - clinic_internal
+
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    container_name: clinic_pgbouncer_prod
+    restart: always
+    environment:
+      DB_USER: ${POSTGRES_USER:-postgres}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB:-clinic_systems}
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: 1000
+      DEFAULT_POOL_SIZE: 25
+      RESERVE_POOL_SIZE: 5
+      ADMIN_USERS: ${POSTGRES_USER:-postgres}
+      AUTH_TYPE: scram-sha-256
+    volumes:
+      - ./docker/pgbouncer/pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini:ro
+    ports:
+      - "6432:6432"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - clinic_internal
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: clinic_backend_prod
+    restart: always
+    environment:
+      # Connects through PgBouncer transaction pooler with pgbouncer=true query flag
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@pgbouncer:6432/${POSTGRES_DB:-clinic_systems}?schema=public&pgbouncer=true
+      PORT: 4000
+      NODE_ENV: production
+      JWT_SECRET: ${JWT_SECRET:?Error: JWT_SECRET required}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      CLINICAL_PHI_KEY: ${CLINICAL_PHI_KEY:-}
+      MASTER_BOT_TOKEN: ${MASTER_BOT_TOKEN:-}
+      SUPERADMIN_SECRET_KEY: ${SUPERADMIN_SECRET_KEY:-}
+      PLATFORM_BANK_ACCOUNT: ${PLATFORM_BANK_ACCOUNT:-clinic_platform@aba}
+      PLATFORM_MERCHANT_NAME: ${PLATFORM_MERCHANT_NAME:-ClinicOS Platform}
+      PLATFORM_CITY: ${PLATFORM_CITY:-Phnom Penh}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
+    ports:
+      - "4000:4000"
+    depends_on:
+      - pgbouncer
+    networks:
+      - clinic_internal
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: clinic_frontend_prod
+    restart: always
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://clinicos.app/api}
+      NEXT_PUBLIC_PLATFORM_DOMAIN: ${NEXT_PUBLIC_PLATFORM_DOMAIN:-clinicos.app}
+      PORT: 3000
+      NODE_ENV: production
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - clinic_internal
+
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: clinic_nginx_prod
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+      - certs_data:/etc/letsencrypt:ro
+      - certbot_data:/var/www/certbot:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - clinic_internal
+
+volumes:
+  pgdata_prod:
+    driver: local
+  certs_data:
+    driver: local
+  certbot_data:
+    driver: local
+
+networks:
+  clinic_internal:
+    driver: bridge

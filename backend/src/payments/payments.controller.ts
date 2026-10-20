@@ -44,7 +44,7 @@ export class PaymentsController {
   @UseGuards(JwtAuthGuard)
   @Post('settle')
   settle(@Request() req: any, @Body() dto: SettlePaymentDto) {
-    const cashierId = req.user?.id || 'CASHIER_OR_WEBHOOK';
+    const cashierId = req.user?.id || undefined;
     return this.paymentsService.settleTransaction(dto.tranId, cashierId);
   }
 

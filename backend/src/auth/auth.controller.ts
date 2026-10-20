@@ -3,12 +3,20 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagg
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { RegisterClinicDto } from './dto/register-clinic.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  @ApiOperation({ summary: '60-second instant onboarding for new clinic workspace' })
+  @ApiResponse({ status: 201, description: 'Clinic tenant and admin account auto-provisioned' })
+  @Post('register-clinic')
+  registerClinic(@Body() dto: RegisterClinicDto) {
+    return this.authService.registerClinic(dto);
+  }
 
   @ApiOperation({ summary: 'Login with staff credentials' })
   @ApiResponse({ status: 200, description: 'JWT access token and user profile returned' })

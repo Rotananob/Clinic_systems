@@ -17,6 +17,21 @@ enum Role {
   PHARMACIST
 }
 
+enum PlanTier {
+  FREE
+  STARTER_5
+  PRO_8
+  ENTERPRISE_12
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  CANCELLED
+  EXPIRED
+}
+
 enum Gender {
   MALE
   FEMALE
@@ -63,13 +78,95 @@ enum FollowUpStatus {
   CANCELLED
 }
 
+// -------------------------------------------------------------
+// STEP 1: Multi-Tenant Core Models (SaaS Tenant & Subscriptions)
+// -------------------------------------------------------------
+
+model Tenant {
+  id                 String             @id @default(uuid()) @db.Uuid
+  slug               String             @unique // Subdomain e.g. "rotana", "vanna"
+  clinicNameKh       String
+  clinicNameEn       String
+  mohLicenseNumber   String?
+  clinicType         String?            @default("Polyclinic & Outpatient Center")
+  phonePrimary       String?
+  phoneEmergency     String?
+  email              String?
+  website            String?
+  addressKh          String?            @db.Text
+  addressEn          String?            @db.Text
+  logoUrl            String?            @db.Text
+
+  // Merchant Credentials (Bakong & ABA PayWay)
+  bakongAccountId    String?            // e.g. "my_clinic@aba"
+  merchantName       String?            // KHQR display merchant name
+  merchantCity       String?            @default("Phnom Penh")
+  paywayPaymentUrl   String?            // Optional ABA PayWay checkout URL e.g. "https://link.payway.com.kh/..."
+
+  // SaaS Subscription Details
+  planTier           PlanTier           @default(FREE)
+  subscriptionStatus SubscriptionStatus @default(ACTIVE)
+  currentPeriodEnd   DateTime?
+  maxMonthlyPatients Int                @default(50)
+  maxDailyKhqr       Int                @default(5)
+  maxStaffAccounts   Int                @default(2)
+
+  isActive           Boolean            @default(true)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  // Tenant Scoped Relations
+  subscriptions      TenantSubscription[]
+  users              User[]
+  patients           Patient[]
+  visits             Visit[]
+  prescriptions      Prescription[]
+  invoices           Invoice[]
+  followUps          FollowUp[]
+  auditLogs          AuditLog[]
+  documents          Document[]
+  visitorLogs        VisitorLog[]
+
+  @@index([slug])
+  @@index([planTier])
+  @@index([subscriptionStatus])
+  @@map("tenants")
+}
+
+model TenantSubscription {
+  id             String             @id @default(uuid()) @db.Uuid
+  tenantId       String             @db.Uuid
+  planTier       PlanTier
+  amountUsd      Decimal            @db.Decimal(10, 2)
+  status         SubscriptionStatus @default(ACTIVE)
+  startDate      DateTime           @default(now())
+  endDate        DateTime
+  paymentTranId  String?            @unique
+  paymentMethod  String?            @default("KHQR")
+  invoiceNumber  String?            @unique
+  notes          String?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  tenant         Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([status])
+  @@map("tenant_subscriptions")
+}
+
+// -------------------------------------------------------------
+// STEP 2: Tenant Scoped Clinical Entities
+// -------------------------------------------------------------
+
 model User {
-  id           String   @id @default(uuid()) @db.Uuid
-  email        String   @unique
-  passwordHash String
-  fullNameEn   String
-  fullNameKh   String?
-  role         Role     @default(RECEPTIONIST)
+  id                   String   @id @default(uuid()) @db.Uuid
+  tenantId             String?  @db.Uuid
+  email                String   @unique
+  passwordHash         String
+  fullNameEn           String
+  fullNameKh           String?
+  role                 Role     @default(RECEPTIONIST)
   phone                String?
   avatarUrl            String?  @db.Text
   department           String?
@@ -77,9 +174,11 @@ model User {
   bio                  String?
   notificationsEnabled Boolean  @default(true)
   isActive             Boolean  @default(true)
+  expiresAt            DateTime?
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
+  tenant              Tenant?          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   doctorVisits        Visit[]          @relation("DoctorVisits")
   doctorPrescriptions Prescription[] @relation("DoctorPrescriptions")
   doctorFollowUps     FollowUp[]       @relation("DoctorFollowUps")
@@ -88,11 +187,15 @@ model User {
   auditLogs           AuditLog[]
   visitorLogs         VisitorLog[]
 
+  @@index([tenantId])
+  @@index([tenantId, id])
+  @@index([tenantId, role])
   @@map("users")
 }
 
 model Patient {
   id                    String    @id @default(uuid()) @db.Uuid
+  tenantId              String?   @db.Uuid
   patientCode           String    @unique
   nameEn                String
   nameKh                String?
@@ -108,6 +211,7 @@ model Patient {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
+  tenant         Tenant?         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   visits         Visit[]
   medicalRecords MedicalRecord[]
   prescriptions  Prescription[]
@@ -115,6 +219,9 @@ model Patient {
   followUps      FollowUp[]
   documents      Document[]
 
+  @@index([tenantId])
+  @@index([tenantId, id])
+  @@index([tenantId, createdAt])
   @@index([phone])
   @@index([nameEn])
   @@index([patientCode])
@@ -123,6 +230,7 @@ model Patient {
 
 model Visit {
   id              String      @id @default(uuid()) @db.Uuid
+  tenantId        String?     @db.Uuid
   visitCode       String      @unique
   patientId       String      @db.Uuid
   doctorId        String?     @db.Uuid
@@ -140,6 +248,7 @@ model Visit {
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
+  tenant        Tenant?        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   patient       Patient        @relation(fields: [patientId], references: [id], onDelete: Cascade)
   doctor        User?          @relation("DoctorVisits", fields: [doctorId], references: [id])
   medicalRecord MedicalRecord?
@@ -148,6 +257,10 @@ model Visit {
   followUps     FollowUp[]
   documents     Document[]
 
+  @@index([tenantId])
+  @@index([tenantId, id])
+  @@index([tenantId, status])
+  @@index([tenantId, createdAt])
   @@index([patientId])
   @@index([doctorId])
   @@index([status])
@@ -174,6 +287,7 @@ model MedicalRecord {
 
 model Prescription {
   id               String             @id @default(uuid()) @db.Uuid
+  tenantId         String?            @db.Uuid
   prescriptionCode String             @unique
   visitId          String             @db.Uuid
   patientId        String             @db.Uuid
@@ -184,11 +298,15 @@ model Prescription {
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
 
+  tenant           Tenant?            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   visit            Visit              @relation(fields: [visitId], references: [id], onDelete: Cascade)
   patient          Patient            @relation(fields: [patientId], references: [id], onDelete: Cascade)
   doctor           User               @relation("DoctorPrescriptions", fields: [doctorId], references: [id])
   items            PrescriptionItem[]
 
+  @@index([tenantId])
+  @@index([tenantId, id])
+  @@index([tenantId, createdAt])
   @@index([visitId])
   @@index([patientId])
   @@map("prescriptions")
@@ -215,6 +333,7 @@ model PrescriptionItem {
 
 model Invoice {
   id            String        @id @default(uuid()) @db.Uuid
+  tenantId      String?       @db.Uuid
   invoiceNumber String        @unique
   visitId       String?       @db.Uuid
   patientId     String        @db.Uuid
@@ -229,11 +348,16 @@ model Invoice {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
+  tenant        Tenant?              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   visit         Visit?               @relation(fields: [visitId], references: [id])
   patient       Patient              @relation(fields: [patientId], references: [id], onDelete: Cascade)
   cashier       User?                @relation("CashierInvoices", fields: [cashierId], references: [id])
   transactions  PaymentTransaction[]
 
+  @@index([tenantId])
+  @@index([tenantId, id])
+  @@index([tenantId, status])
+  @@index([tenantId, createdAt])
   @@index([patientId])
   @@index([status])
   @@map("invoices")
@@ -265,6 +389,7 @@ model PaymentTransaction {
 
 model FollowUp {
   id            String         @id @default(uuid()) @db.Uuid
+  tenantId      String?        @db.Uuid
   patientId     String         @db.Uuid
   doctorId      String         @db.Uuid
   visitId       String?        @db.Uuid
@@ -275,10 +400,14 @@ model FollowUp {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
+  tenant        Tenant?        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   patient       Patient        @relation(fields: [patientId], references: [id], onDelete: Cascade)
   doctor        User           @relation("DoctorFollowUps", fields: [doctorId], references: [id])
   visit         Visit?         @relation(fields: [visitId], references: [id])
 
+  @@index([tenantId])
+  @@index([tenantId, id])
+  @@index([tenantId, scheduledDate])
   @@index([patientId])
   @@index([scheduledDate])
   @@map("follow_ups")
@@ -286,6 +415,7 @@ model FollowUp {
 
 model AuditLog {
   id        BigInt   @id @default(autoincrement())
+  tenantId  String?  @db.Uuid
   userId    String?  @db.Uuid
   action    String
   entity    String
@@ -295,8 +425,12 @@ model AuditLog {
   details   Json?
   createdAt DateTime @default(now())
 
+  tenant    Tenant?  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   user      User?    @relation(fields: [userId], references: [id])
 
+  @@index([tenantId])
+  @@index([tenantId, id])
+  @@index([tenantId, createdAt])
   @@index([userId])
   @@index([entity])
   @@map("audit_logs")
@@ -304,6 +438,7 @@ model AuditLog {
 
 model Document {
   id           String   @id @default(uuid()) @db.Uuid
+  tenantId     String?  @db.Uuid
   patientId    String   @db.Uuid
   visitId      String?  @db.Uuid
   title        String
@@ -317,10 +452,14 @@ model Document {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  tenant     Tenant?  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   patient    Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
   visit      Visit?   @relation(fields: [visitId], references: [id])
   uploadedBy User?    @relation("UploadedDocuments", fields: [uploadedById], references: [id])
 
+  @@index([tenantId])
+  @@index([tenantId, id])
+  @@index([tenantId, createdAt])
   @@index([patientId])
   @@index([category])
   @@map("documents")
@@ -328,6 +467,7 @@ model Document {
 
 model VisitorLog {
   id               BigInt   @id @default(autoincrement())
+  tenantId         String?  @db.Uuid
   sessionId        String?
   ipAddress        String
   country          String?
@@ -353,12 +493,14 @@ model VisitorLog {
   details          Json?
   createdAt        DateTime @default(now())
 
+  tenant           Tenant?  @relation(fields: [tenantId], references: [id], onDelete: SetNull)
   user             User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
+  @@index([tenantId])
+  @@index([tenantId, createdAt])
   @@index([ipAddress])
   @@index([path])
   @@index([action])
   @@index([createdAt])
   @@map("visitor_logs")
 }
-

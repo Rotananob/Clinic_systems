@@ -1,0 +1,36 @@
+import { Controller, Get, Post, Body, UseGuards, Request } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
+import { TenantsService } from './tenants.service';
+import { SetupMerchantDto } from './dto/setup-merchant.dto';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+
+@ApiTags('Tenant Management & Merchant Setup')
+@Controller('tenants')
+export class TenantsController {
+  constructor(private readonly tenantsService: TenantsService) {}
+
+  @ApiOperation({ summary: 'Get current tenant workspace profile, subscription, and quota usage' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  getTenantProfile(@Request() req: any) {
+    return this.tenantsService.getTenantProfile(req.user);
+  }
+
+  @ApiOperation({ summary: 'Paste & Go: Setup Bakong Account ID and PayWay Merchant Credentials' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiResponse({ status: 200, description: 'Merchant credentials saved and isolated dynamic KHQR activated' })
+  @Post('setup-merchant')
+  setupMerchant(@Request() req: any, @Body() dto: SetupMerchantDto) {
+    return this.tenantsService.setupMerchant(dto, req.user);
+  }
+
+  @ApiOperation({ summary: 'Generate instant test Dynamic KHQR to verify merchant credentials' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Post('test-merchant-khqr')
+  testMerchantKhqr(@Body() dto: SetupMerchantDto) {
+    return this.tenantsService.generateTestKhqr(dto);
+  }
+}

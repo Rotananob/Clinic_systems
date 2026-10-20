@@ -17,7 +17,11 @@ import { SystemModule } from './system/system.module';
 import { TelegramModule } from './telegram/telegram.module';
 import { UploadModule } from './upload/upload.module';
 import { TrackingModule } from './tracking/tracking.module';
+import { TenantsModule } from './tenants/tenants.module';
+import { SubscriptionsModule } from './subscriptions/subscriptions.module';
+import { SuperAdminModule } from './super-admin/super-admin.module';
 import { RateLimiterMiddleware } from './common/middleware/rate-limiter.middleware';
+import { TenantContextMiddleware } from './common/middleware/tenant-context.middleware';
 import { CommonModule } from './common/common.module';
 
 @Module({
@@ -49,10 +53,13 @@ import { CommonModule } from './common/common.module';
     TelegramModule,
     UploadModule,
     TrackingModule,
+    TenantsModule,
+    SubscriptionsModule,
+    SuperAdminModule,
   ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(RateLimiterMiddleware).forRoutes('*');
+    consumer.apply(RateLimiterMiddleware, TenantContextMiddleware).forRoutes('*');
   }
 }

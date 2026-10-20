@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger, Optional } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { InvoiceStatus, PaymentStatus, PaymentMethod } from '@prisma/client';
@@ -33,15 +33,22 @@ function loadKhqrHelper(): any {
 
 import { TelegramService } from '../telegram/telegram.service';
 import { TestAccountThrottleService } from '../common/services/test-account-throttle.service';
+import { QuotaGuardService } from '../subscriptions/quota-guard.service';
 
 const khqrHelper = loadKhqrHelper();
 const { KhqrGateway, verifySettlement, buildKhqr, buildBankDeeplinks, computeMd5 } = khqrHelper;
+
+const isValidUuid = (val?: string | null): boolean => {
+  if (!val || typeof val !== 'string') return false;
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(val);
+};
 
 @Injectable()
 export class PaymentsService {
   private readonly logger = new Logger(PaymentsService.name);
   private gatewayInstance: any = null;
   private statusCheckCache = new Map<string, { timestamp: number; result: any }>();
+  private activeSettlements = new Map<string, Promise<any>>();
 
   constructor(
     private prisma: PrismaService,
@@ -49,6 +56,7 @@ export class PaymentsService {
     private paywayDirectService: PaywayDirectService,
     private telegramService: TelegramService,
     private throttleService: TestAccountThrottleService,
+    @Optional() private quotaGuardService?: QuotaGuardService,
   ) {}
 
   private getGateway(): any {
@@ -82,11 +90,17 @@ export class PaymentsService {
         patient: {
           select: { id: true, nameEn: true, nameKh: true, phone: true },
         },
+        tenant: true,
       },
     });
 
     if (!invoice) {
       throw new NotFoundException(`Invoice with ID ${invoiceId} not found`);
+    }
+
+    // Step 19: Check & enforce daily KHQR quota for the clinic tenant
+    if (invoice.tenantId && this.quotaGuardService) {
+      await this.quotaGuardService.checkAndEnforceKhqrQuota(invoice.tenantId);
     }
 
     if (invoice.status === InvoiceStatus.PAID) {
@@ -148,12 +162,24 @@ export class PaymentsService {
       }
     }
 
+    const tenant = (invoice as any)?.tenant;
     const paywayLink =
+      tenant?.paywayPaymentUrl ||
       this.configService.get<string>('PAYWAY_PAYMENT_URL') ||
       'https://link.payway.com.kh/ABAPAYCK539089j';
-    const bakongId = this.configService.get<string>('BAKONG_ACCOUNT_ID') || 'houn_vannak_clinic@aba';
-    const merchantName = this.configService.get<string>('BAKONG_MERCHANT_NAME') || 'Houn Vannak Clinic';
-    const merchantCity = this.configService.get<string>('BAKONG_MERCHANT_CITY') || 'Phnom Penh';
+    const bakongId =
+      tenant?.bakongAccountId ||
+      this.configService.get<string>('BAKONG_ACCOUNT_ID') ||
+      'houn_vannak_clinic@aba';
+    const merchantName =
+      tenant?.merchantName ||
+      tenant?.clinicNameEn ||
+      this.configService.get<string>('BAKONG_MERCHANT_NAME') ||
+      'Houn Vannak Clinic';
+    const merchantCity =
+      tenant?.merchantCity ||
+      this.configService.get<string>('BAKONG_MERCHANT_CITY') ||
+      'Phnom Penh';
     const amount = Number(invoice.payableAmount);
     const currency = (invoice.currency as 'USD' | 'KHR') || 'USD';
 
@@ -270,11 +296,25 @@ export class PaymentsService {
   }
 
   async settleTransaction(tranId: string, cashierId?: string) {
+    const existing = this.activeSettlements.get(tranId);
+    if (existing) {
+      return existing;
+    }
+
+    const task = this.executeSettleTransaction(tranId, cashierId).finally(() => {
+      this.activeSettlements.delete(tranId);
+    });
+
+    this.activeSettlements.set(tranId, task);
+    return task;
+  }
+
+  private async executeSettleTransaction(tranId: string, cashierId?: string) {
     const txn = await this.prisma.paymentTransaction.findUnique({
       where: { tranId },
       include: {
         invoice: {
-          include: { patient: true },
+          include: { patient: true, tenant: true },
         },
       },
     });
@@ -283,17 +323,54 @@ export class PaymentsService {
       throw new NotFoundException(`Payment transaction with ID ${tranId} not found`);
     }
 
-    if (txn.status === PaymentStatus.SUCCESS) {
+    const now = new Date();
+
+    if (txn.status === PaymentStatus.SUCCESS || txn.invoice?.status === InvoiceStatus.PAID) {
       return {
+        success: true,
         alreadySettled: true,
         message: 'Transaction was already settled.',
+        invoiceNumber: txn.invoice?.invoiceNumber,
+        amount: Number(txn.amount),
+        currency: txn.currency,
+        paidAt: txn.verifiedAt || txn.invoice?.paidAt || now,
         transaction: txn,
       };
     }
 
-    const now = new Date();
+    let validCashierId: string | null = null;
+    if (isValidUuid(cashierId)) {
+      try {
+        const userExists = await this.prisma.user.findUnique({
+          where: { id: cashierId! },
+          select: { id: true },
+        });
+        if (userExists) {
+          validCashierId = userExists.id;
+        }
+      } catch {
+        validCashierId = null;
+      }
+    }
 
     const settled = await this.prisma.$transaction(async (tx) => {
+      const freshTxn = await tx.paymentTransaction.findUnique({
+        where: { id: txn.id },
+        include: { invoice: true },
+      });
+
+      if (!freshTxn) {
+        throw new NotFoundException(`Payment transaction with ID ${tranId} not found`);
+      }
+
+      if (freshTxn.status === PaymentStatus.SUCCESS || freshTxn.invoice.status === InvoiceStatus.PAID) {
+        return {
+          alreadySettled: true,
+          transaction: freshTxn,
+          invoice: freshTxn.invoice,
+        };
+      }
+
       const updatedTxn = await tx.paymentTransaction.update({
         where: { id: txn.id },
         data: {
@@ -307,44 +384,69 @@ export class PaymentsService {
         data: {
           status: InvoiceStatus.PAID,
           paidAt: now,
-          cashierId: cashierId || txn.invoice.cashierId,
+          cashierId: validCashierId || txn.invoice.cashierId || null,
+        },
+        include: {
+          tenant: true,
         },
       });
 
       // Audit log entry for financial compliance
-      await tx.auditLog.create({
-        data: {
-          userId: cashierId,
-          action: 'KHQR_PAYMENT_SETTLED',
-          entity: 'INVOICE',
-          entityId: txn.invoiceId,
-          details: {
-            tranId,
-            amount: Number(txn.amount),
-            currency: txn.currency,
-            md5: txn.md5,
-            settledAt: now.toISOString(),
+      try {
+        await tx.auditLog.create({
+          data: {
+            tenantId: txn.invoice?.tenantId || undefined,
+            userId: validCashierId,
+            action: 'KHQR_PAYMENT_SETTLED',
+            entity: 'INVOICE',
+            entityId: txn.invoiceId,
+            details: {
+              tranId,
+              amount: Number(txn.amount),
+              currency: txn.currency,
+              md5: txn.md5,
+              settledAt: now.toISOString(),
+            },
           },
-        },
-      });
+        });
+      } catch (logErr: any) {
+        this.logger.warn(`Settlement audit log skipped: ${logErr.message}`);
+      }
 
       return {
+        alreadySettled: false,
         transaction: updatedTxn,
         invoice: updatedInvoice,
       };
     });
 
+    if (settled.alreadySettled) {
+      return {
+        success: true,
+        alreadySettled: true,
+        message: 'Transaction was already settled.',
+        invoiceNumber: settled.invoice?.invoiceNumber,
+        amount: Number(settled.transaction?.amount || txn.amount),
+        currency: settled.transaction?.currency || txn.currency,
+        paidAt: settled.transaction?.verifiedAt || now,
+      };
+    }
+
+    const clinicKh = (settled.invoice as any)?.tenant?.clinicNameKh || 'គ្លីនិក រតនា';
+    const targetTenantId = (settled.invoice as any)?.tenantId || undefined;
+
     // Auto-dispatch notification to Telegram Payments Topic (non-blocking)
     this.telegramService.notify(
       'PAYMENTS',
       [
-        `<b>[ការទូទាត់ជោគជ័យ] ពេទ្យ ហួន វណ្ណៈ</b>`,
+        `<b>[ការទូទាត់ជោគជ័យ] ${clinicKh}</b>`,
         `• <b>វិក្កយបត្រ:</b> #${settled.invoice.invoiceNumber}`,
         `• <b>ចំនួនទឹកប្រាក់:</b> $${Number(settled.transaction.amount).toFixed(2)} (${settled.transaction.currency})`,
         `• <b>វិធីសាស្ត្រ:</b> KHQR (ABA PayWay)`,
         `• <b>Tran ID:</b> <code>${tranId}</code>`,
         `• <b>កាលបរិច្ឆេទ:</b> ${now.toLocaleString('km-KH')}`,
-      ].join('\n')
+      ].join('\n'),
+      targetTenantId,
     ).catch((err: any) => {
       this.logger.debug(`Telegram notification skipped: ${err.message}`);
     });
@@ -639,6 +741,11 @@ export class PaymentsService {
       throw new NotFoundException(`Invoice with ID ${invoiceId} not found`);
     }
 
+    // Step 19: Check & enforce daily KHQR quota for the clinic tenant
+    if (invoice.tenantId && this.quotaGuardService) {
+      await this.quotaGuardService.checkAndEnforceKhqrQuota(invoice.tenantId);
+    }
+
     if (invoice.status === InvoiceStatus.PAID) {
       throw new BadRequestException('This invoice is already settled/paid.');
     }
@@ -654,6 +761,19 @@ export class PaymentsService {
     const changeDue = Math.max(0, tendered - payable);
     const now = new Date();
     const tranId = `CASH-${invoice.invoiceNumber}-${Date.now().toString().slice(-6)}`;
+
+    let validCashierId: string | null = null;
+    if (isValidUuid(cashierId)) {
+      try {
+        const userExists = await this.prisma.user.findUnique({
+          where: { id: cashierId! },
+          select: { id: true },
+        });
+        if (userExists) validCashierId = userExists.id;
+      } catch {
+        validCashierId = null;
+      }
+    }
 
     const result = await this.prisma.$transaction(async (tx) => {
       const transaction = await tx.paymentTransaction.create({
@@ -680,7 +800,7 @@ export class PaymentsService {
           status: InvoiceStatus.PAID,
           paymentMethod: PaymentMethod.CASH,
           paidAt: now,
-          cashierId: cashierId || null,
+          cashierId: validCashierId || null,
         },
         include: {
           patient: true,
@@ -691,21 +811,24 @@ export class PaymentsService {
         },
       });
 
-      await tx.auditLog.create({
-        data: {
-          userId: cashierId || null,
-          action: 'CASH_PAYMENT_SETTLED',
-          entity: 'INVOICE',
-          entityId: invoice.id,
-          details: {
-            tranId,
-            payableAmount: payable,
-            amountTendered: tendered,
-            changeDue,
-            settledAt: now.toISOString(),
+      try {
+        await tx.auditLog.create({
+          data: {
+            tenantId: invoice.tenantId || undefined,
+            userId: validCashierId,
+            action: 'CASH_PAYMENT_SETTLED',
+            entity: 'INVOICE',
+            entityId: invoice.id,
+            details: {
+              tranId,
+              payableAmount: payable,
+              amountTendered: tendered,
+              changeDue,
+              settledAt: now.toISOString(),
+            },
           },
-        },
-      });
+        });
+      } catch {}
 
       return { transaction, invoice: updatedInvoice };
     });

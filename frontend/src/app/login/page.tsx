@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from '../../context/I18nContext';
@@ -296,6 +297,17 @@ export default function LoginPage() {
               <span>{isKm ? 'បំពេញទិន្នន័យ' : 'Auto-fill'}</span>
             </button>
           </div>
+        </div>
+
+        {/* Public SaaS Navigation Links */}
+        <div className="mt-4 flex items-center justify-center gap-4 text-xs font-semibold text-stone-600">
+          <Link href="/landing" className="hover:text-teal-800 transition-colors">
+            {isKm ? 'ទំព័រដើម (SaaS Home)' : 'Public Home'}
+          </Link>
+          <span>•</span>
+          <Link href="/pricing" className="hover:text-teal-800 transition-colors">
+            {isKm ? 'គម្រោងតម្លៃសេវាកម្ម (Pricing Plans)' : 'View Pricing Plans'}
+          </Link>
         </div>
 
         {/* Security Policy Notice Footer */}

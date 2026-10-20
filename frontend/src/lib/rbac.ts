@@ -113,6 +113,14 @@ export const ROUTE_PERMISSIONS: RoutePermission[] = [
     descriptionKh: 'ការគ្រប់គ្រងជាន់ខ្ពស់ កំណត់ហេតុសុវត្ថិភាព និងបម្រុងទុកទិន្នន័យ',
   },
   {
+    path: '/super-admin',
+    allowedRoles: ['SUPER_ADMIN'],
+    labelEn: 'Super Admin Platform Hub',
+    labelKh: 'ផ្ទាំងគ្រប់គ្រងបណ្តាញគ្លីនិក (Fleet Hub)',
+    descriptionEn: 'Multi-clinic fleet metrics, remote emergency lockout, and platform maintenance',
+    descriptionKh: 'ស្ថិតិ SaaS រួម បណ្តាញគ្លីនិកទាំងអស់ ការបញ្ជាពីចម្ងាយ និងការថែទាំប្រព័ន្ធ',
+  },
+  {
     path: '/invoice-template',
     allowedRoles: ['SUPER_ADMIN', 'ADMIN'],
     labelEn: 'Invoice Template Designer',

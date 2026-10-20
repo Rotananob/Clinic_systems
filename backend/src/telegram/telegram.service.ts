@@ -1,12 +1,28 @@
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, OnModuleDestroy, Optional, Inject, forwardRef } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
+import { TenantContextService } from '../common/services/tenant-context.service';
+import { PlatformMasterBotService } from './platform-master-bot.service';
 
 export interface TelegramTopicConfig {
   paymentsThreadId?: number;
   queueThreadId?: number;
   pharmacyThreadId?: number;
   securityThreadId?: number;
+}
+
+export interface TenantTelegramMapping {
+  tenantId: string;
+  chatId: string;
+  chatTitle?: string;
+  isForum: boolean;
+  pendingAdmin: boolean;
+  topics: TelegramTopicConfig;
+  notifyOnPayment: boolean;
+  notifyOnQueueCheckin: boolean;
+  notifyOnLowStock: boolean;
+  notifyOnSecurityAudit: boolean;
+  connectedAt?: string;
 }
 
 export interface TelegramConfig {
@@ -20,12 +36,28 @@ export interface TelegramConfig {
   pendingAdmin?: boolean;
   topics: TelegramTopicConfig;
   groupTopicsMap?: Record<string, TelegramTopicConfig>;
+  tenantGroupMap?: Record<string, TenantTelegramMapping>;
   notifyOnPayment: boolean;
   notifyOnQueueCheckin: boolean;
   notifyOnLowStock: boolean;
   notifyOnSecurityAudit: boolean;
   connectedAt?: string;
 }
+
+export const OFFICIAL_CLINIC_BOT_NAME = 'Clinic_System';
+export const OFFICIAL_CLINIC_BOT_DESCRIPTION =
+  'ប្រព័ន្ធស្វ័យប្រវត្តិនៃមជ្ឈមណ្ឌលវេជ្ជសាស្ត្រ រតនា (Rotana Clinic Management & Automation Bot)\n\n' +
+  '• ជូនដំណឹងវិក្កយបត្រ & ការទូទាត់ប្រាក់ KHQR\n' +
+  '• ជូនដំណឹងវេនពិគ្រោះអ្នកជំងឺ (Patient Queue)\n' +
+  '• ជូនដំណឹងស្តុកឱសថស្ថាន\n' +
+  '• ជូនដំណឹងសន្តិសុខប្រព័ន្ធគ្លីនិក 24/7';
+export const OFFICIAL_CLINIC_BOT_SHORT_DESC = 'Bot ជូនដំណឹងស្វ័យប្រវត្តិ គ្លីនិក រតនា (Rotana Clinic Alert Bot)';
+export const OFFICIAL_CLINIC_BOT_COMMANDS = [
+  { command: 'start', description: 'ភ្ជាប់ និងពិនិត្យស្ថានភាពគ្លីនិក' },
+  { command: 'topics', description: 'ពិនិត្យបញ្ជី Forum Topics ផ្លូវការ' },
+  { command: 'lock', description: 'ចាក់សោរ និងការពារ Bot Profile' },
+  { command: 'help', description: 'ការណែនាំអំពីប្រព័ន្ធគ្លីនិក' },
+];
 
 const DEFAULT_OFFICIAL_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8822219627:AAHjLV4FeVD5XS55BpUil24UgLdR3WsiUsg';
 const DEFAULT_OFFICIAL_USERNAME = process.env.TELEGRAM_BOT_USERNAME || 'Clinic_systemBot';
@@ -45,6 +77,7 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
     pendingAdmin: false,
     topics: {},
     groupTopicsMap: {},
+    tenantGroupMap: {},
     notifyOnPayment: true,
     notifyOnQueueCheckin: true,
     notifyOnLowStock: true,
@@ -69,13 +102,30 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
     error?: string;
   } = { paired: false };
 
-  constructor() {
+  private readonly tenantPairings = new Map<string, {
+    code?: string;
+    startedAt?: number;
+    paired: boolean;
+    chatTitle?: string;
+    isForum?: boolean;
+    topicsCreated?: boolean;
+    pendingAdmin?: boolean;
+    error?: string;
+  }>();
+
+  private watchdogTimer: NodeJS.Timeout | null = null;
+
+  constructor(
+    @Optional() @Inject(forwardRef(() => PlatformMasterBotService)) private readonly masterBotService?: PlatformMasterBotService,
+  ) {
     this.loadConfig();
   }
 
   onModuleInit() {
     // Start background poller to listen for Telegram updates (1-click group adds)
     this.startBackgroundPoller();
+    // Start 60-second anti-tamper watchdog
+    this.startWatchdog();
     // Enforce and lock official bot name, description, and short description
     this.enforceBotProfileLock().catch((err) => {
       this.logger.warn(`Initial bot profile lock failed: ${err.message}`);
@@ -84,6 +134,24 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
 
   onModuleDestroy() {
     this.stopBackgroundPoller();
+    this.stopWatchdog();
+  }
+
+  public startWatchdog() {
+    if (this.watchdogTimer) return;
+    this.watchdogTimer = setInterval(() => {
+      this.verifyAndHealProfile().catch((err) => {
+        this.logger.debug(`Clinic bot watchdog cycle skipped: ${err.message}`);
+      });
+    }, 60000);
+    this.logger.log('Clinic Alert Bot anti-tamper watchdog active (60s cycle).');
+  }
+
+  public stopWatchdog() {
+    if (this.watchdogTimer) {
+      clearInterval(this.watchdogTimer);
+      this.watchdogTimer = null;
+    }
   }
 
   private loadConfig() {
@@ -92,6 +160,7 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
         const raw = fs.readFileSync(this.configFilePath, 'utf8');
         const parsed = JSON.parse(raw);
         const groupTopicsMap = parsed.groupTopicsMap || {};
+        const tenantGroupMap = parsed.tenantGroupMap || {};
         if (parsed.chatId && parsed.topics && Object.keys(parsed.topics).length > 0 && !groupTopicsMap[parsed.chatId]) {
           groupTopicsMap[parsed.chatId] = parsed.topics;
         }
@@ -101,6 +170,7 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
           botToken: parsed.botToken || DEFAULT_OFFICIAL_TOKEN,
           botUsername: parsed.botUsername || DEFAULT_OFFICIAL_USERNAME,
           groupTopicsMap,
+          tenantGroupMap,
         };
         this.logger.log(`Telegram Bot config loaded. Enabled: ${this.config.enabled}`);
       } else {
@@ -123,23 +193,50 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  public getPublicStatus() {
+  public getPublicStatus(tenantId?: string) {
+    const activeTenantId = tenantId || TenantContextService.getTenantId() || 'rotana';
+
+    if (this.config.tenantGroupMap && this.config.tenantGroupMap[activeTenantId]) {
+      const tm = this.config.tenantGroupMap[activeTenantId];
+      return {
+        enabled: true,
+        botUsername: this.config.botUsername || DEFAULT_OFFICIAL_USERNAME,
+        botName: this.config.botName || 'Clinic_Alert',
+        chatTitle: tm.chatTitle || null,
+        chatId: tm.chatId ? `${tm.chatId.substring(0, 4)}****${tm.chatId.slice(-3)}` : null,
+        rawChatId: tm.chatId || null,
+        isForum: Boolean(tm.isForum),
+        pendingAdmin: Boolean(tm.pendingAdmin),
+        topics: tm.topics,
+        notifyOnPayment: tm.notifyOnPayment,
+        notifyOnQueueCheckin: tm.notifyOnQueueCheckin,
+        notifyOnLowStock: tm.notifyOnLowStock,
+        notifyOnSecurityAudit: tm.notifyOnSecurityAudit,
+        connectedAt: tm.connectedAt || null,
+        hasToken: Boolean(this.config.botToken),
+        tenantId: activeTenantId,
+        officialBotUsername: DEFAULT_OFFICIAL_USERNAME,
+      };
+    }
+
+    const isPrimary = activeTenantId === 'rotana' || !activeTenantId;
     return {
-      enabled: this.config.enabled,
+      enabled: isPrimary ? this.config.enabled : false,
       botUsername: this.config.botUsername || DEFAULT_OFFICIAL_USERNAME,
       botName: this.config.botName || 'Clinic_Alert',
-      chatTitle: this.config.chatTitle || null,
-      chatId: this.config.chatId ? `${this.config.chatId.substring(0, 4)}****${this.config.chatId.slice(-3)}` : null,
-      rawChatId: this.config.chatId || null,
-      isForum: Boolean(this.config.isForum),
-      pendingAdmin: Boolean(this.config.pendingAdmin),
-      topics: this.config.topics,
+      chatTitle: isPrimary ? (this.config.chatTitle || null) : null,
+      chatId: isPrimary && this.config.chatId ? `${this.config.chatId.substring(0, 4)}****${this.config.chatId.slice(-3)}` : null,
+      rawChatId: isPrimary ? (this.config.chatId || null) : null,
+      isForum: isPrimary ? Boolean(this.config.isForum) : false,
+      pendingAdmin: isPrimary ? Boolean(this.config.pendingAdmin) : false,
+      topics: isPrimary ? this.config.topics : {},
       notifyOnPayment: this.config.notifyOnPayment,
       notifyOnQueueCheckin: this.config.notifyOnQueueCheckin,
       notifyOnLowStock: this.config.notifyOnLowStock,
       notifyOnSecurityAudit: this.config.notifyOnSecurityAudit,
-      connectedAt: this.config.connectedAt || null,
+      connectedAt: isPrimary ? (this.config.connectedAt || null) : null,
       hasToken: Boolean(this.config.botToken),
+      tenantId: activeTenantId,
       officialBotUsername: DEFAULT_OFFICIAL_USERNAME,
     };
   }
@@ -147,65 +244,81 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
   /**
    * Helper to check if a 1-Click pairing session is currently active
    */
-  private isSessionActive(): boolean {
+  private isSessionActive(tenantId?: string): boolean {
+    const activeTenantId = tenantId || TenantContextService.getTenantId() || 'rotana';
+    const session = this.tenantPairings.get(activeTenantId) || this.activePairing;
     return Boolean(
-      this.activePairing?.code &&
-      Date.now() - (this.activePairing.startedAt || 0) < 600000 // 10 minutes timeout
+      session?.code &&
+      Date.now() - (session.startedAt || 0) < 600000 // 10 minutes timeout
     );
   }
 
   /**
-   * 1-Click Pairing Session Generator:
-   * Generates deep link that opens Telegram app and prompts user to add the bot to a group as Admin
+   * 1-Click Pairing Session Generator (Multi-Tenant aware)
    */
-  startPairingSession(): {
+  startPairingSession(tenantId?: string): {
     pairingCode: string;
     deepLink: string;
     botUsername: string;
     alreadyConnected: boolean;
   } {
-    const pairingCode = `pair_${Date.now().toString(36)}`;
+    const activeTenantId = tenantId || TenantContextService.getTenantId() || 'rotana';
+    const pairingCode = `pair_${activeTenantId}_${Date.now().toString(36)}`;
     const botUser = this.config.botUsername || DEFAULT_OFFICIAL_USERNAME;
-    
+
     // Telegram deep link with group selection and requested admin privileges
     const deepLink = `https://t.me/${botUser}?startgroup=${pairingCode}&admin=manage_topics+change_info+post_messages`;
 
-    this.activePairing = {
+    const session = {
       code: pairingCode,
       startedAt: Date.now(),
       paired: false,
       topicsCreated: false,
       pendingAdmin: false,
     };
+    this.tenantPairings.set(activeTenantId, session);
+    this.activePairing = session;
     this.lastProcessedChatId = '';
 
     // Ensure update poller is active
     this.startBackgroundPoller();
 
+    const isConnected = Boolean(
+      this.config.tenantGroupMap?.[activeTenantId]?.chatId ||
+      (activeTenantId === 'rotana' && this.config.chatId)
+    );
+
     return {
       pairingCode,
       deepLink,
       botUsername: botUser,
-      alreadyConnected: Boolean(this.config.enabled && this.config.chatId),
+      alreadyConnected: isConnected,
     };
   }
 
   /**
-   * Status of current 1-Click pairing operation
+   * Status of current 1-Click pairing operation (Multi-Tenant aware)
    */
-  getPairingStatus() {
-    const isSessionActive = this.isSessionActive();
+  getPairingStatus(tenantId?: string) {
+    const activeTenantId = tenantId || TenantContextService.getTenantId() || 'rotana';
+    const session = this.tenantPairings.get(activeTenantId) || this.activePairing;
+    const isSessionActive = Boolean(
+      session?.code && Date.now() - (session.startedAt || 0) < 600000
+    );
+    const isConnected = Boolean(
+      this.config.tenantGroupMap?.[activeTenantId]?.chatId ||
+      (activeTenantId === 'rotana' && this.config.chatId)
+    );
+
     return {
       active: isSessionActive,
-      code: this.activePairing.code,
-      paired: isSessionActive
-        ? Boolean(this.activePairing.paired)
-        : Boolean(this.config.enabled && this.config.chatId),
-      chatTitle: this.activePairing.chatTitle || this.config.chatTitle || null,
-      isForum: this.activePairing.isForum ?? this.config.isForum ?? false,
-      topicsCreated: this.activePairing.topicsCreated ?? Boolean(this.config.topics?.paymentsThreadId),
-      pendingAdmin: this.activePairing.pendingAdmin ?? this.config.pendingAdmin ?? false,
-      error: this.activePairing.error || null,
+      code: session?.code,
+      paired: isSessionActive ? Boolean(session?.paired) : isConnected,
+      chatTitle: session?.chatTitle || this.config.tenantGroupMap?.[activeTenantId]?.chatTitle || this.config.chatTitle || null,
+      isForum: session?.isForum ?? this.config.tenantGroupMap?.[activeTenantId]?.isForum ?? this.config.isForum ?? false,
+      topicsCreated: session?.topicsCreated ?? Boolean(this.config.tenantGroupMap?.[activeTenantId]?.topics?.paymentsThreadId || this.config.topics?.paymentsThreadId),
+      pendingAdmin: session?.pendingAdmin ?? this.config.tenantGroupMap?.[activeTenantId]?.pendingAdmin ?? this.config.pendingAdmin ?? false,
+      error: session?.error || null,
     };
   }
 
@@ -301,16 +414,28 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
               m.username?.toLowerCase() === (this.config.botUsername || DEFAULT_OFFICIAL_USERNAME).toLowerCase()
             );
 
+            // Extract targetTenantId from pairing deep link text (e.g. /start pair_<tenantId>_<random>)
+            let detectedTenantId: string | null = null;
+            const pairMatch = text.match(/pair_([a-zA-Z0-9-]+)_[a-z0-9]+/i);
+            if (pairMatch) {
+              detectedTenantId = pairMatch[1];
+            } else if (activeCode) {
+              const activeMatch = activeCode.match(/pair_([a-zA-Z0-9-]+)_[a-z0-9]+/i);
+              if (activeMatch) {
+                detectedTenantId = activeMatch[1];
+              }
+            }
+
             if (isCommand || containsActiveCode || isBotAdded || isPairingActive) {
-              this.logger.log(`Received trigger in group ${chat.title} (${chat.id}) - text: "${text}". Processing connection...`);
-              await this.handleChatDiscovered(String(chat.id), chat.title || 'Telegram Group', isCommand);
+              this.logger.log(`Received trigger in group ${chat.title} (${chat.id}) - text: "${text}". Tenant: ${detectedTenantId || 'default'}. Processing connection...`);
+              await this.handleChatDiscovered(String(chat.id), chat.title || 'Telegram Group', isCommand, detectedTenantId);
             }
           }
 
           // 2. Private direct message with user
           if (chat.type === 'private' && (text.startsWith('/start') || text.startsWith('/help') || text.startsWith('/setup'))) {
             const botUser = this.config.botUsername || DEFAULT_OFFICIAL_USERNAME;
-            const pairCode = this.activePairing?.code || `pair_${Date.now().toString(36)}`;
+            const pairCode = this.activePairing?.code || `pair_rotana_${Date.now().toString(36)}`;
             const groupAddUrl = `https://t.me/${botUser}?startgroup=${pairCode}&admin=manage_topics+change_info+post_messages`;
 
             const welcomePrivate = [
@@ -343,7 +468,12 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
    * Automatically inspects newly connected group, checks admin rights,
    * creates topics if authorized, or guides users to grant administrator role.
    */
-  async handleChatDiscovered(chatId: string, chatTitle: string, isManualCommand: boolean = false): Promise<boolean> {
+  async handleChatDiscovered(
+    chatId: string,
+    chatTitle: string,
+    isManualCommand: boolean = false,
+    targetTenantId?: string | null,
+  ): Promise<boolean> {
     if (!chatId) return false;
 
     // Mutex lock to prevent duplicate concurrent discovery calls
@@ -396,6 +526,31 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
       // Case 1: Connect SUCCESS with topic permissions (Admin + CanManageTopics + Forum supergroup)
       if (isBotAdmin && hasTopicCreationRights && isForum) {
         const topics = await this.createForumTopics(token, chatId);
+
+        if (targetTenantId) {
+          this.config.tenantGroupMap = this.config.tenantGroupMap || {};
+          this.config.tenantGroupMap[targetTenantId] = {
+            tenantId: targetTenantId,
+            chatId,
+            chatTitle: chatInfo.title || chatTitle,
+            isForum: true,
+            pendingAdmin: false,
+            topics: { ...topics },
+            notifyOnPayment: true,
+            notifyOnQueueCheckin: true,
+            notifyOnLowStock: true,
+            notifyOnSecurityAudit: true,
+            connectedAt: new Date().toISOString(),
+          };
+          const session = this.tenantPairings.get(targetTenantId);
+          if (session) {
+            session.paired = true;
+            session.chatTitle = chatInfo.title || chatTitle;
+            session.isForum = true;
+            session.topicsCreated = true;
+            session.pendingAdmin = false;
+          }
+        }
 
         this.config = {
           ...this.config,
@@ -761,9 +916,17 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
-   * Disconnect Telegram Bot
+   * Disconnect Telegram Bot (Multi-Tenant aware)
    */
-  disconnect() {
+  disconnect(tenantId?: string) {
+    const activeTenantId = tenantId || TenantContextService.getTenantId() || 'rotana';
+    if (activeTenantId && activeTenantId !== 'rotana' && this.config.tenantGroupMap?.[activeTenantId]) {
+      delete this.config.tenantGroupMap[activeTenantId];
+      this.tenantPairings.delete(activeTenantId);
+      this.saveConfig();
+      return { success: true, message: `Telegram Bot disconnected for tenant ${activeTenantId}.` };
+    }
+
     this.config.enabled = false;
     this.config.chatId = '';
     this.config.chatTitle = '';
@@ -778,12 +941,23 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
-   * Update Notification Toggles
+   * Update Notification Toggles (Multi-Tenant aware)
    */
-  updateSettings(settings: Partial<TelegramConfig>) {
+  updateSettings(settings: Partial<TelegramConfig>, tenantId?: string) {
+    const activeTenantId = tenantId || TenantContextService.getTenantId() || 'rotana';
+    if (activeTenantId && activeTenantId !== 'rotana' && this.config.tenantGroupMap?.[activeTenantId]) {
+      const tm = this.config.tenantGroupMap[activeTenantId];
+      if (typeof settings.notifyOnPayment === 'boolean') tm.notifyOnPayment = settings.notifyOnPayment;
+      if (typeof settings.notifyOnQueueCheckin === 'boolean') tm.notifyOnQueueCheckin = settings.notifyOnQueueCheckin;
+      if (typeof settings.notifyOnLowStock === 'boolean') tm.notifyOnLowStock = settings.notifyOnLowStock;
+      if (typeof settings.notifyOnSecurityAudit === 'boolean') tm.notifyOnSecurityAudit = settings.notifyOnSecurityAudit;
+      this.saveConfig();
+      return this.getPublicStatus(activeTenantId);
+    }
+
     this.config = { ...this.config, ...settings };
     this.saveConfig();
-    return this.getPublicStatus();
+    return this.getPublicStatus(activeTenantId);
   }
 
   /**
@@ -824,28 +998,52 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
 
   /**
    * Public dispatch method for other services (Payments, Visits, etc.)
+   * Fully Multi-Tenant aware: routes alerts strictly to the specific clinic's Telegram group
    */
-  async notify(category: 'PAYMENTS' | 'QUEUE' | 'PHARMACY' | 'SECURITY', messageHtml: string): Promise<boolean> {
-    if (!this.config.enabled || !this.config.chatId) {
-      return false;
+  async notify(
+    category: 'PAYMENTS' | 'QUEUE' | 'PHARMACY' | 'SECURITY',
+    messageHtml: string,
+    targetTenantId?: string,
+  ): Promise<boolean> {
+    const activeTenantId = targetTenantId || TenantContextService.getTenantId() || 'rotana';
+
+    let chatId = this.config.chatId;
+    let topics = this.config.topics;
+    let isForum = this.config.isForum;
+    let allowNotify = false;
+
+    if (activeTenantId && this.config.tenantGroupMap?.[activeTenantId]) {
+      const tm = this.config.tenantGroupMap[activeTenantId];
+      chatId = tm.chatId;
+      topics = tm.topics;
+      isForum = tm.isForum;
+
+      if (category === 'PAYMENTS') allowNotify = tm.notifyOnPayment;
+      else if (category === 'QUEUE') allowNotify = tm.notifyOnQueueCheckin;
+      else if (category === 'PHARMACY') allowNotify = tm.notifyOnLowStock;
+      else if (category === 'SECURITY') allowNotify = tm.notifyOnSecurityAudit;
+    } else {
+      if (category === 'PAYMENTS') allowNotify = this.config.notifyOnPayment;
+      else if (category === 'QUEUE') allowNotify = this.config.notifyOnQueueCheckin;
+      else if (category === 'PHARMACY') allowNotify = this.config.notifyOnLowStock;
+      else if (category === 'SECURITY') allowNotify = this.config.notifyOnSecurityAudit;
     }
 
-    if (category === 'PAYMENTS' && !this.config.notifyOnPayment) return false;
-    if (category === 'QUEUE' && !this.config.notifyOnQueueCheckin) return false;
-    if (category === 'PHARMACY' && !this.config.notifyOnLowStock) return false;
-    if (category === 'SECURITY' && !this.config.notifyOnSecurityAudit) return false;
+    if (!this.config.enabled || !chatId || !allowNotify) {
+      return false;
+    }
 
     const token = this.config.botToken || DEFAULT_OFFICIAL_TOKEN;
 
     let threadId: number | undefined;
-    if (this.config.isForum) {
-      if (category === 'PAYMENTS') threadId = this.config.topics.paymentsThreadId;
-      else if (category === 'QUEUE') threadId = this.config.topics.queueThreadId;
-      else if (category === 'PHARMACY') threadId = this.config.topics.pharmacyThreadId;
-      else if (category === 'SECURITY') threadId = this.config.topics.securityThreadId;
+    if (isForum && topics) {
+      if (category === 'PAYMENTS') threadId = topics.paymentsThreadId;
+      else if (category === 'QUEUE') threadId = topics.queueThreadId;
+      else if (category === 'PHARMACY') threadId = topics.pharmacyThreadId;
+      else if (category === 'SECURITY') threadId = topics.securityThreadId;
     }
 
-    return this.sendMessageDirect(token, this.config.chatId, messageHtml, threadId);
+    return this.sendMessageDirect(token, chatId, messageHtml, threadId);
   }
 
   /**
@@ -898,15 +1096,6 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
       return { success: false, message: 'Bot token not configured.' };
     }
 
-    const officialName = 'Clinic_System';
-    const officialDescription =
-      'ប្រព័ន្ធស្វ័យប្រវត្តិនៃមជ្ឈមណ្ឌលវេជ្ជសាស្ត្រ រតនា (Rotana Clinic Management & Automation Bot)\n\n' +
-      '• ជូនដំណឹងវិក្កយបត្រ & ការទូទាត់ប្រាក់ KHQR\n' +
-      '• ជូនដំណឹងវេនពិគ្រោះអ្នកជំងឺ (Patient Queue)\n' +
-      '• ជូនដំណឹងស្តុកឱសថស្ថាន\n' +
-      '• ជូនដំណឹងសន្តិសុខប្រព័ន្ធគ្លីនិក 24/7';
-    const officialShortDescription = 'Bot ជូនដំណឹងស្វ័យប្រវត្តិ គ្លីនិក រតនា (Rotana Clinic Alert Bot)';
-
     this.lastProfileEnforceTime = Date.now();
 
     try {
@@ -914,34 +1103,28 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
       await fetch(`https://api.telegram.org/bot${token}/setMyName`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: officialName }),
+        body: JSON.stringify({ name: OFFICIAL_CLINIC_BOT_NAME }),
       });
 
       // 2. Set & Lock Full Description
       await fetch(`https://api.telegram.org/bot${token}/setMyDescription`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ description: officialDescription }),
+        body: JSON.stringify({ description: OFFICIAL_CLINIC_BOT_DESCRIPTION }),
       });
 
       // 3. Set & Lock Short Description
       await fetch(`https://api.telegram.org/bot${token}/setMyShortDescription`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ short_description: officialShortDescription }),
+        body: JSON.stringify({ short_description: OFFICIAL_CLINIC_BOT_SHORT_DESC }),
       });
 
       // 4. Set & Lock Official Menu Commands
-      const officialCommands = [
-        { command: 'start', description: 'ភ្ជាប់ និងពិនិត្យស្ថានភាពគ្លីនិក' },
-        { command: 'topics', description: 'ពិនិត្យបញ្ជី Forum Topics ផ្លូវការ' },
-        { command: 'lock', description: 'ចាក់សោរ និងការពារ Bot Profile' },
-        { command: 'help', description: 'ការណែនាំអំពីប្រព័ន្ធគ្លីនិក' },
-      ];
       await fetch(`https://api.telegram.org/bot${token}/setMyCommands`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ commands: officialCommands }),
+        body: JSON.stringify({ commands: OFFICIAL_CLINIC_BOT_COMMANDS }),
       });
 
       this.logger.log('Official Telegram Bot Profile locked and protected successfully.');
@@ -949,6 +1132,74 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
     } catch (err: any) {
       this.logger.warn(`Failed to enforce bot profile lock: ${err.message}`);
       return { success: false, message: err.message };
+    }
+  }
+
+  /**
+   * Watchdog Integrity Check: detects tampering on Clinic Alert Bot and restores immediately
+   */
+  public async verifyAndHealProfile(): Promise<{
+    verified: boolean;
+    healed: boolean;
+    tamperDetected: boolean;
+    message: string;
+  }> {
+    const token = this.config.botToken || DEFAULT_OFFICIAL_TOKEN;
+    if (!token) {
+      return { verified: false, healed: false, tamperDetected: false, message: 'Bot token not configured.' };
+    }
+
+    try {
+      const descRes = await fetch(`https://api.telegram.org/bot${token}/getMyDescription`);
+      const descData = await descRes.json();
+      const currentDesc = descData?.result?.description || '';
+
+      const shortRes = await fetch(`https://api.telegram.org/bot${token}/getMyShortDescription`);
+      const shortData = await shortRes.json();
+      const currentShort = shortData?.result?.short_description || '';
+
+      const nameRes = await fetch(`https://api.telegram.org/bot${token}/getMyName`);
+      const nameData = await nameRes.json();
+      const currentName = nameData?.result?.name || '';
+
+      const isNameTampered = currentName && currentName !== OFFICIAL_CLINIC_BOT_NAME;
+      const isDescTampered = currentDesc && currentDesc !== OFFICIAL_CLINIC_BOT_DESCRIPTION;
+      const isShortTampered = currentShort && currentShort !== OFFICIAL_CLINIC_BOT_SHORT_DESC;
+
+      if (isNameTampered || isDescTampered || isShortTampered) {
+        this.logger.warn('[SECURITY] Clinic Alert Bot profile tamper detected! Restoring official lock immediately...');
+        await this.enforceBotProfileLock();
+
+        if (this.masterBotService) {
+          await this.masterBotService.notifySystemSecurityAlert({
+            title: 'CLINIC_BOT_PROFILE_TAMPER_DETECTED',
+            severity: 'HIGH',
+            message: 'Unauthorized alteration to Clinic Alert Bot profile detected. Watchdog auto-restored official locked values.',
+          });
+        }
+
+        return {
+          verified: false,
+          healed: true,
+          tamperDetected: true,
+          message: 'Tampering detected and auto-healed to official profile.',
+        };
+      }
+
+      return {
+        verified: true,
+        healed: false,
+        tamperDetected: false,
+        message: 'Clinic Alert Bot profile integrity verified.',
+      };
+    } catch (err: any) {
+      this.logger.debug(`Clinic watchdog check skipped: ${err.message}`);
+      return {
+        verified: false,
+        healed: false,
+        tamperDetected: false,
+        message: `Watchdog check error: ${err.message}`,
+      };
     }
   }
 }

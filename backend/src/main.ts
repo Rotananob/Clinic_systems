@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { PlatformMasterBotService } from './telegram/platform-master-bot.service';
 import { Request, Response, NextFunction, json, urlencoded } from 'express';
 
 async function bootstrap() {
@@ -36,8 +37,9 @@ async function bootstrap() {
   // Global API Prefix
   app.setGlobalPrefix('api');
 
-  // Production Global Exception Filter (Prevent stack trace leak)
-  app.useGlobalFilters(new AllExceptionsFilter());
+  // Production Global Exception Filter (Prevent stack trace leak, dispatch to Master Bot)
+  const platformMasterBot = app.get(PlatformMasterBotService);
+  app.useGlobalFilters(new AllExceptionsFilter(platformMasterBot));
 
   // Global Validation Pipe with strict whitelisting
   app.useGlobalPipes(
@@ -64,10 +66,9 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   const port = process.env.PORT || 4000;
-  await app.listen(port, '0.0.0.0');
-  console.log(`[Clinic Backend] Running on http://localhost:${port}`);
-  console.log(`[Swagger Docs] Available on http://localhost:${port}/api/docs`);
-  console.log(`[Health Probe] Available on http://localhost:${port}/api/health`);
+  await app.listen(port);
+  console.log(`Clinic Management Backend running on: http://localhost:${port}`);
+  console.log(`Swagger Documentation available at: http://localhost:${port}/api/docs`);
 }
 
 bootstrap();

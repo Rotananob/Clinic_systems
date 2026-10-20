@@ -422,6 +422,25 @@ class ApiClient {
         method: 'POST',
         body: JSON.stringify(credentials),
       }),
+    registerClinic: (data: {
+      clinicNameKh: string;
+      clinicNameEn: string;
+      phone: string;
+      email: string;
+      password: string;
+      adminName?: string;
+      planTier?: string;
+    }) =>
+      this.request<{
+        success: boolean;
+        accessToken: string;
+        user: any;
+        tenant: any;
+        message: string;
+      }>('/auth/register-clinic', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
     me: () => this.request<any>('/auth/me'),
     changePassword: (data: { oldPassword: string; newPassword: string }) =>
       this.request<any>('/auth/change-password', {
@@ -757,6 +776,214 @@ class ApiClient {
         body: JSON.stringify(data),
       }),
     getStats: () => this.request<any>('/tracking/stats'),
+  };
+
+  // SaaS Multi-Tenant & Merchant Setup
+  tenants = {
+    getProfile: () => this.request<{ success: boolean; tenant: any; subscription: any; usage: any }>('/tenants/me'),
+    setupMerchant: (data: {
+      bakongAccountId: string;
+      merchantName: string;
+      merchantCity?: string;
+      paywayPaymentUrl?: string;
+    }) =>
+      this.request<{ success: boolean; message: string; tenant: any }>('/tenants/setup-merchant', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    testMerchantKhqr: (data: {
+      bakongAccountId: string;
+      merchantName: string;
+      merchantCity?: string;
+      paywayPaymentUrl?: string;
+    }) =>
+      this.request<{
+        success: boolean;
+        testMode: boolean;
+        qrString: string;
+        md5: string;
+        bakongId: string;
+        merchantName: string;
+        merchantCity: string;
+        amount: number;
+        currency: string;
+        billNumber: string;
+        deeplinks: any;
+        paywayPaymentUrl?: string;
+        message: string;
+      }>('/tenants/test-merchant-khqr', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+  };
+
+  // SaaS Subscriptions & Billing Engine
+  subscriptions = {
+    getCurrent: () =>
+      this.request<{
+        success: boolean;
+        tenantId: string;
+        slug: string;
+        clinicNameKh: string;
+        clinicNameEn: string;
+        planTier: string;
+        planNameKh: string;
+        planNameEn: string;
+        priceUsd: number;
+        subscriptionStatus: string;
+        daysRemaining: number;
+        currentPeriodEnd: string;
+        isActive: boolean;
+        maxDailyKhqr: number;
+        maxMonthlyPatients: number;
+        maxStaffAccounts: number;
+        currentSubscription: any;
+        recentInvoices: any[];
+      }>('/subscriptions/current'),
+    getHistory: () =>
+      this.request<{
+        success: boolean;
+        tenantId: string;
+        invoices: any[];
+      }>('/subscriptions/history'),
+    checkCycles: () =>
+      this.request<{
+        checkedCount: number;
+        remindersSent7Days: number;
+        remindersSent3Days: number;
+        markedPastDue: number;
+        markedExpired: number;
+        timestamp: string;
+      }>('/subscriptions/check-cycles', {
+        method: 'POST',
+      }),
+    createCheckout: (data: { planTier: string; billingCycle?: string }) =>
+      this.request<{
+        success: boolean;
+        subscriptionId: string;
+        invoiceNumber: string;
+        planTier: string;
+        planNameKh: string;
+        planNameEn: string;
+        billingCycle: string;
+        amountUsd: number;
+        currency: string;
+        tranId: string;
+        qrString: string;
+        md5: string;
+        deeplinks: {
+          aba: string;
+          bakong: string;
+          paywayUrl: string;
+        };
+        merchant: {
+          bakongId: string;
+          merchantName: string;
+          merchantCity: string;
+        };
+        expiresAt: string;
+      }>('/subscriptions/checkout', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    verifySettlement: (data: {
+      subscriptionId: string;
+      tranId?: string;
+      md5?: string;
+      forceConfirm?: boolean;
+    }) =>
+      this.request<{
+        success: boolean;
+        activated: boolean;
+        alreadySettled: boolean;
+        subscriptionId: string;
+        planTier: string;
+        amountUsd: number;
+        endDate: string;
+        newExpiryFormatted?: string;
+        addedDays?: number;
+        message: string;
+      }>('/subscriptions/verify-settlement', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    getQuotaStatus: () =>
+      this.request<{
+        planTier: string;
+        planNameEn: string;
+        planNameKh: string;
+        dailyKhqr: {
+          used: number;
+          limit: number;
+          remaining: number;
+          percent: number;
+          isApproachingLimit: boolean;
+          isExceeded: boolean;
+        };
+        monthlyPatients: {
+          used: number;
+          limit: number;
+          remaining: number;
+          percent: number;
+          isApproachingLimit: boolean;
+          isExceeded: boolean;
+        };
+        staffAccounts: {
+          used: number;
+          limit: number;
+          remaining: number;
+          percent: number;
+          isApproachingLimit: boolean;
+          isExceeded: boolean;
+        };
+      }>('/subscriptions/quota-status'),
+    getReceipt: (subscriptionId: string) =>
+      this.request<any>(`/subscriptions/invoices/${subscriptionId}/receipt`),
+  };
+
+  // Step 21 & Step 22: Platform Super Admin Fleet & Remote Governance
+  superAdmin = {
+    getMetrics: () => this.request<any>('/super-admin/metrics'),
+    getTenants: () => this.request<any[]>('/super-admin/tenants'),
+    freezeTenant: (id: string, reason?: string) =>
+      this.request<any>(`/super-admin/tenants/${id}/freeze`, {
+        method: 'PATCH',
+        body: JSON.stringify({ reason }),
+      }),
+    unfreezeTenant: (id: string) =>
+      this.request<any>(`/super-admin/tenants/${id}/unfreeze`, {
+        method: 'PATCH',
+      }),
+    overridePlan: (
+      id: string,
+      data: {
+        planTier?: string;
+        addDays?: number;
+        newExpiryDate?: string;
+        maxDailyKhqr?: number;
+        maxMonthlyPatients?: number;
+        maxStaffAccounts?: number;
+        reason?: string;
+      },
+    ) =>
+      this.request<any>(`/super-admin/tenants/${id}/override-plan`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }),
+    purgeDemoData: (id: string) =>
+      this.request<any>(`/super-admin/tenants/${id}/purge-demo-data`, {
+        method: 'POST',
+      }),
+    getMaintenanceMode: () => this.request<any>('/super-admin/maintenance-mode'),
+    setMaintenanceMode: (data: { enabled: boolean; messageKh?: string; messageEn?: string }) =>
+      this.request<any>('/super-admin/maintenance-mode', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    impersonate: (id: string) =>
+      this.request<any>(`/super-admin/tenants/${id}/impersonate`, {
+        method: 'POST',
+      }),
   };
 }
 
