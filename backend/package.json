@@ -12,6 +12,7 @@
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
     "prisma:seed": "tsx prisma/seed.ts",
+    "migrate:primary-tenant": "tsx prisma/migrate-primary-tenant.ts",
     "test": "node --experimental-strip-types --test test/*.test.ts"
   },
   "dependencies": {
