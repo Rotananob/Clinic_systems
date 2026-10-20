@@ -240,8 +240,8 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
     const token = this.config.botToken || DEFAULT_OFFICIAL_TOKEN;
     if (!token) return;
 
-    // Periodically verify and lock official bot profile every 30 minutes
-    if (Date.now() - this.lastProfileEnforceTime > 1800000) {
+    // Periodically verify and lock official bot profile every 60 seconds (anti-tampering watchdog)
+    if (Date.now() - this.lastProfileEnforceTime > 60000) {
       this.enforceBotProfileLock().catch(() => {});
     }
 
@@ -288,6 +288,12 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
 
           // 1. Group / Supergroup events
           if (['group', 'supergroup'].includes(chat.type)) {
+            if (text.startsWith('/lock')) {
+              await this.enforceBotProfileLock();
+              await this.sendMessageDirect(token, String(chat.id), '<b>[សន្តិសុខប្រព័ន្ធ]</b> ព័ត៌មាន Bot Profile និង Forum Topics ត្រូវបានចាក់សោរ និងការពារ ១០០% រួចរាល់។');
+              continue;
+            }
+
             const isCommand = text.startsWith('/start') || text.startsWith('/connect') || text.startsWith('/setup') || text.startsWith('/topics');
             const containsActiveCode = Boolean(activeCode && text.includes(activeCode));
             const isBotAdded = newMembers.some((m: any) => 
@@ -923,6 +929,19 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ short_description: officialShortDescription }),
+      });
+
+      // 4. Set & Lock Official Menu Commands
+      const officialCommands = [
+        { command: 'start', description: 'ភ្ជាប់ និងពិនិត្យស្ថានភាពគ្លីនិក' },
+        { command: 'topics', description: 'ពិនិត្យបញ្ជី Forum Topics ផ្លូវការ' },
+        { command: 'lock', description: 'ចាក់សោរ និងការពារ Bot Profile' },
+        { command: 'help', description: 'ការណែនាំអំពីប្រព័ន្ធគ្លីនិក' },
+      ];
+      await fetch(`https://api.telegram.org/bot${token}/setMyCommands`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ commands: officialCommands }),
       });
 
       this.logger.log('Official Telegram Bot Profile locked and protected successfully.');

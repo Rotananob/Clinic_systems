@@ -739,6 +739,87 @@ export const TelegramSettingsPanel: React.FC = () => {
               </label>
             </div>
           </div>
+
+          {/* Dedicated Bot Security & Anti-Tampering Shield Card */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs space-y-4 mt-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-emerald-700" />
+                <h4 className="text-xs font-bold text-slate-900 tracking-tight">
+                  {isKm ? 'ប្រព័ន្ធសុវត្ថិភាព & ការពារ Telegram Bot (Bot Security & Anti-Tampering Shield)' : 'Telegram Bot Security & Anti-Tampering Shield'}
+                </h4>
+              </div>
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono bg-emerald-50 text-emerald-800 border border-emerald-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+                {isKm ? 'សុវត្ថិភាពខ្ពស់ (LOCKED & ENFORCED)' : 'LOCKED & ENFORCED'}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
+                <div className="font-bold text-slate-800 flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-teal-700" />
+                  <span>{isKm ? 'ការចាក់សោរព័ត៌មាន Bot (Anti-Tampering Lock)' : 'Profile Anti-Tampering Lock'}</span>
+                </div>
+                <p className="text-[11px] text-slate-600">
+                  {isKm
+                    ? 'ឈ្មោះ Bot, Description និង Short Description ត្រូវបានចាក់សោរជាម៉ាកសញ្ញាផ្លូវការ។ ប្រសិនបើមានការលួចកែប្រែពីខាងក្រៅ ប្រព័ន្ធនឹង Restores មកវិញភ្លាមៗ។'
+                    : 'Bot Name, Description, and Short Description are strictly locked to official branding with auto-restoration.'}
+                </p>
+              </div>
+
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
+                <div className="font-bold text-slate-800 flex items-center gap-1.5">
+                  <RefreshCw className="w-3.5 h-3.5 text-teal-700" />
+                  <span>{isKm ? 'Self-Healing Watchdog (រៀងរាល់ ៦០ វិនាទី)' : 'Self-Healing Watchdog (Every 60s)'}</span>
+                </div>
+                <p className="text-[11px] text-slate-600">
+                  {isKm
+                    ? 'Background Worker ត្រួតពិនិត្យភាពសុក្រឹតនៃ Bot Profile ជារៀងរាល់ ១ នាទីម្ដង ដើម្បីទប់ស្កាត់ការកែប្រែដោយគ្មានការអនុញ្ញាត។'
+                    : 'Background worker monitors bot integrity every 60 seconds to continuously prevent unauthorized modifications.'}
+                </p>
+              </div>
+
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
+                <div className="font-bold text-slate-800 flex items-center gap-1.5">
+                  <MessageSquare className="w-3.5 h-3.5 text-teal-700" />
+                  <span>{isKm ? 'Menu Commands រៀបចំដោយសុវត្ថិភាព' : 'Secured Bot Menu Commands'}</span>
+                </div>
+                <p className="text-[11px] text-slate-600">
+                  {isKm
+                    ? 'ពាក្យបញ្ជា /start, /topics, /lock, /help ត្រូវបានចុះបញ្ជីផ្លូវការជាមួយ Telegram API ការពារការ Spam បញ្ជាក្លែងបន្លំ។'
+                    : 'Commands /start, /topics, /lock, /help registered strictly with Telegram API to prevent command injection.'}
+                </p>
+              </div>
+
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
+                <div className="font-bold text-slate-800 flex items-center gap-1.5">
+                  <Shield className="w-3.5 h-3.5 text-teal-700" />
+                  <span>{isKm ? 'ការការពារទិន្នន័យអ្នកជំងឺ (Privacy Masking)' : 'Patient Privacy Masking'}</span>
+                </div>
+                <p className="text-[11px] text-slate-600">
+                  {isKm
+                    ? 'រាល់សារដែលបាញ់ចូល Telegram ត្រូវបាន Masking លេខទូរស័ព្ទ និងលេខកូដសម្ងាត់ ធានាមិនឱ្យបែកធ្លាយទិន្នន័យវេជ្ជសាស្ត្រ។'
+                    : 'All messages dispatched to Telegram feature masked phone numbers and anonymized patient data.'}
+                </p>
+              </div>
+            </div>
+
+            <div className="pt-1 flex items-center justify-between">
+              <span className="text-[11px] text-slate-500">
+                {isKm ? 'អ្នកអាចចុចចាក់សោរបន្ថែមដោយផ្ទាល់នៅទីនេះគ្រប់ពេលវេលា៖' : 'You can re-enforce the security lock at any time:'}
+              </span>
+              <button
+                type="button"
+                disabled={lockingProfile}
+                onClick={handleLockProfile}
+                className="px-4 py-2 bg-teal-700 hover:bg-teal-800 text-white rounded-xl text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-colors disabled:opacity-60"
+              >
+                {lockingProfile ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" />}
+                <span>{isKm ? 'ចាក់សោរ & ការពារ Bot Profile ឡើងវិញ' : 'Enforce & Lock Bot Profile'}</span>
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
