@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
+import { TenantContextService } from '../common/services/tenant-context.service';
 
 export interface CloudinaryUploadResult {
   success: boolean;
@@ -72,6 +73,10 @@ export class CloudinaryService implements OnModuleInit {
     return this.initialized;
   }
 
+  /**
+   * Step 23: Tenant-Isolated File Upload to Cloudinary CDN.
+   * Scopes folder strictly into clinicos_tenants/{tenant}/ to guarantee zero cross-tenant asset bleed.
+   */
   async uploadFile(fileData: string, folder = 'attachments'): Promise<CloudinaryUploadResult> {
     if (!this.initialized) {
       this.initCloudinary();
@@ -82,7 +87,12 @@ export class CloudinaryService implements OnModuleInit {
     }
 
     try {
-      const sanitizedFolder = `houn_vannak_clinic/${folder.replace(/^[/]+|[/]+$/g, '')}`;
+      const activeTenant = TenantContextService.getTenantSlug() || TenantContextService.getTenantId();
+      const cleanFolder = folder.replace(/^[/]+|[/]+$/g, '');
+      const sanitizedFolder = activeTenant
+        ? `clinicos_tenants/${activeTenant.toLowerCase().replace(/[^a-z0-9_-]/g, '_')}/${cleanFolder}`
+        : `houn_vannak_clinic/${cleanFolder}`;
+
       const response: UploadApiResponse = await cloudinary.uploader.upload(fileData, {
         folder: sanitizedFolder,
         resource_type: 'auto',
