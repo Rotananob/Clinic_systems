@@ -7,6 +7,7 @@ import { playPaymentSuccessChime, playHospitalChime, playCashRegisterChime } fro
 import { HardwareSettingsPanel } from '../../components/hardware/HardwareSettingsPanel';
 import { TelegramSettingsPanel } from '../../components/telegram/TelegramSettingsPanel';
 import { SoundSettingsPanel } from '../../components/sound/SoundSettingsPanel';
+import { SubscriptionSettingsPanel } from '../../components/subscriptions/SubscriptionSettingsPanel';
 import {
   Building2,
   QrCode,
@@ -31,6 +32,7 @@ import {
   LayoutTemplate,
   ArrowRight,
   Send,
+  CreditCard,
 } from 'lucide-react';
 
 interface ClinicSettingsState {
@@ -158,7 +160,7 @@ const STORAGE_KEY = 'houn_vannak_clinic_settings_v1';
 export default function SettingsPage() {
   const { locale } = useTranslation();
   const isKm = locale === 'km';
-  const [activeTab, setActiveTab] = useState<'profile' | 'khqr' | 'fees' | 'receipt' | 'hardware' | 'sound' | 'telegram' | 'security'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'khqr' | 'fees' | 'receipt' | 'hardware' | 'sound' | 'telegram' | 'security' | 'subscription'>('profile');
   const [settings, setSettings] = useState<ClinicSettingsState>(defaultSettings);
   const [savedNotice, setSavedNotice] = useState(false);
   const [resetNotice, setResetNotice] = useState(false);
@@ -168,7 +170,7 @@ export default function SettingsPage() {
       if (typeof window !== 'undefined') {
         const urlParams = new URLSearchParams(window.location.search);
         const tab = urlParams.get('tab');
-        if (tab && ['profile', 'khqr', 'fees', 'receipt', 'hardware', 'sound', 'telegram', 'security'].includes(tab)) {
+        if (tab && ['profile', 'khqr', 'fees', 'receipt', 'hardware', 'sound', 'telegram', 'security', 'subscription'].includes(tab)) {
           setActiveTab(tab as any);
         }
       }
@@ -393,6 +395,19 @@ export default function SettingsPage() {
         >
           <ShieldAlert className="w-4 h-4" />
           <span>{isKm ? 'សុវត្ថិភាព & ប្រព័ន្ធ' : 'Security & System'}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('subscription')}
+          className={`px-4 py-2.5 rounded-lg text-xs font-semibold flex items-center gap-2 whitespace-nowrap transition-colors ${
+            activeTab === 'subscription'
+              ? 'bg-teal-700 text-white shadow-xs'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+          }`}
+        >
+          <CreditCard className="w-4 h-4" />
+          <span>{isKm ? 'គម្រោងជាវ & បង់ប្រាក់ KHQR' : 'Subscription & Billing'}</span>
         </button>
       </div>
 
@@ -1296,8 +1311,18 @@ export default function SettingsPage() {
           </div>
         )}
 
+        {/* TAB: SaaS Subscription & KHQR Billing */}
+        {activeTab === 'subscription' && (
+          <div className="space-y-6">
+            <SubscriptionSettingsPanel />
+          </div>
+        )}
+
         {/* Action Buttons */}
-        {activeTab !== 'hardware' && activeTab !== 'telegram' && activeTab !== 'sound' && (
+        {activeTab !== 'hardware' &&
+          activeTab !== 'telegram' &&
+          activeTab !== 'sound' &&
+          activeTab !== 'subscription' && (
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
             <button
               type="button"

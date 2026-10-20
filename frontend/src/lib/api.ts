@@ -857,6 +857,56 @@ class ApiClient {
       }>('/subscriptions/check-cycles', {
         method: 'POST',
       }),
+    createCheckout: (data: { planTier: string; billingCycle?: string }) =>
+      this.request<{
+        success: boolean;
+        subscriptionId: string;
+        invoiceNumber: string;
+        planTier: string;
+        planNameKh: string;
+        planNameEn: string;
+        billingCycle: string;
+        amountUsd: number;
+        currency: string;
+        tranId: string;
+        qrString: string;
+        md5: string;
+        deeplinks: {
+          aba: string;
+          bakong: string;
+          paywayUrl: string;
+        };
+        merchant: {
+          bakongId: string;
+          merchantName: string;
+          merchantCity: string;
+        };
+        expiresAt: string;
+      }>('/subscriptions/checkout', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    verifySettlement: (data: {
+      subscriptionId: string;
+      tranId?: string;
+      md5?: string;
+      forceConfirm?: boolean;
+    }) =>
+      this.request<{
+        success: boolean;
+        activated: boolean;
+        alreadySettled: boolean;
+        subscriptionId: string;
+        planTier: string;
+        amountUsd: number;
+        endDate: string;
+        newExpiryFormatted?: string;
+        addedDays?: number;
+        message: string;
+      }>('/subscriptions/verify-settlement', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
   };
 }
 

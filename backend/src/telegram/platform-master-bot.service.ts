@@ -904,6 +904,35 @@ export class PlatformMasterBotService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
+   * Business Alert: Clinic Subscription Payment Received & Plan Activated (Real-Time Settlement)
+   */
+  async notifySubscriptionPaymentReceived(info: {
+    clinicName: string;
+    slug: string;
+    planTier: string;
+    amountUsd: number;
+    billingCycle: string;
+    tranId: string;
+    newEndDate: string;
+    addedDays: number;
+  }): Promise<boolean> {
+    const lines = [
+      `<b>[PLATFORM REVENUE: SUBSCRIPTION PAYMENT RECEIVED]</b>`,
+      `----------------------------------------`,
+      `Clinic: <b>${info.clinicName}</b> (<code>${info.slug}</code>)`,
+      `Plan Tier: <code>${info.planTier}</code> (${info.billingCycle})`,
+      `Amount Paid: <b>$${info.amountUsd}.00 USD</b>`,
+      `Transaction ID: <code>${info.tranId}</code>`,
+      `Extension: <b>+${info.addedDays} days</b>`,
+      `New Expiration: <code>${info.newEndDate}</code>`,
+      `Action: Plan quotas updated and tenant active status confirmed`,
+      `----------------------------------------`,
+    ];
+
+    return this.sendMasterNotification(lines.join('\n'));
+  }
+
+  /**
    * Security & Critical System Alert for Super Admin
    */
   async notifySystemSecurityAlert(event: {

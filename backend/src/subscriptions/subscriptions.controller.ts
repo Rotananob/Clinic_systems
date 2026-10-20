@@ -1,12 +1,26 @@
-import { Controller, Get, Post, UseGuards, Request, ForbiddenException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  UseGuards,
+  Request,
+  ForbiddenException,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { BillingCycleService } from './billing-cycle.service';
+import { SubscriptionPaymentService } from './subscription-payment.service';
+import { CreateSubscriptionCheckoutDto } from './dto/create-subscription-checkout.dto';
+import { VerifySubscriptionSettlementDto } from './dto/verify-subscription-settlement.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 
 @ApiTags('Subscriptions & Billing Engine')
 @Controller('subscriptions')
 export class SubscriptionsController {
-  constructor(private readonly billingCycleService: BillingCycleService) {}
+  constructor(
+    private readonly billingCycleService: BillingCycleService,
+    private readonly subscriptionPaymentService: SubscriptionPaymentService,
+  ) {}
 
   @ApiOperation({ summary: 'Get current clinic subscription status, days remaining, and plan quotas' })
   @ApiBearerAuth()
@@ -42,5 +56,31 @@ export class SubscriptionsController {
       throw new ForbiddenException('Only system administrators can trigger billing cycle runs');
     }
     return this.billingCycleService.runBillingCycleCheck();
+  }
+
+  @ApiOperation({ summary: 'Step 17: Generate Dynamic KHQR Tag 01=12 checkout for SaaS subscription' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiResponse({ status: 201, description: 'Dynamic KHQR payload and bank deeplinks returned' })
+  @Post('checkout')
+  createCheckout(@Request() req: any, @Body() dto: CreateSubscriptionCheckoutDto) {
+    const tenantId = req.user?.tenantId;
+    if (!tenantId) {
+      throw new ForbiddenException('Tenant context required');
+    }
+    return this.subscriptionPaymentService.createCheckout(tenantId, dto);
+  }
+
+  @ApiOperation({ summary: 'Step 18: Instant automated settlement verification & plan activation' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiResponse({ status: 200, description: 'Plan activated and +30 days extended' })
+  @Post('verify-settlement')
+  verifySettlement(@Request() req: any, @Body() dto: VerifySubscriptionSettlementDto) {
+    const tenantId = req.user?.tenantId;
+    if (!tenantId) {
+      throw new ForbiddenException('Tenant context required');
+    }
+    return this.subscriptionPaymentService.verifyAndActivateSettlement(tenantId, dto);
   }
 }
