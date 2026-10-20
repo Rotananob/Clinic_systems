@@ -364,6 +364,39 @@ export const en = {
     testSuccess: 'Dynamic Tag 01=12 test QR generated. Ready to scan with any banking app.',
     close: 'Close',
   },
+  helpCenter: {
+    badge: 'Documentation & Knowledge Base',
+    title: 'ClinicOS Help Center & Technical Guides',
+    subtitle: 'Comprehensive guides, hardware setup manuals, Telegram bot configurations, and clinical workflows.',
+    searchPlaceholder: 'Search setup guides, printer commands, Telegram, KHQR, workflow...',
+    allCategories: 'All Topics',
+    categories: {
+      printer: '80mm POS Thermal Printer',
+      telegram: 'Telegram Bot & Forum Topics',
+      khqr: 'KHQR PayWay & Deeplinks',
+      workflow: 'Clinical Workflow & Queue',
+    },
+    printer: {
+      title: '80mm ESC/POS Thermal Receipt Printer Setup',
+      desc: 'Step-by-step setup guide for thermal invoice printers, USB drivers, Ethernet network printing, and cash drawer triggers.',
+    },
+    telegram: {
+      title: 'Telegram Bot & 4 Forum Topics Supergroup',
+      desc: 'Connect BotFather bot token and configure automatic routing to Security, Finance, Operations, and System topics.',
+    },
+    khqr: {
+      title: 'Dynamic KHQR PayWay & Bank Deeplinks',
+      desc: 'Paste & go merchant setup, dynamic Tag 01=12 payment QR, zero transaction fee, and real-time webhook confirmation.',
+    },
+    workflow: {
+      title: 'Clinical Workflow, Queue & Prescriptions',
+      desc: 'Patient check-in, Khmer voice number announcement, electronic medical consultations, and pharmacy batch inventory deduction.',
+    },
+    quickAssistance: 'Need Direct Assistance?',
+    supportNotice: 'Our technical support team is available 24/7 to assist with hardware configuration and system onboarding.',
+    telegramSupport: 'Telegram Support Channel',
+    emergencyHotline: 'Technical Hotline: +855 23 999 888',
+  },
 };
 
 export type TranslationKey = typeof en;

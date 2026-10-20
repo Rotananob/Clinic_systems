@@ -816,6 +816,48 @@ class ApiClient {
         body: JSON.stringify(data),
       }),
   };
+
+  // SaaS Subscriptions & Billing Engine
+  subscriptions = {
+    getCurrent: () =>
+      this.request<{
+        success: boolean;
+        tenantId: string;
+        slug: string;
+        clinicNameKh: string;
+        clinicNameEn: string;
+        planTier: string;
+        planNameKh: string;
+        planNameEn: string;
+        priceUsd: number;
+        subscriptionStatus: string;
+        daysRemaining: number;
+        currentPeriodEnd: string;
+        isActive: boolean;
+        maxDailyKhqr: number;
+        maxMonthlyPatients: number;
+        maxStaffAccounts: number;
+        currentSubscription: any;
+        recentInvoices: any[];
+      }>('/subscriptions/current'),
+    getHistory: () =>
+      this.request<{
+        success: boolean;
+        tenantId: string;
+        invoices: any[];
+      }>('/subscriptions/history'),
+    checkCycles: () =>
+      this.request<{
+        checkedCount: number;
+        remindersSent7Days: number;
+        remindersSent3Days: number;
+        markedPastDue: number;
+        markedExpired: number;
+        timestamp: string;
+      }>('/subscriptions/check-cycles', {
+        method: 'POST',
+      }),
+  };
 }
 
 export const api = new ApiClient();

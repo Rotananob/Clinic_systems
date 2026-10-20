@@ -70,6 +70,14 @@ export const PublicNavbar: React.FC = () => {
           >
             {isKm ? 'សំណួរញឹកញាប់' : 'FAQ'}
           </Link>
+          <Link
+            href="/help"
+            className={`hover:text-stone-900 transition-colors ${
+              pathname === '/help' ? 'text-teal-800 font-bold' : ''
+            }`}
+          >
+            {isKm ? 'មជ្ឈមណ្ឌលជំនួយ' : 'Help Center'}
+          </Link>
         </nav>
 
         {/* Right CTA Actions */}
@@ -141,6 +149,13 @@ export const PublicNavbar: React.FC = () => {
             className="block py-2 text-xs font-semibold text-stone-700 hover:text-teal-800"
           >
             {isKm ? 'សំណួរញឹកញាប់' : 'FAQ'}
+          </Link>
+          <Link
+            href="/help"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block py-2 text-xs font-semibold text-stone-700 hover:text-teal-800"
+          >
+            {isKm ? 'មជ្ឈមណ្ឌលជំនួយ' : 'Help Center'}
           </Link>
           <div className="pt-2 border-t border-stone-200 flex items-center justify-between">
             <span className="text-xs text-stone-500">{isKm ? 'ភាសា' : 'Language'}</span>

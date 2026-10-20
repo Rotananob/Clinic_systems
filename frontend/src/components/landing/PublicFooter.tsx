@@ -114,6 +114,11 @@ export const PublicFooter: React.FC = () => {
                 </Link>
               </li>
               <li>
+                <Link href="/help" className="hover:text-teal-800 transition-colors">
+                  {isKm ? 'មជ្ឈមណ្ឌលជំនួយ & ឯកសារ (Help & Docs)' : 'Documentation & Help Center'}
+                </Link>
+              </li>
+              <li>
                 <span className="text-stone-500">
                   {isKm ? 'ការគាំទ្របច្ចេកទេស: Telegram 24/7' : 'Support: 24/7 Telegram & Hotline'}
                 </span>
@@ -133,6 +138,10 @@ export const PublicFooter: React.FC = () => {
             &copy; {new Date().getFullYear()} ClinicOS PaaS (Cambodia). All rights reserved.
           </div>
           <div className="flex items-center gap-4">
+            <Link href="/help" className="hover:text-stone-800 transition-colors">
+              {isKm ? 'ឯកសារបច្ចេកទេស' : 'Docs & Help'}
+            </Link>
+            <span>•</span>
             <Link href="/landing#security" className="hover:text-stone-800 transition-colors">
               {isKm ? 'គោលការណ៍សន្តិសុខទិន្នន័យ' : 'Security Policy'}
             </Link>

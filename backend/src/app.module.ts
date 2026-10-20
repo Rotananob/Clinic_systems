@@ -18,6 +18,7 @@ import { TelegramModule } from './telegram/telegram.module';
 import { UploadModule } from './upload/upload.module';
 import { TrackingModule } from './tracking/tracking.module';
 import { TenantsModule } from './tenants/tenants.module';
+import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { RateLimiterMiddleware } from './common/middleware/rate-limiter.middleware';
 import { TenantContextMiddleware } from './common/middleware/tenant-context.middleware';
 import { CommonModule } from './common/common.module';
@@ -52,6 +53,7 @@ import { CommonModule } from './common/common.module';
     UploadModule,
     TrackingModule,
     TenantsModule,
+    SubscriptionsModule,
   ],
 })
 export class AppModule implements NestModule {

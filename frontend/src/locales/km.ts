@@ -364,4 +364,37 @@ export const km = {
     testSuccess: 'បានបង្កើត Dynamic Tag 01=12 តេស្តជោគជ័យ។ អាចស្កេនជាមួយ App ធនាគារបាន។',
     close: 'បិទ',
   },
+  helpCenter: {
+    badge: 'មជ្ឈមណ្ឌលជំនួយ និងឯកសារបច្ចេកទេស',
+    title: 'មជ្ឈមណ្ឌលជំនួយ និងការណែនាំបច្ចេកទេស ClinicOS',
+    subtitle: 'ឯកសារណែនាំលម្អិតអំពីការតភ្ជាប់ឧបករណ៍ Hardware, ការកំណត់ Telegram Bot, ការទូទាត់ KHQR និងរបៀបរបបដំណើរការគ្លីនិកប្រចាំថ្ងៃ។',
+    searchPlaceholder: 'ស្វែងរកមេរៀនណែនាំ, ម៉ាស៊ីនព្រីន, Telegram, KHQR, ដំណើរការគ្លីនិក...',
+    allCategories: 'ប្រធានបទទាំងអស់',
+    categories: {
+      printer: 'ម៉ាស៊ីនព្រីនកម្ដៅ 80mm POS',
+      telegram: 'Telegram Bot & Forum Topics',
+      khqr: 'KHQR PayWay & Deeplinks',
+      workflow: 'ដំណើរការគ្លីនិក & ប្រព័ន្ធហៅលេខ',
+    },
+    printer: {
+      title: 'ការតភ្ជាប់ម៉ាស៊ីនព្រីនវិក្កយបត្រកម្ដៅ 80mm ESC/POS',
+      desc: 'ការណែនាំជាជំហានៗក្នុងការដំឡើង Driver ម៉ាស៊ីនព្រីនតាមរន្ធ USB ឬ Network IP និងការកំណត់កេះថតប្រាក់ស្វ័យប្រវត្ត។',
+    },
+    telegram: {
+      title: 'ការតភ្ជាប់ Telegram Bot & ៤ Forum Topics Supergroup',
+      desc: 'របៀបបង្កើត Bot Token តាម BotFather និងការរៀបចំ Topic ចែកដាច់តាម Security, Finance, Operations, និង System។',
+    },
+    khqr: {
+      title: 'ប្រព័ន្ធទូទាត់ Dynamic KHQR PayWay & Bank Deeplinks',
+      desc: 'ការរៀបចំ Bakong Merchant Link (Paste & Go) ត្រឹម ៣០ វិនាទី បង្កើត Tag 01=12 QR ឥតកាត់កម្រៃជើងសារ និងដឹងលទ្ធផលភ្លាមៗ។',
+    },
+    workflow: {
+      title: 'ដំណើរការពិនិត្យព្យាបាល ប្រព័ន្ធហៅលេខ និងឱសថស្ថាន',
+      desc: 'ការចុះឈ្មោះអ្នកជំងឺ ហៅលេខជាសំឡេងខ្មែរ កត់ត្រាវេជ្ជបញ្ជា និងការកាត់ស្តុកឱសថស្វ័យប្រវត្តតាមកញ្ចប់ Batch។',
+    },
+    quickAssistance: 'ត្រូវការជំនួយបច្ចេកទេសផ្ទាល់?',
+    supportNotice: 'ក្រុមការងារបច្ចេកទេសរបស់យើងត្រៀមខ្លួនជួយសម្របសម្រួលការតភ្ជាប់ឧបករណ៍ និងការប្រើប្រាស់ ២៤/៧។',
+    telegramSupport: 'ឆានែល Telegram ជំនួយបច្ចេកទេស',
+    emergencyHotline: 'ទូរស័ព្ទជំនួយបន្ទាន់៖ +855 23 999 888',
+  },
 };

@@ -880,6 +880,30 @@ export class PlatformMasterBotService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
+   * Business Alert: Clinic Subscription Expiry Warning (7 days & 3 days before expiry)
+   */
+  async notifySubscriptionExpiryReminder(info: {
+    clinicName: string;
+    slug: string;
+    planTier: string;
+    daysRemaining: number;
+    endDate: string;
+  }): Promise<boolean> {
+    const lines = [
+      `<b>[PLATFORM BILLING: SUBSCRIPTION EXPIRY REMINDER]</b>`,
+      `----------------------------------------`,
+      `Clinic: <b>${info.clinicName}</b> (<code>${info.slug}</code>)`,
+      `Plan Tier: <code>${info.planTier}</code>`,
+      `Days Remaining: <b>${info.daysRemaining} days</b>`,
+      `Expiry Date: <code>${info.endDate}</code>`,
+      `Action: Reminder notice dispatched to clinic Security topic`,
+      `----------------------------------------`,
+    ];
+
+    return this.sendMasterNotification(lines.join('\n'));
+  }
+
+  /**
    * Security & Critical System Alert for Super Admin
    */
   async notifySystemSecurityAlert(event: {

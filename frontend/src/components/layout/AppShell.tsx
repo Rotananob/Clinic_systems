@@ -30,9 +30,11 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
     pathname === '/landing' ||
     pathname === '/pricing' ||
     pathname === '/register' ||
+    pathname === '/help' ||
     pathname?.startsWith('/landing') ||
     pathname?.startsWith('/pricing') ||
-    pathname?.startsWith('/register');
+    pathname?.startsWith('/register') ||
+    pathname?.startsWith('/help');
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
