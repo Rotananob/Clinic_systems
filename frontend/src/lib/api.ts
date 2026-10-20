@@ -1024,6 +1024,47 @@ class ApiClient {
         body: JSON.stringify(data),
       }),
   };
+
+  // Multi-Branch Chain & Central Warehouse
+  warehouse = {
+    getHqOverview: () => this.request<any>('/warehouse/hq/overview'),
+    getBranches: () => this.request<any[]>('/warehouse/branches'),
+    getBranchById: (id: string) => this.request<any>('/warehouse/branches/' + encodeURIComponent(id)),
+    getInventoryBatches: (branchId?: string) => {
+      const q = branchId ? '?branchId=' + encodeURIComponent(branchId) : '';
+      return this.request<any[]>('/warehouse/inventory' + q);
+    },
+    getExpiringBatches: (branchId?: string, thresholdDays = 90) => {
+      const p = new URLSearchParams();
+      if (branchId) p.set('branchId', branchId);
+      if (thresholdDays) p.set('thresholdDays', String(thresholdDays));
+      const qs = p.toString() ? '?' + p.toString() : '';
+      return this.request<{ batches: any[]; summary: any }>('/warehouse/inventory/expiring' + qs);
+    },
+    getTransfers: (branchId?: string, status?: string) => {
+      const p = new URLSearchParams();
+      if (branchId) p.set('branchId', branchId);
+      if (status) p.set('status', status);
+      const qs = p.toString() ? '?' + p.toString() : '';
+      return this.request<any[]>('/warehouse/transfers' + qs);
+    },
+    getTransferById: (id: string) => this.request<any>('/warehouse/transfers/' + encodeURIComponent(id)),
+    createTransfer: (data: any) =>
+      this.request<any>('/warehouse/transfers', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    dispatchTransfer: (id: string, data: { dispatchedBy: string; scannedBarcode?: string }) =>
+      this.request<any>('/warehouse/transfers/' + encodeURIComponent(id) + '/dispatch', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    verifyAndReceiveTransfer: (id: string, data: any) =>
+      this.request<any>('/warehouse/transfers/' + encodeURIComponent(id) + '/receive', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+  };
 }
 
 export const api = new ApiClient();
