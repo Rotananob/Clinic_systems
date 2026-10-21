@@ -103,19 +103,35 @@ export default function QueuePage() {
       const liveVisits = await api.visits.list();
       if (Array.isArray(liveVisits) && liveVisits.length > 0) {
         const mapped: QueueItem[] = liveVisits.map((v: any, index: number) => {
-          const waitTime = Math.max(1, Math.round((Date.now() - new Date(v.createdAt).getTime()) / 60000));
-          const roomName = v.doctor ? `Room ${v.doctor.fullNameEn?.slice(-1) || '1'}` : 'Triage Room 1';
+          const createdAtTime = v?.createdAt ? new Date(v.createdAt).getTime() : NaN;
+          const waitTime = !isNaN(createdAtTime) ? Math.max(1, Math.round((Date.now() - createdAtTime) / 60000)) : 5;
+          const docObj = typeof v?.doctor === 'object' && v?.doctor ? v.doctor : null;
+          const docName = docObj?.fullNameEn || docObj?.fullNameKh || 'Attending Physician';
+          const roomSuffix = docObj?.fullNameEn ? String(docObj.fullNameEn).slice(-1) : '1';
+          const roomName = docObj ? `Room ${roomSuffix}` : 'Triage Room 1';
+          const patObj = typeof v?.patient === 'object' && v?.patient ? v.patient : null;
+          let patName = 'Patient';
+          if (patObj) {
+            if (patObj.nameEn && patObj.nameKh) {
+              patName = `${patObj.nameEn} (${patObj.nameKh})`;
+            } else {
+              patName = patObj.nameEn || patObj.nameKh || 'Patient';
+            }
+          }
+          const patCode = patObj?.patientCode || 'P-0000';
+          const status = v?.status === 'COMPLETED' ? 'COMPLETED' : v?.status === 'IN_CONSULTATION' ? 'IN_ROOM' : 'WAITING';
+
           return {
-            id: v.id,
-            token: v.visitCode || `Q-${100 + index}`,
-            patientName: v.patient ? `${v.patient.nameEn}${v.patient.nameKh ? ` (${v.patient.nameKh})` : ''}` : 'Patient',
-            patientCode: v.patient?.patientCode || 'P-0000',
-            department: v.doctor ? `Dr. ${v.doctor.fullNameEn}` : 'Consultation Desk',
-            doctorName: v.doctor ? `Dr. ${v.doctor.fullNameEn}` : 'Attending Physician',
+            id: v?.id || `visit-${index}`,
+            token: v?.visitCode || `Q-${100 + index}`,
+            patientName: patName,
+            patientCode: patCode,
+            department: docObj ? `Dr. ${docName}` : 'Consultation Desk',
+            doctorName: `Dr. ${docName}`,
             room: roomName,
-            status: v.status === 'COMPLETED' ? 'COMPLETED' : v.status === 'IN_CONSULTATION' ? 'IN_ROOM' : 'WAITING',
+            status,
             waitTimeMinutes: isNaN(waitTime) ? 5 : waitTime,
-            chiefComplaint: v.reason || 'Medical Consultation',
+            chiefComplaint: v?.reason || 'Medical Consultation',
             isBackendVisit: true,
           };
         });
@@ -123,7 +139,8 @@ export default function QueuePage() {
         // Preserve CALLING status if active
         setQueueItems((prev) => {
           const activeCallingId = activeCall?.id;
-          return mapped.map((m) => {
+          const baseList = Array.isArray(mapped) ? mapped : [];
+          return baseList.map((m) => {
             if (m.id === activeCallingId && m.status !== 'COMPLETED') {
               return { ...m, status: 'CALLING' };
             }
@@ -271,22 +288,33 @@ export default function QueuePage() {
   };
 
   const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {});
-    } else {
-      document.exitFullscreen().then(() => setIsFullscreen(false)).catch(() => {});
+    if (typeof document === 'undefined') return;
+    try {
+      if (!document.fullscreenElement) {
+        if (document.documentElement?.requestFullscreen) {
+          document.documentElement.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {});
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen().then(() => setIsFullscreen(false)).catch(() => {});
+        }
+      }
+    } catch {
+      // Ignore fullscreen policy rejections
     }
   };
 
-  const waitingCount = queueItems.filter((q) => q.status === 'WAITING').length;
-  const inServiceCount = queueItems.filter((q) => q.status === 'IN_ROOM' || q.status === 'CALLING').length;
-  const completedCount = queueItems.filter((q) => q.status === 'COMPLETED').length;
+  const safeQueueList = Array.isArray(queueItems) ? queueItems : defaultMockItems;
+  const waitingCount = safeQueueList.filter((q) => q && q.status === 'WAITING').length;
+  const inServiceCount = safeQueueList.filter((q) => q && (q.status === 'IN_ROOM' || q.status === 'CALLING')).length;
+  const completedCount = safeQueueList.filter((q) => q && q.status === 'COMPLETED').length;
 
   const filteredQueueItems = useMemo(() => {
-    if (activeTab === 'WAITING') return queueItems.filter((q) => q.status === 'WAITING');
-    if (activeTab === 'IN_ROOM') return queueItems.filter((q) => q.status === 'IN_ROOM' || q.status === 'CALLING');
-    if (activeTab === 'COMPLETED') return queueItems.filter((q) => q.status === 'COMPLETED');
-    return queueItems;
+    const list = Array.isArray(queueItems) ? queueItems : defaultMockItems;
+    if (activeTab === 'WAITING') return list.filter((q) => q && q.status === 'WAITING');
+    if (activeTab === 'IN_ROOM') return list.filter((q) => q && (q.status === 'IN_ROOM' || q.status === 'CALLING'));
+    if (activeTab === 'COMPLETED') return list.filter((q) => q && q.status === 'COMPLETED');
+    return list;
   }, [queueItems, activeTab]);
 
   return (

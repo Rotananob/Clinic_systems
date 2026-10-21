@@ -92,10 +92,18 @@ export function isAudioUnlocked(): boolean {
 export function preloadSpeechVoices(): void {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
   try {
-    cachedVoices = window.speechSynthesis.getVoices();
-    if (window.speechSynthesis.onvoiceschanged !== undefined) {
+    const voices = window.speechSynthesis.getVoices();
+    if (Array.isArray(voices)) {
+      cachedVoices = voices;
+    }
+    if ('onvoiceschanged' in window.speechSynthesis) {
       window.speechSynthesis.onvoiceschanged = () => {
-        cachedVoices = window.speechSynthesis.getVoices();
+        try {
+          const fresh = window.speechSynthesis.getVoices();
+          if (Array.isArray(fresh)) {
+            cachedVoices = fresh;
+          }
+        } catch {}
       };
     }
   } catch {
@@ -119,26 +127,36 @@ export async function requestScreenAndAudioKeepAlive(): Promise<void> {
 
 // Global user interaction listeners to unlock audio on first interaction
 if (typeof window !== 'undefined') {
-  const handleUserInteraction = () => {
-    unlockAudioContext();
-  };
+  try {
+    const handleUserInteraction = () => {
+      try {
+        unlockAudioContext();
+      } catch {}
+    };
 
-  // Listen to multiple interaction events for maximum cross-browser coverage
-  window.addEventListener('click', handleUserInteraction, { passive: true });
-  window.addEventListener('touchstart', handleUserInteraction, { passive: true });
-  window.addEventListener('touchend', handleUserInteraction, { passive: true });
-  window.addEventListener('pointerdown', handleUserInteraction, { passive: true });
-  window.addEventListener('keydown', handleUserInteraction, { passive: true });
+    window.addEventListener('click', handleUserInteraction, { passive: true });
+    window.addEventListener('touchstart', handleUserInteraction, { passive: true });
+    window.addEventListener('touchend', handleUserInteraction, { passive: true });
+    window.addEventListener('pointerdown', handleUserInteraction, { passive: true });
+    window.addEventListener('keydown', handleUserInteraction, { passive: true });
 
-  // Resume audio when returning from background tab or locking screen
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && sharedAudioCtx && sharedAudioCtx.state === 'suspended') {
-      sharedAudioCtx.resume().catch(() => {});
+    document.addEventListener('visibilitychange', () => {
+      try {
+        if (document.visibilityState === 'visible' && sharedAudioCtx && sharedAudioCtx.state === 'suspended') {
+          sharedAudioCtx.resume().catch(() => {});
+        }
+      } catch {}
+    });
+
+    // Safe deferred preload of voices after hydration
+    if (typeof setTimeout !== 'undefined') {
+      setTimeout(() => {
+        try {
+          preloadSpeechVoices();
+        } catch {}
+      }, 200);
     }
-  });
-
-  // Preload speech voices on script load
-  preloadSpeechVoices();
+  } catch {}
 }
 
 // ---------------------------------------------------------------------------
@@ -408,10 +426,11 @@ export function speakQueueCall(
     }
     window.speechSynthesis.cancel();
 
-    // Check cached voices or fresh query
-    const voices = cachedVoices.length > 0 ? cachedVoices : window.speechSynthesis.getVoices();
+    // Check cached voices or fresh query safely
+    const rawVoices = cachedVoices.length > 0 ? cachedVoices : (window.speechSynthesis.getVoices ? window.speechSynthesis.getVoices() : []);
+    const voices = Array.isArray(rawVoices) ? rawVoices : [];
     const hasKhmerVoice = voices.some(
-      (v) => v.lang.toLowerCase().startsWith('km') || v.name.toLowerCase().includes('khmer')
+      (v) => v && (v.lang?.toLowerCase().startsWith('km') || v.name?.toLowerCase().includes('khmer'))
     );
 
     let spokenText: string;
@@ -432,9 +451,9 @@ export function speakQueueCall(
     utterance.lang = spokenLang;
 
     const matchingVoice = voices.find((v) =>
-      spokenLang.startsWith('km')
-        ? v.lang.toLowerCase().startsWith('km') || v.name.toLowerCase().includes('khmer')
-        : v.lang.toLowerCase().startsWith('en')
+      v && (spokenLang.startsWith('km')
+        ? v.lang?.toLowerCase().startsWith('km') || v.name?.toLowerCase().includes('khmer')
+        : v.lang?.toLowerCase().startsWith('en'))
     );
     if (matchingVoice) {
       utterance.voice = matchingVoice;

@@ -17,11 +17,7 @@ const nextConfig = {
         headers: [
           {
             key: 'Permissions-Policy',
-            value: 'autoplay=(self), microphone=(self), camera=(self), screen-wake-lock=(self)',
-          },
-          {
-            key: 'Cross-Origin-Opener-Policy',
-            value: 'same-origin-allow-popups',
+            value: 'autoplay=(self), microphone=(self), camera=(self)',
           },
         ],
       },
