@@ -245,6 +245,107 @@ export function isRouteAllowed(role: string | undefined | null, pathname: string
   return config.allowedRoles.includes(role as UserRole);
 }
 
+export type ClinicCategory = 'DENTAL' | 'PHARMACY' | 'GENERAL' | 'POLYCLINIC';
+
+export function resolveClinicCategory(clinicType?: string | null): ClinicCategory {
+  if (!clinicType) return 'GENERAL';
+  const upper = clinicType.toUpperCase();
+  if (
+    upper.includes('DENTAL') ||
+    upper.includes('TOOTH') ||
+    upper.includes('ធ្មេញ') ||
+    upper.includes('ទន្ត')
+  ) {
+    return 'DENTAL';
+  }
+  if (
+    upper.includes('PHARMACY') ||
+    upper.includes('DRUG') ||
+    upper.includes('ឱសថ')
+  ) {
+    return 'PHARMACY';
+  }
+  if (
+    upper.includes('POLYCLINIC') ||
+    upper.includes('ពហុព្យាបាល')
+  ) {
+    return 'POLYCLINIC';
+  }
+  return 'GENERAL';
+}
+
+export function getClinicTargetRoute(
+  user?: {
+    role?: string;
+    targetRoute?: string;
+    tenant?: { clinicType?: string };
+  } | null,
+): string {
+  if (!user) return '/';
+  if (user.role === 'SUPER_ADMIN') return '/';
+  if (user.targetRoute) return user.targetRoute;
+
+  const category = resolveClinicCategory(user.tenant?.clinicType);
+  const role = user.role;
+
+  if (category === 'DENTAL') {
+    if (role === 'CASHIER') return '/billing';
+    return '/dental';
+  }
+
+  if (category === 'PHARMACY') {
+    if (role === 'CASHIER') return '/billing';
+    return '/prescriptions';
+  }
+
+  // GENERAL or POLYCLINIC
+  if (role === 'DOCTOR') return '/visits';
+  if (role === 'PHARMACIST') return '/prescriptions';
+  if (role === 'CASHIER') return '/billing';
+  if (role === 'RECEPTIONIST') return '/queue';
+
+  return '/queue';
+}
+
+export function isModuleRelevantForClinic(
+  clinicType: string | undefined | null,
+  pathname: string,
+  role?: string | null,
+): boolean {
+  if (role === 'SUPER_ADMIN') return true;
+
+  // Never show super-admin or owner platform portals to non-super-admins
+  if (pathname === '/super-admin' || pathname === '/owner') {
+    return false;
+  }
+
+  const category = resolveClinicCategory(clinicType);
+
+  if (category === 'PHARMACY') {
+    // Standalone Pharmacy focuses on prescriptions, inventory, POS billing, reports, etc.
+    const pharmacyExcluded = [
+      '/dental',
+      '/ipd',
+      '/pacs',
+      '/teleconsult',
+      '/lab',
+      '/eclaim',
+      '/certificates',
+      '/visits',
+    ];
+    if (pharmacyExcluded.includes(pathname)) return false;
+  } else if (category === 'DENTAL') {
+    // Dental clinics do not use hospital IPD inpatient beds or LIS blood analyzers
+    const dentalExcluded = ['/ipd', '/lab'];
+    if (dentalExcluded.includes(pathname)) return false;
+  } else if (category === 'GENERAL') {
+    // General outpatient clinic without dental specialization hides /dental
+    if (pathname === '/dental') return false;
+  }
+
+  return true;
+}
+
 export function getRoleDisplayName(role: string | undefined | null, isKh: boolean): string {
   switch (role) {
     case 'SUPER_ADMIN':

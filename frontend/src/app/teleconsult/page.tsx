@@ -202,59 +202,7 @@ export default function TeleconsultPage() {
       const rxList: DigitalEPrescription[] = Array.isArray(rxRes) ? rxRes : rxRes?.data || [];
       setPrescriptions(rxList);
     } catch {
-      // Fallback local mockup data
-      const mockRoom: TeleconsultRoom = {
-        id: 'tc-room-001',
-        roomCode: 'CAM-TC-8891',
-        appointmentId: 'apt-tc-101',
-        patientId: 'p-1001',
-        patientName: 'Chea Sokunthea',
-        doctorId: 'doc-001',
-        doctorName: 'Dr. Chea Rathana',
-        specialty: 'Internal Medicine',
-        scheduledAt: new Date().toISOString(),
-        status: 'IN_CALL',
-        durationSeconds: 145,
-        clinicalNotes: 'Patient complains of dry cough and mild fever for 2 days.',
-        participants: {
-          DOCTOR: {
-            role: 'DOCTOR',
-            name: 'Dr. Chea Rathana',
-            connected: true,
-            audioMuted: false,
-            videoMuted: false,
-            isScreenSharing: false
-          },
-          PATIENT: {
-            role: 'PATIENT',
-            name: 'Chea Sokunthea',
-            connected: true,
-            audioMuted: false,
-            videoMuted: false,
-            isScreenSharing: false
-          }
-        },
-        chatMessages: [
-          {
-            id: 'chat-01',
-            senderRole: 'PATIENT',
-            senderName: 'Chea Sokunthea',
-            message: 'Hello Doctor, can you see and hear me clearly?',
-            timestamp: new Date(Date.now() - 3 * 60 * 1000).toISOString()
-          },
-          {
-            id: 'chat-02',
-            senderRole: 'DOCTOR',
-            senderName: 'Dr. Chea Rathana',
-            message: 'Yes Khun Sokunthea, audio and video are perfectly clear. How are your symptoms today?',
-            timestamp: new Date(Date.now() - 2 * 60 * 1000).toISOString()
-          }
-        ]
-      };
-      setRooms([mockRoom]);
-      setCurrentRoom(mockRoom);
-      setChatMessages(mockRoom.chatMessages);
-      setClinicalNotes(mockRoom.clinicalNotes);
+      // Do not inject fake mockup rooms on network error
     } finally {
       setLoading(false);
     }

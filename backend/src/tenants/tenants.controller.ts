@@ -4,32 +4,33 @@ import { TenantsService } from './tenants.service';
 import { SetupMerchantDto } from './dto/setup-merchant.dto';
 import { UpdateTenantProfileDto } from './dto/update-tenant-profile.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { Role } from '@prisma/client';
 
 @ApiTags('Tenant Management & Merchant Setup')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('tenants')
 export class TenantsController {
   constructor(private readonly tenantsService: TenantsService) {}
 
   @ApiOperation({ summary: 'Get current tenant workspace profile, subscription, and quota usage' })
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
   @Get('me')
   getTenantProfile(@Request() req: any) {
     return this.tenantsService.getTenantProfile(req.user);
   }
 
-  @ApiOperation({ summary: 'Update clinic workspace profile, identity, and merchant credentials' })
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Update clinic workspace profile, identity, and merchant credentials (Admin only)' })
+  @Roles(Role.ADMIN)
   @ApiResponse({ status: 200, description: 'Clinic profile and merchant settings updated successfully' })
   @Patch('profile')
   updateTenantProfile(@Request() req: any, @Body() dto: UpdateTenantProfileDto) {
     return this.tenantsService.updateTenantProfile(dto, req.user);
   }
 
-  @ApiOperation({ summary: 'Paste & Go: Setup Bakong Account ID and PayWay Merchant Credentials' })
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Paste & Go: Setup Bakong Account ID and PayWay Merchant Credentials (Admin only)' })
+  @Roles(Role.ADMIN)
   @ApiResponse({ status: 200, description: 'Merchant credentials saved and isolated dynamic KHQR activated' })
   @Post('setup-merchant')
   setupMerchant(@Request() req: any, @Body() dto: SetupMerchantDto) {
@@ -37,8 +38,7 @@ export class TenantsController {
   }
 
   @ApiOperation({ summary: 'Generate instant test Dynamic KHQR to verify merchant credentials' })
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @Roles(Role.ADMIN)
   @Post('test-merchant-khqr')
   testMerchantKhqr(@Body() dto: SetupMerchantDto) {
     return this.tenantsService.generateTestKhqr(dto);

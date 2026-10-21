@@ -3,16 +3,19 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger'
 import { PaymentsService } from './payments.service';
 import { GenerateInvoiceQrDto, SettlePaymentDto, CreateQuickInvoiceDto, UpdateInvoiceDto } from './dto/generate-qr.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { InvoiceStatus } from '@prisma/client';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { InvoiceStatus, Role } from '@prisma/client';
 
 @ApiTags('Payments & Invoices')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('payments')
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
   @ApiOperation({ summary: 'List all clinic invoices with status and patient filter' })
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @Roles(Role.ADMIN, Role.CASHIER, Role.RECEPTIONIST, Role.DOCTOR)
   @ApiQuery({ name: 'status', enum: InvoiceStatus, required: false })
   @ApiQuery({ name: 'patientId', required: false })
   @Get('invoices')
@@ -24,24 +27,21 @@ export class PaymentsController {
   }
 
   @ApiOperation({ summary: 'Get detailed invoice with transactions and patient data' })
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @Roles(Role.ADMIN, Role.CASHIER, Role.RECEPTIONIST, Role.DOCTOR)
   @Get('invoices/:id')
   findInvoiceById(@Param('id') id: string) {
     return this.paymentsService.findInvoiceById(id);
   }
 
   @ApiOperation({ summary: 'Generate dynamic KHQR Tag 01=12 and bank deeplinks for an invoice' })
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @Roles(Role.ADMIN, Role.CASHIER, Role.RECEPTIONIST)
   @Post('generate-qr')
   generateQr(@Body() dto: GenerateInvoiceQrDto, @Request() req: any) {
     return this.paymentsService.generateInvoiceKhqr(dto.invoiceId, req?.user);
   }
 
   @ApiOperation({ summary: 'Instant settlement verification endpoint for 0.3s webhook / cashier confirm' })
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @Roles(Role.ADMIN, Role.CASHIER)
   @Post('settle')
   settle(@Request() req: any, @Body() dto: SettlePaymentDto) {
     const cashierId = req.user?.id || undefined;
@@ -57,24 +57,21 @@ export class PaymentsController {
   }
 
   @ApiOperation({ summary: 'Create quick patient invoice for instant laptop screen KHQR scan' })
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @Roles(Role.ADMIN, Role.CASHIER, Role.RECEPTIONIST, Role.DOCTOR)
   @Post('quick-invoice')
   createQuickInvoice(@Body() dto: CreateQuickInvoiceDto, @Request() req: any) {
     return this.paymentsService.createQuickInvoice(dto, req?.user);
   }
 
   @ApiOperation({ summary: 'Settle invoice via cash collection with change calculation' })
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @Roles(Role.ADMIN, Role.CASHIER)
   @Post('settle-cash')
   settleCash(@Body() dto: { invoiceId: string; amountTendered: number }) {
     return this.paymentsService.settleCash(dto.invoiceId, dto.amountTendered);
   }
 
   @ApiOperation({ summary: 'Update or correct invoice status and details' })
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @Roles(Role.ADMIN, Role.CASHIER)
   @Patch('invoices/:id')
   updateInvoice(
     @Param('id') id: string,
@@ -86,8 +83,7 @@ export class PaymentsController {
   }
 
   @ApiOperation({ summary: 'Get current evaluation account daily quota status' })
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @Roles(Role.ADMIN, Role.CASHIER)
   @Get('quota-status')
   getQuotaStatus(@Request() req: any) {
     return this.paymentsService.getTestQuotaStatus(req?.user);

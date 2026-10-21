@@ -52,56 +52,18 @@ export default function QueuePage() {
   const [activeTab, setActiveTab] = useState<'ALL' | 'WAITING' | 'IN_ROOM' | 'COMPLETED'>('ALL');
   const [isTestingSound, setIsTestingSound] = useState(false);
 
-  // Initial fallback mock data
-  const defaultMockItems: QueueItem[] = [
-    {
-      id: 'q-demo-1',
-      token: 'A-101',
-      patientName: 'Chan Dara (ចាន់ ដារ៉ា)',
-      patientCode: 'P-0012',
-      department: 'Consultation Room 1',
-      doctorName: 'Dr. Houn Vannak',
-      room: 'Room 1',
-      status: 'WAITING',
-      waitTimeMinutes: 12,
-      chiefComplaint: 'Acute Fever & Cough',
-      isBackendVisit: false,
-    },
-    {
-      id: 'q-demo-2',
-      token: 'A-102',
-      patientName: 'Sok Mean (សុខ មាន)',
-      patientCode: 'P-0015',
-      department: 'Consultation Room 2',
-      doctorName: 'Dr. Sok Chantha',
-      room: 'Room 2',
-      status: 'IN_ROOM',
-      waitTimeMinutes: 18,
-      chiefComplaint: 'Hypertension Follow-Up',
-      isBackendVisit: false,
-    },
-    {
-      id: 'q-demo-3',
-      token: 'T-201',
-      patientName: 'Keo Sopheap (កែវ សុភាព)',
-      patientCode: 'P-0018',
-      department: 'Triage & Vital Signs',
-      doctorName: 'Nurse Bopha',
-      room: 'Desk 1',
-      status: 'WAITING',
-      waitTimeMinutes: 5,
-      chiefComplaint: 'Routine Checkup',
-      isBackendVisit: false,
-    },
-  ];
-
-  const [queueItems, setQueueItems] = useState<QueueItem[]>(defaultMockItems);
+  const [queueItems, setQueueItems] = useState<QueueItem[]>([]);
 
   const fetchQueueData = async () => {
     try {
       setLoading(true);
       const liveVisits = await api.visits.list();
-      if (Array.isArray(liveVisits) && liveVisits.length > 0) {
+      if (Array.isArray(liveVisits)) {
+        if (liveVisits.length === 0) {
+          setQueueItems([]);
+          return;
+        }
+
         const mapped: QueueItem[] = liveVisits.map((v: any, index: number) => {
           const createdAtTime = v?.createdAt ? new Date(v.createdAt).getTime() : NaN;
           const waitTime = !isNaN(createdAtTime) ? Math.max(1, Math.round((Date.now() - createdAtTime) / 60000)) : 5;
@@ -137,7 +99,7 @@ export default function QueuePage() {
         });
 
         // Preserve CALLING status if active
-        setQueueItems((prev) => {
+        setQueueItems(() => {
           const activeCallingId = activeCall?.id;
           const baseList = Array.isArray(mapped) ? mapped : [];
           return baseList.map((m) => {
@@ -304,13 +266,13 @@ export default function QueuePage() {
     }
   };
 
-  const safeQueueList = Array.isArray(queueItems) ? queueItems : defaultMockItems;
+  const safeQueueList = Array.isArray(queueItems) ? queueItems : [];
   const waitingCount = safeQueueList.filter((q) => q && q.status === 'WAITING').length;
   const inServiceCount = safeQueueList.filter((q) => q && (q.status === 'IN_ROOM' || q.status === 'CALLING')).length;
   const completedCount = safeQueueList.filter((q) => q && q.status === 'COMPLETED').length;
 
   const filteredQueueItems = useMemo(() => {
-    const list = Array.isArray(queueItems) ? queueItems : defaultMockItems;
+    const list = Array.isArray(queueItems) ? queueItems : [];
     if (activeTab === 'WAITING') return list.filter((q) => q && q.status === 'WAITING');
     if (activeTab === 'IN_ROOM') return list.filter((q) => q && (q.status === 'IN_ROOM' || q.status === 'CALLING'));
     if (activeTab === 'COMPLETED') return list.filter((q) => q && q.status === 'COMPLETED');

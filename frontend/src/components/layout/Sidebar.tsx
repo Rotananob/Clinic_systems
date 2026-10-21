@@ -27,7 +27,6 @@ import {
   BarChart3,
   LayoutTemplate,
   Building2,
-  Lock,
   UserCheck,
   Globe,
   Video,
@@ -35,15 +34,13 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from '../../context/I18nContext';
-import { usePermissionModal } from '../../context/PermissionModalContext';
 import { ClinicLogo } from '../common/ClinicLogo';
-import { isRouteAllowed, getRoleDisplayName } from '../../lib/rbac';
+import { isRouteAllowed, getRoleDisplayName, isModuleRelevantForClinic } from '../../lib/rbac';
 
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
   const { user } = useAuth();
   const { t, locale } = useTranslation();
-  const { openRestrictedModal } = usePermissionModal();
   const isKh = locale === 'km';
   const [mounted, setMounted] = React.useState(false);
 
@@ -94,8 +91,12 @@ export const Sidebar: React.FC = () => {
   const role = user?.role;
   const isSuperAdmin = role === 'SUPER_ADMIN';
 
-  const allowedItems = allNavItems.filter((item) => isRouteAllowed(role, item.href));
-  const lockedItems = allNavItems.filter((item) => !isRouteAllowed(role, item.href));
+  // Filter navigation items by verified server-side role and clinic specialization
+  const allowedItems = allNavItems.filter((item) => {
+    if (!isRouteAllowed(role, item.href)) return false;
+    if (!isModuleRelevantForClinic(user?.tenant?.clinicType, item.href, role)) return false;
+    return true;
+  });
 
   return (
     <aside className="hidden md:flex flex-col w-64 border-r border-[#E7E1D4] bg-[#FDFBF7] min-h-[calc(100vh-4rem)] p-4 shadow-2xs select-none">
@@ -157,40 +158,6 @@ export const Sidebar: React.FC = () => {
           );
         })}
       </nav>
-
-      {/* Locked Modules for specific roles */}
-      {!isSuperAdmin && lockedItems.length > 0 && (
-        <div className="mt-5 pt-4 border-t border-[#EBE3D3]">
-          <div className="text-[10px] font-bold text-stone-400 uppercase tracking-wider px-3 mb-1.5 font-mono flex items-center justify-between">
-            <span>{isKh ? 'ម៉ូឌុលចាក់សោ (Locked)' : 'Restricted Modules'}</span>
-            <Lock className="w-3 h-3 text-stone-400" />
-          </div>
-          <div className="space-y-1">
-            {lockedItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <div
-                  key={item.href}
-                  onClick={() =>
-                    openRestrictedModal({
-                      actionName: item.label,
-                      title: isKh ? 'សិទ្ធិត្រូវបានកំណត់ (Locked Module)' : 'Restricted Module Access',
-                    })
-                  }
-                  className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-stone-500 bg-stone-100/50 border border-dashed border-stone-300 cursor-pointer opacity-45 hover:opacity-85 hover:bg-stone-200/50 transition-all select-none group shadow-2xs"
-                  title={isKh ? 'ចុចដើម្បីពិនិត្យព័ត៌មានសិទ្ធិ' : 'Click to inspect access permissions'}
-                >
-                  <div className="flex items-center gap-3 truncate">
-                    <Icon className="w-4 h-4 shrink-0 text-stone-400 group-hover:text-amber-700 transition-colors" />
-                    <span className="truncate">{item.label}</span>
-                  </div>
-                  <Lock className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
     </aside>
   );
 };

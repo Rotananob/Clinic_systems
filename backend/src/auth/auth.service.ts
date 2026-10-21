@@ -8,6 +8,11 @@ import { RegisterClinicDto } from './dto/register-clinic.dto';
 import { PlanTier, SubscriptionStatus, Role } from '@prisma/client';
 import { SAAS_PLANS } from '../common/constants/plans.constant';
 import { PlatformMasterBotService } from '../telegram/platform-master-bot.service';
+import {
+  ROLE_PERMISSIONS_MATRIX,
+  ROLE_ALLOWED_ROUTES,
+  SYSTEM_PERMISSIONS,
+} from '../common/constants/permissions.constant';
 
 @Injectable()
 export class AuthService {
@@ -156,6 +161,7 @@ export class AuthService {
           slug: true,
           clinicNameKh: true,
           clinicNameEn: true,
+          clinicType: true,
           planTier: true,
           bakongAccountId: true,
           merchantName: true,
@@ -183,8 +189,27 @@ export class AuthService {
       tenantId: user.tenantId || null,
     };
 
+    const clinicTypeStr = (tenantInfo?.clinicType || '').toLowerCase();
+    let targetRoute = '/queue';
+    if (user.role === Role.SUPER_ADMIN) {
+      targetRoute = '/super-admin';
+    } else if (user.role === Role.CASHIER) {
+      targetRoute = '/billing';
+    } else if (user.role === Role.PHARMACIST) {
+      targetRoute = '/prescriptions';
+    } else if (clinicTypeStr.includes('dental') || clinicTypeStr.includes('ធ្មេញ') || clinicTypeStr.includes('ទន្តសាស្ត្រ')) {
+      targetRoute = '/dental';
+    } else if (clinicTypeStr.includes('pharmacy') || clinicTypeStr.includes('ឱសថ') || clinicTypeStr.includes('drug')) {
+      targetRoute = '/prescriptions';
+    } else if (user.role === Role.DOCTOR) {
+      targetRoute = '/visits';
+    }
+
     return {
       accessToken: this.jwtService.sign(payload),
+      targetRoute,
+      permissions: ROLE_PERMISSIONS_MATRIX[user.role] || [],
+      allowedRoutes: ROLE_ALLOWED_ROUTES[user.role] || ['/profile'],
       user: {
         id: user.id,
         email: user.email,
@@ -355,9 +380,20 @@ export class AuthService {
       tenantId: result.tenant.id,
     };
 
+    const clinicTypeStr = (result.tenant.clinicType || '').toLowerCase();
+    let targetRoute = '/queue';
+    if (clinicTypeStr.includes('dental') || clinicTypeStr.includes('ធ្មេញ') || clinicTypeStr.includes('ទន្តសាស្ត្រ')) {
+      targetRoute = '/dental';
+    } else if (clinicTypeStr.includes('pharmacy') || clinicTypeStr.includes('ឱសថ') || clinicTypeStr.includes('drug')) {
+      targetRoute = '/prescriptions';
+    }
+
     return {
       success: true,
       accessToken: this.jwtService.sign(tokenPayload),
+      targetRoute,
+      permissions: ROLE_PERMISSIONS_MATRIX[result.user.role] || [],
+      allowedRoutes: ROLE_ALLOWED_ROUTES[result.user.role] || ['/profile'],
       user: {
         id: result.user.id,
         email: result.user.email,
@@ -371,11 +407,89 @@ export class AuthService {
         slug: result.tenant.slug,
         clinicNameKh: result.tenant.clinicNameKh,
         clinicNameEn: result.tenant.clinicNameEn,
+        clinicType: result.tenant.clinicType,
         planTier: result.tenant.planTier,
         maxDailyKhqr: result.tenant.maxDailyKhqr,
         maxMonthlyPatients: result.tenant.maxMonthlyPatients,
       },
       message: 'Clinic workspace provisioned successfully.',
+    };
+  }
+
+  async getCurrentUserWithPermissions(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        fullNameEn: true,
+        fullNameKh: true,
+        role: true,
+        phone: true,
+        avatarUrl: true,
+        department: true,
+        telegramUsername: true,
+        bio: true,
+        notificationsEnabled: true,
+        tenantId: true,
+        isActive: true,
+        createdAt: true,
+        tenant: {
+          select: {
+            id: true,
+            slug: true,
+            clinicNameKh: true,
+            clinicNameEn: true,
+            clinicType: true,
+            planTier: true,
+            bakongAccountId: true,
+            merchantName: true,
+            merchantCity: true,
+            paywayPaymentUrl: true,
+            maxDailyKhqr: true,
+            maxMonthlyPatients: true,
+            isActive: true,
+          },
+        },
+      },
+    });
+
+    if (!user || !user.isActive) {
+      throw new UnauthorizedException('User account is inactive or not found');
+    }
+
+    const permissions = ROLE_PERMISSIONS_MATRIX[user.role] || [];
+    const allowedRoutes = ROLE_ALLOWED_ROUTES[user.role] || ['/profile'];
+
+    // Resolve primary target destination based on clinic specialization
+    const clinicTypeStr = (user.tenant?.clinicType || '').toLowerCase();
+    let targetRoute = '/queue';
+    if (user.role === Role.SUPER_ADMIN) {
+      targetRoute = '/super-admin';
+    } else if (user.role === Role.CASHIER) {
+      targetRoute = '/billing';
+    } else if (user.role === Role.PHARMACIST) {
+      targetRoute = '/prescriptions';
+    } else if (clinicTypeStr.includes('dental') || clinicTypeStr.includes('ធ្មេញ') || clinicTypeStr.includes('ទន្តសាស្ត្រ')) {
+      targetRoute = '/dental';
+    } else if (clinicTypeStr.includes('pharmacy') || clinicTypeStr.includes('ឱសថ') || clinicTypeStr.includes('drug')) {
+      targetRoute = '/prescriptions';
+    }
+
+    return {
+      ...user,
+      permissions,
+      allowedRoutes,
+      targetRoute,
+      isVerifiedRealRole: true,
+    };
+  }
+
+  getSystemPermissionsMatrix() {
+    return {
+      systemPermissions: SYSTEM_PERMISSIONS,
+      rolePermissions: ROLE_PERMISSIONS_MATRIX,
+      roleAllowedRoutes: ROLE_ALLOWED_ROUTES,
     };
   }
 }

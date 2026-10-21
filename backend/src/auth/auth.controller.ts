@@ -49,12 +49,20 @@ export class AuthController {
     return this.authService.login(loginDto);
   }
 
-  @ApiOperation({ summary: 'Get current user profile' })
+  @ApiOperation({ summary: 'Get current user profile and verified server-side permissions' })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Get('me')
   getProfile(@Request() req: any) {
-    return req.user;
+    return this.authService.getCurrentUserWithPermissions(req.user.id);
+  }
+
+  @ApiOperation({ summary: 'Get system-wide permissions matrix and role assignments' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Get('permissions')
+  getPermissionsMatrix() {
+    return this.authService.getSystemPermissionsMatrix();
   }
 
   @ApiOperation({ summary: 'Change current user password' })

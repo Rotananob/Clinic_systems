@@ -10,6 +10,7 @@ import { api } from '../../lib/api';
 import { PublicNavbar } from '../../components/landing/PublicNavbar';
 import { PublicFooter } from '../../components/landing/PublicFooter';
 import { MerchantSetupModal } from '../../components/tenants/MerchantSetupModal';
+import { getClinicTargetRoute } from '../../lib/rbac';
 import {
   Clock,
   ShieldCheck,
@@ -54,6 +55,13 @@ const CLINIC_TYPES = [
     nameEn: 'Dental & Oral Surgery Clinic',
     descKh: 'គំនូសធ្មេញ Odontogram ៣២ គ្រាប់ និងផែនការព្យាបាលតាមដំណាក់កាល',
     descEn: '32-tooth odontogram mapping and multi-session dental plans',
+  },
+  {
+    id: 'Pharmacy & Community Drugstore',
+    nameKh: 'ឱសថស្ថាន & ហាងលក់ថ្នាំ (Pharmacy & Drugstore)',
+    nameEn: 'Pharmacy & Community Drugstore',
+    descKh: 'គ្រប់គ្រងស្តុកឱសថ បើកថ្នាំតាមវេជ្ជបញ្ជា និងគិតលុយ KHQR POS',
+    descEn: 'Dispensary POS, prescription fulfillment, FEFO inventory tracking',
   },
   {
     id: "Maternity & Women's Health",
@@ -259,6 +267,7 @@ function RegisterContent() {
       const res = await api.auth.registerWithCode({
         clinicNameKh: clinicNameKh.trim(),
         clinicNameEn: clinicNameEn.trim(),
+        clinicType,
         adminName: adminName.trim() || undefined,
         phone: phone.trim(),
         email: email.trim().toLowerCase(),
@@ -268,8 +277,13 @@ function RegisterContent() {
       });
 
       if (res.success && res.accessToken) {
+        const fullUser = {
+          ...res.user,
+          tenant: res.tenant,
+          targetRoute: (res as any).targetRoute,
+        };
         localStorage.setItem('clinic_access_token', res.accessToken);
-        localStorage.setItem('clinic_user', JSON.stringify(res.user));
+        localStorage.setItem('clinic_user', JSON.stringify(fullUser));
         setRegisteredData(res);
       }
     } catch (err: any) {
@@ -297,8 +311,13 @@ function RegisterContent() {
       });
 
       if (res.success && res.accessToken) {
+        const fullUser = {
+          ...res.user,
+          tenant: res.tenant,
+          targetRoute: (res as any).targetRoute,
+        };
         localStorage.setItem('clinic_access_token', res.accessToken);
-        localStorage.setItem('clinic_user', JSON.stringify(res.user));
+        localStorage.setItem('clinic_user', JSON.stringify(fullUser));
         setRegisteredData(res);
       }
     } catch (err: any) {
@@ -401,10 +420,18 @@ function RegisterContent() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => router.push('/dashboard')}
+                  onClick={() => {
+                    const destination =
+                      registeredData?.targetRoute ||
+                      getClinicTargetRoute({
+                        role: 'ADMIN',
+                        tenant: { clinicType: registeredData?.tenant?.clinicType || clinicType },
+                      });
+                    router.push(destination);
+                  }}
                   className="w-full sm:w-auto px-6 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-semibold border border-stone-300 transition-colors"
                 >
-                  {isKm ? 'ចូលទៅកាន់ផ្ទាំងគ្រប់គ្រង' : 'Go to Clinic Dashboard'}
+                  {isKm ? 'ចូលទៅកាន់ផ្ទាំងគ្រប់គ្រងគ្លីនិក' : 'Go to Clinic Workspace'}
                 </button>
               </div>
             </div>
@@ -913,7 +940,13 @@ function RegisterContent() {
             merchantCity: 'Phnom Penh',
           }}
           onSuccess={() => {
-            router.push('/');
+            const destination =
+              registeredData?.targetRoute ||
+              getClinicTargetRoute({
+                role: 'ADMIN',
+                tenant: { clinicType: registeredData?.tenant?.clinicType || clinicType },
+              });
+            router.push(destination);
           }}
         />
       )}

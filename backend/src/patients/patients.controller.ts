@@ -3,21 +3,26 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger'
 import { PatientsService } from './patients.service';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { Role } from '@prisma/client';
 
 @ApiTags('Patients')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('patients')
 export class PatientsController {
   constructor(private readonly patientsService: PatientsService) {}
 
   @ApiOperation({ summary: 'Register a new patient' })
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.RECEPTIONIST)
   @Post()
   create(@Body() createPatientDto: CreatePatientDto) {
     return this.patientsService.create(createPatientDto);
   }
 
   @ApiOperation({ summary: 'Check for potential duplicate patient by phone or national ID' })
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.RECEPTIONIST)
   @ApiQuery({ name: 'phone', required: true })
   @ApiQuery({ name: 'nationalId', required: false })
   @Get('check-duplicate')
@@ -29,6 +34,7 @@ export class PatientsController {
   }
 
   @ApiOperation({ summary: 'List and search patients with pagination' })
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.RECEPTIONIST, Role.CASHIER, Role.PHARMACIST)
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'limit', required: false })
@@ -42,12 +48,14 @@ export class PatientsController {
   }
 
   @ApiOperation({ summary: 'Get full Patient 360 profile with complete clinical history' })
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.RECEPTIONIST, Role.CASHIER, Role.PHARMACIST)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.patientsService.findOne(id);
   }
 
   @ApiOperation({ summary: 'Update patient information' })
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.RECEPTIONIST)
   @Put(':id')
   update(
     @Param('id') id: string,

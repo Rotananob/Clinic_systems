@@ -162,44 +162,7 @@ export default function EclaimPage() {
       const casesRes: any = await api.eclaim.listSurveillanceCases({ period: currentPeriod });
       setCases(Array.isArray(casesRes) ? casesRes : casesRes?.data || []);
     } catch {
-      // Local fallback simulation data
-      const mockClaim: ElectronicClaim = {
-        id: 'clm-2026-001',
-        claimNumber: 'CLM-FORTE-2026-8819',
-        insurer: 'FORTE',
-        policyNumber: 'FT-MED-994821',
-        memberId: 'MEM-88129',
-        patientId: 'p-1001',
-        patientName: 'Chea Sokunthea',
-        patientDob: '1990-05-14',
-        patientGender: 'Female',
-        providerId: 'PROV-CAM-0042',
-        providerName: 'Preah Monivong Family Clinic',
-        providerLicense: 'MOH-CLINIC-7721',
-        preAuthCode: 'AUTH-FT-9912',
-        claimType: 'OUTPATIENT',
-        diagnosisCodes: [{ code: 'J01.90', name: 'Acute sinusitis, unspecified', isPrimary: true }],
-        items: [
-          {
-            id: 'item-01',
-            serviceCode: 'CONS-SPEC-01',
-            description: 'Specialist Medical Consultation',
-            quantity: 1,
-            unitPriceUsd: 25.0,
-            totalPriceUsd: 25.0,
-            coveredAmountUsd: 20.0,
-            coPayUsd: 5.0,
-            deductibleUsd: 0.0
-          }
-        ],
-        totalBilledUsd: 25.0,
-        totalClaimedUsd: 20.0,
-        patientShareUsd: 5.0,
-        status: 'PRE_APPROVED',
-        createdAt: new Date().toISOString()
-      };
-      setClaims([mockClaim]);
-      setSelectedClaim(mockClaim);
+      // Do not inject fake mockup claims on network error
     } finally {
       setLoading(false);
     }

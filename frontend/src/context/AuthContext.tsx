@@ -18,13 +18,17 @@ export interface User {
   notificationsEnabled?: boolean;
   tenantId?: string;
   tenant?: any;
+  permissions?: string[];
+  allowedRoutes?: string[];
+  targetRoute?: string;
+  isVerifiedRealRole?: boolean;
 }
 
 interface AuthContextType {
   user: User | null;
   token: string | null;
   isLoading: boolean;
-  login: (email: string, pass: string) => Promise<void>;
+  login: (email: string, pass: string) => Promise<User>;
   logout: () => void;
   refreshProfile: () => Promise<void>;
   updateUserLocal: (updated: Partial<User>) => void;
@@ -34,7 +38,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   token: null,
   isLoading: true,
-  login: async () => {},
+  login: async () => ({ id: '', email: '', fullNameEn: '', role: '' }),
   logout: () => {},
   refreshProfile: async () => {},
   updateUserLocal: () => {},
@@ -156,32 +160,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const savedUserStr = localStorage.getItem('clinic_user');
         if (savedUserStr) {
           const cachedUser = JSON.parse(savedUserStr);
-          if (cachedUser.email.toLowerCase() === email.toLowerCase()) {
+          if (cachedUser.email?.toLowerCase() === email.toLowerCase()) {
             setUser(cachedUser);
             setToken(localStorage.getItem('clinic_access_token') || 'offline-token');
-            return;
+            return cachedUser;
           }
         }
-
-        if (
-          email.toLowerCase().includes('admin') ||
-          email.toLowerCase().includes('owner') ||
-          email.toLowerCase().includes('test')
-        ) {
-          const offlineUser: User = {
-            id: 'offline-admin-id',
-            email,
-            fullNameEn: 'Administrative Officer',
-            fullNameKh: 'អ្នកគ្រប់គ្រងគ្លីនិក',
-            role: 'SUPER_ADMIN',
-            department: 'Clinical Administration',
-          };
-          setUser(offlineUser);
-          setToken('offline-fallback-token');
-          localStorage.setItem('clinic_access_token', 'offline-fallback-token');
-          localStorage.setItem('clinic_user', JSON.stringify(offlineUser));
-          return;
-        }
+        throw new Error('No internet connection. Please connect to your network to log in.');
       }
 
       const res = await api.auth.login({ email, password: pass });
@@ -189,15 +174,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         trackUserAction('USER_LOGIN_FAILED', { email });
         throw new Error('Invalid credentials');
       }
+
+      const userWithPermissions: User = {
+        ...res.user,
+        targetRoute: (res as any).targetRoute,
+        permissions: (res as any).permissions,
+        allowedRoutes: (res as any).allowedRoutes,
+        isVerifiedRealRole: true,
+      };
+
       localStorage.setItem('clinic_access_token', res.accessToken);
-      localStorage.setItem('clinic_user', JSON.stringify(res.user));
+      localStorage.setItem('clinic_user', JSON.stringify(userWithPermissions));
       setToken(res.accessToken);
-      setUser(res.user);
+      setUser(userWithPermissions);
       trackUserAction('USER_LOGIN', {
-        email: res.user.email,
-        role: res.user.role,
-        name: res.user.fullNameKh || res.user.fullNameEn,
+        email: userWithPermissions.email,
+        role: userWithPermissions.role,
+        name: userWithPermissions.fullNameKh || userWithPermissions.fullNameEn,
       });
+
+      return userWithPermissions;
     } catch (err) {
       trackUserAction('USER_LOGIN_FAILED', { email });
       throw err;

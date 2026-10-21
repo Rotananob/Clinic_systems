@@ -8,6 +8,7 @@ import { useTranslation } from '../../context/I18nContext';
 import { ClinicLogo } from '../../components/common/ClinicLogo';
 import { LanguageSwitcher } from '../../components/common/LanguageSwitcher';
 import { getHumanErrorMessage } from '../../lib/errorHandler';
+import { getClinicTargetRoute } from '../../lib/rbac';
 import {
   Lock,
   Mail,
@@ -42,10 +43,10 @@ export default function LoginPage() {
     }
   }, []);
 
-  // If already logged in, redirect straight to dashboard
+  // If already logged in, redirect straight to specialized clinic target
   useEffect(() => {
     if (user && token) {
-      router.replace('/');
+      router.replace(getClinicTargetRoute(user));
     }
   }, [user, token, router]);
 
@@ -81,9 +82,10 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      await login(email.trim(), password);
+      const loggedInUser = await login(email.trim(), password);
       setFailedAttempts(0);
-      router.push('/');
+      const targetDestination = getClinicTargetRoute(loggedInUser);
+      router.push(targetDestination);
     } catch (err: unknown) {
       const nextFailures = failedAttempts + 1;
       setFailedAttempts(nextFailures);

@@ -4,11 +4,13 @@ import { PrescriptionsService } from './prescriptions.service';
 import { ClinicalDecisionSupportService, News2VitalsInput } from './cdss.service';
 import { CreatePrescriptionDto } from './dto/create-prescription.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { PrescriptionStatus } from '@prisma/client';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { PrescriptionStatus, Role } from '@prisma/client';
 
 @ApiTags('Prescriptions')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('prescriptions')
 export class PrescriptionsController {
   constructor(
@@ -79,6 +81,7 @@ export class PrescriptionsController {
   }
 
   @ApiOperation({ summary: 'Create a new prescription with medications' })
+  @Roles(Role.ADMIN, Role.DOCTOR)
   @Post()
   create(@Request() req: any, @Body() createDto: CreatePrescriptionDto) {
     const doctorId = req.user.id;
@@ -86,6 +89,7 @@ export class PrescriptionsController {
   }
 
   @ApiOperation({ summary: 'List prescriptions with status filter' })
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.PHARMACIST, Role.CASHIER)
   @ApiQuery({ name: 'status', enum: PrescriptionStatus, required: false })
   @Get()
   findAll(@Query('status') status?: PrescriptionStatus) {
@@ -93,12 +97,14 @@ export class PrescriptionsController {
   }
 
   @ApiOperation({ summary: 'Get details of specific prescription' })
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.PHARMACIST, Role.CASHIER)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.prescriptionsService.findOne(id);
   }
 
   @ApiOperation({ summary: 'Dispense medications and trigger pharmacy invoice' })
+  @Roles(Role.ADMIN, Role.PHARMACIST, Role.CASHIER)
   @Patch(':id/dispense')
   dispense(@Request() req: any, @Param('id') id: string) {
     const cashierId = req.user.id;
