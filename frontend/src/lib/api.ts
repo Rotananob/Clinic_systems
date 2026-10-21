@@ -1062,6 +1062,41 @@ class ApiClient {
       this.request<any>(`/super-admin/tenants/${id}/impersonate`, {
         method: 'POST',
       }),
+    getUsers: (params?: {
+      query?: string;
+      role?: string;
+      tenantId?: string;
+      isActive?: boolean;
+      page?: number;
+      limit?: number;
+    }) => {
+      const sp = new URLSearchParams();
+      if (params?.query) sp.append('query', params.query);
+      if (params?.role && params.role !== 'ALL') sp.append('role', params.role);
+      if (params?.tenantId && params.tenantId !== 'ALL') sp.append('tenantId', params.tenantId);
+      if (params?.isActive !== undefined) sp.append('isActive', String(params.isActive));
+      if (params?.page) sp.append('page', String(params.page));
+      if (params?.limit) sp.append('limit', String(params.limit));
+      const qs = sp.toString();
+      return this.request<{ users: any[]; pagination: any }>(
+        `/super-admin/users${qs ? `?${qs}` : ''}`,
+      );
+    },
+    createUser: (data: any) =>
+      this.request<any>('/super-admin/users', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    updateUser: (id: string, data: any) =>
+      this.request<any>(`/super-admin/users/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }),
+    resetPassword: (id: string, newPassword: string) =>
+      this.request<any>(`/super-admin/users/${id}/reset-password`, {
+        method: 'POST',
+        body: JSON.stringify({ newPassword }),
+      }),
   };
 
   // Patient Portal & Telegram Mini App (TMA)

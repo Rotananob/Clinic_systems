@@ -7,6 +7,7 @@ import {
   Body,
   UseGuards,
   Request,
+  Query,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { SuperAdminService } from './super-admin.service';
@@ -16,6 +17,10 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 import { OverridePlanDto } from './dto/override-plan.dto';
 import { ToggleMaintenanceDto } from './dto/toggle-maintenance.dto';
+import { GetUsersDto } from './dto/get-users.dto';
+import { CreateGlobalUserDto } from './dto/create-global-user.dto';
+import { UpdateGlobalUserDto } from './dto/update-global-user.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @ApiTags('Super Admin Platform Dashboard & Governance')
 @ApiBearerAuth()
@@ -77,5 +82,29 @@ export class SuperAdminController {
   @Post('tenants/:id/impersonate')
   impersonateTenant(@Param('id') id: string, @Request() req: any) {
     return this.superAdminService.impersonateTenant(id, req.user);
+  }
+
+  @ApiOperation({ summary: 'Phase 1: Global User Governance - List all users across clinics with filtering (SUPER_ADMIN only)' })
+  @Get('users')
+  getGlobalUsers(@Query() dto: GetUsersDto) {
+    return this.superAdminService.getGlobalUsers(dto);
+  }
+
+  @ApiOperation({ summary: 'Phase 1: Global User Governance - Provision a new user directly (SUPER_ADMIN only)' })
+  @Post('users')
+  createGlobalUser(@Body() dto: CreateGlobalUserDto) {
+    return this.superAdminService.createGlobalUser(dto);
+  }
+
+  @ApiOperation({ summary: 'Phase 1: Global User Governance - Update user role, clinic, or status (SUPER_ADMIN only)' })
+  @Patch('users/:id')
+  updateGlobalUser(@Param('id') id: string, @Body() dto: UpdateGlobalUserDto) {
+    return this.superAdminService.updateGlobalUser(id, dto);
+  }
+
+  @ApiOperation({ summary: 'Phase 1: Global User Governance - Administrative password reset (SUPER_ADMIN only)' })
+  @Post('users/:id/reset-password')
+  resetUserPassword(@Param('id') id: string, @Body() dto: ResetPasswordDto) {
+    return this.superAdminService.resetUserPassword(id, dto);
   }
 }

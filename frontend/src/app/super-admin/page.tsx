@@ -30,6 +30,16 @@ import {
   Activity,
   Layers,
   Sparkles,
+  UserPlus,
+  KeyRound,
+  Edit2,
+  ChevronLeft,
+  ChevronRight,
+  Copy,
+  Check,
+  Mail,
+  Phone,
+  Briefcase,
 } from 'lucide-react';
 
 export default function SuperAdminFleetPage() {
@@ -68,6 +78,51 @@ export default function SuperAdminFleetPage() {
   });
   const [actionLoading, setActionLoading] = useState(false);
 
+  // Tab State
+  const [activeTab, setActiveTab] = useState<'CLINICS' | 'USERS'>('CLINICS');
+
+  // Global Users State
+  const [globalUsers, setGlobalUsers] = useState<any[]>([]);
+  const [globalUsersLoading, setGlobalUsersLoading] = useState(false);
+  const [globalUsersTotal, setGlobalUsersTotal] = useState(0);
+  const [globalUsersPage, setGlobalUsersPage] = useState(1);
+  const [userSearchQuery, setUserSearchQuery] = useState('');
+  const [userRoleFilter, setUserRoleFilter] = useState('ALL');
+  const [userTenantFilter, setUserTenantFilter] = useState('ALL');
+  const [userStatusFilter, setUserStatusFilter] = useState('ALL');
+
+  // Global User Modals State
+  const [isCreateUserModalOpen, setIsCreateUserModalOpen] = useState(false);
+  const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
+  const [isResetUserPasswordModalOpen, setIsResetUserPasswordModalOpen] = useState(false);
+  const [selectedUserForAction, setSelectedUserForAction] = useState<any>(null);
+  const [copiedPassword, setCopiedPassword] = useState(false);
+
+  const [createUserForm, setCreateUserForm] = useState({
+    email: '',
+    password: '',
+    fullNameEn: '',
+    fullNameKh: '',
+    role: 'DOCTOR',
+    tenantId: '',
+    phone: '',
+    department: '',
+  });
+
+  const [editUserForm, setEditUserForm] = useState({
+    fullNameEn: '',
+    fullNameKh: '',
+    role: 'DOCTOR',
+    tenantId: '',
+    phone: '',
+    department: '',
+    isActive: true,
+  });
+
+  const [resetPasswordForm, setResetPasswordForm] = useState({
+    newPassword: '',
+  });
+
   useEffect(() => {
     if (user && user.role !== 'SUPER_ADMIN') {
       router.push('/');
@@ -75,6 +130,164 @@ export default function SuperAdminFleetPage() {
     }
     loadData();
   }, [user]);
+
+  const loadGlobalUsers = async () => {
+    try {
+      setGlobalUsersLoading(true);
+      const res = await api.superAdmin.getUsers({
+        query: userSearchQuery,
+        role: userRoleFilter,
+        tenantId: userTenantFilter,
+        isActive: userStatusFilter === 'ALL' ? undefined : userStatusFilter === 'ACTIVE',
+        page: globalUsersPage,
+        limit: 15,
+      });
+      if (res && res.users) {
+        setGlobalUsers(res.users);
+        setGlobalUsersTotal(res.pagination?.total || res.users.length);
+      }
+    } catch (err: any) {
+      toast.error(isKm ? 'មិនអាចទាញយកទិន្នន័យអ្នកប្រើប្រាស់បានទេ' : 'Failed to fetch global users');
+    } finally {
+      setGlobalUsersLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'USERS') {
+      loadGlobalUsers();
+    }
+  }, [activeTab, globalUsersPage, userRoleFilter, userTenantFilter, userStatusFilter]);
+
+  const handleSearchUsers = (e: React.FormEvent) => {
+    e.preventDefault();
+    setGlobalUsersPage(1);
+    loadGlobalUsers();
+  };
+
+  const generateRandomPassword = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%^&*';
+    let pwd = '';
+    for (let i = 0; i < 12; i++) {
+      pwd += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return pwd;
+  };
+
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setActionLoading(true);
+      await api.superAdmin.createUser({
+        email: createUserForm.email,
+        password: createUserForm.password,
+        fullNameEn: createUserForm.fullNameEn,
+        fullNameKh: createUserForm.fullNameKh || undefined,
+        role: createUserForm.role,
+        tenantId: createUserForm.tenantId || undefined,
+        phone: createUserForm.phone || undefined,
+        department: createUserForm.department || undefined,
+      });
+      toast.success(isKm ? 'បានបង្កើតគណនីអ្នកប្រើប្រាស់ជោគជ័យ' : 'Global user created successfully');
+      setIsCreateUserModalOpen(false);
+      setCreateUserForm({
+        email: '',
+        password: '',
+        fullNameEn: '',
+        fullNameKh: '',
+        role: 'DOCTOR',
+        tenantId: '',
+        phone: '',
+        department: '',
+      });
+      loadGlobalUsers();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to create user');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleOpenEditUser = (u: any) => {
+    setSelectedUserForAction(u);
+    setEditUserForm({
+      fullNameEn: u.fullNameEn || '',
+      fullNameKh: u.fullNameKh || '',
+      role: u.role || 'DOCTOR',
+      tenantId: u.tenantId || '',
+      phone: u.phone || '',
+      department: u.department || '',
+      isActive: Boolean(u.isActive),
+    });
+    setIsEditUserModalOpen(true);
+  };
+
+  const handleUpdateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedUserForAction) return;
+    try {
+      setActionLoading(true);
+      await api.superAdmin.updateUser(selectedUserForAction.id, {
+        fullNameEn: editUserForm.fullNameEn,
+        fullNameKh: editUserForm.fullNameKh || undefined,
+        role: editUserForm.role,
+        tenantId: editUserForm.tenantId ? editUserForm.tenantId : null,
+        phone: editUserForm.phone || undefined,
+        department: editUserForm.department || undefined,
+        isActive: editUserForm.isActive,
+      });
+      toast.success(isKm ? 'បានកែប្រែគណនីជោគជ័យ' : 'User updated successfully');
+      setIsEditUserModalOpen(false);
+      setSelectedUserForAction(null);
+      loadGlobalUsers();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to update user');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleOpenResetPassword = (u: any) => {
+    setSelectedUserForAction(u);
+    setResetPasswordForm({ newPassword: generateRandomPassword() });
+    setCopiedPassword(false);
+    setIsResetUserPasswordModalOpen(true);
+  };
+
+  const handleConfirmResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedUserForAction || !resetPasswordForm.newPassword) return;
+    try {
+      setActionLoading(true);
+      await api.superAdmin.resetPassword(selectedUserForAction.id, resetPasswordForm.newPassword);
+      toast.success(
+        isKm
+          ? `បានប្តូរលេខសម្ងាត់សម្រាប់ ${selectedUserForAction.email} ជោគជ័យ`
+          : `Password reset successfully for ${selectedUserForAction.email}`,
+      );
+      setIsResetUserPasswordModalOpen(false);
+      setSelectedUserForAction(null);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to reset password');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleToggleUserStatus = async (u: any) => {
+    try {
+      const newStatus = !u.isActive;
+      await api.superAdmin.updateUser(u.id, { isActive: newStatus });
+      toast.success(
+        newStatus
+          ? isKm ? 'បានបើកដំណើរការគណនីឡើងវិញ' : 'Account activated'
+          : isKm ? 'បានចាក់សោរផ្អាកគណនី' : 'Account suspended',
+      );
+      loadGlobalUsers();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to toggle status');
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -106,7 +319,11 @@ export default function SuperAdminFleetPage() {
 
   const handleRefresh = () => {
     setRefreshing(true);
-    loadData();
+    if (activeTab === 'CLINICS') {
+      loadData();
+    } else {
+      loadGlobalUsers().finally(() => setRefreshing(false));
+    }
   };
 
   // Emergency Lockout / Freeze
@@ -321,6 +538,53 @@ export default function SuperAdminFleetPage() {
         </div>
       )}
 
+      {/* Super Admin Central Navigation Tabs */}
+      <div className="flex items-center gap-2 border-b border-stone-200 pb-3">
+        <button
+          type="button"
+          onClick={() => setActiveTab('CLINICS')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            activeTab === 'CLINICS'
+              ? 'bg-teal-800 text-white shadow-xs font-black'
+              : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
+          }`}
+        >
+          <Building2 className="w-4 h-4" />
+          <span>{isKm ? 'គ្រប់គ្រងគ្លីនិកទាំងអស់ (Clinics Fleet)' : 'All Clinics Fleet'}</span>
+          <span
+            className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
+              activeTab === 'CLINICS'
+                ? 'bg-teal-900 text-teal-100'
+                : 'bg-stone-200 text-stone-700'
+            }`}
+          >
+            {clinics.length}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('USERS')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            activeTab === 'USERS'
+              ? 'bg-teal-800 text-white shadow-xs font-black'
+              : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
+          }`}
+        >
+          <Users className="w-4 h-4" />
+          <span>{isKm ? 'គ្រប់គ្រងអ្នកប្រើប្រាស់ទាំងអស់ (Global Users)' : 'Global User Governance'}</span>
+          <span
+            className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
+              activeTab === 'USERS'
+                ? 'bg-teal-900 text-teal-100'
+                : 'bg-stone-200 text-stone-700'
+            }`}
+          >
+            {globalUsersTotal || 0}
+          </span>
+        </button>
+      </div>
+
       {/* KPI Metrics Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Clinic Fleet */}
@@ -421,6 +685,9 @@ export default function SuperAdminFleetPage() {
         </div>
       </div>
 
+      {/* TAB 1: CLINICS FLEET DIRECTORY */}
+      {activeTab === 'CLINICS' && (
+        <div className="space-y-6">
       {/* Multi-Clinic Fleet Directory Table */}
       <div className="bg-white rounded-2xl border border-stone-200 shadow-xs overflow-hidden">
         {/* Table Filters Header */}
@@ -667,6 +934,279 @@ export default function SuperAdminFleetPage() {
         </div>
       </div>
 
+
+        </div>
+      )}
+      {/* TAB 2: GLOBAL USER GOVERNANCE (Phase 1) */}
+      {activeTab === 'USERS' && (
+        <div className="space-y-4">
+          {/* User Search & Filters Toolbar */}
+          <div className="p-4 bg-white rounded-2xl border border-stone-200 shadow-xs space-y-3">
+            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+              <form onSubmit={handleSearchUsers} className="flex-1 relative">
+                <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={userSearchQuery}
+                  onChange={(e) => setUserSearchQuery(e.target.value)}
+                  placeholder={
+                    isKm
+                      ? 'ស្វែងរកតាមឈ្មោះ អ៊ីមែល ឬលេខទូរស័ព្ទ...'
+                      : 'Search by user name, email, or phone...'
+                  }
+                  className="w-full pl-9 pr-4 py-2 rounded-xl border border-stone-200 text-xs text-stone-800 focus:outline-hidden focus:border-teal-700 bg-stone-50/50"
+                />
+              </form>
+
+              <div className="flex items-center gap-2 flex-wrap">
+                {/* Role Filter */}
+                <select
+                  value={userRoleFilter}
+                  onChange={(e) => {
+                    setUserRoleFilter(e.target.value);
+                    setGlobalUsersPage(1);
+                  }}
+                  className="px-3 py-2 rounded-xl border border-stone-200 text-xs font-medium text-stone-700 bg-stone-50/50 focus:outline-hidden"
+                >
+                  <option value="ALL">{isKm ? 'គ្រប់តួនាទី (All Roles)' : 'All Roles'}</option>
+                  <option value="SUPER_ADMIN">SUPER ADMIN</option>
+                  <option value="ADMIN">CLINIC ADMIN</option>
+                  <option value="DOCTOR">DOCTOR</option>
+                  <option value="NURSE">NURSE</option>
+                  <option value="PHARMACIST">PHARMACIST</option>
+                  <option value="RECEPTIONIST">RECEPTIONIST</option>
+                  <option value="ACCOUNTANT">ACCOUNTANT</option>
+                  <option value="LAB_TECH">LAB TECH</option>
+                </select>
+
+                {/* Tenant Filter */}
+                <select
+                  value={userTenantFilter}
+                  onChange={(e) => {
+                    setUserTenantFilter(e.target.value);
+                    setGlobalUsersPage(1);
+                  }}
+                  className="px-3 py-2 rounded-xl border border-stone-200 text-xs font-medium text-stone-700 bg-stone-50/50 focus:outline-hidden max-w-[180px] truncate"
+                >
+                  <option value="ALL">{isKm ? 'គ្រប់គ្លីនិក (All Clinics)' : 'All Clinics'}</option>
+                  {clinics.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {isKm ? c.clinicNameKh : c.clinicNameEn}
+                    </option>
+                  ))}
+                </select>
+
+                {/* Status Filter */}
+                <select
+                  value={userStatusFilter}
+                  onChange={(e) => {
+                    setUserStatusFilter(e.target.value);
+                    setGlobalUsersPage(1);
+                  }}
+                  className="px-3 py-2 rounded-xl border border-stone-200 text-xs font-medium text-stone-700 bg-stone-50/50 focus:outline-hidden"
+                >
+                  <option value="ALL">{isKm ? 'គ្រប់ស្ថានភាព' : 'All Status'}</option>
+                  <option value="ACTIVE">{isKm ? 'សកម្ម (Active)' : 'Active'}</option>
+                  <option value="DISABLED">{isKm ? 'ចាក់សោ (Disabled)' : 'Disabled'}</option>
+                </select>
+
+                {/* Create User Button */}
+                <button
+                  type="button"
+                  onClick={() => setIsCreateUserModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-teal-800 hover:bg-teal-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+                >
+                  <UserPlus className="w-3.5 h-3.5" />
+                  <span>{isKm ? 'បង្កើតគណនីថ្មី' : 'Create User'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Global Users Data Table */}
+          <div className="bg-white rounded-2xl border border-stone-200 shadow-xs overflow-hidden">
+            {globalUsersLoading ? (
+              <div className="p-12 text-center space-y-2">
+                <RefreshCw className="w-6 h-6 text-teal-800 animate-spin mx-auto" />
+                <div className="text-xs text-stone-500 font-medium">
+                  {isKm ? 'កំពុងទាញយកបញ្ជីអ្នកប្រើប្រាស់...' : 'Loading global users directory...'}
+                </div>
+              </div>
+            ) : globalUsers.length === 0 ? (
+              <div className="p-12 text-center space-y-2 text-stone-500">
+                <Users className="w-8 h-8 text-stone-300 mx-auto" />
+                <div className="text-sm font-bold text-stone-700">
+                  {isKm ? 'មិនមានអ្នកប្រើប្រាស់ត្រូវនឹងលក្ខខណ្ឌស្វែងរកទេ' : 'No users match your criteria'}
+                </div>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs text-stone-700">
+                  <thead className="bg-stone-50 border-b border-stone-200 text-[11px] font-bold text-stone-600 uppercase">
+                    <tr>
+                      <th className="p-4">{isKm ? 'អ្នកប្រើប្រាស់' : 'User'}</th>
+                      <th className="p-4">{isKm ? 'តួនាទី' : 'Role'}</th>
+                      <th className="p-4">{isKm ? 'គ្លីនិកសាមី' : 'Clinic Affiliation'}</th>
+                      <th className="p-4">{isKm ? 'ផ្នែក / ជំនាញ' : 'Department'}</th>
+                      <th className="p-4 text-center">{isKm ? 'ស្ថានភាព' : 'Status'}</th>
+                      <th className="p-4 text-right">{isKm ? 'សកម្មភាព' : 'Actions'}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-stone-100 font-sans">
+                    {globalUsers.map((u) => {
+                      const roleColors: Record<string, string> = {
+                        SUPER_ADMIN: 'bg-amber-100 text-amber-900 border-amber-300',
+                        ADMIN: 'bg-teal-100 text-teal-900 border-teal-300',
+                        DOCTOR: 'bg-blue-100 text-blue-900 border-blue-300',
+                        NURSE: 'bg-emerald-100 text-emerald-900 border-emerald-300',
+                        PHARMACIST: 'bg-purple-100 text-purple-900 border-purple-300',
+                        RECEPTIONIST: 'bg-sky-100 text-sky-900 border-sky-300',
+                        ACCOUNTANT: 'bg-rose-100 text-rose-900 border-rose-300',
+                        LAB_TECH: 'bg-indigo-100 text-indigo-900 border-indigo-300',
+                      };
+
+                      return (
+                        <tr key={u.id} className="hover:bg-stone-50/80 transition-colors">
+                          <td className="p-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-xl bg-stone-200 text-stone-700 flex items-center justify-center font-bold text-xs uppercase shrink-0">
+                                {u.fullNameEn ? u.fullNameEn.substring(0, 2) : 'U'}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="font-bold text-stone-900 truncate">
+                                  {u.fullNameKh || u.fullNameEn}
+                                </div>
+                                <div className="text-[11px] text-stone-500 font-mono truncate">
+                                  {u.email}
+                                </div>
+                                {u.phone && (
+                                  <div className="text-[10px] text-stone-400 font-mono flex items-center gap-1 mt-0.5">
+                                    <Phone className="w-2.5 h-2.5" />
+                                    <span>{u.phone}</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+
+                          <td className="p-4">
+                            <span
+                              className={`px-2.5 py-1 rounded-md text-[10px] font-bold border ${
+                                roleColors[u.role] || 'bg-stone-100 text-stone-800 border-stone-200'
+                              }`}
+                            >
+                              {u.role}
+                            </span>
+                          </td>
+
+                          <td className="p-4">
+                            {u.tenant ? (
+                              <div>
+                                <div className="font-bold text-stone-900 truncate max-w-[180px]">
+                                  {isKm ? u.tenant.clinicNameKh : u.tenant.clinicNameEn}
+                                </div>
+                                <div className="text-[10px] text-stone-400 font-mono">
+                                  {u.tenant.slug}.clinic.com
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="text-[11px] font-semibold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                                Platform Core
+                              </span>
+                            )}
+                          </td>
+
+                          <td className="p-4 text-stone-600">
+                            {u.department || '-'}
+                          </td>
+
+                          <td className="p-4 text-center">
+                            <button
+                              type="button"
+                              onClick={() => handleToggleUserStatus(u)}
+                              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border transition-colors cursor-pointer ${
+                                u.isActive
+                                  ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
+                                  : 'bg-red-50 text-red-800 border-red-300 hover:bg-red-100'
+                              }`}
+                            >
+                              {u.isActive ? (
+                                <>
+                                  <Check className="w-3 h-3 text-emerald-700" />
+                                  <span>{isKm ? 'សកម្ម' : 'Active'}</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Lock className="w-3 h-3 text-red-700" />
+                                  <span>{isKm ? 'ចាក់សោ' : 'Disabled'}</span>
+                                </>
+                              )}
+                            </button>
+                          </td>
+
+                          <td className="p-4 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => handleOpenResetPassword(u)}
+                                title={isKm ? 'ប្តូរលេខសម្ងាត់' : 'Reset Password'}
+                                className="p-1.5 rounded-lg border border-stone-200 hover:bg-stone-100 text-stone-600 transition-colors cursor-pointer"
+                              >
+                                <KeyRound className="w-3.5 h-3.5" />
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => handleOpenEditUser(u)}
+                                title={isKm ? 'កែប្រែព័ត៌មាន' : 'Edit Details'}
+                                className="p-1.5 rounded-lg border border-stone-200 hover:bg-teal-50 hover:text-teal-800 text-stone-600 transition-colors cursor-pointer"
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Pagination */}
+            {globalUsersTotal > 15 && (
+              <div className="p-4 border-t border-stone-200 bg-stone-50/50 flex items-center justify-between text-xs">
+                <span className="text-stone-500 font-medium">
+                  {isKm ? 'បង្ហាញសរុប:' : 'Total users:'}{' '}
+                  <strong className="text-stone-900 font-bold">{globalUsersTotal}</strong>
+                </span>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    disabled={globalUsersPage <= 1}
+                    onClick={() => setGlobalUsersPage((p) => Math.max(1, p - 1))}
+                    className="p-1.5 rounded-lg border border-stone-300 hover:bg-white disabled:opacity-40 transition-colors cursor-pointer"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <span className="font-bold text-stone-700">
+                    {isKm ? 'ទំព័រ' : 'Page'} {globalUsersPage} / {Math.ceil(globalUsersTotal / 15)}
+                  </span>
+                  <button
+                    type="button"
+                    disabled={globalUsersPage >= Math.ceil(globalUsersTotal / 15)}
+                    onClick={() => setGlobalUsersPage((p) => p + 1)}
+                    className="p-1.5 rounded-lg border border-stone-300 hover:bg-white disabled:opacity-40 transition-colors cursor-pointer"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       {/* MODAL 1: Freeze / Emergency Lockout Confirmation */}
       {isFreezeModalOpen && selectedClinic && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-950/60 backdrop-blur-xs font-sans">
@@ -1016,6 +1556,420 @@ export default function SuperAdminFleetPage() {
                   : 'Activate Maintenance Mode'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* Modal 1: Create Global User */}
+      {isCreateUserModalOpen && (
+        <div className="fixed inset-0 z-50 bg-stone-950/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl border border-stone-200 max-w-lg w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between border-b border-stone-100 pb-3">
+              <div className="flex items-center gap-2 font-bold text-stone-900">
+                <UserPlus className="w-5 h-5 text-teal-800" />
+                <span>{isKm ? 'បង្កើតគណនីអ្នកប្រើប្រាស់ថ្មី' : 'Create Global User'}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsCreateUserModalOpen(false)}
+                className="text-stone-400 hover:text-stone-700 p-1 rounded-lg cursor-pointer"
+              >
+                <XCircle className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateUser} className="space-y-3 text-xs">
+              <div>
+                <label className="block text-[11px] font-bold text-stone-700 mb-1">
+                  {isKm ? 'អ៊ីមែល (Email) *' : 'Email Address *'}
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={createUserForm.email}
+                  onChange={(e) => setCreateUserForm({ ...createUserForm, email: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-300 text-stone-900 font-mono text-xs focus:outline-hidden"
+                  placeholder="doctor@clinic.com"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-stone-700 mb-1">
+                  {isKm ? 'លេខសម្ងាត់ (Password) *' : 'Initial Password *'}
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    required
+                    value={createUserForm.password}
+                    onChange={(e) => setCreateUserForm({ ...createUserForm, password: e.target.value })}
+                    className="flex-1 px-3 py-2 rounded-xl border border-stone-300 text-stone-900 font-mono text-xs focus:outline-hidden"
+                    placeholder="Min 6 characters"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setCreateUserForm({ ...createUserForm, password: generateRandomPassword() })}
+                    className="px-3 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold cursor-pointer"
+                  >
+                    {isKm ? 'បង្កើតកូដ' : 'Generate'}
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-[11px] font-bold text-stone-700 mb-1">
+                    {isKm ? 'ឈ្មោះជាអង់គ្លេស *' : 'Full Name (EN) *'}
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={createUserForm.fullNameEn}
+                    onChange={(e) => setCreateUserForm({ ...createUserForm, fullNameEn: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-stone-900 text-xs focus:outline-hidden"
+                    placeholder="Dr. Sok Dara"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-stone-700 mb-1">
+                    {isKm ? 'ឈ្មោះជាខ្មែរ' : 'Full Name (KH)'}
+                  </label>
+                  <input
+                    type="text"
+                    value={createUserForm.fullNameKh}
+                    onChange={(e) => setCreateUserForm({ ...createUserForm, fullNameKh: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-stone-900 text-xs focus:outline-hidden"
+                    placeholder="វេជ្ជ. សុខ ដារ៉ា"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-[11px] font-bold text-stone-700 mb-1">
+                    {isKm ? 'តួនាទី (Role) *' : 'Role *'}
+                  </label>
+                  <select
+                    value={createUserForm.role}
+                    onChange={(e) => setCreateUserForm({ ...createUserForm, role: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-stone-900 text-xs focus:outline-hidden"
+                  >
+                    <option value="SUPER_ADMIN">SUPER ADMIN</option>
+                    <option value="ADMIN">CLINIC ADMIN</option>
+                    <option value="DOCTOR">DOCTOR</option>
+                    <option value="NURSE">NURSE</option>
+                    <option value="PHARMACIST">PHARMACIST</option>
+                    <option value="RECEPTIONIST">RECEPTIONIST</option>
+                    <option value="ACCOUNTANT">ACCOUNTANT</option>
+                    <option value="LAB_TECH">LAB TECH</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-stone-700 mb-1">
+                    {isKm ? 'គ្លីនិកសាមី (Clinic)' : 'Clinic Tenant'}
+                  </label>
+                  <select
+                    value={createUserForm.tenantId}
+                    onChange={(e) => setCreateUserForm({ ...createUserForm, tenantId: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-stone-900 text-xs focus:outline-hidden"
+                  >
+                    <option value="">{isKm ? 'គ្មាន (Platform Core)' : 'None (Platform Core)'}</option>
+                    {clinics.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {isKm ? c.clinicNameKh : c.clinicNameEn}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-[11px] font-bold text-stone-700 mb-1">
+                    {isKm ? 'លេខទូរស័ព្ទ' : 'Phone'}
+                  </label>
+                  <input
+                    type="text"
+                    value={createUserForm.phone}
+                    onChange={(e) => setCreateUserForm({ ...createUserForm, phone: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-stone-900 text-xs focus:outline-hidden"
+                    placeholder="012345678"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-stone-700 mb-1">
+                    {isKm ? 'ផ្នែក / ជំនាញ' : 'Department'}
+                  </label>
+                  <input
+                    type="text"
+                    value={createUserForm.department}
+                    onChange={(e) => setCreateUserForm({ ...createUserForm, department: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-stone-900 text-xs focus:outline-hidden"
+                    placeholder="General Practice"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-stone-100">
+                <button
+                  type="button"
+                  onClick={() => setIsCreateUserModalOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-stone-300 font-bold text-stone-700 hover:bg-stone-50 cursor-pointer"
+                >
+                  {isKm ? 'បោះបង់' : 'Cancel'}
+                </button>
+                <button
+                  type="submit"
+                  disabled={actionLoading}
+                  className="px-5 py-2 rounded-xl bg-teal-800 hover:bg-teal-700 text-white font-bold shadow-xs cursor-pointer"
+                >
+                  {actionLoading ? (isKm ? 'កំពុងបង្កើត...' : 'Creating...') : isKm ? 'បង្កើតគណនី' : 'Create User'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal 2: Edit Global User */}
+      {isEditUserModalOpen && selectedUserForAction && (
+        <div className="fixed inset-0 z-50 bg-stone-950/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl border border-stone-200 max-w-lg w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between border-b border-stone-100 pb-3">
+              <div className="flex items-center gap-2 font-bold text-stone-900">
+                <Edit2 className="w-5 h-5 text-teal-800" />
+                <span>{isKm ? 'កែប្រែព័ត៌មានអ្នកប្រើប្រាស់' : 'Edit User Profile'}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsEditUserModalOpen(false)}
+                className="text-stone-400 hover:text-stone-700 p-1 rounded-lg cursor-pointer"
+              >
+                <XCircle className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 text-xs">
+              <span className="text-stone-500">{isKm ? 'អ៊ីមែលគណនី:' : 'Account Email:'}</span>{' '}
+              <strong className="font-mono text-stone-900">{selectedUserForAction.email}</strong>
+            </div>
+
+            <form onSubmit={handleUpdateUser} className="space-y-3 text-xs">
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-[11px] font-bold text-stone-700 mb-1">
+                    {isKm ? 'ឈ្មោះជាអង់គ្លេស *' : 'Full Name (EN) *'}
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editUserForm.fullNameEn}
+                    onChange={(e) => setEditUserForm({ ...editUserForm, fullNameEn: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-stone-900 text-xs focus:outline-hidden"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-stone-700 mb-1">
+                    {isKm ? 'ឈ្មោះជាខ្មែរ' : 'Full Name (KH)'}
+                  </label>
+                  <input
+                    type="text"
+                    value={editUserForm.fullNameKh}
+                    onChange={(e) => setEditUserForm({ ...editUserForm, fullNameKh: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-stone-900 text-xs focus:outline-hidden"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-[11px] font-bold text-stone-700 mb-1">
+                    {isKm ? 'តួនាទី (Role) *' : 'Role *'}
+                  </label>
+                  <select
+                    value={editUserForm.role}
+                    onChange={(e) => setEditUserForm({ ...editUserForm, role: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-stone-900 text-xs focus:outline-hidden"
+                  >
+                    <option value="SUPER_ADMIN">SUPER ADMIN</option>
+                    <option value="ADMIN">CLINIC ADMIN</option>
+                    <option value="DOCTOR">DOCTOR</option>
+                    <option value="NURSE">NURSE</option>
+                    <option value="PHARMACIST">PHARMACIST</option>
+                    <option value="RECEPTIONIST">RECEPTIONIST</option>
+                    <option value="ACCOUNTANT">ACCOUNTANT</option>
+                    <option value="LAB_TECH">LAB TECH</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-stone-700 mb-1">
+                    {isKm ? 'គ្លីនិកសាមី (Clinic)' : 'Clinic Tenant'}
+                  </label>
+                  <select
+                    value={editUserForm.tenantId}
+                    onChange={(e) => setEditUserForm({ ...editUserForm, tenantId: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-stone-900 text-xs focus:outline-hidden"
+                  >
+                    <option value="">{isKm ? 'គ្មាន (Platform Core)' : 'None (Platform Core)'}</option>
+                    {clinics.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {isKm ? c.clinicNameKh : c.clinicNameEn}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-[11px] font-bold text-stone-700 mb-1">
+                    {isKm ? 'លេខទូរស័ព្ទ' : 'Phone'}
+                  </label>
+                  <input
+                    type="text"
+                    value={editUserForm.phone}
+                    onChange={(e) => setEditUserForm({ ...editUserForm, phone: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-stone-900 text-xs focus:outline-hidden"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-stone-700 mb-1">
+                    {isKm ? 'ផ្នែក / ជំនាញ' : 'Department'}
+                  </label>
+                  <input
+                    type="text"
+                    value={editUserForm.department}
+                    onChange={(e) => setEditUserForm({ ...editUserForm, department: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-stone-900 text-xs focus:outline-hidden"
+                  />
+                </div>
+              </div>
+
+              <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 flex items-center justify-between">
+                <div>
+                  <span className="font-bold text-stone-800 block">
+                    {isKm ? 'ស្ថានភាពដំណើរការគណនី' : 'Account Active Status'}
+                  </span>
+                  <span className="text-[10px] text-stone-500">
+                    {isKm ? 'បើកដំណើរការ ឬផ្អាកការចូលប្រើប្រាស់' : 'Enable or disable platform login'}
+                  </span>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={editUserForm.isActive}
+                  onChange={(e) => setEditUserForm({ ...editUserForm, isActive: e.target.checked })}
+                  className="w-4 h-4 text-teal-800 rounded focus:ring-teal-700 cursor-pointer"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-stone-100">
+                <button
+                  type="button"
+                  onClick={() => setIsEditUserModalOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-stone-300 font-bold text-stone-700 hover:bg-stone-50 cursor-pointer"
+                >
+                  {isKm ? 'បោះបង់' : 'Cancel'}
+                </button>
+                <button
+                  type="submit"
+                  disabled={actionLoading}
+                  className="px-5 py-2 rounded-xl bg-teal-800 hover:bg-teal-700 text-white font-bold shadow-xs cursor-pointer"
+                >
+                  {actionLoading ? (isKm ? 'កំពុងរក្សាទុក...' : 'Saving...') : isKm ? 'រក្សាទុកការកែប្រែ' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal 3: Reset Password Modal */}
+      {isResetUserPasswordModalOpen && selectedUserForAction && (
+        <div className="fixed inset-0 z-50 bg-stone-950/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl border border-stone-200 max-w-md w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between border-b border-stone-100 pb-3">
+              <div className="flex items-center gap-2 font-bold text-stone-900">
+                <KeyRound className="w-5 h-5 text-amber-700" />
+                <span>{isKm ? 'ប្តូរលេខសម្ងាត់រដ្ឋបាល' : 'Administrative Password Reset'}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsResetUserPasswordModalOpen(false)}
+                className="text-stone-400 hover:text-stone-700 p-1 rounded-lg cursor-pointer"
+              >
+                <XCircle className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-1 text-xs">
+              <div className="text-stone-500">{isKm ? 'កំណត់លេខសម្ងាត់ថ្មីសម្រាប់:' : 'Reset password for user:'}</div>
+              <div className="font-bold text-stone-900 font-mono text-sm">{selectedUserForAction.email}</div>
+              <div className="text-[11px] text-stone-500">
+                {selectedUserForAction.fullNameKh || selectedUserForAction.fullNameEn} ({selectedUserForAction.role})
+              </div>
+            </div>
+
+            <form onSubmit={handleConfirmResetPassword} className="space-y-3 text-xs">
+              <div>
+                <label className="block text-[11px] font-bold text-stone-700 mb-1">
+                  {isKm ? 'លេខសម្ងាត់ថ្មី (New Password) *' : 'New Secure Password *'}
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    required
+                    value={resetPasswordForm.newPassword}
+                    onChange={(e) => setResetPasswordForm({ newPassword: e.target.value })}
+                    className="flex-1 px-3 py-2 rounded-xl border border-stone-300 font-mono text-xs text-stone-900 focus:outline-hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(resetPasswordForm.newPassword);
+                      setCopiedPassword(true);
+                      setTimeout(() => setCopiedPassword(false), 2000);
+                    }}
+                    className="px-3 py-2 rounded-xl border border-stone-300 hover:bg-stone-50 text-stone-700 font-bold flex items-center gap-1 cursor-pointer"
+                  >
+                    {copiedPassword ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-700" />
+                        <span>{isKm ? 'បានចម្លង' : 'Copied'}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>{isKm ? 'ចម្លង' : 'Copy'}</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-900 leading-relaxed">
+                {isKm
+                  ? 'ការប្តូរលេខសម្ងាត់នេះនឹងមានសុពលភាពភ្លាមៗ។ សូមប្រគល់លេខសម្ងាត់នេះទៅកាន់អ្នកប្រើប្រាស់ដោយសុវត្ថិភាព។'
+                  : 'This reset will take effect immediately. Please deliver the generated credentials to the user securely.'}
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsResetUserPasswordModalOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-stone-300 font-bold text-stone-700 hover:bg-stone-50 cursor-pointer"
+                >
+                  {isKm ? 'បោះបង់' : 'Cancel'}
+                </button>
+                <button
+                  type="submit"
+                  disabled={actionLoading}
+                  className="px-5 py-2 rounded-xl bg-amber-700 hover:bg-amber-800 text-white font-bold shadow-xs cursor-pointer"
+                >
+                  {actionLoading ? (isKm ? 'កំពុងប្តូរ...' : 'Resetting...') : isKm ? 'បញ្ជាក់ប្តូរលេខសម្ងាត់' : 'Confirm Reset'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

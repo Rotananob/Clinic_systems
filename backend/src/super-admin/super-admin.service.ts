@@ -10,6 +10,11 @@ import { PlanTier, SubscriptionStatus } from '@prisma/client';
 import { SAAS_PLANS } from '../common/constants/plans.constant';
 import { OverridePlanDto } from './dto/override-plan.dto';
 import { ToggleMaintenanceDto } from './dto/toggle-maintenance.dto';
+import * as bcrypt from 'bcryptjs';
+import { GetUsersDto } from './dto/get-users.dto';
+import { CreateGlobalUserDto } from './dto/create-global-user.dto';
+import { UpdateGlobalUserDto } from './dto/update-global-user.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 export interface PlatformMetrics {
   fleet: {
@@ -627,6 +632,220 @@ export class SuperAdminService {
       },
       messageKh: `បានបង្កើត Audit Token សម្រាប់ចូលត្រួតពិនិត្យគ្លីនិក ${tenant.clinicNameKh} ដោយជោគជ័យ។`,
       messageEn: `Audit Token created for inspecting ${tenant.clinicNameEn} workspace.`,
+    };
+  }
+
+  /**
+   * Phase 1: Global User Governance - List all users across clinics with filtering & pagination
+   */
+  async getGlobalUsers(dto: GetUsersDto) {
+    const page = Math.max(1, Number(dto.page) || 1);
+    const limit = Math.min(100, Math.max(1, Number(dto.limit) || 20));
+    const skip = (page - 1) * limit;
+
+    const where: any = {};
+
+    if (dto.role) {
+      where.role = dto.role;
+    }
+
+    if (dto.tenantId) {
+      where.tenantId = dto.tenantId;
+    }
+
+    if (dto.isActive !== undefined) {
+      where.isActive = dto.isActive;
+    }
+
+    if (dto.query && dto.query.trim()) {
+      const q = dto.query.trim();
+      where.OR = [
+        { email: { contains: q, mode: 'insensitive' } },
+        { fullNameEn: { contains: q, mode: 'insensitive' } },
+        { fullNameKh: { contains: q, mode: 'insensitive' } },
+        { phone: { contains: q, mode: 'insensitive' } },
+      ];
+    }
+
+    const [total, users] = await Promise.all([
+      this.prisma.user.count({ where }),
+      this.prisma.user.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          email: true,
+          fullNameEn: true,
+          fullNameKh: true,
+          role: true,
+          phone: true,
+          department: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true,
+          tenantId: true,
+          tenant: {
+            select: {
+              id: true,
+              slug: true,
+              clinicNameKh: true,
+              clinicNameEn: true,
+              planTier: true,
+              isActive: true,
+            },
+          },
+        },
+      }),
+    ]);
+
+    return {
+      users,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  /**
+   * Phase 1: Global User Governance - Provision a new user directly
+   */
+  async createGlobalUser(dto: CreateGlobalUserDto) {
+    const existing = await this.prisma.user.findUnique({
+      where: { email: dto.email.toLowerCase().trim() },
+    });
+    if (existing) {
+      throw new BadRequestException('A user with this email address already exists');
+    }
+
+    if (dto.tenantId) {
+      const tenant = await this.prisma.tenant.findUnique({
+        where: { id: dto.tenantId },
+      });
+      if (!tenant) {
+        throw new NotFoundException('Specified clinic tenant not found');
+      }
+    }
+
+    const passwordHash = await bcrypt.hash(dto.password, 10);
+
+    const newUser = await this.prisma.user.create({
+      data: {
+        email: dto.email.toLowerCase().trim(),
+        passwordHash,
+        fullNameEn: dto.fullNameEn.trim(),
+        fullNameKh: dto.fullNameKh?.trim() || null,
+        role: dto.role,
+        tenantId: dto.tenantId || null,
+        phone: dto.phone?.trim() || null,
+        department: dto.department?.trim() || null,
+      },
+      select: {
+        id: true,
+        email: true,
+        fullNameEn: true,
+        fullNameKh: true,
+        role: true,
+        phone: true,
+        department: true,
+        isActive: true,
+        tenantId: true,
+        createdAt: true,
+        tenant: {
+          select: {
+            id: true,
+            clinicNameKh: true,
+            clinicNameEn: true,
+          },
+        },
+      },
+    });
+
+    this.logger.log(`[SuperAdmin] Created global user ${newUser.email} (${newUser.role})`);
+    return newUser;
+  }
+
+  /**
+   * Phase 1: Global User Governance - Update user role, clinic, or active status
+   */
+  async updateGlobalUser(userId: string, dto: UpdateGlobalUserDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (dto.tenantId !== undefined && dto.tenantId !== null) {
+      const tenant = await this.prisma.tenant.findUnique({
+        where: { id: dto.tenantId },
+      });
+      if (!tenant) {
+        throw new NotFoundException('Specified clinic tenant not found');
+      }
+    }
+
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...(dto.fullNameEn !== undefined && { fullNameEn: dto.fullNameEn.trim() }),
+        ...(dto.fullNameKh !== undefined && { fullNameKh: dto.fullNameKh?.trim() || null }),
+        ...(dto.role !== undefined && { role: dto.role }),
+        ...(dto.tenantId !== undefined && { tenantId: dto.tenantId }),
+        ...(dto.phone !== undefined && { phone: dto.phone?.trim() || null }),
+        ...(dto.department !== undefined && { department: dto.department?.trim() || null }),
+        ...(dto.isActive !== undefined && { isActive: dto.isActive }),
+      },
+      select: {
+        id: true,
+        email: true,
+        fullNameEn: true,
+        fullNameKh: true,
+        role: true,
+        phone: true,
+        department: true,
+        isActive: true,
+        tenantId: true,
+        updatedAt: true,
+        tenant: {
+          select: {
+            id: true,
+            clinicNameKh: true,
+            clinicNameEn: true,
+          },
+        },
+      },
+    });
+
+    this.logger.log(`[SuperAdmin] Updated global user ${updated.email}`);
+    return updated;
+  }
+
+  /**
+   * Phase 1: Global User Governance - Administrative password reset
+   */
+  async resetUserPassword(userId: string, dto: ResetPasswordDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const passwordHash = await bcrypt.hash(dto.newPassword, 10);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash },
+    });
+
+    this.logger.log(`[SuperAdmin] Reset password for user ${user.email}`);
+    return {
+      success: true,
+      message: `Password successfully reset for ${user.email}`,
     };
   }
 }
