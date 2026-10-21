@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useAuth } from '../context/AuthContext';
 import { PublicNavbar } from '../components/landing/PublicNavbar';
 import { LandingHero } from '../components/landing/LandingHero';
+import { ClinicDisciplineSection } from '../components/landing/ClinicDisciplineSection';
 import { FeaturesSection } from '../components/landing/FeaturesSection';
 import { PricingMatrix } from '../components/landing/PricingMatrix';
 import { PublicFooter } from '../components/landing/PublicFooter';
@@ -446,6 +447,7 @@ function LandingView() {
       <PublicNavbar />
       <main className="flex-1">
         <LandingHero />
+        <ClinicDisciplineSection />
         <FeaturesSection />
         <PricingMatrix />
       </main>

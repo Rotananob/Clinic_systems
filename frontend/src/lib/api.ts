@@ -436,6 +436,7 @@ class ApiClient {
       verificationCode: string;
       adminName?: string;
       planTier?: string;
+      clinicType?: string;
     }) =>
       this.request<{
         success: boolean;
@@ -455,6 +456,7 @@ class ApiClient {
       password: string;
       adminName?: string;
       planTier?: string;
+      clinicType?: string;
     }) =>
       this.request<{
         success: boolean;

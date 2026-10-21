@@ -272,6 +272,7 @@ export class AuthService {
           slug: uniqueSlug,
           clinicNameKh: dto.clinicNameKh.trim(),
           clinicNameEn: dto.clinicNameEn.trim(),
+          clinicType: dto.clinicType?.trim() || 'Polyclinic & Outpatient Center',
           phonePrimary: dto.phone.trim(),
           email: normalizedEmail,
           planTier: selectedTier,

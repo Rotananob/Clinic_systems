@@ -34,6 +34,11 @@ export class RegisterClinicDto {
   @IsOptional()
   adminName?: string;
 
+  @ApiPropertyOptional({ example: 'Polyclinic & Outpatient Center', description: 'Clinic specialization classification' })
+  @IsString()
+  @IsOptional()
+  clinicType?: string;
+
   @ApiPropertyOptional({ enum: PlanTier, default: PlanTier.FREE, description: 'Selected SaaS subscription plan tier' })
   @IsEnum(PlanTier)
   @IsOptional()

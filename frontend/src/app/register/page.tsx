@@ -29,6 +29,59 @@ import {
   Send,
 } from 'lucide-react';
 
+
+const CLINIC_TYPES = [
+  {
+    id: 'Polyclinic & Outpatient Center',
+    nameKh: 'មន្ទីរសម្រាកព្យាបាល & ពហុព្យាបាល (Polyclinic & Outpatient)',
+    nameEn: 'Polyclinic & Outpatient Center',
+    descKh: 'ពហុឯកទេស មានគ្រែសម្រាក និងបន្ទប់ពិគ្រោះច្រើន',
+    descEn: 'Multi-specialist rooms, bed management, and triage',
+  },
+  {
+    id: 'General Medical Clinic',
+    nameKh: 'គ្លីនិកទូទៅ & វេជ្ជសាស្ត្រគ្រួសារ (General Practice)',
+    nameEn: 'General Medical Clinic',
+    descKh: 'ពិគ្រោះជំងឺទូទៅ កត់ត្រា SOAP និងចេញវេជ្ជបញ្ជា MoH',
+    descEn: 'Outpatient consultations, SOAP clinical notes, e-prescriptions',
+  },
+  {
+    id: 'Dental & Oral Surgery Clinic',
+    nameKh: 'គ្លីនិកទន្តសាស្ត្រ & ធ្មេញ (Dental & Oral Surgery)',
+    nameEn: 'Dental & Oral Surgery Clinic',
+    descKh: 'គំនូសធ្មេញ Odontogram ៣២ គ្រាប់ និងផែនការព្យាបាលតាមដំណាក់កាល',
+    descEn: '32-tooth odontogram mapping and multi-session dental plans',
+  },
+  {
+    id: "Maternity & Women's Health",
+    nameKh: "គ្លីនិកសម្ភព & រោគស្ត្រី (Maternity & Women's Health)",
+    nameEn: "Maternity & Women's Health",
+    descKh: 'តាមដានផ្ទៃពោះ ANC គណនាថ្ងៃសម្រាល និងរូបភាពអេកូសាស្ត្រ',
+    descEn: 'Antenatal care tracking, EDD calculation, ultrasound records',
+  },
+  {
+    id: 'Pediatric & Child Health',
+    nameKh: 'គ្លីនិកកុមារ & វ៉ាក់សាំង (Pediatric & Child Health)',
+    nameEn: 'Pediatric & Child Health',
+    descKh: 'កាលវិភាគវ៉ាក់សាំងកម្ពុជា បន្ទាត់លូតលាស់ WHO និងកម្រិតថ្នាំតាមគីឡូ',
+    descEn: 'Cambodian vaccination schedule, WHO growth chart, dosage calculator',
+  },
+  {
+    id: 'Dermatology & Aesthetic Clinic',
+    nameKh: 'គ្លីនិកសើស្បែក & សម្រស់ (Dermatology & Aesthetics)',
+    nameEn: 'Dermatology & Aesthetic Clinic',
+    descKh: 'ព្យាបាលជំងឺសើស្បែក ឡាស៊ែរ និងសេវាកម្មថែរក្សាសម្រស់',
+    descEn: 'Dermatology procedures, skin therapies, aesthetic wellness',
+  },
+  {
+    id: 'Eye & ENT Specialty Clinic',
+    nameKh: 'គ្លីនិកចក្ខុរោគ & ច្រមុះបំពង់ក (Eye & ENT Clinic)',
+    nameEn: 'Eye & ENT Specialty Clinic',
+    descKh: 'ពិនិត្យភ្នែក វាស់កម្រិតគំហើញ និងជំងឺត្រចៀក ច្រមុះ បំពង់ក',
+    descEn: 'Vision examination, ophthalmic care, and ENT procedures',
+  },
+];
+
 const PLAN_CARDS = [
   {
     id: 'FREE',
@@ -82,6 +135,7 @@ function RegisterContent() {
   const initialPlan = searchParams.get('plan') || 'FREE';
   const [selectedPlan, setSelectedPlan] = useState<string>(initialPlan);
 
+  const [clinicType, setClinicType] = useState('Polyclinic & Outpatient Center');
   const [clinicNameKh, setClinicNameKh] = useState('');
   const [clinicNameEn, setClinicNameEn] = useState('');
   const [adminName, setAdminName] = useState('');
@@ -480,6 +534,28 @@ function RegisterContent() {
                   </label>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-stone-700 mb-1">
+                        {isKm ? 'ប្រភេទគ្លីនិក ឬឯកទេសព្យាបាល *' : 'Clinic Specialization *'}
+                      </label>
+                      <select
+                        value={clinicType}
+                        onChange={(e) => setClinicType(e.target.value)}
+                        className="w-full px-3.5 py-2.5 bg-[#FAF7F2] border border-[#DCD5C8] rounded-xl text-xs font-semibold text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-teal-700 transition-all cursor-pointer"
+                      >
+                        {CLINIC_TYPES.map((ct) => (
+                          <option key={ct.id} value={ct.id}>
+                            {isKm ? ct.nameKh : ct.nameEn}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="text-[10px] text-teal-800 font-medium mt-1">
+                        {isKm
+                          ? CLINIC_TYPES.find((c) => c.id === clinicType)?.descKh
+                          : CLINIC_TYPES.find((c) => c.id === clinicType)?.descEn}
+                      </p>
+                    </div>
+
                     <div>
                       <label className="block text-xs font-semibold text-stone-700 mb-1">
                         {isKm ? 'ឈ្មោះគ្លីនិកជាភាសាខ្មែរ *' : 'Clinic Name (Khmer) *'}
