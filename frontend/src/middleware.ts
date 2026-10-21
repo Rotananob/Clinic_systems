@@ -4,7 +4,6 @@ import { extractTenantSubdomain } from './lib/subdomain';
 
 export function middleware(request: NextRequest) {
   const host = request.headers.get('host') || '';
-  const pathname = request.nextUrl.pathname;
 
   // Extract tenant from subdomain if present
   let tenantSlug = extractTenantSubdomain(host);
@@ -22,24 +21,12 @@ export function middleware(request: NextRequest) {
     requestHeaders.set('x-tenant-slug', tenantSlug);
   }
 
-  // If visiting root "/" with a specific clinic subdomain, rewrite to /login for staff/clinic entry
-  // unless on apex landing page (where tenantSlug is null)
-  let response: NextResponse;
-  if (tenantSlug && pathname === '/') {
-    const url = request.nextUrl.clone();
-    url.pathname = '/login';
-    response = NextResponse.rewrite(url, {
-      request: {
-        headers: requestHeaders,
-      },
-    });
-  } else {
-    response = NextResponse.next({
-      request: {
-        headers: requestHeaders,
-      },
-    });
-  }
+  // All root "/" requests ALWAYS render the Home / Landing Page directly
+  const response = NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
 
   // Persist tenant cookie if detected
   if (tenantSlug) {

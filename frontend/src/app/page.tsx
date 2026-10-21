@@ -32,7 +32,7 @@ export default function RootHomePage() {
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span>
                 {isKm
-                  ? `លោកអ្នកកំពុង Login: ${user.tenant?.clinicNameKh || user.tenant?.clinicNameEn || 'គ្លីនិក'} (${user.fullNameKh || user.fullNameEn})`
+                  ? `លោកអ្នកកំពុង Login: ${user.tenant?.clinicNameKh || user.tenant?.clinicNameEn || 'គ្លីនិក'} - ${user.fullNameKh || user.fullNameEn}`
                   : `Signed in: ${user.tenant?.clinicNameEn || 'Clinic'} (${user.fullNameEn || user.email})`}
               </span>
             </div>
@@ -40,7 +40,7 @@ export default function RootHomePage() {
               href="/dashboard"
               className="inline-flex items-center gap-1 font-bold text-white hover:text-teal-200 underline decoration-teal-400 underline-offset-4"
             >
-              <span>{isKm ? 'ចូលទៅកាន់ផ្ទាំងគ្រប់គ្រង (Dashboard)' : 'Open Clinic Dashboard'}</span>
+              <span>{isKm ? 'ចូលទៅកាន់ផ្ទាំងគ្រប់គ្រង Dashboard' : 'Open Clinic Dashboard'}</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -59,7 +59,7 @@ export default function RootHomePage() {
         {/* 3. Interactive ROI & Time Savings Estimator */}
         <RoiCalculatorSection />
 
-        {/* 4. Specialized Disciplines (General, Dental, Polyclinic, Maternity, Pharmacy) */}
+        {/* 4. Specialized Disciplines: General, Dental, Polyclinic, Maternity, Pharmacy */}
         <ClinicDisciplineSection />
 
         {/* 5. Core Platform Features & Architecture */}
@@ -71,7 +71,7 @@ export default function RootHomePage() {
         {/* 7. Transparent SaaS Pricing Matrix with Annual Savings */}
         <PricingMatrix />
 
-        {/* 8. Frequently Asked Questions (FAQ) Addressing Hesitations */}
+        {/* 8. Frequently Asked Questions FAQ Addressing Hesitations */}
         <FaqSection />
 
         {/* 9. Final Irresistible 60-Second Conversion Call to Action */}

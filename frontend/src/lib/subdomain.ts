@@ -36,7 +36,7 @@ export function extractTenantSubdomain(
   const host = sanitizeHostname(rawHost);
   if (!host) return null;
 
-  // Exact apex domains or loopback addresses
+  // Exact apex domains, loopback addresses, or general deployment platforms
   if (
     host === 'localhost' ||
     host === '127.0.0.1' ||
@@ -46,7 +46,17 @@ export function extractTenantSubdomain(
     host === 'clinic.com' ||
     host === 'www.clinic.com' ||
     host === 'clinicos.app' ||
-    host === 'www.clinicos.app'
+    host === 'www.clinicos.app' ||
+    host.endsWith('.vercel.app') ||
+    host === 'vercel.app' ||
+    host.endsWith('.web.app') ||
+    host === 'web.app' ||
+    host.endsWith('.firebaseapp.com') ||
+    host === 'firebaseapp.com' ||
+    host.endsWith('.github.io') ||
+    host === 'github.io' ||
+    host.endsWith('.railway.app') ||
+    host.endsWith('.onrender.com')
   ) {
     return null;
   }
@@ -72,15 +82,6 @@ export function extractTenantSubdomain(
         return candidate;
       }
       return null;
-    }
-  }
-
-  // Fallback for custom or multi-level domains (e.g. rotana.custom-domain.com)
-  const parts = host.split('.');
-  if (parts.length >= 3) {
-    const candidate = parts[0]?.trim();
-    if (candidate && !RESERVED_SUBDOMAINS.has(candidate)) {
-      return candidate;
     }
   }
 

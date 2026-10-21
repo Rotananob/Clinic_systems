@@ -37,6 +37,10 @@ describe('Step 25: Wildcard Subdomain and Multi-Tenant Routing Suite', () => {
     assert.strictEqual(extractTenantSubdomain('www.clinicos.app'), null);
     assert.strictEqual(extractTenantSubdomain('localhost'), null);
     assert.strictEqual(extractTenantSubdomain('127.0.0.1:3000'), null);
+    assert.strictEqual(extractTenantSubdomain('clinic-systems.vercel.app'), null);
+    assert.strictEqual(extractTenantSubdomain('nobrotana.web.app'), null);
+    assert.strictEqual(extractTenantSubdomain('my-app.railway.app'), null);
+    assert.strictEqual(extractTenantSubdomain('clinic.onrender.com'), null);
   });
 
   it('should reject system and reserved subdomains', () => {
