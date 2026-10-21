@@ -33,7 +33,13 @@ import {
   ArrowRight,
   Send,
   CreditCard,
+  Smartphone,
+  Sparkles,
+  ExternalLink,
 } from 'lucide-react';
+
+import { QRCodeSVG } from 'qrcode.react';
+import { api } from '../../lib/api';
 
 interface ClinicSettingsState {
   // 1. Clinic Profile
@@ -62,6 +68,7 @@ interface ClinicSettingsState {
   autoCloseOnSettled: boolean;
   enableSoundAlert: boolean;
   headlessBridgeUrl: string;
+  paywayPaymentUrl: string;
 
   // 3. Service & Fee Catalog
   generalConsultationFee: number;
@@ -97,24 +104,24 @@ interface ClinicSettingsState {
 
 const defaultSettings: ClinicSettingsState = {
   // 1. Clinic Profile
-  clinicNameEn: 'Houn Vannak Medical Clinic & Polyclinic',
-  clinicNameKh: 'មន្ទីរសម្រាកព្យាបាល ហួន វណ្ណៈ',
-  mohLicenseNumber: 'MoH-2024-8841-KHM',
+  clinicNameEn: '',
+  clinicNameKh: '',
+  mohLicenseNumber: '',
   clinicType: 'Polyclinic & Outpatient Center',
-  phonePrimary: '+855 23 888 999',
-  phoneEmergency: '+855 12 333 444',
-  email: 'info@hounvannakclinic.com.kh',
-  website: 'https://hounvannakclinic.com.kh',
-  addressEn: '#128, St. 271, Sangkat Phsar Doeum Thkov, Khan Chamkarmon, Phnom Penh',
-  addressKh: 'ផ្ទះលេខ ១២៨ ផ្លូវ ២៧១ សង្កាត់ផ្សារដើមថ្កូវ ខណ្ឌចំការមន រាជធានីភ្នំពេញ',
+  phonePrimary: '',
+  phoneEmergency: '',
+  email: '',
+  website: '',
+  addressEn: '',
+  addressKh: '',
   openingHoursEn: 'Monday - Sunday: 07:30 AM - 08:30 PM (Emergency 24/7)',
   openingHoursKh: 'ច័ន្ទ ដល់ អាទិត្យ៖ ម៉ោង ៧:៣០ ព្រឹក ដល់ ៨:៣០ យប់ (សង្គ្រោះបន្ទាន់ ២៤/៧)',
   missionSlogan: 'Professional Medical Care With Compassion & Precision',
 
   // 2. KHQR & PayWay
-  merchantName: 'HOUN VANNAK CLINIC',
+  merchantName: '',
   merchantCity: 'PHNOM PENH',
-  bakongAccountId: 'houn_vannak_clinic@aba',
+  bakongAccountId: '',
   defaultCurrency: 'USD',
   usdToKhrRate: 4100,
   pollingIntervalSeconds: 3,
@@ -122,6 +129,7 @@ const defaultSettings: ClinicSettingsState = {
   autoCloseOnSettled: false,
   enableSoundAlert: true,
   headlessBridgeUrl: 'http://localhost:4000/api/payments/khqr',
+  paywayPaymentUrl: '',
 
   // 3. Service Fees
   generalConsultationFee: 10.0,
@@ -163,6 +171,12 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<'profile' | 'khqr' | 'fees' | 'receipt' | 'hardware' | 'sound' | 'telegram' | 'security' | 'subscription'>('profile');
   const [settings, setSettings] = useState<ClinicSettingsState>(defaultSettings);
   const [savedNotice, setSavedNotice] = useState(false);
+  const [tenantProfile, setTenantProfile] = useState<any>(null);
+  const [tenantLoading, setTenantLoading] = useState<boolean>(true);
+  const [testingKhqr, setTestingKhqr] = useState<boolean>(false);
+  const [testKhqrResult, setTestKhqrResult] = useState<any>(null);
+  const [savingBackend, setSavingBackend] = useState<boolean>(false);
+  const [backendError, setBackendError] = useState<string | null>(null);
   const [resetNotice, setResetNotice] = useState(false);
 
   useEffect(() => {
@@ -174,6 +188,40 @@ export default function SettingsPage() {
           setActiveTab(tab as any);
         }
       }
+      // Fetch clinic tenant profile from database
+      const fetchTenant = async () => {
+        try {
+          setTenantLoading(true);
+          const res = await api.tenants.getProfile();
+          if (res && res.success && res.tenant) {
+            setTenantProfile(res);
+            const t = res.tenant;
+            setSettings((prev) => ({
+              ...prev,
+              clinicNameEn: t.clinicNameEn || prev.clinicNameEn,
+              clinicNameKh: t.clinicNameKh || prev.clinicNameKh,
+              mohLicenseNumber: t.mohLicenseNumber || prev.mohLicenseNumber,
+              clinicType: t.clinicType || prev.clinicType,
+              phonePrimary: t.phonePrimary || prev.phonePrimary,
+              phoneEmergency: t.phoneEmergency || prev.phoneEmergency,
+              email: t.email || prev.email,
+              website: t.website || prev.website,
+              addressEn: t.addressEn || prev.addressEn,
+              addressKh: t.addressKh || prev.addressKh,
+              bakongAccountId: t.bakongAccountId || prev.bakongAccountId,
+              merchantName: t.merchantName || prev.merchantName,
+              merchantCity: t.merchantCity || prev.merchantCity || 'PHNOM PENH',
+              paywayPaymentUrl: t.paywayPaymentUrl || prev.paywayPaymentUrl,
+            }));
+          }
+        } catch (err) {
+          console.warn('Failed to fetch tenant profile from server', err);
+        } finally {
+          setTenantLoading(false);
+        }
+      };
+      fetchTenant();
+
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
@@ -184,14 +232,98 @@ export default function SettingsPage() {
     }
   }, []);
 
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleTestKhqr = async () => {
+    if (!settings.bakongAccountId?.trim() || !settings.merchantName?.trim()) {
+      setBackendError(
+        isKm
+          ? 'សូមបញ្ចូល Bakong Account ID និងឈ្មោះ Merchant Name ជាមុនសិនដើម្បីសាកល្បងបង្កើត QR។'
+          : 'Please enter Bakong Account ID and Merchant Name first to test QR generation.'
+      );
+      return;
+    }
+    setTestingKhqr(true);
+    setBackendError(null);
     try {
+      const res = await api.tenants.testMerchantKhqr({
+        bakongAccountId: settings.bakongAccountId.trim(),
+        merchantName: settings.merchantName.trim(),
+        merchantCity: settings.merchantCity?.trim() || 'PHNOM PENH',
+        paywayPaymentUrl: settings.paywayPaymentUrl?.trim() || undefined,
+      });
+      if (res && res.success) {
+        setTestKhqrResult(res);
+      }
+    } catch (err: any) {
+      setBackendError(err.message || 'Failed to generate test Dynamic KHQR.');
+    } finally {
+      setTestingKhqr(false);
+    }
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingBackend(true);
+    setBackendError(null);
+    try {
+      if (activeTab === 'khqr' && settings.bakongAccountId && settings.merchantName) {
+        const res = await api.tenants.setupMerchant({
+          bakongAccountId: settings.bakongAccountId.trim(),
+          merchantName: settings.merchantName.trim(),
+          merchantCity: settings.merchantCity?.trim() || 'PHNOM PENH',
+          paywayPaymentUrl: settings.paywayPaymentUrl?.trim() || undefined,
+        });
+        if (res && res.tenant) {
+          setTenantProfile((prev: any) => ({ ...prev, tenant: { ...prev?.tenant, ...res.tenant } }));
+        }
+      } else if (activeTab === 'profile') {
+        const res = await api.tenants.updateProfile({
+          clinicNameEn: settings.clinicNameEn.trim(),
+          clinicNameKh: settings.clinicNameKh.trim(),
+          mohLicenseNumber: settings.mohLicenseNumber.trim(),
+          clinicType: settings.clinicType,
+          phonePrimary: settings.phonePrimary.trim(),
+          phoneEmergency: settings.phoneEmergency.trim(),
+          email: settings.email.trim(),
+          website: settings.website.trim(),
+          addressEn: settings.addressEn.trim(),
+          addressKh: settings.addressKh.trim(),
+          bakongAccountId: settings.bakongAccountId?.trim() || undefined,
+          merchantName: settings.merchantName?.trim() || undefined,
+          merchantCity: settings.merchantCity?.trim() || undefined,
+          paywayPaymentUrl: settings.paywayPaymentUrl?.trim() || undefined,
+        });
+        if (res && res.tenant) {
+          setTenantProfile((prev: any) => ({ ...prev, tenant: { ...prev?.tenant, ...res.tenant } }));
+        }
+      }
+
       localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+
+      try {
+        const userStr = localStorage.getItem('clinic_user');
+        if (userStr) {
+          const u = JSON.parse(userStr);
+          u.tenant = {
+            ...u.tenant,
+            clinicNameEn: settings.clinicNameEn,
+            clinicNameKh: settings.clinicNameKh,
+            bakongAccountId: settings.bakongAccountId,
+            merchantName: settings.merchantName,
+            merchantCity: settings.merchantCity,
+            paywayPaymentUrl: settings.paywayPaymentUrl,
+          };
+          localStorage.setItem('clinic_user', JSON.stringify(u));
+        }
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('clinic_profile_updated'));
+        }
+      } catch {}
       setSavedNotice(true);
       setTimeout(() => setSavedNotice(false), 3000);
     } catch (err) {
-      console.error('Failed to save settings to localStorage', err);
+      setBackendError((err as any)?.message || 'Failed to save settings to server database.');
+    } finally {
+      setSavingBackend(false);
     }
   };
 
@@ -276,7 +408,86 @@ export default function SettingsPage() {
         </div>
       </div>
 
+            {/* PaaS Multi-Tenant Workspace & Subscription Status Banner */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-xl bg-teal-800 text-white flex items-center justify-center font-bold text-base shadow-xs shrink-0">
+              <Building2 className="w-6 h-6 text-teal-100" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-base sm:text-lg font-bold text-slate-900 font-sans">
+                  {settings.clinicNameKh || settings.clinicNameEn || (isKm ? 'មន្ទីរសម្រាកព្យាបាលរបស់អ្នក (Your Clinic)' : 'Your Clinic Workspace')}
+                </h1>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono uppercase bg-teal-50 text-teal-800 border border-teal-200">
+                  {tenantProfile?.tenant?.planTier ? tenantProfile.tenant.planTier.replace('_', ' ') : 'STARTER'}
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" />
+                  <span>{isKm ? 'គណនីសកម្ម (Active)' : 'Active Workspace'}</span>
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5 font-mono">
+                Subdomain: <span className="text-teal-800 font-semibold">{tenantProfile?.tenant?.slug || 'my-clinic'}.clinicplatform.kh</span>
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setActiveTab('subscription')}
+              className="px-3.5 py-2 rounded-xl bg-teal-800 hover:bg-teal-900 text-white text-xs font-bold transition shadow-xs flex items-center gap-1.5"
+            >
+              <CreditCard className="w-3.5 h-3.5" />
+              <span>{isKm ? 'គ្រប់គ្រងគម្រោងជាវ (Subscription)' : 'Manage Subscription'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Real-time Usage & Settlement Counters */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-slate-100 text-xs">
+          <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
+            <div className="text-slate-600">
+              <span className="block text-[11px] text-slate-500">{isKm ? 'ប្រតិបត្តិការ KHQR ថ្ងៃនេះ' : 'KHQR Today'}</span>
+              <span className="font-bold text-slate-900 text-sm">
+                {tenantProfile?.usage?.todayKhqrCount || 0} / {tenantProfile?.usage?.maxDailyKhqr || 100}
+              </span>
+            </div>
+            <QrCode className="w-5 h-5 text-teal-800" />
+          </div>
+
+          <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
+            <div className="text-slate-600">
+              <span className="block text-[11px] text-slate-500">{isKm ? 'អ្នកជំងឺក្នុងខែនេះ' : 'Monthly Patients'}</span>
+              <span className="font-bold text-slate-900 text-sm">
+                {tenantProfile?.usage?.totalPatientsCount || 0} / {tenantProfile?.usage?.maxMonthlyPatients || 500}
+              </span>
+            </div>
+            <Building2 className="w-5 h-5 text-teal-800" />
+          </div>
+
+          <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
+            <div className="text-slate-600">
+              <span className="block text-[11px] text-slate-500">{isKm ? 'ការទូទាត់ផ្ទាល់ ១០០%' : 'Direct Settlement'}</span>
+              <span className="font-bold text-emerald-800 text-sm">
+                {settings.bakongAccountId ? 'READY (100% Direct)' : 'PENDING SETUP'}
+              </span>
+            </div>
+            <CheckCircle2 className="w-5 h-5 text-emerald-700" />
+          </div>
+        </div>
+      </div>
+
       {/* Notifications */}
+      {backendError && (
+        <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 flex items-center gap-2 animate-in fade-in duration-150">
+          <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+          <span>{backendError}</span>
+        </div>
+      )}
+
       {savedNotice && (
         <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 flex items-center gap-2 animate-in fade-in duration-150">
           <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
@@ -622,58 +833,178 @@ export default function SettingsPage() {
         {activeTab === 'khqr' && (
           <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6">
             <div>
-              <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <QrCode className="w-4 h-4 text-teal-700" />
-                <span>{isKm ? 'ការកំណត់ KHQR & ABA PayWay Engine' : 'Bakong KHQR & PayWay Engine Settings'}</span>
-              </h2>
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                  <QrCode className="w-4 h-4 text-teal-700" />
+                  <span>{isKm ? 'ការកំណត់ KHQR & ABA PayWay Engine (PaaS Self-Service)' : 'Bakong KHQR & PayWay Self-Service Gateway'}</span>
+                </h2>
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                  <span>{isKm ? 'ដាក់ហើយដើរភ្លាមៗ (Instant Working)' : 'Instant Live Working'}</span>
+                </span>
+              </div>
               <p className="text-xs text-slate-500 mt-1">
                 {isKm
-                  ? 'កំណត់ប៉ារ៉ាម៉ែត្រ Tag 01=12 ឈ្មោះអាជីវកម្មលើ KHQR និងការផ្ទៀងផ្ទាត់ការទូទាត់ភ្លាមៗ'
-                  : 'Configure Tag 01=12 dynamic QR fields, Bakong merchant identity, and instant polling reconciliation'}
+                  ? 'បញ្ចូល Bakong Account ID និង ABA PayWay Direct Link របស់គ្លីនិកអ្នកផ្ទាល់។ រាល់វិក្កយបត្រអ្នកជំងឺនឹងទូទាត់ចូលគណនីធនាគាររបស់គ្លីនិក ១០០% ដោយគ្មានកាត់កម្រៃជើងសារ។'
+                  : 'Configure your clinic merchant credentials. Direct 100% bank settlement with zero commission and instant activation.'}
               </p>
             </div>
 
+            {/* 4-Step Practical Guides for Clinic Merchant Setup */}
+            <div className="p-4 bg-teal-50/70 border border-teal-200 rounded-xl space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Smartphone className="w-4 h-4 text-teal-800" />
+                  <span className="text-xs font-bold text-teal-950">
+                    {isKm
+                      ? 'ការណែនាំរៀបចំ Merchant ដោយខ្លួនឯង (Self-Service Setup Guide)'
+                      : 'Self-Service Clinic Merchant Setup Guide'}
+                  </span>
+                </div>
+                <span className="text-[10px] font-semibold text-teal-800 bg-white px-2 py-0.5 rounded-full border border-teal-200">
+                  {isKm ? 'ឥតគិតថ្លៃ ១០០%' : '100% Free Direct Settlement'}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 text-xs">
+                {/* Guide 1: Bakong ID */}
+                <div className="p-3 bg-white rounded-lg border border-teal-100 flex flex-col justify-between shadow-2xs">
+                  <div>
+                    <div className="text-[11px] font-bold text-teal-900 mb-1 flex items-center gap-1.5">
+                      <span className="w-4 h-4 rounded-full bg-teal-800 text-white flex items-center justify-center text-[10px]">1</span>
+                      <span>{isKm ? 'របៀបយក Bakong ID' : 'Get Bakong ID'}</span>
+                    </div>
+                    <p className="text-[11px] text-slate-600 leading-relaxed">
+                      {isKm
+                        ? 'បើក ABA Mobile -> Services -> ABA Merchant ឬ Bakong រួច Copy Bakong ID របស់អ្នក (ឧ. your_clinic@aba ឬលេខទូរស័ព្ទ)'
+                        : 'Open ABA Mobile -> Services -> tap ABA Merchant / Bakong and copy your Bakong ID (e.g. your_clinic@aba)'}
+                    </p>
+                  </div>
+                  <div className="mt-2 text-[10px] font-mono text-teal-700 bg-teal-50 px-2 py-1 rounded">
+                    your_clinic@aba
+                  </div>
+                </div>
+
+                {/* Guide 2: ABA PayWay Direct Link */}
+                <div className="p-3 bg-white rounded-lg border border-teal-100 flex flex-col justify-between shadow-2xs">
+                  <div>
+                    <div className="text-[11px] font-bold text-teal-900 mb-1 flex items-center gap-1.5">
+                      <span className="w-4 h-4 rounded-full bg-teal-800 text-white flex items-center justify-center text-[10px]">2</span>
+                      <span>{isKm ? 'ABA PayWay Direct Link' : 'PayWay Direct Link'}</span>
+                    </div>
+                    <p className="text-[11px] text-slate-600 leading-relaxed">
+                      {isKm
+                        ? 'ចូល ABA Merchant Portal ឬ ABA Mobile -> បង្កើត Checkout Payment Link រួច Paste ចូលប្រអប់ PayWay Link'
+                        : 'Access ABA Merchant Portal or ABA Mobile -> create Direct Payment Link and paste it below'}
+                    </p>
+                  </div>
+                  <div className="mt-2 text-[10px] font-mono text-teal-700 bg-teal-50 px-2 py-1 rounded truncate">
+                    link.payway.com.kh/...
+                  </div>
+                </div>
+
+                {/* Guide 3: Merchant Name EMVCo Tag 59 */}
+                <div className="p-3 bg-white rounded-lg border border-teal-100 flex flex-col justify-between shadow-2xs">
+                  <div>
+                    <div className="text-[11px] font-bold text-teal-900 mb-1 flex items-center gap-1.5">
+                      <span className="w-4 h-4 rounded-full bg-teal-800 text-white flex items-center justify-center text-[10px]">3</span>
+                      <span>{isKm ? 'ឈ្មោះ Merchant (Tag 59)' : 'Merchant Name (Tag 59)'}</span>
+                    </div>
+                    <p className="text-[11px] text-slate-600 leading-relaxed">
+                      {isKm
+                        ? 'ឈ្មោះអក្សរឡាតាំងធំៗ បង្ហាញលើអេក្រង់ ABA / Bakong របស់អ្នកជំងឺពេលស្កេន បង្កើនទំនុកចិត្ត ១០០%'
+                        : 'Uppercase Latin characters displayed on patient banking screens, establishing instant patient trust'}
+                    </p>
+                  </div>
+                  <div className="mt-2 text-[10px] font-mono text-teal-700 bg-teal-50 px-2 py-1 rounded uppercase">
+                    SOKHAPHEAP CLINIC
+                  </div>
+                </div>
+
+                {/* Guide 4: 100% Direct Settlement */}
+                <div className="p-3 bg-white rounded-lg border border-teal-100 flex flex-col justify-between shadow-2xs">
+                  <div>
+                    <div className="text-[11px] font-bold text-teal-900 mb-1 flex items-center gap-1.5">
+                      <span className="w-4 h-4 rounded-full bg-teal-800 text-white flex items-center justify-center text-[10px]">4</span>
+                      <span>{isKm ? 'លុយចូលកុងផ្ទាល់ ១០០%' : '100% Direct Settlement'}</span>
+                    </div>
+                    <p className="text-[11px] text-slate-600 leading-relaxed">
+                      {isKm
+                        ? 'ប្រាក់ផ្ទេរចូលគណនីធនាគាររបស់គ្លីនិកភ្លាមៗ គ្មានកាត់កម្រៃជើងសារ គ្មានឆ្លងកាត់អ្នកដទៃ ដាក់ហើយដើរភ្លាម'
+                        : 'Funds settle directly to your clinic bank account 24/7 with zero commission and instant activation'}
+                    </p>
+                  </div>
+                  <div className="mt-2 text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-1 rounded">
+                    0% Platform Fees
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Input Form Fields with Real Placeholders */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {isKm ? 'ឈ្មោះអាជីវករ KHQR (Merchant Name)' : 'KHQR Merchant Name'}
-                </label>
-                <input
-                  type="text"
-                  value={settings.merchantName}
-                  onChange={(e) => setSettings({ ...settings, merchantName: e.target.value.toUpperCase() })}
-                  required
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono font-bold focus:ring-1 focus:ring-teal-700 focus:bg-white"
-                />
-                <span className="text-[10px] text-slate-400">Printed on EMVCo Tag 59</span>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {isKm ? 'ទីក្រុងអាជីវករ (Merchant City)' : 'Merchant City'}
-                </label>
-                <input
-                  type="text"
-                  value={settings.merchantCity}
-                  onChange={(e) => setSettings({ ...settings, merchantCity: e.target.value.toUpperCase() })}
-                  required
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono font-bold focus:ring-1 focus:ring-teal-700 focus:bg-white"
-                />
-                <span className="text-[10px] text-slate-400">Printed on EMVCo Tag 60</span>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {isKm ? 'គណនីបាគង (Bakong Account ID)' : 'Bakong Account ID'}
+                  {isKm ? 'គណនីបាគង (Bakong Account ID) *' : 'Bakong Account ID *'}
                 </label>
                 <input
                   type="text"
                   value={settings.bakongAccountId}
                   onChange={(e) => setSettings({ ...settings, bakongAccountId: e.target.value })}
                   required
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono focus:ring-1 focus:ring-teal-700 focus:bg-white"
+                  placeholder="your_clinic@aba or 012345678@aclb"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono focus:ring-1 focus:ring-teal-700 focus:bg-white placeholder:text-slate-400"
                 />
-                <span className="text-[10px] text-slate-400">e.g. houn_vannak_clinic@aba or mobile number</span>
+                <span className="text-[10px] text-slate-400">
+                  {isKm ? 'ឧ. your_clinic@aba ឬលេខទូរស័ព្ទគណនីបាគង' : 'e.g. your_clinic@aba or registered phone number'}
+                </span>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  {isKm ? 'ឈ្មោះអាជីវករ KHQR (Merchant Name Tag 59) *' : 'KHQR Merchant Name (Tag 59) *'}
+                </label>
+                <input
+                  type="text"
+                  value={settings.merchantName}
+                  onChange={(e) => setSettings({ ...settings, merchantName: e.target.value.toUpperCase() })}
+                  required
+                  placeholder="SOKHAPHEAP LOR CLINIC"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono font-bold focus:ring-1 focus:ring-teal-700 focus:bg-white placeholder:text-slate-400"
+                />
+                <span className="text-[10px] text-slate-400">
+                  {isKm ? 'ឈ្មោះជាអក្សរឡាតាំងធំៗ បង្ហាញលើទូរស័ព្ទពេលស្កេន' : 'Printed on EMVCo Tag 59 (Uppercase Latin only)'}
+                </span>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  {isKm ? 'ទីក្រុងអាជីវករ (Merchant City Tag 60)' : 'Merchant City (Tag 60)'}
+                </label>
+                <input
+                  type="text"
+                  value={settings.merchantCity}
+                  onChange={(e) => setSettings({ ...settings, merchantCity: e.target.value.toUpperCase() })}
+                  placeholder="PHNOM PENH"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono font-bold focus:ring-1 focus:ring-teal-700 focus:bg-white placeholder:text-slate-400"
+                />
+                <span className="text-[10px] text-slate-400">Printed on EMVCo Tag 60 (e.g. PHNOM PENH)</span>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  {isKm ? 'ABA PayWay Direct Link (Deep Link)' : 'ABA PayWay Direct Merchant Link'}
+                </label>
+                <input
+                  type="url"
+                  value={settings.paywayPaymentUrl || ''}
+                  onChange={(e) => setSettings({ ...settings, paywayPaymentUrl: e.target.value })}
+                  placeholder="https://link.payway.com.kh/ABAPAYCK539089j"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono focus:ring-1 focus:ring-teal-700 focus:bg-white placeholder:text-slate-400 text-slate-800"
+                />
+                <span className="text-[10px] text-slate-400">
+                  {isKm ? 'តំណភ្ជាប់ PayWay Checkout Link ផ្ទាល់ពី ABA Mobile សម្រាប់ 1-Tap Deep Link' : 'Direct PayWay Checkout Link for instant 1-tap mobile checkout'}
+                </span>
               </div>
 
               <div>
@@ -720,7 +1051,7 @@ export default function SettingsPage() {
                 </select>
               </div>
 
-              <div className="sm:col-span-2">
+              <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
                   {isKm ? 'អាសយដ្ឋាន Headless Bridge Endpoint' : 'Headless Bridge Endpoint'}
                 </label>
@@ -731,6 +1062,88 @@ export default function SettingsPage() {
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono text-slate-600 focus:ring-1 focus:ring-teal-700 focus:bg-white"
                 />
               </div>
+            </div>
+
+            {/* Live Test Dynamic KHQR Generator Widget */}
+            <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900 flex items-center gap-2">
+                    <QrCode className="w-4 h-4 text-teal-800" />
+                    <span>{isKm ? 'សាកល្បងបង្កើត Dynamic KHQR $1.00 ភ្លាមៗ' : 'Instant $1.00 Dynamic KHQR Verification Test'}</span>
+                  </h4>
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    {isKm
+                      ? 'បង្កើតកូដ Dynamic Tag 01=12 ជាមួយ Bakong ID និង ABA PayWay Link របស់អ្នក ដើម្បីបញ្ជាក់ថាដើរ ១០០% មុនពេលប្រើប្រាស់ពិតប្រាកដ'
+                      : 'Generate sample $1.00 dynamic QR with your credentials to verify 100% live connectivity'}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleTestKhqr}
+                  disabled={testingKhqr}
+                  className="px-4 py-2 bg-teal-800 hover:bg-teal-900 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center gap-2 shrink-0 disabled:opacity-50"
+                >
+                  {testingKhqr ? (
+                    <RotateCcw className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                  )}
+                  <span>{isKm ? 'តេស្តបង្កើត QR $1.00' : 'Test Generate $1.00 QR'}</span>
+                </button>
+              </div>
+
+              {testKhqrResult && (
+                <div className="pt-4 border-t border-slate-200 flex flex-col sm:flex-row items-center gap-5 bg-white p-4 rounded-xl border border-slate-200">
+                  <div className="p-2 bg-white rounded-xl border border-slate-300 shadow-xs shrink-0">
+                    <QRCodeSVG
+                      value={testKhqrResult.qrString}
+                      size={130}
+                      level="M"
+                      includeMargin={false}
+                    />
+                  </div>
+                  <div className="text-xs space-y-1.5 text-slate-600 flex-1">
+                    <div className="flex items-center gap-1.5 text-emerald-800 font-bold">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      <span>{isKm ? 'Dynamic KHQR Tag 01=12 ត្រឹមត្រូវ ១០០%' : 'Tag 01=12 Dynamic KHQR 100% Valid'}</span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] pt-1">
+                      <div>
+                        <span className="font-semibold text-slate-700">{isKm ? 'ឈ្មោះ Merchant: ' : 'Merchant: '}</span>
+                        <span className="font-mono font-bold text-slate-900">{testKhqrResult.merchantName}</span>
+                      </div>
+                      <div>
+                        <span className="font-semibold text-slate-700">{isKm ? 'Bakong ID: ' : 'Bakong ID: '}</span>
+                        <code className="text-teal-800 font-bold">{testKhqrResult.bakongId}</code>
+                      </div>
+                      <div>
+                        <span className="font-semibold text-slate-700">{isKm ? 'ទឹកប្រាក់តេស្ត: ' : 'Test Amount: '}</span>
+                        <span className="font-bold text-slate-900">$1.00 USD</span>
+                      </div>
+                      <div>
+                        <span className="font-semibold text-slate-700">{isKm ? 'វិក្កយបត្រតេស្ត: ' : 'Bill Ref: '}</span>
+                        <span className="font-mono text-slate-500">{testKhqrResult.billNumber}</span>
+                      </div>
+                    </div>
+
+                    {testKhqrResult.paywayPaymentUrl && (
+                      <div className="pt-2 flex items-center gap-2">
+                        <a
+                          href={testKhqrResult.paywayPaymentUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-800 hover:bg-teal-900 text-white text-xs font-semibold shadow-2xs transition"
+                        >
+                          <CreditCard className="w-3.5 h-3.5" />
+                          <span>{isKm ? 'សាកល្បងបើក ABA PayWay Link' : 'Test Open ABA PayWay Link'}</span>
+                          <ArrowRight className="w-3 h-3" />
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Feature Toggles */}
@@ -836,9 +1249,7 @@ export default function SettingsPage() {
               </label>
             </div>
           </div>
-        )}
-
-        {/* TAB 3: Service Fees Catalog */}
+        )}\n\n        {/* TAB 3: Service Fees Catalog */}
         {activeTab === 'fees' && (
           <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6">
             <div>

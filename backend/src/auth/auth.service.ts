@@ -20,6 +20,7 @@ export class AuthService {
   async login(loginDto: LoginDto) {
     const { email, password } = loginDto;
     const normalizedEmail = (email || '').trim().toLowerCase();
+    let tenantInfo: any = null;
 
     // Recognized Test / Evaluation Accounts
     const isTestAccount =
@@ -130,6 +131,7 @@ export class AuthService {
           department: user.department,
           telegramUsername: user.telegramUsername,
           bio: user.bio,
+        tenant: tenantInfo,
           notificationsEnabled: user.notificationsEnabled,
           isTestAccount: true,
           expiresAt: '2026-12-31T23:59:59.999Z',
@@ -147,11 +149,22 @@ export class AuthService {
     }
 
     if (user.tenantId) {
-      const tenant = await this.prisma.tenant.findUnique({
+      tenantInfo = await this.prisma.tenant.findUnique({
         where: { id: user.tenantId },
-        select: { isActive: true, clinicNameKh: true, clinicNameEn: true },
+        select: {
+          id: true,
+          slug: true,
+          clinicNameKh: true,
+          clinicNameEn: true,
+          planTier: true,
+          bakongAccountId: true,
+          merchantName: true,
+          merchantCity: true,
+          paywayPaymentUrl: true,
+          isActive: true,
+        },
       });
-      if (tenant && !tenant.isActive) {
+      if (tenantInfo && !tenantInfo.isActive) {
         throw new UnauthorizedException(
           'គណនីគ្លីនិកនេះត្រូវបានផ្អាកដំណើរការជាបណ្ដោះអាសន្ន។ សូមទាក់ទង Super Admin (Clinic workspace is currently suspended).',
         );
@@ -183,6 +196,7 @@ export class AuthService {
         department: user.department,
         telegramUsername: user.telegramUsername,
         bio: user.bio,
+        tenant: tenantInfo,
         notificationsEnabled: user.notificationsEnabled,
         tenantId: user.tenantId || null,
       },

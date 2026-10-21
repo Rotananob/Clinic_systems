@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException, ForbiddenException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { SetupMerchantDto } from './dto/setup-merchant.dto';
+import { UpdateTenantProfileDto } from './dto/update-tenant-profile.dto';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -174,6 +175,67 @@ export class TenantsService {
         merchantCity: updated.merchantCity,
         paywayPaymentUrl: updated.paywayPaymentUrl,
       },
+    };
+  }
+
+  async updateTenantProfile(dto: UpdateTenantProfileDto, user: any) {
+    const tenantId = user?.tenantId;
+    if (!tenantId) {
+      throw new NotFoundException('No clinic tenant association found.');
+    }
+
+    if (user?.role !== 'ADMIN' && user?.role !== 'SUPER_ADMIN') {
+      throw new ForbiddenException('Only clinic administrators can update clinic profile settings.');
+    }
+
+    const tenant = await this.prisma.tenant.findUnique({
+      where: { id: tenantId },
+    });
+
+    if (!tenant) {
+      throw new NotFoundException(`Tenant workspace ${tenantId} not found.`);
+    }
+
+    const dataToUpdate: any = {};
+    if (dto.clinicNameEn !== undefined) dataToUpdate.clinicNameEn = dto.clinicNameEn.trim();
+    if (dto.clinicNameKh !== undefined) dataToUpdate.clinicNameKh = dto.clinicNameKh.trim();
+    if (dto.mohLicenseNumber !== undefined) dataToUpdate.mohLicenseNumber = dto.mohLicenseNumber.trim();
+    if (dto.clinicType !== undefined) dataToUpdate.clinicType = dto.clinicType.trim();
+    if (dto.phonePrimary !== undefined) dataToUpdate.phonePrimary = dto.phonePrimary.trim();
+    if (dto.phoneEmergency !== undefined) dataToUpdate.phoneEmergency = dto.phoneEmergency.trim();
+    if (dto.email !== undefined) dataToUpdate.email = dto.email.trim();
+    if (dto.website !== undefined) dataToUpdate.website = dto.website.trim();
+    if (dto.addressEn !== undefined) dataToUpdate.addressEn = dto.addressEn.trim();
+    if (dto.addressKh !== undefined) dataToUpdate.addressKh = dto.addressKh.trim();
+    if (dto.bakongAccountId !== undefined) dataToUpdate.bakongAccountId = dto.bakongAccountId.trim();
+    if (dto.merchantName !== undefined) dataToUpdate.merchantName = dto.merchantName.trim();
+    if (dto.merchantCity !== undefined) dataToUpdate.merchantCity = dto.merchantCity.trim();
+    if (dto.paywayPaymentUrl !== undefined) dataToUpdate.paywayPaymentUrl = dto.paywayPaymentUrl.trim();
+
+    const updated = await this.prisma.tenant.update({
+      where: { id: tenantId },
+      data: dataToUpdate,
+    });
+
+    try {
+      await this.prisma.auditLog.create({
+        data: {
+          tenantId,
+          userId: user.id,
+          action: 'TENANT_PROFILE_UPDATED',
+          entity: 'TENANT',
+          entityId: tenantId,
+          details: { updatedFields: Object.keys(dataToUpdate) },
+        },
+      });
+    } catch {}
+
+    this.logger.log(`Tenant ${tenant.slug} profile and merchant configuration updated.`);
+
+    return {
+      success: true,
+      message: 'Clinic workspace profile and merchant credentials updated successfully.',
+      tenant: updated,
     };
   }
 

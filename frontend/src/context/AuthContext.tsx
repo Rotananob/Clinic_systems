@@ -16,6 +16,8 @@ export interface User {
   telegramUsername?: string;
   bio?: string;
   notificationsEnabled?: boolean;
+  tenantId?: string;
+  tenant?: any;
 }
 
 interface AuthContextType {

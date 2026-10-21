@@ -818,6 +818,26 @@ class ApiClient {
   // SaaS Multi-Tenant & Merchant Setup
   tenants = {
     getProfile: () => this.request<{ success: boolean; tenant: any; subscription: any; usage: any }>('/tenants/me'),
+    updateProfile: (data: {
+      clinicNameEn?: string;
+      clinicNameKh?: string;
+      mohLicenseNumber?: string;
+      clinicType?: string;
+      phonePrimary?: string;
+      phoneEmergency?: string;
+      email?: string;
+      website?: string;
+      addressEn?: string;
+      addressKh?: string;
+      bakongAccountId?: string;
+      merchantName?: string;
+      merchantCity?: string;
+      paywayPaymentUrl?: string;
+    }) =>
+      this.request<{ success: boolean; message: string; tenant: any }>('/tenants/profile', {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }),
     setupMerchant: (data: {
       bakongAccountId: string;
       merchantName: string;

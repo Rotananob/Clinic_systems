@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, UseGuards, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { TenantsService } from './tenants.service';
 import { SetupMerchantDto } from './dto/setup-merchant.dto';
+import { UpdateTenantProfileDto } from './dto/update-tenant-profile.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 
 @ApiTags('Tenant Management & Merchant Setup')
@@ -15,6 +16,15 @@ export class TenantsController {
   @Get('me')
   getTenantProfile(@Request() req: any) {
     return this.tenantsService.getTenantProfile(req.user);
+  }
+
+  @ApiOperation({ summary: 'Update clinic workspace profile, identity, and merchant credentials' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiResponse({ status: 200, description: 'Clinic profile and merchant settings updated successfully' })
+  @Patch('profile')
+  updateTenantProfile(@Request() req: any, @Body() dto: UpdateTenantProfileDto) {
+    return this.tenantsService.updateTenantProfile(dto, req.user);
   }
 
   @ApiOperation({ summary: 'Paste & Go: Setup Bakong Account ID and PayWay Merchant Credentials' })
