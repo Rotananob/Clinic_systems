@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Users, Calendar, Monitor, CreditCard, Pill, UserCheck } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from '../../context/I18nContext';
-import { isRouteAllowed } from '../../lib/rbac';
+import { isRouteAllowed, isRouteAllowedForPlan } from '../../lib/rbac';
 
 export const MobileNavDock: React.FC = () => {
   const pathname = usePathname();
@@ -21,6 +21,9 @@ export const MobileNavDock: React.FC = () => {
 
   if (!mounted) return null;
 
+  const tenantPlanTier = user?.tenant?.planTier || 'FREE';
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
+
   const potentialItems = [
     { label: isKh ? 'ទំព័រដើម' : 'Home', href: '/', icon: LayoutDashboard },
     { label: isKh ? 'អ្នកជំងឺ' : 'Patients', href: '/patients', icon: Users },
@@ -31,9 +34,15 @@ export const MobileNavDock: React.FC = () => {
     { label: isKh ? 'គណនី' : 'Profile', href: '/profile', icon: UserCheck },
   ];
 
-  // Filter based on user's active role permissions
+  // Filter based on user's active role permissions and progressive SaaS plan tier
   const activeItems = potentialItems
-    .filter((item) => isRouteAllowed(user?.role, item.href))
+    .filter((item) => {
+      if (!isRouteAllowed(user?.role, item.href)) return false;
+      if (!isSuperAdmin && !isRouteAllowedForPlan(tenantPlanTier, item.href, user?.tenant?.clinicType)) {
+        return false;
+      }
+      return true;
+    })
     .slice(0, 5); // Display top 5 relevant allowed items for mobile thumb zone
 
   return (

@@ -13,8 +13,9 @@ import { OfflineSyncBanner } from '../common/OfflineSyncBanner';
 import { PwaRegister } from '../common/PwaRegister';
 import { CommandPalette } from '../common/CommandPalette';
 import { ClinicLogo } from '../common/ClinicLogo';
-import { ShieldCheck, Loader2 } from 'lucide-react';
-import { isRouteAllowed, getRoleDisplayName } from '../../lib/rbac';
+import { ShieldCheck, Loader2, Sparkles, ArrowRight } from 'lucide-react';
+import Link from 'next/link';
+import { isRouteAllowed, getRoleDisplayName, isRouteAllowedForPlan, getRequiredPlanForRoute } from '../../lib/rbac';
 import { trackPageView, trackUserAction } from '../../lib/tracker';
 import { hardwareManager } from '../../lib/hardware/hardwareManager';
 
@@ -181,7 +182,14 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
     );
   }
 
-  const routeAllowed = user ? isRouteAllowed(user.role, pathname) : true;
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
+  const routeRoleAllowed = user ? isRouteAllowed(user.role, pathname) : true;
+  const routePlanAllowed =
+    isSuperAdmin || !user?.tenant?.planTier
+      ? true
+      : isRouteAllowedForPlan(user.tenant.planTier, pathname, user.tenant.clinicType);
+
+  const requiredPlanInfo = getRequiredPlanForRoute(pathname);
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F7F4EE] text-stone-900 w-full max-w-[100vw] overflow-x-hidden relative">
@@ -195,14 +203,12 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
         <div className="flex-1 flex max-w-7xl w-full mx-auto pb-24 md:pb-6 min-w-0">
           <Sidebar />
           <main className="flex-1 min-w-0 max-w-full p-3 sm:p-4 md:p-6 overflow-x-hidden">
-            {routeAllowed ? (
-              children
-            ) : (
+            {!routeRoleAllowed ? (
               <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
                 <div className="w-14 h-14 rounded-2xl bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center mb-4 shadow-xs">
                   <ShieldCheck className="w-7 h-7 text-amber-700" />
                 </div>
-                <h2 className="text-base sm:lg font-bold text-stone-900 mb-1">
+                <h2 className="text-base sm:text-lg font-bold text-stone-900 mb-1">
                   {isKm ? 'ទំព័រនេះត្រូវបានចាក់សោសម្រាប់តួនាទីរបស់អ្នក' : 'Restricted Module for Your Role'}
                 </h2>
                 <p className="text-xs text-stone-600 max-w-md mb-5 leading-relaxed">
@@ -218,6 +224,41 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
                   {isKm ? 'ត្រឡប់ទៅផ្ទាំងដើម' : 'Back to Dashboard'}
                 </button>
               </div>
+            ) : !routePlanAllowed ? (
+              <div className="flex flex-col items-center justify-center py-16 px-4 text-center max-w-lg mx-auto">
+                <div className="w-16 h-16 rounded-3xl bg-teal-50 border border-teal-200 text-teal-800 flex items-center justify-center mb-4 shadow-xs">
+                  <Sparkles className="w-8 h-8 text-teal-700" />
+                </div>
+                <div className="inline-block px-3 py-1 bg-amber-100 border border-amber-300 rounded-full text-[11px] font-black text-amber-900 uppercase tracking-wide mb-2">
+                  {isKm ? 'តម្រូវឱ្យដំឡើងគម្រោង' : 'Plan Upgrade Required'}
+                </div>
+                <h2 className="text-lg sm:text-xl font-bold text-stone-900 mb-2 font-sans">
+                  {isKm ? `មុខងារនេះទាមទារ ${requiredPlanInfo.nameKh}` : `This Module Requires ${requiredPlanInfo.nameEn}`}
+                </h2>
+                <p className="text-xs text-stone-600 mb-6 leading-relaxed">
+                  {isKm
+                    ? `គ្លីនិករបស់លោកអ្នកបច្ចុប្បន្នស្ថិតលើគម្រោង "${user?.tenant?.planTier || 'FREE'}"។ មុខងារនេះអាចដំណើរការបានចាប់ពីគម្រោង ${requiredPlanInfo.nameKh} ($${requiredPlanInfo.priceUsd}/ខែ) ឡើងទៅ។`
+                    : `Your clinic is currently on ${user?.tenant?.planTier || 'FREE'}. This feature is unlocked starting from ${requiredPlanInfo.nameEn} ($${requiredPlanInfo.priceUsd}/mo) and above.`}
+                </p>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full sm:w-auto">
+                  <Link
+                    href={`/pricing?upgrade=${requiredPlanInfo.tier}`}
+                    className="w-full sm:w-auto px-6 py-2.5 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center justify-center gap-2"
+                  >
+                    <span>{isKm ? `ដំឡើងទៅ ${requiredPlanInfo.nameKh}` : `Upgrade to ${requiredPlanInfo.nameEn}`}</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => router.push('/')}
+                    className="w-full sm:w-auto px-4 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-semibold border border-stone-300 transition-colors"
+                  >
+                    {isKm ? 'ត្រឡប់ទៅផ្ទាំងដើម' : 'Back to Dashboard'}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              children
             )}
           </main>
         </div>

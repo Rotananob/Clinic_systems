@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { PlanTier } from '@prisma/client';
-import { SAAS_PLANS } from '../common/constants/plans.constant';
+import { SAAS_PLANS, ROUTE_MINIMUM_PLAN, isRouteAllowedForPlan } from '../common/constants/plans.constant';
 
 export interface QuotaStatus {
   planTier: PlanTier;
@@ -239,6 +239,38 @@ export class QuotaGuardService {
           messageEn: `You have reached your staff account limit of ${maxLimit} members. Please upgrade your subscription to add more team members.`,
         },
         HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+  }
+
+  /**
+   * Enforces progressive feature tier gating (Free -> Starter -> Pro -> Enterprise)
+   */
+  async checkFeatureAccess(tenantId: string, pathname: string): Promise<void> {
+    const tenant = await this.prisma.tenant.findUnique({
+      where: { id: tenantId },
+      select: { id: true, slug: true, planTier: true, clinicType: true },
+    });
+
+    if (!tenant) {
+      throw new NotFoundException(`Tenant ${tenantId} not found`);
+    }
+
+    if (!isRouteAllowedForPlan(tenant.planTier, pathname, tenant.clinicType)) {
+      const requiredPlan = ROUTE_MINIMUM_PLAN[pathname] || PlanTier.STARTER_5;
+      const planCfg = SAAS_PLANS[requiredPlan];
+
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.FORBIDDEN,
+          error: 'FEATURE_UPGRADE_REQUIRED',
+          currentPlan: tenant.planTier,
+          requiredPlan,
+          requiredPlanName: planCfg?.nameKh || requiredPlan,
+          messageKh: `មុខងារនេះទាមទារគម្រោង ${planCfg?.nameKh} ($${planCfg?.priceUsd}/ខែ) ឬខ្ពស់ជាងនេះ។ សូម Upgrade គម្រោងរបស់អ្នក។`,
+          messageEn: `This feature requires ${planCfg?.nameEn} ($${planCfg?.priceUsd}/mo) or higher. Please upgrade your subscription.`,
+        },
+        HttpStatus.FORBIDDEN,
       );
     }
   }

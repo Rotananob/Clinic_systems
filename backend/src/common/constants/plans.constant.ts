@@ -63,3 +63,75 @@ export const SAAS_PLANS: Record<PlanTier, PlanConfig> = {
     inventoryFullAllowed: true,
   },
 };
+
+export const ROUTE_MINIMUM_PLAN: Record<string, PlanTier> = {
+  '/': PlanTier.FREE,
+  '/patients': PlanTier.FREE,
+  '/visits': PlanTier.FREE,
+  '/queue': PlanTier.FREE,
+  '/profile': PlanTier.FREE,
+
+  '/prescriptions': PlanTier.STARTER_5,
+  '/billing': PlanTier.STARTER_5,
+  '/certificates': PlanTier.STARTER_5,
+  '/follow-ups': PlanTier.STARTER_5,
+  '/documents': PlanTier.STARTER_5,
+  '/reports': PlanTier.STARTER_5,
+  '/staff': PlanTier.STARTER_5,
+  '/settings': PlanTier.STARTER_5,
+
+  '/inventory': PlanTier.PRO_8,
+  '/dental': PlanTier.PRO_8,
+  '/pacs': PlanTier.PRO_8,
+  '/lab': PlanTier.PRO_8,
+  '/ipd': PlanTier.PRO_8,
+  '/signage': PlanTier.PRO_8,
+  '/concierge': PlanTier.PRO_8,
+  '/finance': PlanTier.PRO_8,
+  '/insurance': PlanTier.PRO_8,
+
+  '/teleconsult': PlanTier.ENTERPRISE_12,
+  '/eclaim': PlanTier.ENTERPRISE_12,
+  '/invoice-template': PlanTier.ENTERPRISE_12,
+};
+
+export const PLAN_TIER_RANK: Record<PlanTier, number> = {
+  [PlanTier.FREE]: 0,
+  [PlanTier.STARTER_5]: 1,
+  [PlanTier.PRO_8]: 2,
+  [PlanTier.ENTERPRISE_12]: 3,
+};
+
+export function isRouteAllowedForPlan(
+  planTier: PlanTier | string | undefined | null,
+  pathname: string,
+  clinicType?: string | null,
+): boolean {
+  const normalizedTier = (planTier as PlanTier) || PlanTier.FREE;
+  const normalizedPath = pathname === '/' ? '/' : `/${pathname.split('/')[1]}`;
+
+  // Specialty exemptions: Allow core specialty module on FREE for clinics of that specialty
+  if (clinicType) {
+    const upper = clinicType.toUpperCase();
+    if (
+      normalizedPath === '/dental' &&
+      (upper.includes('DENTAL') || upper.includes('TOOTH') || upper.includes('ធ្មេញ') || upper.includes('ទន្ត'))
+    ) {
+      return true;
+    }
+    if (
+      normalizedPath === '/prescriptions' &&
+      (upper.includes('PHARMACY') || upper.includes('DRUG') || upper.includes('ឱសថ'))
+    ) {
+      return true;
+    }
+  }
+
+  const requiredTier = ROUTE_MINIMUM_PLAN[normalizedPath];
+  if (!requiredTier) return true;
+
+  const currentRank = PLAN_TIER_RANK[normalizedTier] ?? 0;
+  const requiredRank = PLAN_TIER_RANK[requiredTier] ?? 0;
+
+  return currentRank >= requiredRank;
+}

@@ -35,7 +35,8 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from '../../context/I18nContext';
 import { ClinicLogo } from '../common/ClinicLogo';
-import { isRouteAllowed, getRoleDisplayName, isModuleRelevantForClinic } from '../../lib/rbac';
+import { isRouteAllowed, getRoleDisplayName, isModuleRelevantForClinic, isRouteAllowedForPlan } from '../../lib/rbac';
+import { Sparkles as SparklesIcon } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
@@ -90,11 +91,15 @@ export const Sidebar: React.FC = () => {
 
   const role = user?.role;
   const isSuperAdmin = role === 'SUPER_ADMIN';
+  const tenantPlanTier = user?.tenant?.planTier || 'FREE';
 
-  // Filter navigation items by verified server-side role and clinic specialization
+  // Progressive SaaS plan feature gating: Free has minimal modules, Starter has more, Pro and Enterprise unlock higher clinical suites
   const allowedItems = allNavItems.filter((item) => {
     if (!isRouteAllowed(role, item.href)) return false;
     if (!isModuleRelevantForClinic(user?.tenant?.clinicType, item.href, role)) return false;
+    if (!isSuperAdmin && !isRouteAllowedForPlan(tenantPlanTier, item.href, user?.tenant?.clinicType)) {
+      return false;
+    }
     return true;
   });
 
@@ -158,6 +163,83 @@ export const Sidebar: React.FC = () => {
           );
         })}
       </nav>
+
+      {/* SaaS Progressive Plan Tier Card at bottom */}
+      {!isSuperAdmin && (
+        <div className="mt-auto pt-4 border-t border-[#E7E1D4]">
+          <div className="p-3 rounded-2xl bg-gradient-to-br from-[#F6F1E6] to-[#ECE5D6] border border-[#DDD5C5] shadow-2xs space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold text-stone-500 uppercase tracking-wider font-mono">
+                {isKh ? 'គម្រោងប្រើប្រាស់' : 'Current Plan'}
+              </span>
+              <span
+                className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide border ${
+                  tenantPlanTier === 'FREE'
+                    ? 'bg-stone-200 text-stone-700 border-stone-300'
+                    : tenantPlanTier === 'STARTER_5'
+                    ? 'bg-teal-100 text-teal-800 border-teal-300'
+                    : tenantPlanTier === 'PRO_8'
+                    ? 'bg-amber-100 text-amber-900 border-amber-300'
+                    : 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                }`}
+              >
+                {tenantPlanTier === 'FREE'
+                  ? 'Free'
+                  : tenantPlanTier === 'STARTER_5'
+                  ? '$5/mo'
+                  : tenantPlanTier === 'PRO_8'
+                  ? '$8/mo'
+                  : '$12/mo'}
+              </span>
+            </div>
+
+            <div>
+              <div className="text-xs font-bold text-stone-900 font-sans">
+                {tenantPlanTier === 'FREE'
+                  ? (isKh ? 'Free Starter' : 'Free Starter')
+                  : tenantPlanTier === 'STARTER_5'
+                  ? (isKh ? 'Clinic Starter' : 'Clinic Starter')
+                  : tenantPlanTier === 'PRO_8'
+                  ? (isKh ? 'Polyclinic Pro' : 'Polyclinic Pro')
+                  : (isKh ? 'Hospital Enterprise' : 'Hospital Enterprise')}
+              </div>
+              <p className="text-[10px] text-stone-600 mt-0.5 leading-relaxed">
+                {tenantPlanTier === 'FREE'
+                  ? (isKh
+                      ? 'មុខងារមូលដ្ឋាន៖ អ្នកជំងឺ & ក្ដារហៅលេខ'
+                      : 'Basic tier: Patient intake & queue board')
+                  : tenantPlanTier === 'STARTER_5'
+                  ? (isKh
+                      ? 'រួមមាន វេជ្ជបញ្ជា, គិតលុយ KHQR & របាយការណ៍'
+                      : 'Includes Prescriptions, POS KHQR & Reports')
+                  : tenantPlanTier === 'PRO_8'
+                  ? (isKh
+                      ? 'រួមមាន ឃ្លាំងស្តុក, PACS, LIS, IPD & Signage'
+                      : 'Includes Warehouse, PACS, LIS & IPD')
+                  : (isKh
+                      ? 'បើកដំណើរការគ្រប់ម៉ូឌុលទាំងអស់ក្នុងប្រព័ន្ធ'
+                      : 'Full platform unlimited access')}
+              </p>
+            </div>
+
+            {tenantPlanTier !== 'ENTERPRISE_12' && (
+              <Link
+                href="/pricing"
+                className="w-full mt-1.5 py-1.5 px-2.5 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-[11px] font-bold shadow-2xs transition-colors flex items-center justify-center gap-1.5"
+              >
+                <SparklesIcon className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+                <span>
+                  {tenantPlanTier === 'FREE'
+                    ? (isKh ? 'ដំឡើងទៅ Starter ($5/mo)' : 'Upgrade to Starter ($5/mo)')
+                    : tenantPlanTier === 'STARTER_5'
+                    ? (isKh ? 'ដំឡើងទៅ Pro ($8/mo)' : 'Upgrade to Pro ($8/mo)')
+                    : (isKh ? 'ដំឡើងទៅ Enterprise ($12/mo)' : 'Upgrade to Enterprise ($12/mo)')}
+                </span>
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
     </aside>
   );
 };

@@ -364,3 +364,97 @@ export function getRoleDisplayName(role: string | undefined | null, isKh: boolea
       return role || (isKh ? 'បុគ្គលិកទូទៅ' : 'STAFF');
   }
 }
+
+export type PlanTier = 'FREE' | 'STARTER_5' | 'PRO_8' | 'ENTERPRISE_12';
+
+export const ROUTE_MINIMUM_PLAN: Record<string, PlanTier> = {
+  '/': 'FREE',
+  '/patients': 'FREE',
+  '/visits': 'FREE',
+  '/queue': 'FREE',
+  '/profile': 'FREE',
+
+  '/prescriptions': 'STARTER_5',
+  '/billing': 'STARTER_5',
+  '/certificates': 'STARTER_5',
+  '/follow-ups': 'STARTER_5',
+  '/documents': 'STARTER_5',
+  '/reports': 'STARTER_5',
+  '/staff': 'STARTER_5',
+  '/settings': 'STARTER_5',
+
+  '/inventory': 'PRO_8',
+  '/dental': 'PRO_8',
+  '/pacs': 'PRO_8',
+  '/lab': 'PRO_8',
+  '/ipd': 'PRO_8',
+  '/signage': 'PRO_8',
+  '/concierge': 'PRO_8',
+  '/finance': 'PRO_8',
+  '/insurance': 'PRO_8',
+
+  '/teleconsult': 'ENTERPRISE_12',
+  '/eclaim': 'ENTERPRISE_12',
+  '/invoice-template': 'ENTERPRISE_12',
+};
+
+export const PLAN_TIER_RANK: Record<PlanTier, number> = {
+  FREE: 0,
+  STARTER_5: 1,
+  PRO_8: 2,
+  ENTERPRISE_12: 3,
+};
+
+export function isRouteAllowedForPlan(
+  planTier: string | undefined | null,
+  pathname: string,
+  clinicType?: string | null,
+): boolean {
+  const normalizedTier = (planTier as PlanTier) || 'FREE';
+  const normalizedPath = pathname === '/' ? '/' : `/${pathname.split('/')[1]}`;
+
+  // Specialty exemptions: Allow core specialty module on FREE for clinics of that specialty
+  if (clinicType) {
+    const upper = clinicType.toUpperCase();
+    if (
+      normalizedPath === '/dental' &&
+      (upper.includes('DENTAL') || upper.includes('TOOTH') || upper.includes('ធ្មេញ') || upper.includes('ទន្ត'))
+    ) {
+      return true;
+    }
+    if (
+      normalizedPath === '/prescriptions' &&
+      (upper.includes('PHARMACY') || upper.includes('DRUG') || upper.includes('ឱសថ'))
+    ) {
+      return true;
+    }
+  }
+
+  const requiredTier = ROUTE_MINIMUM_PLAN[normalizedPath];
+  if (!requiredTier) return true;
+
+  const currentRank = PLAN_TIER_RANK[normalizedTier] ?? 0;
+  const requiredRank = PLAN_TIER_RANK[requiredTier] ?? 0;
+
+  return currentRank >= requiredRank;
+}
+
+export function getRequiredPlanForRoute(pathname: string): {
+  tier: PlanTier;
+  nameKh: string;
+  nameEn: string;
+  priceUsd: number;
+} {
+  const normalizedPath = pathname === '/' ? '/' : `/${pathname.split('/')[1]}`;
+  const tier = ROUTE_MINIMUM_PLAN[normalizedPath] || 'FREE';
+  switch (tier) {
+    case 'STARTER_5':
+      return { tier, nameKh: 'គម្រោងស្ដង់ដារ (Clinic Starter)', nameEn: 'Clinic Starter', priceUsd: 5 };
+    case 'PRO_8':
+      return { tier, nameKh: 'គម្រោងវិជ្ជាជីវៈ (Polyclinic Pro)', nameEn: 'Polyclinic Pro', priceUsd: 8 };
+    case 'ENTERPRISE_12':
+      return { tier, nameKh: 'គម្រោងមន្ទីរពេទ្យ (Hospital Enterprise)', nameEn: 'Hospital Enterprise', priceUsd: 12 };
+    default:
+      return { tier: 'FREE', nameKh: 'គម្រោងសាកល្បង (Free Starter)', nameEn: 'Free Starter', priceUsd: 0 };
+  }
+}

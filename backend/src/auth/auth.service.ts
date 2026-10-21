@@ -6,7 +6,7 @@ import { LoginDto } from './dto/login.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { RegisterClinicDto } from './dto/register-clinic.dto';
 import { PlanTier, SubscriptionStatus, Role } from '@prisma/client';
-import { SAAS_PLANS } from '../common/constants/plans.constant';
+import { SAAS_PLANS, isRouteAllowedForPlan } from '../common/constants/plans.constant';
 import { PlatformMasterBotService } from '../telegram/platform-master-bot.service';
 import {
   ROLE_PERMISSIONS_MATRIX,
@@ -205,11 +205,18 @@ export class AuthService {
       targetRoute = '/visits';
     }
 
+    let allowedRoutes = ROLE_ALLOWED_ROUTES[user.role] || ['/profile'];
+    if (user.role !== Role.SUPER_ADMIN && tenantInfo?.planTier) {
+      allowedRoutes = allowedRoutes.filter((route) =>
+        isRouteAllowedForPlan(tenantInfo.planTier, route, tenantInfo.clinicType),
+      );
+    }
+
     return {
       accessToken: this.jwtService.sign(payload),
       targetRoute,
       permissions: ROLE_PERMISSIONS_MATRIX[user.role] || [],
-      allowedRoutes: ROLE_ALLOWED_ROUTES[user.role] || ['/profile'],
+      allowedRoutes,
       user: {
         id: user.id,
         email: user.email,
@@ -459,7 +466,14 @@ export class AuthService {
     }
 
     const permissions = ROLE_PERMISSIONS_MATRIX[user.role] || [];
-    const allowedRoutes = ROLE_ALLOWED_ROUTES[user.role] || ['/profile'];
+    let allowedRoutes = ROLE_ALLOWED_ROUTES[user.role] || ['/profile'];
+
+    // Enforce progressive SaaS plan tier feature restrictions
+    if (user.role !== Role.SUPER_ADMIN && user.tenant?.planTier) {
+      allowedRoutes = allowedRoutes.filter((route) =>
+        isRouteAllowedForPlan(user.tenant.planTier, route, user.tenant.clinicType),
+      );
+    }
 
     // Resolve primary target destination based on clinic specialization
     const clinicTypeStr = (user.tenant?.clinicType || '').toLowerCase();
