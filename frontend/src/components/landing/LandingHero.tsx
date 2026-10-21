@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '../../context/I18nContext';
 import { ClinicLogo } from '../common/ClinicLogo';
 import { QRCodeSVG } from 'qrcode.react';
+import { buildLiveAbaKhqr } from '../../lib/khqr';
 import {
   QrCode,
   Volume2,
@@ -29,31 +30,11 @@ import {
   RefreshCw,
   Lock,
   HardDrive,
+  Copy,
+  ChevronDown,
+  ChevronUp,
+  Code2,
 } from 'lucide-react';
-
-// Real verified ABA PayWay & Bakong Live QR Payloads with locked amount (Zero Polling Showcase)
-const REAL_LIVE_KHQR = {
-  '0.01': {
-    amount: '0.01',
-    khrAmount: '41',
-    qrString:
-      '00020101021230510016abaakhppxxx@abaa01151260929135220240208ABA Bank52048220530384054040.015802KH5910NOB ROTANA6003N/A626068560010PAYWAY@ABA0115539089-327772220209042557298030110501199670013179257470977301131795166709773672100170013F1BF016411FDA6804PLIK63040497',
-    abaDeeplink:
-      'abamobilebank://ababank.com?type=payway&qrcode=00020101021230510016abaakhppxxx%40abaa01151260929135220240208ABA%20Bank52048220530384054040.015802KH5910NOB%20ROTANA6003N%2FA626068560010PAYWAY%40ABA0115539089-327772220209042557298030110501199670013179257470977301131795166709773672100170013F1BF016411FDA6804PLIK63040497',
-    bakongDeeplink:
-      'bakong://open?qr=00020101021230510016abaakhppxxx%40abaa01151260929135220240208ABA%20Bank52048220530384054040.015802KH5910NOB%20ROTANA6003N%2FA626068560010PAYWAY%40ABA0115539089-327772220209042557298030110501199670013179257470977301131795166709773672100170013F1BF016411FDA6804PLIK63040497',
-  },
-  '0.05': {
-    amount: '0.05',
-    khrAmount: '205',
-    qrString:
-      '00020101021230510016abaakhppxxx@abaa01151260929135220240208ABA Bank52048220530384054040.055802KH5910NOB ROTANA6003N/A626068560010PAYWAY@ABA0115539089-327772260209042557298030110501199670013179257471029701131795166710297672100170013F1BF016411FDA6804PLIK6304795E',
-    abaDeeplink:
-      'abamobilebank://ababank.com?type=payway&qrcode=00020101021230510016abaakhppxxx%40abaa01151260929135220240208ABA%20Bank52048220530384054040.055802KH5910NOB%20ROTANA6003N%2FA626068560010PAYWAY%40ABA0115539089-327772260209042557298030110501199670013179257471029701131795166710297672100170013F1BF016411FDA6804PLIK6304795E',
-    bakongDeeplink:
-      'bakong://open?qr=00020101021230510016abaakhppxxx%40abaa01151260929135220240208ABA%20Bank52048220530384054040.055802KH5910NOB%20ROTANA6003N%2FA626068560010PAYWAY%40ABA0115539089-327772260209042557298030110501199670013179257471029701131795166710297672100170013F1BF016411FDA6804PLIK6304795E',
-  },
-};
 
 export const LandingHero: React.FC = () => {
   const { locale } = useTranslation();
@@ -70,15 +51,15 @@ export const LandingHero: React.FC = () => {
   const [glare, setGlare] = useState({ x: 50, y: 50, opacity: 0 });
   const [isHovering, setIsHovering] = useState(false);
 
-  // Mode 1: KHQR Real Locked Static State (Zero Polling Showcase)
-  const [selectedLockedAmount, setSelectedLockedAmount] = useState<'0.01' | '0.05'>('0.01');
-  const activeLiveKhqr = REAL_LIVE_KHQR[selectedLockedAmount];
-  const [khqrAmount, setKhqrAmount] = useState('0.01');
+  // Mode 1: KHQR Real Live Scannable Cockpit (Permanent Validity • Zero Polling Showcase)
+  const [customMerchantName, setCustomMerchantName] = useState('NOB ROTANA');
+  const [selectedPresetAmount, setSelectedPresetAmount] = useState('0.01');
+  const [customAmountInput, setCustomAmountInput] = useState('');
+  const [isCustomAmount, setIsCustomAmount] = useState(false);
   const [khqrCurrency, setKhqrCurrency] = useState<'USD' | 'KHR'>('USD');
-  const [countdown, setCountdown] = useState(178);
-  const [isSettled, setIsSettled] = useState(false);
-  const [settlementHash, setSettlementHash] = useState('');
-  const [isSimulatingScan, setIsSimulatingScan] = useState(false);
+  const [copiedPayload, setCopiedPayload] = useState(false);
+  const [showTagBreakdown, setShowTagBreakdown] = useState(false);
+  const [isPlayingChime, setIsPlayingChime] = useState(false);
 
   // Mode 2: Voice & Gemini SOAP Interactive State
   const [isRecording, setIsRecording] = useState(false);
@@ -90,14 +71,6 @@ export const LandingHero: React.FC = () => {
   const [currentPatient, setCurrentPatient] = useState('លោក សុខ វិសាល (Sok Visal)');
   const [currentRoom, setCurrentRoom] = useState('បន្ទប់ពិគ្រោះលេខ ០១ (Room 01)');
   const [isCallingAudio, setIsCallingAudio] = useState(false);
-
-  // Auto countdown timer for KHQR
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCountdown((prev) => (prev > 1 ? prev - 1 : 180));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
 
   // 3D Mouse Parallax Handler
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -167,22 +140,24 @@ export const LandingHero: React.FC = () => {
     }
   };
 
-  // Simulate Bakong Instant Settlement
-  const handleSimulateScan = () => {
-    setIsSimulatingScan(true);
-    setTimeout(() => {
-      setIsSettled(true);
-      setSettlementHash(`TXN-ABA-${Date.now().toString(36).toUpperCase()}`);
-      setIsSimulatingScan(false);
-      playPaymentSuccessChime();
-    }, 900);
+  // Copy EMVCo Payload to Clipboard
+  const handleCopyPayload = async () => {
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard) {
+        await navigator.clipboard.writeText(activeLiveKhqr.qrString);
+        setCopiedPayload(true);
+        setTimeout(() => setCopiedPayload(false), 2000);
+      }
+    } catch {
+      // Clipboard write fallback
+    }
   };
 
-  const handleResetKhqr = (amt: string) => {
-    setKhqrAmount(amt);
-    setIsSettled(false);
-    setCountdown(180);
-    setSettlementHash('');
+  // Safe Payment Sound Test (plays chime without covering or blocking the QR code)
+  const handleTestChime = () => {
+    setIsPlayingChime(true);
+    playPaymentSuccessChime();
+    setTimeout(() => setIsPlayingChime(false), 800);
   };
 
   // Simulate Voice Dictation
@@ -237,12 +212,17 @@ export const LandingHero: React.FC = () => {
         .slice(0, 24)
     : 'your-clinic';
 
-  // Construct dynamic Tag 01=12 payload string
-  const dynamicKhqrPayload = `00020101021229380016link.payway.com.kh0114ABA-PAYWAY-DEMO520454115303${
-    khqrCurrency === 'USD' ? '840' : '116'
-  }54${khqrAmount.length.toString().padStart(2, '0')}${khqrAmount}5802KH5912X-CLINIC PAAS6010PHNOM PENH62210717INV-2026-08816304${(
-    'CRC' + Math.floor(1000 + Math.random() * 9000)
-  ).slice(0, 4)}`;
+  // Compute active locked amount & generate 100% compliant permanent live ABA KHQR
+  const activeAmount = isCustomAmount
+    ? customAmountInput.trim() || (khqrCurrency === 'KHR' ? '400' : '0.01')
+    : selectedPresetAmount;
+
+  const activeLiveKhqr = buildLiveAbaKhqr({
+    merchantName: customMerchantName,
+    amount: activeAmount,
+    currency: khqrCurrency,
+    useRawSessionIfDefault: true,
+  });
 
   return (
     <section className="relative overflow-hidden pt-10 pb-20 md:pt-14 md:pb-28">
@@ -506,93 +486,304 @@ export const LandingHero: React.FC = () => {
 
             {/* ========================================================== */}
             {/* ========================================================== */}
-            {/* TAB 1: DYNAMIC KHQR COCKPIT (Real Locked Amount • Zero Polling Showcase) */}
+            {/* TAB 1: DYNAMIC KHQR COCKPIT (Real Permanent Live • Zero Polling Showcase) */}
             {/* ========================================================== */}
             {activeTab === 'khqr' && (
-              <div className="p-6 sm:p-8 bg-[#FAF7F2] grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                {/* Left Side: Invoice Details & Bank Support (7 Cols) */}
+              <div className="p-6 sm:p-8 bg-[#FAF7F2] grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                {/* Left Side: Interactive Customizer & EMVCo Inspector (7 Cols) */}
                 <div className="lg:col-span-7 space-y-4">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold bg-teal-100 text-teal-800 border border-teal-200">
                       <Zap className="w-3.5 h-3.5 text-teal-700" />
-                      <span>EMVCo Tag 01=12 Dynamic Payload</span>
+                      <span>EMVCo Tag 01=12 Dynamic KHQR</span>
                     </span>
                     <span className="px-2.5 py-1 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                      {isKm ? 'QR ពិតប្រាកដ • Real Live Working QR' : 'Real Live Working QR'}
+                      {isKm ? 'QR ពិតប្រាកដ • សុពលភាពអចិន្ត្រៃយ៍' : 'Permanent Live • Zero Polling'}
                     </span>
                   </div>
 
                   <div>
                     <h3 className="text-xl sm:text-2xl font-bold text-stone-900 tracking-tight font-sans">
-                      {isKm ? 'ទូទាត់ប្រាក់រហ័សគ្រប់ធនាគារ' : 'Seamless KHQR Settlement'}
+                      {isKm ? 'សាកល្បង KHQR ពិតប្រាកដ និងកែប្រែឈ្មោះគ្លីនិកផ្ទាល់' : 'Interactive KHQR Live Generator & Custom Clinic Demo'}
                     </h3>
                     <p className="text-xs text-stone-500 mt-1 leading-relaxed font-sans">
                       {isKm
-                        ? 'ប្រព័ន្ធ Generate Dynamic QR ជាមួយចំនួនទឹកប្រាក់ជាក់លាក់ និងលេខវិក្កយបត្រ ដោយស្វ័យប្រវត្ត គាំទ្ររាល់ App ធនាគារក្នុងប្រទេសកម្ពុជា។'
-                        : 'Real-time generated dynamic QR containing exact invoice amount and bill numbers. Supports 1-click mobile deep linking.'}
+                        ? 'សាកល្បងវាយឈ្មោះគ្លីនិករបស់អ្នក និងជ្រើសរើសចំនួនទឹកប្រាក់ជាក់ស្តែង - QR Code នឹង Update តាមស្តង់ដារ EMVCo ភ្លាមៗ អាចស្កេនបានគ្រប់ធនាគារក្នុងប្រទេសកម្ពុជាដោយគ្មាន Timeout 3 នាទីឡើយ។'
+                        : 'Customize your clinic name and transaction amount in real-time. Compliant with EMVCo & Bakong specifications, scannable by all Cambodian banking apps with zero session expiration.'}
                     </p>
                   </div>
 
-                  {/* Real Locked Amount Switcher (0.01$ or 0.05$) */}
-                  <div className="space-y-1.5">
-                    <div className="text-[11px] font-bold text-stone-700 uppercase tracking-wider flex items-center justify-between">
-                      <span>{isKm ? 'ចំនួនទឹកប្រាក់ Lock ពិតប្រាកដ:' : 'Locked Test Amount:'}</span>
-                      <span className="text-teal-800 font-mono text-[11px] font-bold">
-                        {isKm ? 'ស្កេនបានជាមួយគ្រប់ធនាគារ' : 'Scannable by all Cambodian banks'}
+                  {/* 1. Custom Clinic / Merchant Name Input (Tag 59) */}
+                  <div className="p-3.5 bg-white rounded-2xl border border-[#E3DCCE] shadow-2xs space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <label htmlFor="clinic-tag59" className="font-bold text-stone-800 flex items-center gap-1.5">
+                        <Building2 className="w-3.5 h-3.5 text-teal-800" />
+                        <span>{isKm ? 'ឈ្មោះគ្លីនិកក្នុង QR (EMVCo Tag 59):' : 'Clinic / Merchant Name (Tag 59):'}</span>
+                      </label>
+                      <span className="text-[10px] font-mono text-stone-400">
+                        {customMerchantName.length}/25 Chars
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setSelectedLockedAmount('0.01')}
-                        className={`px-4 py-2 rounded-xl text-xs font-bold font-mono transition-all cursor-pointer flex items-center gap-1.5 ${
-                          selectedLockedAmount === '0.01'
-                            ? 'bg-teal-800 text-white shadow-xs'
-                            : 'bg-white text-stone-700 border border-[#DCD5C5] hover:bg-stone-50'
-                        }`}
-                      >
-                        <Check className={`w-3.5 h-3.5 ${selectedLockedAmount === '0.01' ? 'opacity-100' : 'opacity-0'}`} />
-                        <span>$0.01 USD (Default Locked)</span>
-                      </button>
 
-                      <button
-                        type="button"
-                        onClick={() => setSelectedLockedAmount('0.05')}
-                        className={`px-4 py-2 rounded-xl text-xs font-bold font-mono transition-all cursor-pointer flex items-center gap-1.5 ${
-                          selectedLockedAmount === '0.05'
-                            ? 'bg-teal-800 text-white shadow-xs'
-                            : 'bg-white text-stone-700 border border-[#DCD5C5] hover:bg-stone-50'
-                        }`}
-                      >
-                        <Check className={`w-3.5 h-3.5 ${selectedLockedAmount === '0.05' ? 'opacity-100' : 'opacity-0'}`} />
-                        <span>$0.05 USD (Locked)</span>
-                      </button>
+                    <div className="relative">
+                      <input
+                        id="clinic-tag59"
+                        type="text"
+                        maxLength={25}
+                        value={customMerchantName}
+                        onChange={(e) => setCustomMerchantName(e.target.value.toUpperCase())}
+                        placeholder="ENTER CLINIC NAME (MAX 25 CHARS)"
+                        className="w-full px-3.5 py-2.5 bg-[#FAF7F2] border border-[#DCD5C5] rounded-xl text-xs font-bold font-mono text-stone-900 placeholder:text-stone-400 focus:outline-hidden focus:ring-2 focus:ring-teal-700 uppercase"
+                      />
+                    </div>
+
+                    {/* Quick Preset Pills for Clinic Name */}
+                    <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+                      <span className="text-[10px] font-medium text-stone-400">
+                        {isKm ? 'ជ្រើសរើសគំរូ:' : 'Presets:'}
+                      </span>
+                      {[
+                        { label: 'NOB ROTANA (Default Owner)', val: 'NOB ROTANA' },
+                        { label: 'ROTANA CLINIC', val: 'ROTANA CLINIC' },
+                        { label: 'SOKHAPHEAP CLINIC', val: 'SOKHAPHEAP CLINIC' },
+                        { label: 'CENTRAL MEDICAL', val: 'CENTRAL MEDICAL' },
+                      ].map((item) => (
+                        <button
+                          key={item.val}
+                          type="button"
+                          onClick={() => setCustomMerchantName(item.val)}
+                          className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                            customMerchantName === item.val
+                              ? 'bg-teal-800 text-white shadow-2xs'
+                              : 'bg-stone-100 hover:bg-stone-200 text-stone-700'
+                          }`}
+                        >
+                          {item.label}
+                        </button>
+                      ))}
                     </div>
                   </div>
 
-                  {/* Invoice Summary Card matching screenshot */}
+                  {/* 2. Amount & Currency Selector (Tag 53 & Tag 54) */}
+                  <div className="p-3.5 bg-white rounded-2xl border border-[#E3DCCE] shadow-2xs space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="text-xs font-bold text-stone-800 flex items-center gap-1.5">
+                        <Lock className="w-3.5 h-3.5 text-teal-800" />
+                        <span>{isKm ? 'ចំនួនទឹកប្រាក់ Lock ពិតប្រាកដ (Tag 54):' : 'Locked Transaction Amount (Tag 54):'}</span>
+                      </div>
+
+                      {/* Currency Toggle (USD / KHR) */}
+                      <div className="flex items-center bg-[#FAF7F2] p-0.5 rounded-lg border border-[#DCD5C5] text-[11px] font-bold">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setKhqrCurrency('USD');
+                            if (isCustomAmount) {
+                              setCustomAmountInput('0.01');
+                            } else {
+                              setSelectedPresetAmount('0.01');
+                            }
+                          }}
+                          className={`px-2.5 py-0.5 rounded-md transition-all cursor-pointer ${
+                            khqrCurrency === 'USD'
+                              ? 'bg-teal-800 text-white shadow-2xs'
+                              : 'text-stone-600 hover:text-stone-900'
+                          }`}
+                        >
+                          USD ($)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setKhqrCurrency('KHR');
+                            if (isCustomAmount) {
+                              setCustomAmountInput('400');
+                            } else {
+                              setSelectedPresetAmount('400');
+                            }
+                          }}
+                          className={`px-2.5 py-0.5 rounded-md transition-all cursor-pointer ${
+                            khqrCurrency === 'KHR'
+                              ? 'bg-teal-800 text-white shadow-2xs'
+                              : 'text-stone-600 hover:text-stone-900'
+                          }`}
+                        >
+                          KHR (៛)
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Amount Preset Buttons */}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {(khqrCurrency === 'USD'
+                        ? [
+                            { val: '0.01', label: '$0.01 (Safe Real Test)' },
+                            { val: '0.05', label: '$0.05' },
+                            { val: '1.00', label: '$1.00' },
+                            { val: '5.00', label: '$5.00' },
+                            { val: '15.00', label: '$15.00' },
+                          ]
+                        : [
+                            { val: '400', label: '400 ៛ (Safe Real Test)' },
+                            { val: '2000', label: '2,000 ៛' },
+                            { val: '4000', label: '4,000 ៛' },
+                            { val: '20000', label: '20,000 ៛' },
+                            { val: '60000', label: '60,000 ៛' },
+                          ]
+                      ).map((preset) => (
+                        <button
+                          key={preset.val}
+                          type="button"
+                          onClick={() => {
+                            setIsCustomAmount(false);
+                            setSelectedPresetAmount(preset.val);
+                          }}
+                          className={`px-2.5 py-1.5 rounded-xl text-xs font-bold font-mono transition-all cursor-pointer flex items-center gap-1 ${
+                            !isCustomAmount && selectedPresetAmount === preset.val
+                              ? 'bg-teal-800 text-white shadow-xs'
+                              : 'bg-[#FAF7F2] text-stone-700 border border-[#DCD5C5] hover:bg-stone-100'
+                          }`}
+                        >
+                          {!isCustomAmount && selectedPresetAmount === preset.val && (
+                            <Check className="w-3 h-3 text-white" />
+                          )}
+                          <span>{preset.label}</span>
+                        </button>
+                      ))}
+
+                      {/* Custom Amount Button */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsCustomAmount(true);
+                          if (!customAmountInput) {
+                            setCustomAmountInput(khqrCurrency === 'KHR' ? '4000' : '2.50');
+                          }
+                        }}
+                        className={`px-2.5 py-1.5 rounded-xl text-xs font-bold font-mono transition-all cursor-pointer flex items-center gap-1 ${
+                          isCustomAmount
+                            ? 'bg-teal-800 text-white shadow-xs'
+                            : 'bg-[#FAF7F2] text-stone-700 border border-[#DCD5C5] hover:bg-stone-100'
+                        }`}
+                      >
+                        {isCustomAmount && <Check className="w-3 h-3 text-white" />}
+                        <span>{isKm ? 'កំណត់ចំនួនផ្សេង' : 'Custom'}</span>
+                      </button>
+                    </div>
+
+                    {/* Custom Amount Input Box when enabled */}
+                    {isCustomAmount && (
+                      <div className="pt-1 flex items-center gap-2">
+                        <div className="relative flex-1">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold font-mono text-xs text-stone-500">
+                            {khqrCurrency === 'USD' ? '$' : '៛'}
+                          </span>
+                          <input
+                            type="number"
+                            step={khqrCurrency === 'USD' ? '0.01' : '100'}
+                            min={khqrCurrency === 'USD' ? '0.01' : '100'}
+                            value={customAmountInput}
+                            onChange={(e) => setCustomAmountInput(e.target.value)}
+                            placeholder={khqrCurrency === 'USD' ? '0.01' : '400'}
+                            className="w-full pl-8 pr-3 py-2 bg-[#FAF7F2] border border-[#DCD5C5] rounded-xl text-xs font-bold font-mono text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-teal-700"
+                          />
+                        </div>
+                        <span className="text-[11px] text-stone-500 font-sans">
+                          {isKm ? 'ចំនួនទឹកប្រាក់ត្រូវទូទាត់ជាក់ស្តែង' : 'Exact invoice total'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 3. Live Invoice Summary Card */}
                   <div className="p-4 rounded-2xl bg-white border border-[#E6E0D2] shadow-2xs space-y-2 text-xs font-sans">
                     <div className="flex justify-between items-center text-stone-500">
-                      <span>{isKm ? 'លេខវិក្កយបត្រ' : 'Invoice Reference:'}</span>
+                      <span>{isKm ? 'លេខវិក្កយបត្រ (Tag 62):' : 'Invoice Reference (Tag 62):'}</span>
                       <span className="font-mono font-bold text-stone-800">#INV-2026-0881</span>
                     </div>
                     <div className="flex justify-between items-center text-stone-500">
-                      <span>{isKm ? 'អ្នកជំងឺ' : 'Patient Name:'}</span>
+                      <span>{isKm ? 'អ្នកជំងឺគំរូ:' : 'Patient Name:'}</span>
                       <span className="font-semibold text-stone-800">ចាន់ ដារ៉ា (P-0012)</span>
                     </div>
                     <div className="flex justify-between items-center text-stone-500">
-                      <span>{isKm ? 'គ្លីនិកទទួលប្រាក់' : 'Merchant Destination:'}</span>
-                      <span className="font-semibold text-stone-800">Rotana Medical Center (NOB ROTANA)</span>
+                      <span>{isKm ? 'គ្លីនិកទទួលប្រាក់ (Tag 59):' : 'Merchant Destination (Tag 59):'}</span>
+                      <span className="font-bold text-teal-800 font-mono">
+                        {activeLiveKhqr.merchantName}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-stone-500">
+                      <span>{isKm ? 'គណនីធនាគារ ABA (Tag 30):' : 'ABA Account (Tag 30):'}</span>
+                      <span className="font-mono text-stone-700">126092913522024 (ABA Bank)</span>
                     </div>
                     <div className="pt-2 border-t border-stone-100 flex justify-between items-center text-sm font-bold text-stone-900">
-                      <span>{isKm ? 'ទឹកប្រាក់ត្រូវទូទាត់' : 'Total Payable:'}</span>
+                      <span>{isKm ? 'ទឹកប្រាក់ត្រូវទូទាត់ Lock:' : 'Total Locked Payable:'}</span>
                       <span className="text-teal-800 font-mono text-base font-black">
-                        ${activeLiveKhqr.amount} ({activeLiveKhqr.khrAmount} ៛)
+                        {activeLiveKhqr.amountFormatted}
                       </span>
                     </div>
                   </div>
 
-                  {/* Supported Banks Row matching screenshot */}
+                  {/* 4. Live EMVCo Tag Inspector & Copy Button */}
+                  <div className="p-3 bg-white rounded-2xl border border-[#E6E0D2] shadow-2xs space-y-2">
+                    <div className="flex items-center justify-between">
+                      <button
+                        type="button"
+                        onClick={() => setShowTagBreakdown(!showTagBreakdown)}
+                        className="flex items-center gap-1.5 text-xs font-bold text-stone-800 hover:text-teal-800 transition-colors cursor-pointer"
+                      >
+                        <Code2 className="w-3.5 h-3.5 text-teal-800" />
+                        <span>{isKm ? 'ពិនិត្យ EMVCo Tag Breakdown & CRC16' : 'Inspect EMVCo Tag Breakdown & CRC16'}</span>
+                        {showTagBreakdown ? (
+                          <ChevronUp className="w-3.5 h-3.5 text-stone-500" />
+                        ) : (
+                          <ChevronDown className="w-3.5 h-3.5 text-stone-500" />
+                        )}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleCopyPayload}
+                        className="px-2.5 py-1 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-lg text-[11px] font-bold font-mono transition-colors flex items-center gap-1 cursor-pointer active:scale-95"
+                      >
+                        {copiedPayload ? (
+                          <>
+                            <Check className="w-3 h-3 text-emerald-600" />
+                            <span className="text-emerald-700">{isKm ? 'បានចម្លង!' : 'Copied!'}</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3 h-3 text-stone-600" />
+                            <span>{isKm ? 'ចម្លង Payload' : 'Copy Payload'}</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+
+                    {showTagBreakdown && (
+                      <div className="pt-1 space-y-1.5 text-[11px] font-mono border-t border-stone-100 mt-2">
+                        <div className="max-h-48 overflow-y-auto space-y-1 pr-1">
+                          {activeLiveKhqr.tagBreakdown.map((item) => (
+                            <div
+                              key={item.tag}
+                              className="flex items-start justify-between gap-2 p-1.5 rounded-lg bg-[#FAF7F2] border border-stone-100"
+                            >
+                              <div className="shrink-0 text-teal-900 font-bold">
+                                Tag {item.tag} <span className="text-stone-400 font-normal">({item.label}):</span>
+                              </div>
+                              <div className="text-stone-800 font-bold text-right truncate">
+                                {item.value}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="p-2 bg-stone-900 text-teal-200 rounded-xl text-[10px] break-all leading-relaxed font-mono">
+                          {activeLiveKhqr.qrString}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Supported Banks Row */}
                   <div className="flex items-center gap-2 pt-1 flex-wrap">
                     <span className="text-xs font-semibold text-stone-500">
                       {isKm ? 'គាំទ្រកម្មវិធីធនាគារ:' : 'Supported Mobile Apps:'}
@@ -604,56 +795,104 @@ export const LandingHero: React.FC = () => {
                       Bakong App
                     </span>
                     <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#EAE2D2] text-stone-800">
-                      Acleda / Wing
+                      Acleda
+                    </span>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#EAE2D2] text-stone-800">
+                      Wing Bank
+                    </span>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#EAE2D2] text-stone-800">
+                      Canadia / Sathapana
                     </span>
                   </div>
                 </div>
 
-                {/* Right Side: QR Preview Graphic matching screenshot */}
+                {/* Right Side: QR Preview Graphic (Permanent Validity • Scannable Anytime) */}
                 <div className="lg:col-span-5 flex flex-col items-center justify-center p-6 bg-white rounded-2xl border border-[#E3DCCE] shadow-sm relative space-y-4">
-                  {/* QR Box with clean dark/contrast frame */}
-                  <div className="w-52 h-52 bg-stone-900 rounded-2xl p-3 flex flex-col items-center justify-center relative shadow-inner">
-                    <div className="p-2 bg-white rounded-xl shadow-xs">
+                  {/* Top Badge: Scannable 24/7 */}
+                  <div className="w-full flex items-center justify-between text-[11px] font-bold border-b border-stone-100 pb-2">
+                    <span className="text-stone-500 font-sans">{isKm ? 'ស្ថានភាព QR:' : 'QR Status:'}</span>
+                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-mono text-[10px]">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                      <span>{isKm ? 'ដំណើរការអចិន្ត្រៃយ៍ (Permanent Live)' : 'Permanent Live Active'}</span>
+                    </span>
+                  </div>
+
+                  {/* QR Box with deep obsidian contrast frame */}
+                  <div className="w-56 h-56 bg-stone-950 rounded-2xl p-3.5 flex flex-col items-center justify-center relative shadow-inner">
+                    <div className="p-2.5 bg-white rounded-xl shadow-xs">
                       <QRCodeSVG
                         value={activeLiveKhqr.qrString}
-                        size={168}
+                        size={184}
                         level="M"
                         includeMargin={false}
                       />
                     </div>
                   </div>
 
-                  {/* Status Indicator (Real Active QR • Zero Polling) */}
-                  <div className="flex items-center gap-2 text-xs font-medium text-stone-700">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
-                    <span>
-                      {isKm ? 'កំពុងរង់ចាំការទូទាត់... (QR ពិតប្រាកដ)' : 'Waiting for payment... (Real Active QR)'}
-                    </span>
+                  {/* Clean Status & Instruction without blocking overlay */}
+                  <div className="text-center space-y-1">
+                    <div className="text-xs font-bold text-stone-900 font-sans">
+                      {activeLiveKhqr.merchantName}
+                    </div>
+                    <div className="text-teal-800 font-mono text-sm font-black">
+                      {activeLiveKhqr.amountFormatted}
+                    </div>
+                    <div className="text-[11px] text-stone-500 font-sans">
+                      {isKm
+                        ? 'បើក App ធនាគាររបស់អ្នក (ABA ឬ Bakong) រួចស្កេនដើម្បីសាកល្បង'
+                        : 'Open ABA Mobile or Bakong and scan to test live'}
+                    </div>
                   </div>
 
-                  {/* 1-Click Mobile App Deep Link Buttons matching screenshot */}
+                  {/* 1-Click Mobile App Deep Link Buttons */}
                   <div className="grid grid-cols-2 gap-2 w-full">
                     <a
                       href={activeLiveKhqr.abaDeeplink}
-                      className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-[#005777] text-white text-xs font-bold hover:bg-[#004761] transition-colors shadow-xs active:scale-95 text-center cursor-pointer"
+                      className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-[#005777] hover:bg-[#004761] text-white text-xs font-bold transition-colors shadow-xs active:scale-95 text-center cursor-pointer"
                     >
                       <span>ABA Mobile</span>
                       <ExternalLink className="w-3.5 h-3.5" />
                     </a>
                     <a
                       href={activeLiveKhqr.bakongDeeplink}
-                      className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-[#D61B22] text-white text-xs font-bold hover:bg-[#B3141A] transition-colors shadow-xs active:scale-95 text-center cursor-pointer"
+                      className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-[#D61B22] hover:bg-[#B3141A] text-white text-xs font-bold transition-colors shadow-xs active:scale-95 text-center cursor-pointer"
                     >
                       <span>Bakong App</span>
                       <ExternalLink className="w-3.5 h-3.5" />
                     </a>
                   </div>
 
+                  {/* Secondary Actions: Test Chime & ABA Web Checkout */}
+                  <div className="flex items-center justify-between w-full gap-2 pt-1 border-t border-stone-100">
+                    <button
+                      type="button"
+                      onClick={handleTestChime}
+                      className={`flex-1 py-2 px-2 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                        isPlayingChime
+                          ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                          : 'bg-[#FAF7F2] hover:bg-stone-100 text-stone-700 border border-[#DCD5C5]'
+                      }`}
+                    >
+                      <Volume2 className={`w-3.5 h-3.5 ${isPlayingChime ? 'text-emerald-700 animate-pulse' : 'text-stone-600'}`} />
+                      <span>{isPlayingChime ? (isKm ? 'កំពុងបន្លឺសំឡេង...' : 'Playing Chime...') : (isKm ? 'សាកល្បងសម្លេងទូទាត់' : 'Test Audio Chime')}</span>
+                    </button>
+
+                    <a
+                      href={activeLiveKhqr.paywayWebLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="py-2 px-3 rounded-xl text-[11px] font-bold bg-[#FAF7F2] hover:bg-stone-100 text-stone-700 border border-[#DCD5C5] transition-colors flex items-center gap-1 cursor-pointer"
+                    >
+                      <span>PayWay Link</span>
+                      <ExternalLink className="w-3 h-3 text-stone-500" />
+                    </a>
+                  </div>
+
                   {/* Trust note */}
                   <div className="text-[10px] text-stone-400 text-center font-sans leading-tight">
                     {isKm
-                      ? `QR Code ពិតប្រាកដដែលស្កេនបានជាមួយគ្រប់ធនាគារ (Lock ${activeLiveKhqr.amount}$ • គ្មាន Polling)`
-                      : `Real KHQR scannable by all Cambodian banks (Locked ${activeLiveKhqr.amount}$ • Zero Polling)`}
+                      ? 'QR Code នេះទាញចេញពី ABA Merchant Link ផ្ទាល់ (PayWay ID: 126092913522024) អាចស្កេនបានគ្រប់ពេល គ្មាន Polling និងគ្មានផុតកំណត់ 3 នាទីឡើយ។'
+                      : 'Generated directly from verified ABA Merchant Link (PayWay ID: 126092913522024). Permanent validity with zero polling overhead.'}
                   </div>
                 </div>
               </div>
