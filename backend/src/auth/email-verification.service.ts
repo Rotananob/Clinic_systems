@@ -16,8 +16,8 @@ export class EmailVerificationService {
   }
 
   private initTransporter() {
-    const user = process.env.GMAIL_USER || 'mmokompongcham@gmail.com';
-    const rawPass = process.env.GMAIL_APP_PASSWORD || 'jvtbivueeqmrvlag';
+    const user = process.env.GMAIL_USER || 'xflowstudio5@gmail.com';
+    const rawPass = process.env.GMAIL_APP_PASSWORD || 'lmzagtdkmojpfsfu';
     const pass = rawPass.replace(/\s+/g, '');
     const port = Number(process.env.SMTP_PORT) || 587;
     const isSecure = String(process.env.SMTP_SECURE ?? 'false') === 'true';
@@ -30,6 +30,9 @@ export class EmailVerificationService {
         auth: {
           user,
           pass,
+        },
+        tls: {
+          rejectUnauthorized: false,
         },
       });
     } catch {
@@ -54,7 +57,7 @@ export class EmailVerificationService {
   async sendVerificationCode(email: string): Promise<{ success: boolean; message: string }> {
     const normalizedEmail = email.trim().toLowerCase();
     const code = this.generateCode(normalizedEmail);
-    const user = process.env.GMAIL_USER || 'mmokompongcham@gmail.com';
+    const user = process.env.GMAIL_USER || 'xflowstudio5@gmail.com';
 
     const htmlContent = `
       <div style="font-family: Arial, sans-serif; background-color: #f7f4ee; padding: 24px; color: #1c1917;">
