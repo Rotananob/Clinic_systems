@@ -217,12 +217,12 @@ export const SubscriptionSettingsPanel: React.FC = () => {
 
           <div className="p-4 rounded-xl bg-[#FAF7F2] border border-stone-200 space-y-1">
             <div className="text-[11px] text-stone-500 font-medium">
-              {isKm ? 'កូតាអ្នកជំងឺប្រចាំខែ' : 'Monthly Patients'}
+              {isKm ? 'កូតាអ្នកជំងឺក្នុងមួយគណនី' : 'Patient Limit / Account'}
             </div>
             <div className="font-bold text-stone-900 text-sm font-mono">
               {subData?.maxMonthlyPatients === -1
                 ? 'Unlimited'
-                : `${subData?.maxMonthlyPatients || 500} នាក់`}
+                : `${subData?.maxMonthlyPatients || 1000} នាក់ / គណនី`}
             </div>
           </div>
         </div>
@@ -258,13 +258,13 @@ export const SubscriptionSettingsPanel: React.FC = () => {
               <div className="text-right">
                 <span className="text-sm font-extrabold text-teal-800">$5/mo</span>
                 <span className="block text-[10px] text-emerald-700 font-bold">
-                  {isKm ? '$48/ឆ្នាំ (ចុះ ២០%)' : '$48/yr (20% off)'}
+                  {isKm ? '$48/ឆ្នាំ ចុះ ២០%' : '$48/yr (20% off)'}
                 </span>
               </div>
             </div>
             <div className="text-[11px] text-stone-500 mt-2 space-y-1">
               <div>• 250 Dynamic KHQR / ថ្ងៃ</div>
-              <div>• 500 អ្នកជំងឺ / ខែ</div>
+              <div>• 1,000 អ្នកជំងឺ / គណនី</div>
               <div>• ម៉ាស៊ីនព្រីន 80mm & សំឡេងខ្មែរ</div>
             </div>
             <button
@@ -298,13 +298,13 @@ export const SubscriptionSettingsPanel: React.FC = () => {
               <div className="text-right">
                 <span className="text-sm font-extrabold text-teal-800">$8/mo</span>
                 <span className="block text-[10px] text-emerald-700 font-bold">
-                  {isKm ? '$76/ឆ្នាំ (ចុះ ២០%)' : '$76/yr (20% off)'}
+                  {isKm ? '$76/ឆ្នាំ ចុះ ២០%' : '$76/yr (20% off)'}
                 </span>
               </div>
             </div>
             <div className="text-[11px] text-stone-500 mt-2 space-y-1">
               <div>• 1,500 Dynamic KHQR / ថ្ងៃ</div>
-              <div>• មិនកំណត់ចំនួនអ្នកជំងឺ</div>
+              <div>• 5,000 អ្នកជំងឺ / គណនី</div>
               <div>• 4 Forum Topics Supergroup</div>
             </div>
             <button
@@ -335,7 +335,7 @@ export const SubscriptionSettingsPanel: React.FC = () => {
               <div className="text-right">
                 <span className="text-sm font-extrabold text-teal-800">$12/mo</span>
                 <span className="block text-[10px] text-emerald-700 font-bold">
-                  {isKm ? '$115/ឆ្នាំ (ចុះ ២០%)' : '$115/yr (20% off)'}
+                  {isKm ? '$115/ឆ្នាំ ចុះ ២០%' : '$115/yr (20% off)'}
                 </span>
               </div>
             </div>

@@ -48,7 +48,7 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
   const plans: PricingPlan[] = [
     {
       id: 'FREE',
-      nameKh: 'គម្រោងសាកល្បង (Free Starter)',
+      nameKh: 'គម្រោងសាកល្បង Free Starter',
       nameEn: 'Free Starter',
       descKh: 'ល្អបំផុតសម្រាប់គ្លីនិកតូច ឬគ្រូពេទ្យចាប់ផ្ដើមដំបូង ដើម្បីសាកល្បងមុខងារ។',
       descEn: 'Perfect for small medical cabinets or evaluation before upgrading.',
@@ -57,29 +57,29 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
       originalYearlyUsd: 0,
       yearlySavingsUsd: 0,
       equivalentMonthlyUsd: '0.00',
-      khqrLimitKh: '១០ ប្រតិបត្តិការ / ថ្ងៃ',
-      khqrLimitEn: '10 dynamic QR / day',
-      patientLimitKh: '៥០ នាក់ / ខែ',
-      patientLimitEn: '50 patients / month',
+      khqrLimitKh: '៥ ប្រតិបត្តិការ / ថ្ងៃ',
+      khqrLimitEn: '5 dynamic QR / day',
+      patientLimitKh: '៥០ នាក់ / គណនី',
+      patientLimitEn: '50 patients / account',
       staffLimitKh: '២ គណនីបុគ្គលិក',
       staffLimitEn: '2 staff accounts',
       featuresKh: [
-        'បង្កើត Dynamic KHQR (កូតា ១០ ដង/ថ្ងៃ)',
-        'កត់ត្រាអ្នកជំងឺមូលដ្ឋាន (៥០ នាក់/ខែ)',
+        'បង្កើត Dynamic KHQR កូតា ៥ ដង/ថ្ងៃ',
+        'កត់ត្រាអ្នកជំងឺមូលដ្ឋាន ៥០ នាក់ / គណនី',
         'ចេញវិក្កយបត្រអេឡិចត្រូនិច',
-        'ជំនួយតាមរយៈសហគមន៍ (Community Support)',
+        'ជំនួយតាមរយៈសហគមន៍ Community Support',
       ],
       featuresEn: [
-        'Dynamic KHQR (10 transactions / day)',
-        'Basic patient records (50 patients / mo)',
+        'Dynamic KHQR (5 transactions / day)',
+        'Basic patient records (50 patients / account)',
         'Electronic invoice generator',
         'Community documentation support',
       ],
     },
     {
       id: 'STARTER_5',
-      nameKh: 'គម្រោងស្ដង់ដារ (Clinic Starter)',
-      nameEn: 'Clinic Starter ($5/mo)',
+      nameKh: 'គម្រោងស្ដង់ដារ Clinic Starter',
+      nameEn: 'Clinic Starter 5$/mo',
       descKh: 'សម្រាប់គ្លីនិកឯកជនទូទៅដែលត្រូវការការទូទាត់ប្រាក់ KHQR និងការហៅអ្នកជំងឺជាសំឡេង។',
       descEn: 'For private outpatient practices requiring daily KHQR and voice queue calling.',
       monthlyUsd: 5,
@@ -89,21 +89,21 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
       equivalentMonthlyUsd: '4.00',
       khqrLimitKh: '២៥០ ប្រតិបត្តិការ / ថ្ងៃ',
       khqrLimitEn: '250 dynamic QR / day',
-      patientLimitKh: '៥០០ នាក់ / ខែ',
-      patientLimitEn: '500 patients / month',
+      patientLimitKh: '១,០០០ នាក់ / គណនី',
+      patientLimitEn: '1,000 patients / account',
       staffLimitKh: '៥ គណនីបុគ្គលិក',
       staffLimitEn: '5 staff accounts',
       featuresKh: [
-        'បង្កើត Dynamic KHQR (២៥០ ដង/ថ្ងៃ)',
-        'កត់ត្រាអ្នកជំងឺ ៥០០ នាក់/ខែ',
-        'ហៅអ្នកជំងឺជាសំឡេងខ្មែរ (Khmer Voice Queue)',
+        'បង្កើត Dynamic KHQR ២៥០ ដង/ថ្ងៃ',
+        'កត់ត្រាអ្នកជំងឺ ១,០០០ នាក់ / គណនី',
+        'ហៅអ្នកជំងឺជាសំឡេងខ្មែរ Khmer Voice Queue',
         'គ្រប់គ្រងស្តុកឱសថស្ថានកម្រិតស្តង់ដារ',
         'Telegram Bot ជូនដំណឹងស្វ័យប្រវត្ត',
         'បោះពុម្ពវិក្កយបត្រតាមម៉ាស៊ីន Thermal 80mm',
       ],
       featuresEn: [
         'Dynamic KHQR (250 transactions / day)',
-        '500 monthly patient registrations',
+        '1,000 patient registrations / account',
         'Khmer audio voice queue announcement',
         'Medication inventory & stock tracking',
         'Automated Telegram alert bot',
@@ -112,8 +112,8 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
     },
     {
       id: 'PRO_8',
-      nameKh: 'គម្រោងវិជ្ជាជីវៈ (Polyclinic Pro)',
-      nameEn: 'Polyclinic Pro ($8/mo)',
+      nameKh: 'គម្រោងវិជ្ជាជីវៈ Polyclinic Pro',
+      nameEn: 'Polyclinic Pro 8$/mo',
       descKh: 'គម្រោងពេញនិយមបំផុតសម្រាប់មជ្ឈមណ្ឌលវេជ្ជសាស្ត្រ និងគ្លីនិកពិគ្រោះជំងឺច្រើនបន្ទប់។',
       descEn: 'Most popular tier for high-volume polyclinics and multi-consultant practices.',
       monthlyUsd: 8,
@@ -124,22 +124,22 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
       isPopular: true,
       khqrLimitKh: '១,៥០០ ប្រតិបត្តិការ / ថ្ងៃ',
       khqrLimitEn: '1,500 dynamic QR / day',
-      patientLimitKh: 'មិនកំណត់ចំនួន (Unlimited)',
-      patientLimitEn: 'Unlimited patients / month',
+      patientLimitKh: '៥,០០០ នាក់ / គណនី',
+      patientLimitEn: '5,000 patients / account',
       staffLimitKh: '១៥ គណនីបុគ្គលិក',
       staffLimitEn: '15 staff accounts',
       featuresKh: [
-        'បង្កើត Dynamic KHQR (១,៥០០ ដង/ថ្ងៃ)',
-        'មិនកំណត់ចំនួនអ្នកជំងឺ (Unlimited Patients)',
-        'Telegram Forum Topics ដាច់ដោយឡែក (Payments, Queue, Pharmacy, Security)',
+        'បង្កើត Dynamic KHQR ១,៥០០ ដង/ថ្ងៃ',
+        'កត់ត្រាអ្នកជំងឺ ៥,០០០ នាក់ / គណនី',
+        'Telegram Forum Topics ដាច់ដោយឡែក ៤ បន្ទប់',
         'ហៅអ្នកជំងឺជាសំឡេងខ្មែរច្រើនបន្ទប់ពិគ្រោះ',
         'របាយការណ៍ហិរញ្ញវត្ថុ និងវិភាគទិន្នន័យកម្រិតខ្ពស់',
         'ភ្ជាប់ម៉ាស៊ីនព្រីន POS បណ្ដាញជាច្រើនគ្រឿង',
-        'ការគាំទ្រអាទិភាព ២៤/៧ (Priority Support)',
+        'ការគាំទ្រអាទិភាព ២៤/៧ Priority Support',
       ],
       featuresEn: [
         'Dynamic KHQR (1,500 transactions / day)',
-        'Unlimited monthly patient registry',
+        '5,000 patient registry / account',
         'Full Telegram Forum Topics (Payments, Queue, Pharmacy, Security)',
         'Multi-room Khmer voice queue calling',
         'Advanced financial analytics & export',
@@ -149,8 +149,8 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
     },
     {
       id: 'ENTERPRISE_12',
-      nameKh: 'គម្រោងមន្ទីរពេទ្យ (Hospital Enterprise)',
-      nameEn: 'Hospital Enterprise ($12/mo)',
+      nameKh: 'គម្រោងមន្ទីរពេទ្យ Hospital Enterprise',
+      nameEn: 'Hospital Enterprise 12$/mo',
       descKh: 'សម្រាប់មន្ទីរសម្រាកព្យាបាលធំៗ និងបណ្ដាញគ្លីនិកដែលត្រូវការកូតា Unlimited ពេញលេញ។',
       descEn: 'For hospitals and medical centers requiring full unlimited throughput and custom subdomain.',
       monthlyUsd: 12,
@@ -158,16 +158,16 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
       originalYearlyUsd: 144,
       yearlySavingsUsd: 29,
       equivalentMonthlyUsd: '9.58',
-      khqrLimitKh: 'មិនកំណត់ចំនួន (Unlimited)',
+      khqrLimitKh: 'មិនកំណត់ចំនួន Unlimited',
       khqrLimitEn: 'Unlimited dynamic QR / day',
-      patientLimitKh: 'មិនកំណត់ចំនួន (Unlimited)',
-      patientLimitEn: 'Unlimited patients / month',
-      staffLimitKh: 'មិនកំណត់ចំនួន (Unlimited)',
+      patientLimitKh: 'មិនកំណត់ចំនួន / គណនី',
+      patientLimitEn: 'Unlimited patients / account',
+      staffLimitKh: 'មិនកំណត់ចំនួន Unlimited',
       staffLimitEn: 'Unlimited staff accounts',
       featuresKh: [
-        'មិនកំណត់រាល់ប្រតិបត្តិការ KHQR (Unlimited Dynamic KHQR)',
-        'មិនកំណត់ចំនួនអ្នកជំងឺ និងបុគ្គលិក',
-        'ទទួលបាន Subdomain ផ្លូវការ (ឧ. yourclinic.clinic.com)',
+        'មិនកំណត់រាល់ប្រតិបត្តិការ KHQR Unlimited',
+        'មិនកំណត់ចំនួនអ្នកជំងឺ និងបុគ្គលិក / គណនី',
+        'ទទួលបាន Subdomain ផ្លូវការ ឧទាហរណ៍ yourclinic.clinic.com',
         'គ្រប់គ្រងសាខាច្រើន និងគ្រូពេទ្យឯកទេសច្រើនផ្នែក',
         'Dedicated Database Performance & Cloud Backup',
         'ជំនួយពិសេសផ្ទាល់តាមទូរស័ព្ទ និង Telegram 24/7 VIP SLA',
@@ -187,7 +187,7 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
     {
       qKh: 'តើខ្ញុំអាចចាប់ផ្ដើមប្រើប្រាស់គម្រោងដោយរបៀបណា?',
       qEn: 'How do I get started with a plan?',
-      aKh: 'លោកអ្នកគ្រាន់តែចុះឈ្មោះបង្កើតគណនីគ្លីនិក រួចបញ្ចូល Bakong Account ID ឬ ABA Merchant Link របស់លោកអ្នក (ដែលទទួលបាន Free ពី ABA Mobile App ក្នុងរយៈពេល ៣០ វិនាទី) នោះប្រព័ន្ធនឹងដំណើរការភ្លាមៗ។',
+      aKh: 'លោកអ្នកគ្រាន់តែចុះឈ្មោះបង្កើតគណនីគ្លីនិក រួចបញ្ចូល Bakong Account ID ឬ ABA Merchant Link របស់លោកអ្នក ដែលទទួលបាន Free ពី ABA Mobile App ក្នុងរយៈពេល ៣០ វិនាទី នោះប្រព័ន្ធនឹងដំណើរការភ្លាមៗ។',
       aEn: 'Simply register your clinic workspace, enter your Bakong Account ID or ABA Merchant Link (which you can generate for free from your ABA Mobile App in 30 seconds), and your workspace is live immediately.',
     },
     {
@@ -240,7 +240,7 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
                   : 'text-stone-600 hover:text-stone-900 font-bold'
               }`}
             >
-              {isKm ? 'បង់ប្រចាំខែ (Monthly)' : 'Billed Monthly'}
+              {isKm ? 'បង់ប្រចាំខែ' : 'Billed Monthly'}
             </button>
 
             <button
@@ -252,7 +252,7 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
                   : 'text-stone-600 hover:text-stone-900 font-bold'
               }`}
             >
-              <span>{isKm ? 'បង់ប្រចាំឆ្នាំ (Yearly Plan)' : 'Billed Annually'}</span>
+              <span>{isKm ? 'បង់ប្រចាំឆ្នាំ' : 'Billed Annually'}</span>
               <span
                 className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide transition-all ${
                   isAnnual
@@ -260,7 +260,7 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
                     : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
                 }`}
               >
-                {isKm ? 'ចុះ ២០% (សន្សំ ២ ខែ)' : 'Save 20% (2 Months Free)'}
+                {isKm ? 'ចុះ ២០% សន្សំ ២ ខែ' : 'Save 20% (2 Months Free)'}
               </span>
             </button>
           </div>
@@ -287,11 +287,11 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
               {isSelected ? (
                 <div className="absolute -top-3.5 right-6 px-3 py-1 bg-teal-800 text-white text-[10px] font-black rounded-full uppercase tracking-wider shadow-md flex items-center gap-1 border border-teal-900 animate-in fade-in zoom-in duration-150">
                   <Check className="w-3 h-3 stroke-[3]" />
-                  <span>{isKm ? 'បានជ្រើសរើស (Selected)' : 'Selected'}</span>
+                  <span>{isKm ? 'បានជ្រើសរើស' : 'Selected'}</span>
                 </div>
               ) : p.isPopular ? (
                 <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3 py-1 bg-teal-800 text-white text-[10px] font-bold rounded-full uppercase tracking-wider shadow-xs">
-                  {isKm ? 'ពេញនិយមបំផុត (Most Popular)' : 'Most Popular'}
+                  {isKm ? 'ពេញនិយមបំផុត' : 'Most Popular'}
                 </div>
               ) : null}
 
@@ -351,7 +351,7 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
                         </span>
                         <div className="flex flex-col">
                           <span className="text-xs font-black text-stone-900 leading-tight">
-                            {isKm ? '/ ឆ្នាំ (Yearly)' : '/ year'}
+                            {isKm ? '/ ឆ្នាំ' : '/ year'}
                           </span>
                           <span className="text-[10px] font-semibold text-emerald-700">
                             {isKm ? 'គិតជាឆ្នាំ' : 'Billed annually'}
@@ -385,7 +385,7 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
                           ${p.monthlyUsd}
                         </span>
                         <span className="text-xs font-bold text-stone-600">
-                          {isKm ? '/ ខែ (Monthly)' : '/ month'}
+                          {isKm ? '/ ខែ' : '/ month'}
                         </span>
                       </div>
                       <div className="mt-1 flex items-center justify-between text-[11px] text-stone-500 font-medium">
@@ -466,10 +466,10 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
                       <Check className="w-3.5 h-3.5 stroke-[3]" />
                       <span className="font-black">
                         {p.id === 'FREE'
-                          ? isKm ? 'បានជ្រើសរើស ✓ ចាប់ផ្ដើម Free' : 'Selected ✓ Start Free'
+                          ? isKm ? 'បានជ្រើសរើស ចាប់ផ្ដើម Free' : 'Selected Start Free'
                           : isAnnual
-                          ? isKm ? `បានជ្រើសរើស ✓ ចុះឈ្មោះ ($${p.yearlyUsd}/ឆ្នាំ)` : `Selected ✓ Register ($${p.yearlyUsd}/yr)`
-                          : isKm ? `បានជ្រើសរើស ✓ ចុះឈ្មោះ ($${p.monthlyUsd}/ខែ)` : `Selected ✓ Register ($${p.monthlyUsd}/mo)`}
+                          ? isKm ? `បានជ្រើសរើស ចុះឈ្មោះ ${p.yearlyUsd}/ឆ្នាំ` : `Selected Register (${p.yearlyUsd}/yr)`
+                          : isKm ? `បានជ្រើសរើស ចុះឈ្មោះ ${p.monthlyUsd}/ខែ` : `Selected Register (${p.monthlyUsd}/mo)`}
                       </span>
                     </>
                   ) : (
@@ -478,8 +478,8 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
                         {p.id === 'FREE'
                           ? isKm ? 'ចាប់ផ្ដើមដោយឥតគិតថ្លៃ' : 'Start Free Trial'
                           : isAnnual
-                          ? isKm ? `ជ្រើសរើស ($${p.yearlyUsd}/ឆ្នាំ)` : `Select Plan ($${p.yearlyUsd}/yr)`
-                          : isKm ? `ជ្រើសរើស ($${p.monthlyUsd}/ខែ)` : `Select Plan ($${p.monthlyUsd}/mo)`}
+                          ? isKm ? `ជ្រើសរើស ${p.yearlyUsd}/ឆ្នាំ` : `Select Plan (${p.yearlyUsd}/yr)`
+                          : isKm ? `ជ្រើសរើស ${p.monthlyUsd}/ខែ` : `Select Plan (${p.monthlyUsd}/mo)`}
                       </span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </>
@@ -497,7 +497,7 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
           <div className="bg-[#FDFBF7] rounded-3xl border border-[#E3DBCB] shadow-xs overflow-hidden">
             <div className="p-6 border-b border-[#EAE3D5]">
               <h3 className="text-lg font-bold text-stone-900">
-                {isKm ? 'តារាងប្រៀបធៀបមុខងារលម្អិត (Feature Comparison Matrix)' : 'Detailed Feature Comparison'}
+                {isKm ? 'តារាងប្រៀបធៀបមុខងារលម្អិត' : 'Detailed Feature Comparison Matrix'}
               </h3>
               <p className="text-xs text-stone-500 mt-0.5">
                 {isKm
@@ -512,24 +512,24 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
                   <tr>
                     <th className="p-4 w-1/3">{isKm ? 'លក្ខណៈពិសេស' : 'Capability'}</th>
                     <th className="p-4 text-center">Free Starter</th>
-                    <th className="p-4 text-center">Clinic Starter ($5)</th>
-                    <th className="p-4 text-center bg-teal-50/50 text-teal-900 font-extrabold">Polyclinic Pro ($8)</th>
-                    <th className="p-4 text-center">Hospital Enterprise ($12)</th>
+                    <th className="p-4 text-center">Clinic Starter $5</th>
+                    <th className="p-4 text-center bg-teal-50/50 text-teal-900 font-extrabold">Polyclinic Pro $8</th>
+                    <th className="p-4 text-center">Hospital Enterprise $12</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#EAE3D5]">
                   <tr>
                     <td className="p-4 font-semibold">{isKm ? 'កូតាប្រតិបត្តិការ KHQR' : 'Dynamic KHQR Daily Limit'}</td>
-                    <td className="p-4 text-center font-mono">10 / ថ្ងៃ</td>
+                    <td className="p-4 text-center font-mono">5 / ថ្ងៃ</td>
                     <td className="p-4 text-center font-mono font-bold text-teal-800">250 / ថ្ងៃ</td>
                     <td className="p-4 text-center font-mono font-bold text-teal-800 bg-teal-50/30">1,500 / ថ្ងៃ</td>
                     <td className="p-4 text-center font-mono font-bold text-teal-800">Unlimited</td>
                   </tr>
                   <tr>
-                    <td className="p-4 font-semibold">{isKm ? 'កូតាអ្នកជំងឺប្រចាំខែ' : 'Monthly Patients'}</td>
-                    <td className="p-4 text-center font-mono">50 នាក់</td>
-                    <td className="p-4 text-center font-mono">500 នាក់</td>
-                    <td className="p-4 text-center font-mono font-bold text-teal-800 bg-teal-50/30">Unlimited</td>
+                    <td className="p-4 font-semibold">{isKm ? 'កូតាអ្នកជំងឺក្នុងមួយគណនី' : 'Patient Records / Account'}</td>
+                    <td className="p-4 text-center font-mono">50 នាក់ / គណនី</td>
+                    <td className="p-4 text-center font-mono">1,000 នាក់ / គណនី</td>
+                    <td className="p-4 text-center font-mono font-bold text-teal-800 bg-teal-50/30">5,000 នាក់ / គណនី</td>
                     <td className="p-4 text-center font-mono font-bold text-teal-800">Unlimited</td>
                   </tr>
                   <tr>
@@ -540,7 +540,7 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
                     <td className="p-4 text-center font-mono font-bold text-teal-800">Unlimited</td>
                   </tr>
                   <tr>
-                    <td className="p-4 font-semibold">{isKm ? 'ហៅអ្នកជំងឺជាសំឡេងខ្មែរ (Voice)' : 'Khmer Audio Voice Queue'}</td>
+                    <td className="p-4 font-semibold">{isKm ? 'ហៅអ្នកជំងឺជាសំឡេងខ្មែរ' : 'Khmer Audio Voice Queue'}</td>
                     <td className="p-4 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
                     <td className="p-4 text-center text-teal-800"><Check className="w-4 h-4 mx-auto font-bold" /></td>
                     <td className="p-4 text-center text-teal-800 bg-teal-50/30"><Check className="w-4 h-4 mx-auto font-bold" /></td>

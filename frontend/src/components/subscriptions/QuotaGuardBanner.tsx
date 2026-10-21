@@ -206,8 +206,8 @@ export const QuotaGuardBanner: React.FC<QuotaGuardBannerProps> = ({
           )}
 
           {renderProgressBar(
-            'អ្នកជំងឺប្រចាំខែ',
-            'Monthly Patients',
+            'អ្នកជំងឺក្នុងមួយគណនី',
+            'Patients / Account',
             monthlyPatients,
             <Users className="w-3.5 h-3.5 text-stone-500" />,
           )}

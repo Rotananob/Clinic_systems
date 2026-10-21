@@ -30,6 +30,14 @@ export interface QuotaStatus {
     isApproachingLimit: boolean;
     isExceeded: boolean;
   };
+  accountPatients?: {
+    used: number;
+    limit: number;
+    remaining: number;
+    percent: number;
+    isApproachingLimit: boolean;
+    isExceeded: boolean;
+  };
   staffAccounts: {
     used: number;
     limit: number;
@@ -179,7 +187,7 @@ export class QuotaGuardService {
             : `លោកអ្នកបានប្រើប្រាស់កូតា Dynamic KHQR ពេញ ${maxLimit}/${maxLimit} សម្រាប់ថ្ងៃនេះហើយ។ សូម Upgrade គម្រោង Polyclinic Pro ឬ Hospital Enterprise ដើម្បីទទួលបានកូតាបន្ថែម។`,
           messageEn: effective.isExpired
             ? `Your subscription has expired and reverted to Free tier (${maxLimit} daily KHQR). Please renew to unlock full quota.`
-            : `You have reached your daily limit of ${maxLimit} dynamic KHQR transactions. Please upgrade to Polyclinic Pro ($8/mo) or Hospital Enterprise ($12/mo) for higher limits.`,
+            : `You have reached your daily limit of ${maxLimit} dynamic KHQR transactions. Please upgrade to Polyclinic Pro or Hospital Enterprise for higher limits.`,
         },
         HttpStatus.TOO_MANY_REQUESTS,
       );
@@ -198,10 +206,10 @@ export class QuotaGuardService {
   }
 
   /**
-   * Step 19: Enforces monthly patient intake registration limits per plan tier.
-   * - Plan Free: 50 / month
-   * - Plan $5 (Starter): 500 / month
-   * - Plan $8 (Pro): Unlimited (-1)
+   * Step 19: Enforces patient intake registration limits per account tier.
+   * - Plan Free: 50 / account
+   * - Plan $5 (Starter): 1,000 / account
+   * - Plan $8 (Pro): 5,000 / account
    * - Plan $12 (Enterprise): Unlimited (-1)
    */
   async checkAndEnforcePatientQuota(tenantId: string): Promise<{ warning?: boolean; message?: string }> {
@@ -231,36 +239,33 @@ export class QuotaGuardService {
       return {};
     }
 
-    const cycleStart = this.getStartOfCurrentCycle();
-
     const patientCount = await this.prisma.patient.count({
       where: {
         tenantId: tenant.id,
-        createdAt: { gte: cycleStart },
       },
     });
 
     if (patientCount >= maxLimit) {
       this.logger.warn(
-        `Patient quota exceeded for tenant ${tenant.slug} (${tenant.planTier}, effective: ${effective.planTier}): ${patientCount}/${maxLimit} monthly patients registered`,
+        `Patient quota exceeded for tenant ${tenant.slug} (${tenant.planTier}, effective: ${effective.planTier}): ${patientCount}/${maxLimit} patients registered in account`,
       );
 
       throw new HttpException(
         {
           statusCode: HttpStatus.TOO_MANY_REQUESTS,
           error: 'QUOTA_EXCEEDED',
-          quotaType: 'MONTHLY_PATIENTS',
+          quotaType: 'ACCOUNT_PATIENTS',
           currentUsage: patientCount,
           maxLimit,
           planTier: effective.planTier,
           isSubscriptionExpired: effective.isExpired,
-          upgradeRecommended: 'PRO_8',
+          upgradeRecommended: effective.planTier === PlanTier.FREE ? 'STARTER_5' : effective.planTier === PlanTier.STARTER_5 ? 'PRO_8' : 'ENTERPRISE_12',
           messageKh: effective.isExpired
-            ? `គម្រោងសេវាកម្មបានផុតកំណត់។ លោកអ្នកបានចុះឈ្មោះអ្នកជំងឺដល់កម្រិតកំណត់ ${maxLimit}/${maxLimit} នាក់ក្នុងខែនេះ។ សូមបន្តសុពលភាពគម្រោងឡើងវិញ។`
-            : `លោកអ្នកបានចុះឈ្មោះអ្នកជំងឺដល់កម្រិតកំណត់ ${maxLimit}/${maxLimit} នាក់ក្នុងខែនេះហើយ។ សូម Upgrade គម្រោង Polyclinic Pro ($8/ខែ) ដើម្បីទទួលបាន Unlimited អ្នកជំងឺ។`,
+            ? `គម្រោងសេវាកម្មបានផុតកំណត់។ លោកអ្នកបានចុះឈ្មោះអ្នកជំងឺដល់កម្រិតកំណត់ ${maxLimit}/${maxLimit} នាក់ក្នុងមួយគណនី។ សូមបន្តសុពលភាពគម្រោងឡើងវិញ។`
+            : `លោកអ្នកបានចុះឈ្មោះអ្នកជំងឺដល់កម្រិតកំណត់ ${maxLimit}/${maxLimit} នាក់ក្នុងមួយគណនីហើយ។ សូម Upgrade គម្រោង Polyclinic Pro ឬ Hospital Enterprise ដើម្បីទទួលបានកូតាបន្ថែម។`,
           messageEn: effective.isExpired
-            ? `Your subscription has expired and patient intake is capped at ${maxLimit}/month. Please renew your paid plan.`
-            : `You have reached your monthly limit of ${maxLimit} registered patients. Please upgrade to Polyclinic Pro ($8/mo) for unlimited patient records.`,
+            ? `Your subscription has expired and patient intake is capped at ${maxLimit} per account. Please renew your paid plan.`
+            : `You have reached your limit of ${maxLimit} registered patients per account. Please upgrade to Polyclinic Pro or Hospital Enterprise for higher limits.`,
         },
         HttpStatus.TOO_MANY_REQUESTS,
       );
@@ -269,7 +274,7 @@ export class QuotaGuardService {
     if (patientCount >= Math.floor(maxLimit * 0.8)) {
       return {
         warning: true,
-        message: `You have registered ${patientCount}/${maxLimit} monthly patients. Consider upgrading to Polyclinic Pro for unlimited patients.`,
+        message: `You have registered ${patientCount}/${maxLimit} patients in this account. Consider upgrading for higher capacity.`,
       };
     }
 
@@ -400,7 +405,7 @@ export class QuotaGuardService {
     const startOfToday = this.getStartOfTodayCambodia();
     const cycleStart = this.getStartOfCurrentCycle();
 
-    const [todayKhqrCount, monthlyPatientCount, staffCount] = await Promise.all([
+    const [todayKhqrCount, patientCount, staffCount] = await Promise.all([
       this.prisma.paymentTransaction.count({
         where: {
           invoice: { tenantId: tenant.id },
@@ -410,7 +415,6 @@ export class QuotaGuardService {
       this.prisma.patient.count({
         where: {
           tenantId: tenant.id,
-          createdAt: { gte: cycleStart },
         },
       }),
       this.prisma.user.count({
@@ -453,13 +457,16 @@ export class QuotaGuardService {
       };
     };
 
+    const patientMetric = calcMetric(patientCount, patientLimit);
+
     return {
       planTier: effective.planTier,
       planNameEn: planConfig.nameEn,
       planNameKh: planConfig.nameKh,
       isExpired: effective.isExpired,
       dailyKhqr: calcMetric(todayKhqrCount, khqrLimit),
-      monthlyPatients: calcMetric(monthlyPatientCount, patientLimit),
+      monthlyPatients: patientMetric,
+      accountPatients: patientMetric,
       staffAccounts: calcMetric(staffCount, staffLimit),
     };
   }

@@ -124,7 +124,7 @@ export class SubscriptionInvoiceService {
     const khqrQuotaDisplay =
       planConfig.maxDailyKhqr === -1 ? 'Unlimited' : `${planConfig.maxDailyKhqr} / ថ្ងៃ`;
     const patientQuotaDisplay =
-      planConfig.maxMonthlyPatients === -1 ? 'Unlimited' : `${planConfig.maxMonthlyPatients} នាក់ / ខែ`;
+      planConfig.maxMonthlyPatients === -1 ? 'Unlimited' : `${planConfig.maxMonthlyPatients} នាក់ / គណនី`;
 
     return {
       invoiceNumber: subscription.invoiceNumber || `SUB-${subscription.id.slice(0, 8)}`,

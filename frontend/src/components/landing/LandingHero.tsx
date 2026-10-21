@@ -244,8 +244,8 @@ export const LandingHero: React.FC = () => {
                 </span>
                 <span className="font-sans text-[11px] sm:text-xs text-left">
                   {isKm
-                    ? 'ចុះឈ្មោះថ្ងៃនេះ ទទួលបានការប្រើប្រាស់ Free Starter ជារៀងរហូត (10 KHQR/ថ្ងៃ) + សាកល្បង AI Gemini & Voice Queue ១៤ ថ្ងៃពេញ!'
-                    : 'Claim Free Starter Tier forever (10 KHQR/day) + 14-day full AI Gemini & Voice Queue trial!'}
+                    ? 'ចុះឈ្មោះថ្ងៃនេះ ទទួលបានការប្រើប្រាស់ Free Starter ជារៀងរហូត ៥ KHQR ក្នុងមួយថ្ងៃ + សាកល្បង AI Gemini និង Voice Queue ១៤ ថ្ងៃពេញ!'
+                    : 'Claim Free Starter Tier forever 5 KHQR/day + 14-day full AI Gemini & Voice Queue trial!'}
                 </span>
               </div>
               <span className="text-[10px] font-bold text-teal-900 bg-white px-2 py-0.5 rounded-xl border border-stone-200 shrink-0">
@@ -333,7 +333,7 @@ export const LandingHero: React.FC = () => {
                   </span>
                 </div>
                 <span className="text-[10px] text-emerald-700 font-bold hidden sm:inline">
-                  Free 10 KHQR/day
+                  Free 5 KHQR/day
                 </span>
               </div>
             </form>

@@ -195,7 +195,7 @@ describe('100% Anti-Bypass Guard & Strict Settlement Validation Test Suite', () 
     assert.equal(effective.isExpired, true, 'Must flag isExpired as true');
 
     const freeLimits = SAAS_PLANS[effective.planTier];
-    assert.equal(freeLimits.maxDailyKhqr, 10, 'Free tier limit must match FREE plan quota');
+    assert.equal(freeLimits.maxDailyKhqr, 5, 'Free tier limit must match FREE plan quota');
     assert.equal(freeLimits.maxMonthlyPatients, 50, 'Free tier limit must be 50 patients/mo');
     assert.equal(freeLimits.maxStaffAccounts, 2, 'Free tier limit must be 2 staff members');
   });
@@ -215,7 +215,7 @@ describe('100% Anti-Bypass Guard & Strict Settlement Validation Test Suite', () 
 
     const proLimits = SAAS_PLANS[effective.planTier];
     assert.equal(proLimits.maxDailyKhqr, 1500, 'PRO_8 limit must be 1,500 KHQR/day');
-    assert.equal(proLimits.maxMonthlyPatients, -1, 'PRO_8 limit must be unlimited patients');
+    assert.equal(proLimits.maxMonthlyPatients, 5000, 'PRO_8 limit must be 5000 patients');
   });
 
   test('should demote tenant marked as EXPIRED even if currentPeriodEnd is missing', () => {

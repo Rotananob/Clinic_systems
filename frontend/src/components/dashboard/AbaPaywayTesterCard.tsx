@@ -45,7 +45,7 @@ export const AbaPaywayTesterCard: React.FC = () => {
 
   // Quota tracking
   const [usageCount, setUsageCount] = useState<number>(0);
-  const [maxQuota, setMaxQuota] = useState<number>(10);
+  const [maxQuota, setMaxQuota] = useState<number>(5);
   const planTier = tenant?.planTier || 'FREE';
   const isFreePlan = planTier === 'FREE';
 
@@ -72,7 +72,7 @@ export const AbaPaywayTesterCard: React.FC = () => {
       const res = await api.payments.getQuotaStatus();
       if (res?.khqr) {
         setUsageCount(res.khqr.usedToday || 0);
-        setMaxQuota(isFreePlan ? 10 : (res.khqr.limit || 10));
+        setMaxQuota(isFreePlan ? 5 : (res.khqr.limit || 5));
       }
     } catch {
       // Default to 0 usage
@@ -136,11 +136,11 @@ export const AbaPaywayTesterCard: React.FC = () => {
       return;
     }
 
-    if (isFreePlan && usageCount >= 10) {
+    if (isFreePlan && usageCount >= 5) {
       setGenerateError(
         isKm
-          ? 'លោកអ្នកបានប្រើប្រាស់កូតា Dynamic KHQR ពេញ ១០/១០ សម្រាប់ថ្ងៃនេះហើយ (គម្រោង Free)។ សូម Upgrade គម្រោងដើម្បីទទួលបានកូតាបន្ថែម!'
-          : 'Free plan limit reached: 10/10 dynamic KHQR transactions used today. Please upgrade for higher quota!'
+          ? 'លោកអ្នកបានប្រើប្រាស់កូតា Dynamic KHQR ពេញ ៥/៥ សម្រាប់ថ្ងៃនេះហើយ សម្រាប់គម្រោង Free។ សូម Upgrade គម្រោងដើម្បីទទួលបានកូតាបន្ថែម!'
+          : 'Free plan limit reached: 5/5 dynamic KHQR transactions used today. Please upgrade for higher quota!'
       );
       return;
     }
@@ -169,7 +169,7 @@ export const AbaPaywayTesterCard: React.FC = () => {
     }
   };
 
-  const isQuotaExceeded = isFreePlan && usageCount >= 10;
+  const isQuotaExceeded = isFreePlan && usageCount >= 5;
   const isConfigured = Boolean(paywayUrl && paywayUrl.includes('link.payway.com.kh'));
 
   return (
@@ -203,12 +203,12 @@ export const AbaPaywayTesterCard: React.FC = () => {
         <div className="bg-black/30 border border-white/15 px-3.5 py-2 rounded-2xl shrink-0 text-left sm:text-right">
           <div className="text-[10px] font-medium text-teal-200/90 uppercase tracking-wider">
             {isFreePlan
-              ? (isKm ? 'គម្រោង Free (កំណត់ ១០ KHQR/ថ្ងៃ)' : 'Free Tier (10 KHQR/day Limit)')
+              ? (isKm ? 'គម្រោង Free - កំណត់ ៥ KHQR/ថ្ងៃ' : 'Free Tier (5 KHQR/day Limit)')
               : (isKm ? `គម្រោង ${planTier}` : `Plan ${planTier}`)}
           </div>
           <div className="text-xs font-bold text-white flex items-center gap-1.5 mt-0.5">
             <span className={isQuotaExceeded ? 'text-rose-400 font-extrabold' : 'text-emerald-400'}>
-              {usageCount} / {isFreePlan ? 10 : maxQuota} KHQR
+              {usageCount} / {isFreePlan ? 5 : maxQuota} KHQR
             </span>
             <span className="text-[10px] text-stone-300 font-normal">
               {isKm ? 'ថ្ងៃនេះ' : 'today'}
@@ -405,7 +405,7 @@ export const AbaPaywayTesterCard: React.FC = () => {
                     <span>{isKm ? 'កំពុងបង្កើត KHQR...' : 'Generating KHQR...'}</span>
                   </>
                 ) : isQuotaExceeded ? (
-                  <span>{isKm ? 'កូតាពេញ ១០/១០ (Free Limit)' : 'Daily Quota Exceeded (10/10)'}</span>
+                  <span>{isKm ? 'កូតាពេញ ៥/៥ សម្រាប់គម្រោង Free' : 'Daily Quota Exceeded (5/5)'}</span>
                 ) : (
                   <>
                     <Zap className="w-3.5 h-3.5 text-amber-300" />
@@ -420,19 +420,19 @@ export const AbaPaywayTesterCard: React.FC = () => {
                   <div className="flex items-center justify-between text-[10px] text-stone-500 font-medium">
                     <span>{isKm ? 'កូតា Free ថ្ងៃនេះ' : 'Free Quota Today'}</span>
                     <span className="font-bold font-mono text-stone-700">
-                      {usageCount} / 10 KHQR
+                      {usageCount} / 5 KHQR
                     </span>
                   </div>
                   <div className="w-full h-1.5 bg-stone-100 rounded-full overflow-hidden">
                     <div
                       className={`h-full transition-all duration-300 ${
-                        usageCount >= 10
+                        usageCount >= 5
                           ? 'bg-rose-500'
-                          : usageCount >= 8
+                          : usageCount >= 4
                           ? 'bg-amber-500'
                           : 'bg-emerald-500'
                       }`}
-                      style={{ width: `${Math.min(100, (usageCount / 10) * 100)}%` }}
+                      style={{ width: `${Math.min(100, (usageCount / 5) * 100)}%` }}
                     />
                   </div>
                 </div>
@@ -449,7 +449,7 @@ export const AbaPaywayTesterCard: React.FC = () => {
                     </span>
                     <span className="text-[10px] text-emerald-700 font-semibold flex items-center gap-1">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
-                      {isKm ? 'ABA Live Gateway KHQR (ស្កេនបានពិតៗ)' : 'Live ABA Gateway KHQR (100% Scannable)'}
+                      {isKm ? 'ABA Live Gateway KHQR ស្កេនបានពិតៗ' : 'Live ABA Gateway KHQR (100% Scannable)'}
                     </span>
                   </div>
                   <span className="font-bold font-mono text-teal-800 text-sm">

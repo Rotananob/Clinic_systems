@@ -52,8 +52,8 @@ const PLAN_OPTIONS: PlanOption[] = [
     annualUsd: 48,
     khqrQuotaKh: '២៥០ ប្រតិបត្តិការ / ថ្ងៃ',
     khqrQuotaEn: '250 dynamic QR / day',
-    patientQuotaKh: '៥០០ នាក់ / ខែ',
-    patientQuotaEn: '500 patients / month',
+    patientQuotaKh: '១,០០០ នាក់ / គណនី',
+    patientQuotaEn: '1,000 patients / account',
   },
   {
     id: 'PRO_8',
@@ -63,8 +63,8 @@ const PLAN_OPTIONS: PlanOption[] = [
     annualUsd: 76,
     khqrQuotaKh: '១,៥០០ ប្រតិបត្តិការ / ថ្ងៃ',
     khqrQuotaEn: '1,500 dynamic QR / day',
-    patientQuotaKh: 'មិនកំណត់ចំនួនអ្នកជំងឺ',
-    patientQuotaEn: 'Unlimited patients',
+    patientQuotaKh: '៥,០០០ នាក់ / គណនី',
+    patientQuotaEn: '5,000 patients / account',
   },
   {
     id: 'ENTERPRISE_12',

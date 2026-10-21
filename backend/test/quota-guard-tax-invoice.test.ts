@@ -6,7 +6,7 @@ import { SAAS_PLANS } from '../src/common/constants/plans.constant.ts';
 describe('Step 19: Automated Quota Guard Unit Tests', () => {
   test('should enforce Free Plan daily KHQR limit of 5 and monthly patients of 50', () => {
     const freePlan = SAAS_PLANS.FREE;
-    assert.equal(freePlan.maxDailyKhqr, 10);
+    assert.equal(freePlan.maxDailyKhqr, 5);
     assert.equal(freePlan.maxMonthlyPatients, 50);
     assert.equal(freePlan.maxStaffAccounts, 2);
   });
@@ -14,14 +14,14 @@ describe('Step 19: Automated Quota Guard Unit Tests', () => {
   test('should enforce Starter $5 Plan daily KHQR limit of 250 and monthly patients of 500', () => {
     const starterPlan = SAAS_PLANS.STARTER_5;
     assert.equal(starterPlan.maxDailyKhqr, 250);
-    assert.equal(starterPlan.maxMonthlyPatients, 500);
+    assert.equal(starterPlan.maxMonthlyPatients, 1000);
     assert.equal(starterPlan.maxStaffAccounts, 5);
   });
 
   test('should enforce Pro $8 Plan daily KHQR limit of 1500 and unlimited patients', () => {
     const proPlan = SAAS_PLANS.PRO_8;
     assert.equal(proPlan.maxDailyKhqr, 1500);
-    assert.equal(proPlan.maxMonthlyPatients, -1);
+    assert.equal(proPlan.maxMonthlyPatients, 5000);
     assert.equal(proPlan.maxStaffAccounts, 15);
   });
 

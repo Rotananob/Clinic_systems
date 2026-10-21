@@ -726,7 +726,7 @@ export class PlatformMasterBotService implements OnModuleInit, OnModuleDestroy {
               `<b>[សេចក្ដីជូនដំណឹងប្រព័ន្ធ] ${tenant.clinicNameKh}</b>`,
               `• គម្រោងសេវាកម្មត្រូវបានកែប្រែទៅជា: <b>${planConfig.nameEn} (${targetTier})</b>`,
               `• កូតាប្រតិបត្តិការ KHQR: ${planConfig.maxDailyKhqr === -1 ? 'Unlimited' : planConfig.maxDailyKhqr + ' / ថ្ងៃ'}`,
-              `• កូតាអ្នកជំងឺ: ${planConfig.maxMonthlyPatients === -1 ? 'Unlimited' : planConfig.maxMonthlyPatients + ' / ខែ'}`,
+              `• កូតាអ្នកជំងឺ: ${planConfig.maxMonthlyPatients === -1 ? 'Unlimited' : planConfig.maxMonthlyPatients + ' / គណនី'}`,
             ].join('\n'),
             tenant.id,
           ).catch(() => {});
@@ -739,7 +739,7 @@ export class PlatformMasterBotService implements OnModuleInit, OnModuleDestroy {
           `Previous Tier: <code>${previousTier}</code>`,
           `New Plan Tier: <b>${targetTier} (${planConfig.nameEn})</b>`,
           `Daily Dynamic KHQR: <b>${planConfig.maxDailyKhqr === -1 ? 'Unlimited' : planConfig.maxDailyKhqr}</b>`,
-          `Monthly Patients: <b>${planConfig.maxMonthlyPatients === -1 ? 'Unlimited' : planConfig.maxMonthlyPatients}</b>`,
+          `Patients / Account: <b>${planConfig.maxMonthlyPatients === -1 ? 'Unlimited' : planConfig.maxMonthlyPatients}</b>`,
           'Quotas & Limits: <b>SYNCHRONIZED</b>',
           '----------------------------------------',
         ].join('\n');

@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 
 // Plan tiers & quotas mirroring SAAS_PLANS
 const SAAS_PLANS = {
-  FREE: { maxMonthlyPatients: 50, maxDailyKhqr: 10, maxStaffAccounts: 2 },
-  STARTER_5: { maxMonthlyPatients: 500, maxDailyKhqr: 250, maxStaffAccounts: 5 },
-  PRO_8: { maxMonthlyPatients: -1, maxDailyKhqr: 1500, maxStaffAccounts: 15 },
+  FREE: { maxMonthlyPatients: 50, maxDailyKhqr: 5, maxStaffAccounts: 2 },
+  STARTER_5: { maxMonthlyPatients: 1000, maxDailyKhqr: 250, maxStaffAccounts: 5 },
+  PRO_8: { maxMonthlyPatients: 5000, maxDailyKhqr: 1500, maxStaffAccounts: 15 },
   ENTERPRISE_12: { maxMonthlyPatients: -1, maxDailyKhqr: -1, maxStaffAccounts: -1 },
 };
 
@@ -232,7 +232,7 @@ class MasterBotCommandProcessor {
         `Previous Tier: <code>${previousTier}</code>`,
         `New Plan Tier: <b>${rawTier}</b>`,
         `Daily Dynamic KHQR: <b>${planCfg.maxDailyKhqr === -1 ? 'Unlimited' : planCfg.maxDailyKhqr}</b>`,
-        `Monthly Patients: <b>${planCfg.maxMonthlyPatients === -1 ? 'Unlimited' : planCfg.maxMonthlyPatients}</b>`,
+        `Patients / Account: <b>${planCfg.maxMonthlyPatients === -1 ? 'Unlimited' : planCfg.maxMonthlyPatients}</b>`,
         'Quotas & Limits: <b>SYNCHRONIZED</b>',
         '----------------------------------------',
       ].join('\n');
@@ -406,14 +406,14 @@ describe('Step 9 & Step 10: Platform Control System & Dual-Bot Profile Lock Test
     assert.ok(res.includes('[SUCCESS: CLINIC TIER UPDATED]'));
     assert.ok(res.includes('New Plan Tier: <b>PRO_8</b>'));
     assert.ok(res.includes('Daily Dynamic KHQR: <b>1500</b>'));
-    assert.ok(res.includes('Monthly Patients: <b>Unlimited</b>'));
+    assert.ok(res.includes('Patients / Account: <b>5000</b>'));
     assert.equal(emojiRegex.test(res), false);
 
     // Verify database state synchronized
     const vanna = db.findTenantBySlugOrId('vanna');
     assert.equal(vanna?.planTier, 'PRO_8');
     assert.equal(vanna?.maxDailyKhqr, 1500);
-    assert.equal(vanna?.maxMonthlyPatients, -1);
+    assert.equal(vanna?.maxMonthlyPatients, 5000);
 
     // Verify audit log
     const log = db.auditLogs.find((l) => l.action === 'TENANT_TIER_CHANGED');

@@ -418,7 +418,7 @@ export const en = {
     daysUnit: 'days',
     currentPeriodEnd: 'Next Renewal Date',
     dailyKhqrQuota: 'Daily Dynamic KHQR Quota',
-    monthlyPatientQuota: 'Monthly Patient Limit',
+    monthlyPatientQuota: 'Patient Limit / Account',
     staffLimit: 'Staff Account Limit',
     upgradeBtn: 'Upgrade / Renew Subscription',
     billingHistory: 'Subscription Billing History',
@@ -447,7 +447,7 @@ export const en = {
     quotaGuard: {
       title: 'Operational Quota & Usage Guard',
       dailyKhqr: 'Daily Dynamic KHQR',
-      monthlyPatients: 'Monthly Patients',
+      monthlyPatients: 'Patients / Account',
       staffAccounts: 'Staff Accounts',
       approachingWarning: 'Notice: Operational Quota Approaching Limit (>= 80%)',
       exceededWarning: 'Notice: Operational Quota Limit Reached',

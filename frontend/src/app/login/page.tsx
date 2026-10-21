@@ -276,7 +276,7 @@ export default function LoginPage() {
           <div className="flex items-center justify-between text-[11px] text-stone-500 font-sans px-1">
             <span>{isKm ? 'ដំឡើងត្រឹម 60 វិនាទី' : '60-second setup'}</span>
             <span className="text-stone-300">•</span>
-            <span>{isKm ? '10 KHQR ក្នុងមួយថ្ងៃ' : '10 KHQR daily'}</span>
+            <span>{isKm ? '5 KHQR ក្នុងមួយថ្ងៃ' : '5 KHQR daily'}</span>
             <span className="text-stone-300">•</span>
             <span>{isKm ? 'គ្មានកាតធនាគារ' : 'No credit card'}</span>
           </div>

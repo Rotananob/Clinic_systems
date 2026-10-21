@@ -18,7 +18,7 @@ interface PlanConfig {
 const SAAS_PLANS: Record<string, PlanConfig> = {
   FREE: {
     id: 'FREE',
-    nameKh: 'គម្រោងសាកល្បង (Free Starter)',
+    nameKh: 'គម្រោងសាកល្បង Free Starter',
     nameEn: 'Free Starter',
     monthlyUsd: 0,
     yearlyUsd: 0,
@@ -26,36 +26,36 @@ const SAAS_PLANS: Record<string, PlanConfig> = {
     monthlyPatients: 50,
     staffAccounts: 2,
     featuresKh: [
-      'បង្កើត Dynamic KHQR (កូតា ៥ ដង/ថ្ងៃ)',
-      'កត់ត្រាអ្នកជំងឺមូលដ្ឋាន (៥០ នាក់/ខែ)',
+      'បង្កើត Dynamic KHQR កូតា ៥ ដង/ថ្ងៃ',
+      'កត់ត្រាអ្នកជំងឺមូលដ្ឋាន ៥០ នាក់ / គណនី',
       'ចេញវិក្កយបត្រអេឡិចត្រូនិច',
     ],
     featuresEn: [
       'Dynamic KHQR (5 transactions / day)',
-      'Basic patient records (50 patients / mo)',
+      'Basic patient records (50 patients / account)',
       'Electronic invoice generator',
     ],
   },
   STARTER_5: {
     id: 'STARTER_5',
-    nameKh: 'គម្រោងស្ដង់ដារ (Clinic Starter)',
-    nameEn: 'Clinic Starter ($5/mo)',
+    nameKh: 'គម្រោងស្ដង់ដារ Clinic Starter',
+    nameEn: 'Clinic Starter 5$/mo',
     monthlyUsd: 5,
     yearlyUsd: 48,
     khqrDailyLimit: 250,
-    monthlyPatients: 500,
+    monthlyPatients: 1000,
     staffAccounts: 5,
     featuresKh: [
-      'បង្កើត Dynamic KHQR (២៥០ ដង/ថ្ងៃ)',
-      'កត់ត្រាអ្នកជំងឺ ៥០០ នាក់/ខែ',
-      'ហៅអ្នកជំងឺជាសំឡេងខ្មែរ (Khmer Voice Queue)',
+      'បង្កើត Dynamic KHQR ២៥០ ដង/ថ្ងៃ',
+      'កត់ត្រាអ្នកជំងឺ ១,០០០ នាក់ / គណនី',
+      'ហៅអ្នកជំងឺជាសំឡេងខ្មែរ Khmer Voice Queue',
       'គ្រប់គ្រងស្តុកឱសថស្ថានកម្រិតស្តង់ដារ',
       'Telegram Bot ជូនដំណឹងស្វ័យប្រវត្ត',
       'បោះពុម្ពវិក្កយបត្រតាមម៉ាស៊ីន Thermal 80mm',
     ],
     featuresEn: [
       'Dynamic KHQR (250 transactions / day)',
-      '500 monthly patient registrations',
+      '1,000 patient registrations / account',
       'Khmer audio voice queue announcement',
       'Medication inventory & stock tracking',
       'Automated Telegram alert bot',
@@ -64,25 +64,25 @@ const SAAS_PLANS: Record<string, PlanConfig> = {
   },
   PRO_8: {
     id: 'PRO_8',
-    nameKh: 'គម្រោងវិជ្ជាជីវៈ (Polyclinic Pro)',
-    nameEn: 'Polyclinic Pro ($8/mo)',
+    nameKh: 'គម្រោងវិជ្ជាជីវៈ Polyclinic Pro',
+    nameEn: 'Polyclinic Pro 8$/mo',
     monthlyUsd: 8,
     yearlyUsd: 76,
     khqrDailyLimit: 1500,
-    monthlyPatients: -1,
+    monthlyPatients: 5000,
     staffAccounts: 15,
     featuresKh: [
-      'បង្កើត Dynamic KHQR (១,៥០០ ដង/ថ្ងៃ)',
-      'មិនកំណត់ចំនួនអ្នកជំងឺ (Unlimited Patients)',
-      'Telegram Forum Topics ដាច់ដោយឡែក (Payments, Queue, Pharmacy, Security)',
+      'បង្កើត Dynamic KHQR ១,៥០០ ដង/ថ្ងៃ',
+      'កត់ត្រាអ្នកជំងឺ ៥,០០០ នាក់ / គណនី',
+      'Telegram Forum Topics ដាច់ដោយឡែក ៤ បន្ទប់',
       'ហៅអ្នកជំងឺជាសំឡេងខ្មែរច្រើនបន្ទប់ពិគ្រោះ',
       'របាយការណ៍ហិរញ្ញវត្ថុ និងវិភាគទិន្នន័យកម្រិតខ្ពស់',
       'ភ្ជាប់ម៉ាស៊ីនព្រីន POS បណ្ដាញជាច្រើនគ្រឿង',
-      'ការគាំទ្រអាទិភាព ២៤/៧ (Priority Support)',
+      'ការគាំទ្រអាទិភាព ២៤/៧ Priority Support',
     ],
     featuresEn: [
       'Dynamic KHQR (1,500 transactions / day)',
-      'Unlimited monthly patient registry',
+      '5,000 patient registry / account',
       'Full Telegram Forum Topics (Payments, Queue, Pharmacy, Security)',
       'Multi-room Khmer voice queue calling',
       'Advanced financial analytics & export',
@@ -92,17 +92,17 @@ const SAAS_PLANS: Record<string, PlanConfig> = {
   },
   ENTERPRISE_12: {
     id: 'ENTERPRISE_12',
-    nameKh: 'គម្រោងមន្ទីរពេទ្យ (Hospital Enterprise)',
-    nameEn: 'Hospital Enterprise ($12/mo)',
+    nameKh: 'គម្រោងមន្ទីរពេទ្យ Hospital Enterprise',
+    nameEn: 'Hospital Enterprise 12$/mo',
     monthlyUsd: 12,
     yearlyUsd: 115,
     khqrDailyLimit: -1,
     monthlyPatients: -1,
     staffAccounts: -1,
     featuresKh: [
-      'មិនកំណត់រាល់ប្រតិបត្តិការ KHQR (Unlimited Dynamic KHQR)',
-      'មិនកំណត់ចំនួនអ្នកជំងឺ និងបុគ្គលិក',
-      'ទទួលបាន Subdomain ផ្លូវការ (ឧ. yourclinic.clinicplatform.com)',
+      'មិនកំណត់រាល់ប្រតិបត្តិការ KHQR Unlimited',
+      'មិនកំណត់ចំនួនអ្នកជំងឺ និងបុគ្គលិក / គណនី',
+      'ទទួលបាន Subdomain ផ្លូវការ ឧទាហរណ៍ yourclinic.clinicplatform.com',
       'គ្រប់គ្រងសាខាច្រើន និងគ្រូពេទ្យឯកទេសច្រើនផ្នែក',
       'Dedicated Database Performance & Cloud Backup',
       'ជំនួយពិសេសផ្ទាល់តាមទូរស័ព្ទ និង Telegram 24/7 VIP SLA',
@@ -122,21 +122,21 @@ describe('Step 11 & Step 12: SaaS Landing Page & Pricing Matrix Test Suite', () 
   const emojiRegex = /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u;
 
   it('should verify exact quotas matching user specifications across all tiers', () => {
-    // Free: 5 KHQR/day, 50 patients/mo, 2 staff
+    // Free: 5 KHQR/day, 50 patients / account, 2 staff
     assert.equal(SAAS_PLANS.FREE.khqrDailyLimit, 5);
     assert.equal(SAAS_PLANS.FREE.monthlyPatients, 50);
     assert.equal(SAAS_PLANS.FREE.staffAccounts, 2);
 
-    // Starter $5: 250 KHQR/day, 500 patients/mo, 5 staff
+    // Starter $5: 250 KHQR/day, 1,000 patients / account, 5 staff
     assert.equal(SAAS_PLANS.STARTER_5.monthlyUsd, 5);
     assert.equal(SAAS_PLANS.STARTER_5.khqrDailyLimit, 250);
-    assert.equal(SAAS_PLANS.STARTER_5.monthlyPatients, 500);
+    assert.equal(SAAS_PLANS.STARTER_5.monthlyPatients, 1000);
     assert.equal(SAAS_PLANS.STARTER_5.staffAccounts, 5);
 
-    // Pro $8: 1500 KHQR/day, unlimited patients, 15 staff
+    // Pro $8: 1500 KHQR/day, 5,000 patients / account, 15 staff
     assert.equal(SAAS_PLANS.PRO_8.monthlyUsd, 8);
     assert.equal(SAAS_PLANS.PRO_8.khqrDailyLimit, 1500);
-    assert.equal(SAAS_PLANS.PRO_8.monthlyPatients, -1);
+    assert.equal(SAAS_PLANS.PRO_8.monthlyPatients, 5000);
     assert.equal(SAAS_PLANS.PRO_8.staffAccounts, 15);
 
     // Enterprise $12: Unlimited KHQR, unlimited patients, unlimited staff
