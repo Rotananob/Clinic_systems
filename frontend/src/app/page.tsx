@@ -6,11 +6,16 @@ import { useAuth } from '../context/AuthContext';
 import { useTranslation } from '../context/I18nContext';
 import { PublicNavbar } from '../components/landing/PublicNavbar';
 import { LandingHero } from '../components/landing/LandingHero';
+import { BeforeAfterSection } from '../components/landing/BeforeAfterSection';
+import { RoiCalculatorSection } from '../components/landing/RoiCalculatorSection';
 import { ClinicDisciplineSection } from '../components/landing/ClinicDisciplineSection';
 import { FeaturesSection } from '../components/landing/FeaturesSection';
+import { DoctorTestimonialsSection } from '../components/landing/DoctorTestimonialsSection';
 import { PricingMatrix } from '../components/landing/PricingMatrix';
+import { FaqSection } from '../components/landing/FaqSection';
+import { BottomCtaBanner } from '../components/landing/BottomCtaBanner';
 import { PublicFooter } from '../components/landing/PublicFooter';
-import { ArrowRight, Building2, UserCheck, ShieldCheck } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 export default function RootHomePage() {
   const { user } = useAuth();
@@ -45,10 +50,32 @@ export default function RootHomePage() {
       <PublicNavbar />
 
       <main className="flex-1">
+        {/* 1. Hero with 3D Interactive Console, Fast Subdomain Claimer & Real Audio Chimes */}
         <LandingHero />
+
+        {/* 2. Before vs After: Direct Problem-Solution Transformation */}
+        <BeforeAfterSection />
+
+        {/* 3. Interactive ROI & Time Savings Estimator */}
+        <RoiCalculatorSection />
+
+        {/* 4. Specialized Disciplines (General, Dental, Polyclinic, Maternity, Pharmacy) */}
         <ClinicDisciplineSection />
+
+        {/* 5. Core Platform Features & Architecture */}
         <FeaturesSection />
+
+        {/* 6. Authentic Physician & Clinic Owner Testimonials */}
+        <DoctorTestimonialsSection />
+
+        {/* 7. Transparent SaaS Pricing Matrix with Annual Savings */}
         <PricingMatrix />
+
+        {/* 8. Frequently Asked Questions (FAQ) Addressing Hesitations */}
+        <FaqSection />
+
+        {/* 9. Final Irresistible 60-Second Conversion Call to Action */}
+        <BottomCtaBanner />
       </main>
 
       <PublicFooter />

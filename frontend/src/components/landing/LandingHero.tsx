@@ -27,6 +27,7 @@ import {
   BadgeCheck,
   RefreshCw,
   Lock,
+  HardDrive,
 } from 'lucide-react';
 
 export const LandingHero: React.FC = () => {
@@ -102,6 +103,43 @@ export const LandingHero: React.FC = () => {
     setGlare((prev) => ({ ...prev, opacity: 0 }));
   };
 
+  // Web Audio Chime & Khmer Speech Synthesis
+  const playPaymentSuccessChime = () => {
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+      osc.frequency.setValueAtTime(880, ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.12, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.38);
+    } catch {
+      // Audio not allowed or unavailable
+    }
+  };
+
+  const playQueueSpeech = (ticketNum: number, roomStr: string) => {
+    try {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const text = `សូមអញ្ជើញ លេខ ${ticketNum} ចូល ${roomStr}`;
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'km-KH';
+        utterance.rate = 0.95;
+        window.speechSynthesis.speak(utterance);
+      }
+    } catch {
+      // Speech synthesis fallback
+    }
+  };
+
   // Simulate Bakong Instant Settlement
   const handleSimulateScan = () => {
     setIsSimulatingScan(true);
@@ -109,6 +147,7 @@ export const LandingHero: React.FC = () => {
       setIsSettled(true);
       setSettlementHash(`TXN-ABA-${Date.now().toString(36).toUpperCase()}`);
       setIsSimulatingScan(false);
+      playPaymentSuccessChime();
     }, 900);
   };
 
@@ -150,9 +189,13 @@ export const LandingHero: React.FC = () => {
       'បន្ទប់ធ្មេញលេខ ០១ (Dental 01)',
       'បន្ទប់ព្យាបាលទូទៅ (OPD Treatment)',
     ];
-    setCurrentTicket((prev) => prev + 1);
-    setCurrentPatient(names[Math.floor(Math.random() * names.length)]);
-    setCurrentRoom(rooms[Math.floor(Math.random() * rooms.length)]);
+    const nextTicket = currentTicket + 1;
+    const nextPatient = names[Math.floor(Math.random() * names.length)];
+    const nextRoom = rooms[Math.floor(Math.random() * rooms.length)];
+    setCurrentTicket(nextTicket);
+    setCurrentPatient(nextPatient);
+    setCurrentRoom(nextRoom);
+    playQueueSpeech(nextTicket, nextRoom);
     setTimeout(() => {
       setIsCallingAudio(false);
     }, 2400);
@@ -185,6 +228,25 @@ export const LandingHero: React.FC = () => {
         {/* Header Hero Branding with Interactive 3D Emblem */}
         {/* ============================================================== */}
         <div className="text-center max-w-4xl mx-auto space-y-5">
+          {/* Top Urgent Promotion & Zero-Risk Ribbon */}
+          <div className="max-w-2xl mx-auto mb-2">
+            <div className="p-2 sm:p-2.5 bg-gradient-to-r from-amber-500/15 via-emerald-500/15 to-teal-500/15 border border-amber-300/60 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-2 text-xs shadow-2xs">
+              <div className="flex items-center gap-2 text-stone-800 font-medium">
+                <span className="px-2 py-0.5 rounded-full bg-amber-600 text-white font-black text-[10px] tracking-wider uppercase shrink-0">
+                  {isKm ? 'ប្រូម៉ូសិនពិសេស' : 'Special Offer'}
+                </span>
+                <span className="font-sans text-[11px] sm:text-xs text-left">
+                  {isKm
+                    ? 'ចុះឈ្មោះថ្ងៃនេះ ទទួលបានការប្រើប្រាស់ Free Starter ជារៀងរហូត (10 KHQR/ថ្ងៃ) + សាកល្បង AI Gemini & Voice Queue ១៤ ថ្ងៃពេញ!'
+                    : 'Claim Free Starter Tier forever (10 KHQR/day) + 14-day full AI Gemini & Voice Queue trial!'}
+                </span>
+              </div>
+              <span className="text-[10px] font-bold text-teal-900 bg-white px-2 py-0.5 rounded-xl border border-stone-200 shrink-0">
+                {isKm ? 'គ្មានកាតធនាគារ' : 'No Credit Card'}
+              </span>
+            </div>
+          </div>
+
           {/* 3D Brand Logo Showcase */}
           <div className="inline-flex justify-center mb-1">
             <ClinicLogo variant="hero3d" size="hero" showSubtitle={false} interactive={true} />
@@ -987,6 +1049,57 @@ export const LandingHero: React.FC = () => {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* 3 Irresistible Value Guarantees for Clinic Owners */}
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-4 bg-white/90 rounded-2xl border border-[#DFD6C6] shadow-xs flex items-start gap-3">
+              <div className="w-8 h-8 rounded-xl bg-teal-100 text-teal-800 flex items-center justify-center shrink-0">
+                <Zap className="w-4 h-4" />
+              </div>
+              <div className="space-y-0.5">
+                <div className="text-xs font-bold text-stone-900 font-sans">
+                  {isKm ? 'ដំឡើងត្រឹម ៦០ វិនាទី' : '60-Second Setup'}
+                </div>
+                <div className="text-[11px] text-stone-500 font-sans leading-relaxed">
+                  {isKm
+                    ? 'គ្រាន់តែ Paste ABA Merchant Link ពី ABA Mobile រួចជាស្រេច មិនបាច់ជួលជាង IT'
+                    : 'Paste your free ABA Merchant Link directly from mobile banking; no technician needed'}
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 bg-white/90 rounded-2xl border border-[#DFD6C6] shadow-xs flex items-start gap-3">
+              <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
+                <ShieldCheck className="w-4 h-4" />
+              </div>
+              <div className="space-y-0.5">
+                <div className="text-xs font-bold text-stone-900 font-sans">
+                  {isKm ? 'លុយចូលកុង ABA ផ្ទាល់ ១០០%' : '100% Direct ABA Settle'}
+                </div>
+                <div className="text-[11px] text-stone-500 font-sans leading-relaxed">
+                  {isKm
+                    ? 'X-Clinic មិនប៉ះពាល់ ឬកាត់កម្រៃជើងសារពីលុយរបស់អ្នកឡើយ (០% កម្រៃជើងសារ)'
+                    : 'Zero middleman escrow; 100% of patient payments deposit directly into your bank'}
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 bg-white/90 rounded-2xl border border-[#DFD6C6] shadow-xs flex items-start gap-3">
+              <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
+                <HardDrive className="w-4 h-4" />
+              </div>
+              <div className="space-y-0.5">
+                <div className="text-xs font-bold text-stone-900 font-sans">
+                  {isKm ? 'ដំណើរការលើគ្រប់ឧបករណ៍' : 'Runs on All Hardware'}
+                </div>
+                <div className="text-[11px] text-stone-500 font-sans leading-relaxed">
+                  {isKm
+                    ? 'ដំណើរការលើ Laptop, iPad, Tablet ឬទូរស័ព្ទដៃ មិនបាច់ទិញម៉ាស៊ីនថ្មី'
+                    : 'Accessible from any browser on laptops, iPads, tablets, and phones smoothly'}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
