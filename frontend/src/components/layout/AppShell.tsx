@@ -25,6 +25,16 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
   const { locale } = useTranslation();
   const isKm = locale === 'km';
   const isLoginPage = pathname === '/login';
+
+  const [hasToken, setHasToken] = React.useState<boolean>(false);
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+    const token = typeof window !== 'undefined' ? localStorage.getItem('clinic_access_token') : null;
+    setHasToken(Boolean(token));
+  }, []);
+
   const isPublicRoute =
     pathname === '/login' ||
     pathname === '/landing' ||
@@ -34,12 +44,8 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
     pathname?.startsWith('/landing') ||
     pathname?.startsWith('/pricing') ||
     pathname?.startsWith('/register') ||
-    pathname?.startsWith('/help');
-  const [mounted, setMounted] = React.useState(false);
-
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
+    pathname?.startsWith('/help') ||
+    (pathname === '/' && !user && !hasToken);
 
   // Initialize global hardware peripherals (POS auto-print & barcode scanner)
   useEffect(() => {
@@ -66,7 +72,7 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
   useEffect(() => {
     const enforceAuthLock = () => {
       const token = typeof window !== 'undefined' ? localStorage.getItem('clinic_access_token') : null;
-      if (!token && !isPublicRoute) {
+      if (!token && !isPublicRoute && pathname !== '/') {
         if (typeof window !== 'undefined') {
           window.location.replace('/login');
         }
@@ -93,16 +99,16 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
   }, [isPublicRoute, pathname]);
 
   useEffect(() => {
-    if (!isLoading && !user && !isPublicRoute) {
+    if (!isLoading && !user && !isPublicRoute && pathname !== '/') {
       if (typeof window !== 'undefined') {
         window.location.replace('/login');
       } else {
         router.replace('/login');
       }
     }
-  }, [isLoading, user, isPublicRoute, router]);
+  }, [isLoading, user, isPublicRoute, router, pathname]);
 
-  // If on public pages (login, landing, pricing), render clean layout without sidebar/navbar
+  // If on public pages (login, landing, pricing, or public unauthenticated /), render clean layout without sidebar/navbar
   if (isPublicRoute) {
     return (
       <div className="min-h-screen flex flex-col bg-[#F7F4EE] text-stone-900 w-full relative">
@@ -136,7 +142,7 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
   }
 
   // Authentication Loading State
-  if (isLoading && !user) {
+  if (isLoading && !user && pathname !== '/') {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#F7F4EE] text-stone-900 p-4">
         <div className="flex flex-col items-center max-w-sm text-center space-y-4 animate-in fade-in duration-300">
@@ -154,8 +160,8 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
     );
   }
 
-  // If not authenticated and not on login page, show transition screen while redirecting
-  if (!user) {
+  // If not authenticated and not on login/public page, show transition screen while redirecting
+  if (!user && pathname !== '/') {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#F7F4EE] text-stone-900 p-4">
         <div className="flex flex-col items-center max-w-sm text-center space-y-3 animate-in fade-in duration-200">
@@ -175,7 +181,7 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
     );
   }
 
-  const routeAllowed = isRouteAllowed(user.role, pathname);
+  const routeAllowed = user ? isRouteAllowed(user.role, pathname) : true;
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F7F4EE] text-stone-900 w-full max-w-[100vw] overflow-x-hidden relative">
@@ -196,13 +202,13 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
                 <div className="w-14 h-14 rounded-2xl bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center mb-4 shadow-xs">
                   <ShieldCheck className="w-7 h-7 text-amber-700" />
                 </div>
-                <h2 className="text-base sm:text-lg font-bold text-stone-900 mb-1">
+                <h2 className="text-base sm:lg font-bold text-stone-900 mb-1">
                   {isKm ? 'ទំព័រនេះត្រូវបានចាក់សោសម្រាប់តួនាទីរបស់អ្នក' : 'Restricted Module for Your Role'}
                 </h2>
                 <p className="text-xs text-stone-600 max-w-md mb-5 leading-relaxed">
                   {isKm
-                    ? `គណនីរបស់អ្នកមានតួនាទីជា "${getRoleDisplayName(user.role, true)}" ដែលមិនមានសិទ្ធិចូលមើល ឬកែប្រែទំព័រនេះឡើយ។ ប្រសិនបើអ្នកត្រូវការចូលប្រើប្រាស់ សូមទាក់ទងម្ចាស់គ្លីនិក (Super Admin)។`
-                    : `Your current role "${getRoleDisplayName(user.role, false)}" is not authorized to access this module. Please contact the Clinic Owner (Super Admin) for elevated privileges.`}
+                    ? `គណនីរបស់អ្នកមានតួនាទីជា "${getRoleDisplayName(user ? user.role : "", true)}" ដែលមិនមានសិទ្ធិចូលមើល ឬកែប្រែទំព័រនេះឡើយ។ ប្រសិនបើអ្នកត្រូវការចូលប្រើប្រាស់ សូមទាក់ទងម្ចាស់គ្លីនិក (Super Admin)។`
+                    : `Your current role "${getRoleDisplayName(user ? user.role : "", false)}" is not authorized to access this module. Please contact the Clinic Owner (Super Admin) for elevated privileges.`}
                 </p>
                 <button
                   type="button"

@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { EmailVerificationService } from './email-verification.service';
 import { TelegramModule } from '../telegram/telegram.module';
 
 @Module({
@@ -21,7 +22,7 @@ import { TelegramModule } from '../telegram/telegram.module';
     TelegramModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
-  exports: [AuthService, PassportModule, JwtModule],
+  providers: [AuthService, JwtStrategy, EmailVerificationService],
+  exports: [AuthService, PassportModule, JwtModule, EmailVerificationService],
 })
 export class AuthModule {}

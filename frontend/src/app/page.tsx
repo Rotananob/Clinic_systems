@@ -4,6 +4,13 @@ import React, { useEffect, useState } from 'react';
 import { api } from '../lib/api';
 import { useTranslation } from '../context/I18nContext';
 import Link from 'next/link';
+import { useAuth } from '../context/AuthContext';
+import { PublicNavbar } from '../components/landing/PublicNavbar';
+import { LandingHero } from '../components/landing/LandingHero';
+import { FeaturesSection } from '../components/landing/FeaturesSection';
+import { PricingMatrix } from '../components/landing/PricingMatrix';
+import { PublicFooter } from '../components/landing/PublicFooter';
+
 import {
   Calendar,
   Users,
@@ -29,7 +36,7 @@ import {
 } from 'lucide-react';
 import { RegisterPatientDrawer } from '../components/patients/RegisterPatientDrawer';
 
-export default function DashboardPage() {
+function DashboardView() {
   const { t, locale } = useTranslation();
   const isKm = locale === 'km';
 
@@ -430,4 +437,46 @@ export default function DashboardPage() {
       />
     </div>
   );
+}
+
+
+function LandingView() {
+  return (
+    <div className="min-h-screen flex flex-col bg-[#F7F4EE] text-stone-900 selection:bg-teal-800 selection:text-white">
+      <PublicNavbar />
+      <main className="flex-1">
+        <LandingHero />
+        <FeaturesSection />
+        <PricingMatrix />
+      </main>
+      <PublicFooter />
+    </div>
+  );
+}
+
+export default function RootHomePage() {
+  const { user, isLoading } = useAuth();
+  const [hasToken, setHasToken] = useState<boolean>(false);
+  const [mounted, setMounted] = useState<boolean>(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const token = typeof window !== 'undefined' ? localStorage.getItem('clinic_access_token') : null;
+    setHasToken(Boolean(token));
+  }, []);
+
+  if (!mounted || isLoading) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center p-8 text-stone-500">
+        <div className="w-7 h-7 border-2 border-teal-800 border-t-transparent rounded-full animate-spin mb-3" />
+        <span className="text-xs font-medium">កំពុងផ្ទុកប្រព័ន្ធ...</span>
+      </div>
+    );
+  }
+
+  if (!user && !hasToken) {
+    return <LandingView />;
+  }
+
+  return <DashboardView />;
 }

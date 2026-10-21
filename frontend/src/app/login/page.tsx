@@ -240,63 +240,17 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Evaluation Account Showcase with 1-Click Login and Auto-fill */}
-        <div className="mt-5 p-3.5 rounded-2xl bg-[#FAF8F5] border border-[#E7E1D4] shadow-2xs">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-1.5">
-              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold tracking-wide bg-teal-800 text-white font-mono uppercase">
-                SUPER_ADMIN
-              </span>
-              <span className="text-[11px] font-semibold text-stone-700">
-                {isKm ? 'គណនីវាយតម្លៃប្រព័ន្ធ' : 'Evaluation Account'}
-              </span>
-            </div>
-            <span className="text-[10px] font-medium text-stone-600 bg-stone-200/70 px-2 py-0.5 rounded-md font-mono">
-              {isKm ? 'សុពលភាព: 31/12/2026' : 'Valid until: 31/12/2026'}
-            </span>
-          </div>
-
-          <div className="text-[11px] text-stone-600 space-y-1 mb-3 font-mono bg-white p-2.5 rounded-xl border border-[#E7E1D4]">
-            <div className="flex items-center justify-between">
-              <span className="text-stone-400 font-sans text-[10px]">Email:</span>
-              <span className="font-semibold text-stone-800 selection:bg-teal-100 select-all">
-                test.admin@hounvannak.com
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-stone-400 font-sans text-[10px]">{isKm ? 'ពាក្យសម្ងាត់:' : 'Password:'}</span>
-              <span className="font-semibold text-stone-800 selection:bg-teal-100 select-all">
-                TestAdmin#2026!Clinic
-              </span>
-            </div>
-            <div className="flex items-center justify-between pt-1 border-t border-stone-100 text-[10px]">
-              <span className="text-stone-400 font-sans">{isKm ? 'ប្រភពទិន្នន័យ:' : 'Data Source:'}</span>
-              <span className="text-stone-700 font-sans font-medium">
-                {isKm ? 'ទិន្នន័យជាក់ស្តែងពី Database (PostgreSQL)' : 'Live Database Data (PostgreSQL)'}
-              </span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={handleOneClickTestLogin}
-              disabled={isLoading || lockoutSeconds > 0}
-              className="w-full py-2 px-3 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs font-semibold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
-            >
-              <Zap className="w-3.5 h-3.5 fill-current" />
-              <span>{isKm ? 'ចូលប្រើភ្លាមៗ (1-Click)' : '1-Click Login'}</span>
-            </button>
-            <button
-              type="button"
-              onClick={handleAutoFillTest}
-              disabled={isLoading || lockoutSeconds > 0}
-              className="w-full py-2 px-3 bg-white hover:bg-stone-50 text-stone-700 border border-[#E7E1D4] rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
-            >
-              <KeyRound className="w-3.5 h-3.5 text-stone-500" />
-              <span>{isKm ? 'បំពេញទិន្នន័យ' : 'Auto-fill'}</span>
-            </button>
-          </div>
+        {/* Real Free Account Registration Callout */}
+        <div className="mt-5 p-4 rounded-2xl bg-[#F0EAE0]/70 border border-[#DFD6C6] text-center space-y-2.5">
+          <p className="text-xs text-stone-700 font-medium">
+            {isKm ? 'មិនទាន់មាន Workspace គ្លីនិកផ្ទាល់ខ្លួន?' : "Don't have a clinic workspace yet?"}
+          </p>
+          <Link
+            href="/register"
+            className="inline-flex items-center justify-center gap-1.5 w-full py-2.5 px-4 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs font-bold transition-all shadow-xs"
+          >
+            <span>{isKm ? 'ចុះឈ្មោះបង្កើតគ្លីនិកឥតគិតថ្លៃ (Free Starter)' : 'Register Free Clinic Account'}</span>
+          </Link>
         </div>
 
         {/* Public SaaS Navigation Links */}

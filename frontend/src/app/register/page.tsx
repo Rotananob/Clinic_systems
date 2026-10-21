@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslation } from '../../context/I18nContext';
@@ -24,6 +24,9 @@ import {
   Layers,
   Check,
   RefreshCw,
+  KeyRound,
+  ArrowLeft,
+  Send,
 } from 'lucide-react';
 
 const PLAN_CARDS = [
@@ -86,25 +89,58 @@ function RegisterContent() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  // 2-step verification code state
+  const [step, setStep] = useState<'FORM' | 'VERIFY_CODE'>('FORM');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [devCodePreview, setDevCodePreview] = useState<string | null>(null);
+  const [countdown, setCountdown] = useState(600); // 10 minutes
+
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [registeredData, setRegisteredData] = useState<any>(null);
   const [isMerchantModalOpen, setIsMerchantModalOpen] = useState(false);
+
+  // Countdown timer for verification code
+  useEffect(() => {
+    if (step !== 'VERIFY_CODE' || countdown <= 0) return;
+    const interval = setInterval(() => {
+      setCountdown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [step, countdown]);
+
+  const formatCountdown = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  };
 
   // Compute live slug preview from clinicNameEn
   const liveSlug = clinicNameEn
     ? clinicNameEn.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'clinic'
     : 'your-clinic';
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Step 1: Send 6-digit confirmation code to Gmail
+  const handleRequestCode = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
+    setInfoMessage(null);
 
     if (!clinicNameKh.trim() || !clinicNameEn.trim() || !email.trim() || !password || !phone.trim()) {
       setErrorMessage(
         isKm
-          ? 'សូមបំពេញរាល់ព័ត៌មានចាំបាច់ទាំងអស់។'
-          : 'Please complete all required fields.'
+          ? 'សូមបំពេញរាល់ព័ត៌មានចាំបាច់ទាំងអស់ជាមុនសិន។'
+          : 'Please complete all required fields first.'
+      );
+      return;
+    }
+
+    if (password.length < 6) {
+      setErrorMessage(
+        isKm
+          ? 'ពាក្យសម្ងាត់ត្រូវមានយ៉ាងតិច ៦ តួអក្សរ។'
+          : 'Password must be at least 6 characters.'
       );
       return;
     }
@@ -112,7 +148,41 @@ function RegisterContent() {
     setLoading(true);
 
     try {
-      const res = await api.auth.registerClinic({
+      const res = await api.auth.sendVerificationCode(email.trim().toLowerCase());
+      if (res.success) {
+        setStep('VERIFY_CODE');
+        setCountdown(600);
+        setInfoMessage(res.message);
+        if (res.devCode) {
+          setDevCodePreview(res.devCode);
+          setVerificationCode(res.devCode);
+        }
+      }
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Failed to dispatch verification code. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Step 2: Verify code and register clinic
+  const handleVerifyAndRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage(null);
+
+    if (!verificationCode.trim() || verificationCode.trim().length !== 6) {
+      setErrorMessage(
+        isKm
+          ? 'សូមបញ្ចូលលេខកូដបញ្ជាក់ ៦ ខ្ទង់ឱ្យបានត្រឹមត្រូវ។'
+          : 'Please enter a valid 6-digit confirmation code.'
+      );
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await api.auth.registerWithCode({
         clinicNameKh: clinicNameKh.trim(),
         clinicNameEn: clinicNameEn.trim(),
         adminName: adminName.trim() || undefined,
@@ -120,16 +190,36 @@ function RegisterContent() {
         email: email.trim().toLowerCase(),
         password,
         planTier: selectedPlan,
+        verificationCode: verificationCode.trim(),
       });
 
       if (res.success && res.accessToken) {
-        // Persist session locally
         localStorage.setItem('clinic_access_token', res.accessToken);
         localStorage.setItem('clinic_user', JSON.stringify(res.user));
         setRegisteredData(res);
       }
     } catch (err: any) {
-      setErrorMessage(err.message || 'Registration failed. Please check inputs and try again.');
+      setErrorMessage(err.message || 'Verification failed. Please check the code and try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    setErrorMessage(null);
+    setLoading(true);
+    try {
+      const res = await api.auth.sendVerificationCode(email.trim().toLowerCase());
+      if (res.success) {
+        setCountdown(600);
+        setInfoMessage(res.message);
+        if (res.devCode) {
+          setDevCodePreview(res.devCode);
+          setVerificationCode(res.devCode);
+        }
+      }
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Failed to resend code.');
     } finally {
       setLoading(false);
     }
@@ -181,7 +271,6 @@ function RegisterContent() {
                 </div>
               </div>
 
-              {/* Step 14 Activation Callout */}
               <div className="p-4 bg-teal-50 border border-teal-200 rounded-xl text-left space-y-2 max-w-lg mx-auto">
                 <div className="flex items-center gap-2 text-xs font-bold text-teal-900">
                   <QrCode className="w-4 h-4 text-teal-700" />
@@ -216,8 +305,126 @@ function RegisterContent() {
                 </button>
               </div>
             </div>
+          ) : step === 'VERIFY_CODE' ? (
+            /* Step 2: 6-Digit Gmail Confirmation Code Screen */
+            <div className="bg-white rounded-2xl border border-stone-200 p-6 sm:p-8 shadow-xl space-y-6">
+              <div className="flex items-center justify-between border-b border-stone-100 pb-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStep('FORM');
+                    setErrorMessage(null);
+                  }}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 transition-colors"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span>{isKm ? 'កែប្រែព័ត៌មាន (Back to Edit)' : 'Back to Edit Details'}</span>
+                </button>
+                <span className="text-xs font-mono text-stone-500 bg-stone-100 px-2.5 py-1 rounded-md">
+                  {isKm ? 'សុពលភាព:' : 'Expires in:'} {formatCountdown(countdown)}
+                </span>
+              </div>
+
+              {infoMessage && (
+                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <span>{infoMessage}</span>
+                </div>
+              )}
+
+              {errorMessage && (
+                <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                  <span>{errorMessage}</span>
+                </div>
+              )}
+
+              {/* Dev/Fallback Preview Banner */}
+              {devCodePreview && (
+                <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 space-y-1">
+                  <div className="font-bold flex items-center gap-1.5">
+                    <KeyRound className="w-4 h-4 text-amber-700" />
+                    <span>{isKm ? 'លេខកូដបញ្ជាក់ (Local Preview):' : 'Local Testing Code Preview:'}</span>
+                    <span className="font-mono text-sm bg-white px-2 py-0.5 rounded border border-amber-300 font-extrabold text-amber-900">
+                      {devCodePreview}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-amber-800">
+                    {isKm
+                      ? 'លេខកូដត្រូវបានបំពេញស្វ័យប្រវត្តសម្រាប់សាកល្បង Local ឬសូមពិនិត្យមើល Gmail របស់អ្នក។'
+                      : 'Auto-filled for rapid local evaluation, or check your Gmail inbox.'}
+                  </p>
+                </div>
+              )}
+
+              <div className="text-center space-y-2">
+                <div className="w-12 h-12 rounded-2xl bg-teal-50 text-teal-800 border border-teal-200 flex items-center justify-center mx-auto">
+                  <Mail className="w-6 h-6" />
+                </div>
+                <h2 className="text-lg font-bold text-stone-900">
+                  {isKm ? 'បញ្ចូលលេខកូដបញ្ជាក់ ៦ ខ្ទង់' : 'Enter 6-Digit Confirmation Code'}
+                </h2>
+                <p className="text-xs text-stone-600 max-w-sm mx-auto">
+                  {isKm
+                    ? `ប្រព័ន្ធបានផ្ញើលេខកូដបញ្ជាក់ទៅកាន់:`
+                    : 'A verification code was dispatched to:'}{' '}
+                  <span className="font-bold text-teal-900 font-mono">{email}</span>
+                </p>
+              </div>
+
+              <form onSubmit={handleVerifyAndRegister} className="space-y-6 max-w-md mx-auto">
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    required
+                    maxLength={6}
+                    value={verificationCode}
+                    onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ''))}
+                    placeholder="______"
+                    className="w-full text-center text-3xl font-mono tracking-[0.5em] font-extrabold px-4 py-3 bg-[#FAF7F2] border-2 border-teal-700/60 rounded-2xl text-teal-950 focus:outline-hidden focus:ring-4 focus:ring-teal-700/20 transition-all placeholder:text-stone-300 shadow-inner"
+                  />
+                  <p className="text-[11px] text-center text-stone-500">
+                    {isKm ? 'បញ្ចូលលេខ ៦ ខ្ទង់ដែលបានទទួលតាម Gmail' : 'Enter the 6-digit digits received via Gmail'}
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <button
+                    type="submit"
+                    disabled={loading || verificationCode.trim().length !== 6}
+                    className="w-full py-3 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs font-bold shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {loading ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        <span>{isKm ? 'កំពុងផ្ទៀងផ្ទាត់ និងបង្កើតគ្លីនិក...' : 'Verifying and provisioning workspace...'}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Check className="w-4 h-4" />
+                        <span>{isKm ? 'បញ្ជាក់លេខកូដ និងបង្កើតគ្លីនិក' : 'Verify Code & Create Clinic Workspace'}</span>
+                      </>
+                    )}
+                  </button>
+
+                  <div className="flex items-center justify-between text-xs pt-2">
+                    <span className="text-stone-500">
+                      {isKm ? 'មិនបានទទួលលេខកូដ?' : "Didn't receive code?"}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleResendCode}
+                      disabled={loading}
+                      className="font-bold text-teal-800 hover:underline disabled:opacity-50"
+                    >
+                      {isKm ? 'ផ្ញើលេខកូដឡើងវិញ (Resend)' : 'Resend Verification Code'}
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
           ) : (
-            /* Registration Form Card */
+            /* Step 1: Registration Form Card */
             <div className="bg-white rounded-2xl border border-stone-200 p-6 sm:p-8 shadow-xl space-y-6">
               {errorMessage && (
                 <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 flex items-start gap-2">
@@ -226,7 +433,7 @@ function RegisterContent() {
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleRequestCode} className="space-y-6">
                 {/* 1. Plan Tier Selection */}
                 <div className="space-y-2">
                   <label className="block text-xs font-bold text-stone-800 uppercase tracking-wider">
@@ -351,14 +558,14 @@ function RegisterContent() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-semibold text-stone-700 mb-1">
-                        {isKm ? 'អ៊ីមែលអ្នកគ្រប់គ្រង *' : 'Admin Email *'}
+                        {isKm ? 'អ៊ីមែល Gmail សម្រាប់ទទួលលេខកូដបញ្ជាក់ *' : 'Gmail Email for Verification Code *'}
                       </label>
                       <input
                         type="email"
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        placeholder="admin@myclinic.com"
+                        placeholder="doctor@gmail.com"
                         className="w-full px-3.5 py-2.5 bg-[#FAF7F2] border border-[#DCD5C8] rounded-xl text-xs font-medium text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-teal-700 transition-all placeholder:text-stone-400"
                       />
                     </div>
@@ -392,16 +599,17 @@ function RegisterContent() {
                         <RefreshCw className="w-4 h-4 animate-spin" />
                         <span>
                           {isKm
-                            ? 'កំពុងបង្កើត Workspace ជូនក្នុង ២ វិនាទី...'
-                            : 'Auto-provisioning workspace in 2 seconds...'}
+                            ? 'កំពុងផ្ញើលេខកូដ ៦ ខ្ទង់ទៅកាន់ Gmail...'
+                            : 'Dispatching 6-digit confirmation code...'}
                         </span>
                       </>
                     ) : (
                       <>
+                        <Send className="w-4 h-4" />
                         <span>
                           {isKm
-                            ? 'បង្កើត Workspace (ដំណើរការក្នុង ៦០ វិនាទី)'
-                            : 'Create Workspace (60-Second Setup)'}
+                            ? 'ផ្ញើលេខកូដបញ្ជាក់ទៅកាន់ Gmail (Get Verification Code)'
+                            : 'Send Verification Code to Gmail'}
                         </span>
                         <ArrowRight className="w-4 h-4" />
                       </>

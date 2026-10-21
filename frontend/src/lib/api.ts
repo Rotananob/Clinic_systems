@@ -422,6 +422,31 @@ class ApiClient {
         method: 'POST',
         body: JSON.stringify(credentials),
       }),
+    sendVerificationCode: (email: string) =>
+      this.request<{ success: boolean; message: string; devCode?: string }>('/auth/send-verification-code', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      }),
+    registerWithCode: (data: {
+      clinicNameKh: string;
+      clinicNameEn: string;
+      phone: string;
+      email: string;
+      password: string;
+      verificationCode: string;
+      adminName?: string;
+      planTier?: string;
+    }) =>
+      this.request<{
+        success: boolean;
+        accessToken: string;
+        user: any;
+        tenant: any;
+        message: string;
+      }>('/auth/register-with-code', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
     registerClinic: (data: {
       clinicNameKh: string;
       clinicNameEn: string;
