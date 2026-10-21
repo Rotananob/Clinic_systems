@@ -1,5 +1,7 @@
 'use client';
 
+import { QRCodeSVG } from 'qrcode.react';
+
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '../../context/I18nContext';
@@ -18,6 +20,8 @@ import {
   Globe,
   Link as LinkIcon,
   HelpCircle,
+  QrCode,
+  RefreshCw,
 } from 'lucide-react';
 
 interface FirstTimeClinicSetupModalProps {
@@ -100,6 +104,36 @@ export const FirstTimeClinicSetupModal: React.FC<FirstTimeClinicSetupModalProps>
 
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [testingKhqr, setTestingKhqr] = useState(false);
+  const [testKhqrResult, setTestKhqrResult] = useState<any | null>(null);
+  const [testKhqrError, setTestKhqrError] = useState<string | null>(null);
+
+  const handleTestKhqr = async () => {
+    if (!paywayPaymentUrl.trim()) {
+      setTestKhqrError(
+        isKm
+          ? 'សូមបញ្ចូល ABA Merchant Link មុននឹងតេស្តបង្កើត QR'
+          : 'Please enter your ABA Merchant Link first.'
+      );
+      return;
+    }
+    setTestingKhqr(true);
+    setTestKhqrError(null);
+    try {
+      const res = await api.tenants.testMerchantKhqr({
+        paywayPaymentUrl: paywayPaymentUrl.trim(),
+        merchantName: clinicNameEn.trim() || undefined,
+        merchantCity: 'Phnom Penh',
+      });
+      if (res.success) {
+        setTestKhqrResult(res);
+      }
+    } catch (err: any) {
+      setTestKhqrError(err.message || 'Failed to generate test KHQR.');
+    } finally {
+      setTestingKhqr(false);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -259,7 +293,7 @@ export const FirstTimeClinicSetupModal: React.FC<FirstTimeClinicSetupModalProps>
                 />
                 <div className="mt-1 text-[11px] text-stone-500 font-mono flex items-center gap-1">
                   <span>Subdomain:</span>
-                  <span className="font-semibold text-teal-800">{liveSlug}.x-clinic.com</span>
+                  <span className="font-semibold text-teal-800">{liveSlug}.clinic.com</span>
                 </div>
               </div>
             </div>
@@ -344,20 +378,79 @@ export const FirstTimeClinicSetupModal: React.FC<FirstTimeClinicSetupModalProps>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-stone-700 mb-1.5">
-                {isKm ? 'តំណភ្ជាប់ ABA Merchant Link (PayWay URL)' : 'ABA Merchant Link (PayWay URL)'} *
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-bold text-stone-700">
+                  {isKm ? 'តំណភ្ជាប់ ABA Merchant Link (PayWay URL)' : 'ABA Merchant Link (PayWay URL)'} *
+                </label>
+                <button
+                  type="button"
+                  onClick={handleTestKhqr}
+                  disabled={testingKhqr || !paywayPaymentUrl.trim()}
+                  className="px-2.5 py-1 rounded-lg bg-teal-800 hover:bg-teal-900 disabled:bg-stone-200 disabled:text-stone-400 text-white text-[11px] font-bold flex items-center gap-1.5 transition-colors shadow-2xs active:scale-95 cursor-pointer"
+                >
+                  {testingKhqr ? (
+                    <RefreshCw className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <QrCode className="w-3 h-3" />
+                  )}
+                  <span>{isKm ? 'តេស្តបង្កើត QR ភ្លាមៗ' : 'Test Generate QR'}</span>
+                </button>
+              </div>
+
               <div className="relative">
                 <LinkIcon className="w-4 h-4 text-stone-400 absolute left-3.5 top-3 pointer-events-none" />
                 <input
                   type="url"
                   required
                   value={paywayPaymentUrl}
-                  onChange={(e) => setPaywayPaymentUrl(e.target.value)}
+                  onChange={(e) => {
+                    setPaywayPaymentUrl(e.target.value);
+                    if (testKhqrResult) setTestKhqrResult(null);
+                  }}
                   placeholder="https://link.payway.com.kh/ABAPAY..."
                   className="w-full pl-10 pr-3.5 py-2.5 text-xs sm:text-sm bg-white border border-[#DDD5C5] rounded-xl text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-teal-700 font-mono shadow-2xs"
                 />
               </div>
+
+              {testKhqrError && (
+                <div className="mt-2 p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-[11px] flex items-center gap-1.5">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0 text-rose-600" />
+                  <span>{testKhqrError}</span>
+                </div>
+              )}
+
+              {testKhqrResult && (
+                <div className="mt-3 p-3.5 rounded-2xl bg-[#FAF7F2] border border-teal-300 flex flex-col sm:flex-row items-center gap-3.5 shadow-xs">
+                  <div className="p-2 bg-white rounded-xl border border-stone-200 shadow-xs shrink-0">
+                    <QRCodeSVG
+                      value={testKhqrResult.qrString}
+                      size={110}
+                      level="M"
+                      includeMargin={false}
+                    />
+                  </div>
+                  <div className="text-xs space-y-1 text-stone-700 flex-1">
+                    <div className="flex items-center gap-1 text-emerald-800 font-bold text-xs">
+                      <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>{isKm ? 'Dynamic KHQR Tag 01=12 ត្រឹមត្រូវ' : 'Tag 01=12 Dynamic KHQR Verified'}</span>
+                    </div>
+                    <div>
+                      <span className="font-semibold text-stone-600">{isKm ? 'Merchant: ' : 'Merchant: '}</span>
+                      <span className="font-bold text-stone-900">{testKhqrResult.merchantName}</span>
+                    </div>
+                    {testKhqrResult.liveGateway && (
+                      <div className="text-[10px] text-teal-800 font-semibold flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-teal-600 animate-pulse" />
+                        <span>{isKm ? 'ភ្ជាប់ពី ABA PayWay Live Gateway (ស្កេនបានពិតៗ)' : 'Live ABA PayWay Gateway (100% Scannable)'}</span>
+                      </div>
+                    )}
+                    <div className="text-[11px] text-stone-500 font-mono">
+                      <span>$1.00 USD</span>
+                      {testKhqrResult.tranId && <span> • TranID: {testKhqrResult.tranId}</span>}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

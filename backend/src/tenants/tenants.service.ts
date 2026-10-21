@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException, ForbiddenException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { PaywayDirectService } from '../payments/payway-direct.service';
 import { SetupMerchantDto } from './dto/setup-merchant.dto';
 import { UpdateTenantProfileDto } from './dto/update-tenant-profile.dto';
 import * as path from 'path';
@@ -24,13 +25,16 @@ function loadKhqrHelper(): any {
 }
 
 const khqrHelper = loadKhqrHelper();
-const { buildKhqr, buildBankDeeplinks } = khqrHelper;
+const { buildKhqr, buildBankDeeplinks, parseKhqr, computeMd5 } = khqrHelper;
 
 @Injectable()
 export class TenantsService {
   private readonly logger = new Logger(TenantsService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly paywayDirectService: PaywayDirectService,
+  ) {}
 
   async getTenantProfile(user: any) {
     const tenantId = user?.tenantId;
@@ -241,9 +245,9 @@ export class TenantsService {
     };
   }
 
-  generateTestKhqr(dto: SetupMerchantDto) {
+  async generateTestKhqr(dto: SetupMerchantDto) {
     const paywayUrl = dto.paywayPaymentUrl?.trim();
-    const bakongId = dto.bakongAccountId?.trim() || (paywayUrl ? 'aba_payway@aba' : '');
+    const bakongId = dto.bakongAccountId?.trim();
     const merchantName = dto.merchantName?.trim() || 'Clinic';
     const merchantCity = dto.merchantCity?.trim() || 'Phnom Penh';
     const testBillNumber = `TEST-${Date.now().toString().slice(-4)}`;
@@ -252,55 +256,87 @@ export class TenantsService {
       throw new BadRequestException('Merchant ABA PayWay Link or Bakong Account ID is required for KHQR generation test.');
     }
 
-    if (buildKhqr) {
-      const generated = buildKhqr({
-        bakongId,
-        merchantName,
-        merchantCity,
-        amount: 1.0,
-        currency: 'USD',
-        billNumber: testBillNumber,
-      });
-
-      const deeplinks = buildBankDeeplinks ? buildBankDeeplinks(generated.qrString) : null;
-      if (deeplinks?.aba && dto.paywayPaymentUrl) {
-        deeplinks.aba.paywayLink = dto.paywayPaymentUrl;
+    // 1. If ABA PayWay Link is provided, generate a REAL live Dynamic KHQR from ABA production gateway
+    if (paywayUrl) {
+      if (!paywayUrl.startsWith('http://') && !paywayUrl.startsWith('https://')) {
+        throw new BadRequestException('Invalid ABA PayWay URL format. Must start with https://link.payway.com.kh/...');
       }
 
-      return {
-        success: true,
-        testMode: true,
-        qrString: generated.qrString,
-        md5: generated.md5,
-        bakongId,
-        merchantName,
-        merchantCity,
-        amount: 1.0,
-        currency: 'USD',
-        billNumber: testBillNumber,
-        deeplinks,
-        paywayPaymentUrl: dto.paywayPaymentUrl || null,
-        message: 'Dynamic test KHQR generated successfully. Ready to scan and verify.',
-      };
+      try {
+        const direct = await this.paywayDirectService.createInvoice({
+          amount: 1.0,
+          currency: 'USD',
+          checkoutUrl: paywayUrl,
+        });
+
+        const parsed = parseKhqr ? parseKhqr(direct.qrString) : null;
+        const deeplinks = buildBankDeeplinks ? buildBankDeeplinks(direct.qrString) : {};
+        if (deeplinks?.aba) {
+          deeplinks.aba.paywayLink = paywayUrl;
+        }
+
+        const realMerchantName = parsed?.merchantName || merchantName;
+        const realMerchantCity = (parsed?.merchantCity && parsed.merchantCity !== 'N/A') ? parsed.merchantCity : merchantCity;
+
+        return {
+          success: true,
+          testMode: true,
+          liveGateway: true,
+          qrString: direct.qrString,
+          tranId: direct.tranId,
+          clientId: direct.clientId,
+          md5: computeMd5 ? computeMd5(direct.qrString) : '',
+          bakongId: parsed?.bakongId || 'ABA PayWay Gateway',
+          merchantName: realMerchantName,
+          merchantCity: realMerchantCity,
+          amount: 1.0,
+          currency: 'USD',
+          billNumber: direct.tranId || testBillNumber,
+          deeplinks,
+          paywayPaymentUrl: paywayUrl,
+          message: 'Dynamic test KHQR generated directly from ABA PayWay gateway. 100% ready to scan with ABA Mobile or Bakong.',
+        };
+      } catch (err: any) {
+        this.logger.error(`Failed to generate real KHQR from ABA link ${paywayUrl}: ${err.message}`);
+        throw new BadRequestException(
+          `Unable to generate KHQR from ABA PayWay link (${err.message}). Please verify the link copied from ABA Mobile -> Services -> ABA Merchant.`
+        );
+      }
     }
 
-    // In-memory fallback Tag 01=12 EMVCo generator
-    const qrString = `00020101021229${String(bakongId.length + 4).padStart(2, '0')}00${String(bakongId.length).padStart(2, '0')}${bakongId}52045999530384054041.005802KH59${String(merchantName.length).padStart(2, '0')}${merchantName}60${String(merchantCity.length).padStart(2, '0')}${merchantCity}6304ABCD`;
+    // 2. If Bakong ID is provided (without PayWay link)
+    if (bakongId) {
+      if (buildKhqr) {
+        const generated = buildKhqr({
+          bakongId,
+          merchantName,
+          merchantCity,
+          amount: 1.0,
+          currency: 'USD',
+          billNumber: testBillNumber,
+        });
 
-    return {
-      success: true,
-      testMode: true,
-      qrString,
-      md5: 'test-md5-placeholder',
-      bakongId,
-      merchantName,
-      merchantCity,
-      amount: 1.0,
-      currency: 'USD',
-      billNumber: testBillNumber,
-      deeplinks: null,
-      paywayPaymentUrl: dto.paywayPaymentUrl || null,
-      message: 'Dynamic test KHQR generated successfully. Ready to scan and verify.',
-    };
+        const deeplinks = buildBankDeeplinks ? buildBankDeeplinks(generated.qrString) : null;
+
+        return {
+          success: true,
+          testMode: true,
+          liveGateway: false,
+          qrString: generated.qrString,
+          md5: generated.md5,
+          bakongId,
+          merchantName,
+          merchantCity,
+          amount: 1.0,
+          currency: 'USD',
+          billNumber: testBillNumber,
+          deeplinks,
+          paywayPaymentUrl: null,
+          message: 'Dynamic test KHQR generated for Bakong ID. Ready to scan and verify.',
+        };
+      }
+    }
+
+    throw new BadRequestException('Unable to generate KHQR. Please provide a valid ABA PayWay link or Bakong ID.');
   }
 }

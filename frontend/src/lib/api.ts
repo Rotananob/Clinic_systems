@@ -652,7 +652,7 @@ class ApiClient {
         body: JSON.stringify(data),
       }),
     getQuotaStatus: () => this.request<any>('/payments/quota-status'),
-    testKhqr: (data?: { amount?: number; currency?: string }) =>
+    testKhqr: (data?: { amount?: number; currency?: string; paywayPaymentUrl?: string }) =>
       this.request<{
         success: boolean;
         qrString: string;

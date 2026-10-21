@@ -86,8 +86,16 @@ export class PaymentsController {
   @ApiOperation({ summary: 'Generate quick test KHQR to verify ABA PayWay merchant link' })
   @Roles(Role.ADMIN, Role.DOCTOR, Role.CASHIER, Role.RECEPTIONIST)
   @Post('test-khqr')
-  testKhqr(@Body() body: { amount?: number; currency?: string }, @Request() req: any) {
-    return this.paymentsService.generateTestKhqr(req?.user, body?.amount || 1.0, body?.currency || 'USD');
+  testKhqr(
+    @Body() body: { amount?: number; currency?: string; paywayPaymentUrl?: string },
+    @Request() req: any,
+  ) {
+    return this.paymentsService.generateTestKhqr(
+      req?.user,
+      body?.amount || 1.0,
+      body?.currency || 'USD',
+      body?.paywayPaymentUrl,
+    );
   }
 
   @ApiOperation({ summary: 'Get current evaluation account daily quota status' })

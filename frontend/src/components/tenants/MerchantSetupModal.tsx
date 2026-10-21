@@ -326,13 +326,25 @@ export const MerchantSetupModal: React.FC<MerchantSetupModalProps> = ({
                       <span>{isKm ? 'Dynamic KHQR Tag 01=12 ត្រឹមត្រូវ' : 'Tag 01=12 Dynamic KHQR Verified'}</span>
                     </div>
                     <div>
-                      <span className="font-semibold text-stone-700">{isKm ? 'ឈ្មោះ Merchant: ' : 'Merchant Name: '}</span>
-                      <span>{testResult.merchantName}</span>
+                      <span className="font-semibold text-stone-700">{isKm ? 'ឈ្មោះ Merchant (ABA): ' : 'Merchant Name: '}</span>
+                      <span className="font-bold text-stone-900">{testResult.merchantName}</span>
                     </div>
-                    <div>
-                      <span className="font-semibold text-stone-700">{isKm ? 'Bakong ID: ' : 'Bakong ID: '}</span>
-                      <code>{testResult.bakongId}</code>
-                    </div>
+                    {testResult.liveGateway ? (
+                      <div className="text-[11px] text-teal-800 font-semibold flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-teal-600 animate-pulse" />
+                        <span>{isKm ? 'ប្រភព: ABA PayWay Live Production Gateway (ស្កេនបានពិតៗ)' : 'Source: ABA PayWay Production Gateway (100% Scannable)'}</span>
+                      </div>
+                    ) : testResult.bakongId && testResult.bakongId !== 'aba_payway@aba' ? (
+                      <div>
+                        <span className="font-semibold text-stone-700">{isKm ? 'Bakong ID: ' : 'Bakong ID: '}</span>
+                        <code>{testResult.bakongId}</code>
+                      </div>
+                    ) : null}
+                    {testResult.tranId && (
+                      <div className="text-[11px] font-mono text-stone-500">
+                        <span>TranID: {testResult.tranId}</span>
+                      </div>
+                    )}
                     <div>
                       <span className="font-semibold text-stone-700">{isKm ? 'ចំនួនទឹកប្រាក់: ' : 'Amount: '}</span>
                       <span className="font-bold text-stone-900">$1.00 USD</span>

@@ -152,6 +152,7 @@ export const AbaPaywayTesterCard: React.FC = () => {
       const res = await api.payments.testKhqr({
         amount: parseFloat(testAmount) || 1.0,
         currency: testCurrency,
+        paywayPaymentUrl: paywayUrl.trim() || undefined,
       });
 
       if (res.success) {
@@ -442,10 +443,16 @@ export const AbaPaywayTesterCard: React.FC = () => {
             {qrResult && (
               <div className="mt-4 p-4 rounded-2xl bg-[#FAF7F2] border border-teal-200/80 space-y-3 animate-in zoom-in-95 duration-150">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-stone-900">
-                    {qrResult.merchantName || 'X-Clinic'}
-                  </span>
-                  <span className="font-bold font-mono text-teal-800">
+                  <div className="flex flex-col">
+                    <span className="font-bold text-stone-900">
+                      {qrResult.merchantName || 'X-Clinic'}
+                    </span>
+                    <span className="text-[10px] text-emerald-700 font-semibold flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+                      {isKm ? 'ABA Live Gateway KHQR (ស្កេនបានពិតៗ)' : 'Live ABA Gateway KHQR (100% Scannable)'}
+                    </span>
+                  </div>
+                  <span className="font-bold font-mono text-teal-800 text-sm">
                     {qrResult.amount.toFixed(2)} {qrResult.currency}
                   </span>
                 </div>

@@ -38,7 +38,7 @@ import { SAAS_PLANS } from '../common/constants/plans.constant';
 import { PlanTier } from '@prisma/client';
 
 const khqrHelper = loadKhqrHelper();
-const { KhqrGateway, verifySettlement, buildKhqr, buildBankDeeplinks, computeMd5 } = khqrHelper;
+const { KhqrGateway, verifySettlement, buildKhqr, buildBankDeeplinks, computeMd5, parseKhqr } = khqrHelper;
 
 const isValidUuid = (val?: string | null): boolean => {
   if (!val || typeof val !== 'string') return false;
@@ -913,7 +913,7 @@ export class PaymentsService {
   }
 
 
-  async generateTestKhqr(user?: any, amount = 1.0, currency = 'USD') {
+  async generateTestKhqr(user?: any, amount = 1.0, currency = 'USD', customPaywayUrl?: string) {
     let tenantId = user?.tenantId;
     if (!tenantId && user?.id) {
       const dbUser = await this.prisma.user.findUnique({
@@ -932,29 +932,54 @@ export class PaymentsService {
       : null;
 
     const paywayLink =
+      customPaywayUrl?.trim() ||
       tenant?.paywayPaymentUrl ||
       this.configService.get<string>('PAYWAY_PAYMENT_URL') ||
       'https://link.payway.com.kh/ABAPAYCK539089j';
     const merchantName = tenant?.merchantName || tenant?.clinicNameEn || 'X-Clinic';
     const merchantCity = tenant?.merchantCity || 'Phnom Penh';
-    const bakongId = tenant?.bakongAccountId || 'rotana_clinic@aba';
+    const bakongId = tenant?.bakongAccountId;
 
     let qrString = '';
     let tranId = `TEST-${Date.now().toString().slice(-6)}`;
     let deeplinks: any = {};
     let md5 = '';
+    let resolvedMerchantName = merchantName;
 
-    try {
-      const direct = await this.paywayDirectService.createInvoice({
-        amount: Number(amount) || 1.0,
-        currency: (currency as 'USD' | 'KHR') || 'USD',
-        checkoutUrl: paywayLink,
-      });
-      qrString = direct.qrString;
-      tranId = direct.tranId;
-      deeplinks = buildBankDeeplinks(qrString);
-      md5 = computeMd5 ? computeMd5(qrString) : '';
-    } catch {
+    if (paywayLink) {
+      try {
+        const direct = await this.paywayDirectService.createInvoice({
+          amount: Number(amount) || 1.0,
+          currency: (currency as 'USD' | 'KHR') || 'USD',
+          checkoutUrl: paywayLink,
+        });
+        qrString = direct.qrString;
+        tranId = direct.tranId;
+        deeplinks = buildBankDeeplinks(qrString);
+        md5 = computeMd5 ? computeMd5(qrString) : '';
+        const parsed = parseKhqr ? parseKhqr(qrString) : null;
+        if (parsed?.merchantName) {
+          resolvedMerchantName = parsed.merchantName;
+        }
+      } catch (err: any) {
+        if (!bakongId) {
+          throw new BadRequestException(
+            `Unable to generate live KHQR from ABA PayWay (${err.message}). Please verify that your link is copied correctly from ABA Mobile -> Services -> ABA Merchant.`
+          );
+        }
+        const local = buildKhqr({
+          bakongId,
+          merchantName,
+          merchantCity,
+          amount: Number(amount) || 1.0,
+          currency: (currency as 'USD' | 'KHR') || 'USD',
+          billNumber: `TEST-${Date.now().toString().slice(-5)}`,
+        });
+        qrString = local.qrString;
+        md5 = local.md5;
+        deeplinks = buildBankDeeplinks(qrString);
+      }
+    } else if (bakongId) {
       const local = buildKhqr({
         bakongId,
         merchantName,
@@ -966,6 +991,8 @@ export class PaymentsService {
       qrString = local.qrString;
       md5 = local.md5;
       deeplinks = buildBankDeeplinks(qrString);
+    } else {
+      throw new BadRequestException('Please configure an ABA PayWay link or Bakong ID first.');
     }
 
     if (deeplinks?.aba) {
@@ -996,7 +1023,7 @@ export class PaymentsService {
       tranId,
       amount: Number(amount) || 1.0,
       currency,
-      merchantName,
+      merchantName: resolvedMerchantName,
       paywayLink,
       deeplinks,
       currentUsage: todayCount,
