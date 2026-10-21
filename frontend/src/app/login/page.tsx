@@ -21,6 +21,10 @@ import {
   Clock,
   Zap,
   KeyRound,
+  Sparkles,
+  ArrowRight,
+  Home,
+  CreditCard,
 } from 'lucide-react';
 
 export default function LoginPage() {
@@ -242,41 +246,72 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Real Free Account Registration Callout */}
-        <div className="mt-5 p-4 rounded-2xl bg-[#F0EAE0]/70 border border-[#DFD6C6] text-center space-y-2.5">
-          <p className="text-xs text-stone-700 font-medium">
-            {isKm ? 'មិនទាន់មាន Workspace គ្លីនិកផ្ទាល់ខ្លួន?' : "Don't have a clinic workspace yet?"}
-          </p>
+        {/* Real Free Account Registration Callout - Ultra Cool & Modern Card */}
+        <div className="mt-6 p-4 rounded-2xl bg-gradient-to-b from-white via-[#FAF7F2] to-[#F5EFE4] border border-[#DDD5C5] shadow-sm hover:border-teal-700/40 transition-all duration-300 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-stone-800 flex items-center gap-1.5 font-sans">
+              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+              <span>{isKm ? 'មិនទាន់មាន Workspace គ្លីនិកផ្ទាល់ខ្លួន?' : "Don't have a workspace yet?"}</span>
+            </span>
+            <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold font-mono tracking-wide uppercase">
+              Free 0$
+            </span>
+          </div>
+
           <Link
             href="/register"
-            className="inline-flex items-center justify-center gap-1.5 w-full py-2.5 px-4 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs font-bold transition-all shadow-xs"
+            className="group w-full py-2.5 px-4 bg-teal-800 hover:bg-teal-900 active:scale-98 text-white rounded-xl text-xs font-bold transition-all shadow-sm hover:shadow-md flex items-center justify-between"
           >
-            <span>{isKm ? 'ចុះឈ្មោះបង្កើតគ្លីនិកឥតគិតថ្លៃ (Free Starter)' : 'Register Free Clinic Account'}</span>
+            <span className="font-sans">
+              {isKm ? 'ចុះឈ្មោះបង្កើតគ្លីនិក Free Starter' : 'Register Free Starter Account'}
+            </span>
+            <div className="flex items-center gap-1 text-teal-200 group-hover:text-white transition-colors">
+              <span className="text-[10px] font-mono tracking-wider uppercase font-semibold">
+                {isKm ? 'ចាប់ផ្តើម' : 'Start'}
+              </span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+            </div>
           </Link>
+
+          <div className="flex items-center justify-between text-[11px] text-stone-500 font-sans px-1">
+            <span>{isKm ? 'ដំឡើងត្រឹម 60 វិនាទី' : '60-second setup'}</span>
+            <span className="text-stone-300">•</span>
+            <span>{isKm ? '10 KHQR ក្នុងមួយថ្ងៃ' : '10 KHQR daily'}</span>
+            <span className="text-stone-300">•</span>
+            <span>{isKm ? 'គ្មានកាតធនាគារ' : 'No credit card'}</span>
+          </div>
         </div>
 
-        {/* Public SaaS Navigation Links */}
-        <div className="mt-4 flex items-center justify-center gap-4 text-xs font-semibold text-stone-600">
-          <Link href="/landing" className="hover:text-teal-800 transition-colors">
-            {isKm ? 'ទំព័រដើម (SaaS Home)' : 'Public Home'}
+        {/* Public SaaS Navigation Links - Clean Tactile Pills without parentheses */}
+        <div className="mt-4 flex items-center justify-center gap-2 text-xs font-semibold text-stone-600">
+          <Link
+            href="/landing"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-stone-200/60 hover:text-teal-900 transition-colors"
+          >
+            <Home className="w-3.5 h-3.5 text-stone-500" />
+            <span>{isKm ? 'ទំព័រដើម' : 'Public Home'}</span>
           </Link>
-          <span>•</span>
-          <Link href="/pricing" className="hover:text-teal-800 transition-colors">
-            {isKm ? 'គម្រោងតម្លៃសេវាកម្ម (Pricing Plans)' : 'View Pricing Plans'}
+          <span className="text-stone-300">•</span>
+          <Link
+            href="/pricing"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-stone-200/60 hover:text-teal-900 transition-colors"
+          >
+            <CreditCard className="w-3.5 h-3.5 text-stone-500" />
+            <span>{isKm ? 'គម្រោងតម្លៃសេវាកម្ម' : 'Pricing Plans'}</span>
           </Link>
         </div>
 
         {/* Security Policy Notice Footer */}
-        <div className="mt-6 pt-4 border-t border-[#E7E1D4] text-center">
-          <div className="flex items-center justify-center gap-1.5 text-[11px] font-semibold text-stone-600">
-            <ShieldAlert className="w-3.5 h-3.5 text-stone-500" />
+        <div className="mt-6 pt-4 border-t border-[#E7E1D4] text-center space-y-1">
+          <div className="inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-full bg-[#FAF7F2] border border-[#E7E0D2] text-[11px] font-semibold text-stone-700 shadow-2xs">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
             <span>
               {isKm
                 ? 'ប្រព័ន្ធសុវត្ថិភាពព័ត៌មានវិទ្យាគ្លីនិក ហាមការចូលដោយគ្មានសិទ្ធិ'
                 : 'Authorized Clinic Staff Personnel Only'}
             </span>
           </div>
-          <p className="text-[10px] text-stone-400 mt-1 leading-relaxed">
+          <p className="text-[10px] text-stone-400 leading-relaxed font-sans">
             {isKm
               ? 'គ្រប់សកម្មភាពចូលប្រព័ន្ធត្រូវបានកត់ត្រាក្នុង Audit Trail ដើម្បីការពារអ្នកជំងឺ'
               : 'All authentication events are logged for patient confidentiality and audit compliance.'}

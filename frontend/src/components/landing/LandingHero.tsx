@@ -354,7 +354,7 @@ export const LandingHero: React.FC = () => {
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#FAF7F2] hover:bg-[#F2ECE1] text-stone-800 border border-[#DFD6C6] rounded-xl text-xs sm:text-sm font-semibold shadow-xs transition-colors active:scale-95"
             >
               <Users className="w-4 h-4 text-stone-600" />
-              <span>{isKm ? 'ចូលប្រើប្រាស់គណនី (Sign In)' : 'Sign In to Portal'}</span>
+              <span>{isKm ? 'ចូលប្រើប្រាស់គណនី' : 'Sign In to Portal'}</span>
             </Link>
           </div>
 
@@ -813,7 +813,7 @@ export const LandingHero: React.FC = () => {
                     <span className="text-stone-500 font-sans">{isKm ? 'ស្ថានភាព QR:' : 'QR Status:'}</span>
                     <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-mono text-[10px]">
                       <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      <span>{isKm ? 'ដំណើរការអចិន្ត្រៃយ៍ (Permanent Live)' : 'Permanent Live Active'}</span>
+                      <span>{isKm ? 'ដំណើរការអចិន្ត្រៃយ៍' : 'Permanent Live Active'}</span>
                     </span>
                   </div>
 
@@ -954,7 +954,7 @@ export const LandingHero: React.FC = () => {
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-stone-800 flex items-center gap-1.5">
                         <Mic className="w-3.5 h-3.5 text-teal-800" />
-                        <span>{isKm ? 'សំឡេងវេជ្ជសាស្ត្រខ្មែរ (Dictation Transcript)' : 'Live Clinical Transcript'}</span>
+                        <span>{isKm ? 'សំឡេងវេជ្ជសាស្ត្រខ្មែរ' : 'Live Clinical Transcript'}</span>
                       </span>
                       {isRecording && (
                         <span className="text-[11px] font-bold text-rose-600 animate-pulse flex items-center gap-1">

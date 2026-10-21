@@ -279,7 +279,7 @@ function RegisterContent() {
                   className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 transition-colors"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  <span>{isKm ? 'ត្រឡប់ក្រោយ (Back)' : 'Back to Edit Details'}</span>
+                  <span>{isKm ? 'ត្រឡប់ក្រោយ' : 'Back to Edit Details'}</span>
                 </button>
                 <span className="text-xs font-mono text-stone-500 bg-stone-100 px-2.5 py-1 rounded-md">
                   {isKm ? 'សុពលភាព:' : 'Expires in:'} {formatCountdown(countdown)}
@@ -305,7 +305,7 @@ function RegisterContent() {
                 <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 space-y-1">
                   <div className="font-bold flex items-center gap-1.5">
                     <KeyRound className="w-4 h-4 text-amber-700" />
-                    <span>{isKm ? 'លេខកូដបញ្ជាក់ (Local Preview):' : 'Local Testing Code Preview:'}</span>
+                    <span>{isKm ? 'លេខកូដបញ្ជាក់ Local Preview:' : 'Local Testing Code Preview:'}</span>
                     <span className="font-mono text-sm bg-white px-2 py-0.5 rounded border border-amber-300 font-extrabold text-amber-900">
                       {devCodePreview}
                     </span>
@@ -378,7 +378,7 @@ function RegisterContent() {
                       disabled={loading}
                       className="font-bold text-teal-800 hover:underline disabled:opacity-50"
                     >
-                      {isKm ? 'ផ្ញើលេខកូដឡើងវិញ (Resend)' : 'Resend Code'}
+                      {isKm ? 'ផ្ញើលេខកូដឡើងវិញ' : 'Resend Code'}
                     </button>
                   </div>
                 </div>
@@ -400,7 +400,7 @@ function RegisterContent() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <label className="block text-xs font-black text-stone-900 uppercase tracking-wider">
-                        {isKm ? '១. ជ្រើសរើសគម្រោង (Select Plan Tier)' : '1. Select Plan Tier'}
+                        {isKm ? '១. ជ្រើសរើសគម្រោង' : '1. Select Plan Tier'}
                       </label>
                       {isYearly && (
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-800 border border-amber-300">
@@ -431,8 +431,9 @@ function RegisterContent() {
                           }`}
                         >
                           {isSelected ? (
-                            <span className="absolute -top-2 right-2 px-1.5 py-0.2 rounded-full text-[9px] font-black bg-teal-800 text-white shadow-xs">
-                              {isKm ? '✓' : 'ACTIVE'}
+                            <span className="absolute -top-2 right-2 px-1.5 py-0.5 rounded-full text-[9px] font-black bg-teal-800 text-white shadow-xs flex items-center gap-0.5">
+                              <Check className="w-2.5 h-2.5 text-white" />
+                              <span>{isKm ? 'បានជ្រើស' : 'ACTIVE'}</span>
                             </span>
                           ) : p.popular ? (
                             <span className="absolute -top-2 right-2 px-1.5 py-0.2 rounded-full text-[9px] font-black bg-amber-500 text-white shadow-2xs">
@@ -458,7 +459,7 @@ function RegisterContent() {
                 {/* 2. Fast Account Credentials */}
                 <div className="space-y-4 pt-3 border-t border-stone-100">
                   <label className="block text-xs font-bold text-stone-800 uppercase tracking-wider">
-                    {isKm ? '២. ព័ត៌មានគណនី (Account Credentials)' : '2. Account Credentials'}
+                    {isKm ? '២. ព័ត៌មានគណនី' : '2. Account Credentials'}
                   </label>
 
                   <div>
@@ -496,7 +497,7 @@ function RegisterContent() {
 
                   <div>
                     <label className="block text-xs font-semibold text-stone-700 mb-1">
-                      {isKm ? 'ពាក្យសម្ងាត់ (Password) *' : 'Password (min 6 characters) *'}
+                      {isKm ? 'ពាក្យសម្ងាត់ *' : 'Password (min 6 characters) *'}
                     </label>
                     <div className="relative">
                       <Lock className="w-4 h-4 text-stone-400 absolute left-3.5 top-3 pointer-events-none" />
@@ -528,7 +529,7 @@ function RegisterContent() {
                     ) : (
                       <>
                         <Send className="w-4 h-4" />
-                        <span>{isKm ? 'ផ្ញើលេខកូដបញ្ជាក់ទៅ Gmail (Send 6-Digit Code)' : 'Send Confirmation Code to Gmail'}</span>
+                        <span>{isKm ? 'ផ្ញើលេខកូដបញ្ជាក់ទៅ Gmail' : 'Send Confirmation Code to Gmail'}</span>
                         <ArrowRight className="w-4 h-4" />
                       </>
                     )}
@@ -537,7 +538,7 @@ function RegisterContent() {
                   <p className="text-center text-xs text-stone-500 mt-4">
                     {isKm ? 'មានគណនីរួចហើយ?' : 'Already have an account?'}{' '}
                     <Link href="/login" className="font-bold text-teal-800 hover:underline">
-                      {isKm ? 'ចូលប្រើប្រាស់ (Log in)' : 'Sign In'}
+                      {isKm ? 'ចូលប្រើប្រាស់' : 'Sign In'}
                     </Link>
                   </p>
                 </div>
