@@ -69,9 +69,9 @@ export const ClinicLogo: React.FC<ClinicLogoProps> = ({
     }
   }, [clinicNameKh, clinicNameEn, planTier]);
 
-  const displayNameKh = resolvedNames.kh || 'មន្ទីរសម្រាកព្យាបាល';
-  const displayNameEn = resolvedNames.en || 'Medical Clinic & Center';
-  const displayTier = resolvedNames.tier ? resolvedNames.tier.replace('_', ' ') : 'CLINIC';
+  const displayNameKh = resolvedNames.kh || 'X-Clinic មន្ទីរសម្រាកព្យាបាល';
+  const displayNameEn = resolvedNames.en || 'X-Clinic Medical Center';
+  const displayTier = resolvedNames.tier ? resolvedNames.tier.replace('_', ' ') : 'X-CLINIC';
 
   const getIconDimensions = () => {
     switch (size) {
@@ -209,7 +209,7 @@ export const ClinicLogo: React.FC<ClinicLogoProps> = ({
           <div className="text-[11px] font-bold text-teal-800 font-mono tracking-tight truncate uppercase">
             {displayNameEn}
           </div>
-          <div className="text-[10px] text-slate-400 truncate">Smart Health & KHQR</div>
+          <div className="text-[10px] text-slate-400 truncate">X-Clinic Smart Health</div>
         </div>
       </div>
     );
@@ -229,7 +229,7 @@ export const ClinicLogo: React.FC<ClinicLogoProps> = ({
         </div>
         {showSubtitle && (
           <p className="text-[11px] sm:text-xs text-slate-500 mt-1 max-w-xs">
-            ប្រព័ន្ធគ្រប់គ្រងគ្លីនិក & សុខាភិបាលឌីជីថល (Clinical Healthcare & KHQR Bridge)
+            ប្រព័ន្ធគ្រប់គ្រងគ្លីនិក & សុខាភិបាលឌីជីថល (X-Clinic PaaS Platform)
           </p>
         )}
       </div>

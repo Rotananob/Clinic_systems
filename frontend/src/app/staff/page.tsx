@@ -69,7 +69,7 @@ export default function StaffManagementPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (user && user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
+    if (user && user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN' && user.role !== 'DOCTOR') {
       router.push('/');
       return;
     }
@@ -230,6 +230,28 @@ export default function StaffManagementPage() {
           <span>{errorMsg}</span>
         </div>
       )}
+
+            {/* Role-Based Expert Workplace Info Banner */}
+      <div className="bg-gradient-to-r from-teal-50 via-teal-50/50 to-stone-50 border border-teal-200/80 rounded-2xl p-4 sm:p-5 shadow-xs">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-800 text-white uppercase tracking-wider">
+                Expert Workspace Mode
+              </span>
+              <h2 className="text-xs sm:text-sm font-bold text-stone-900">
+                ប្រព័ន្ធកំណត់សិទ្ធិស្វ័យប្រវត្តិតាមជំនាញ (Expert-Only Focus)
+              </h2>
+            </div>
+            <p className="text-xs text-stone-600 leading-relaxed max-w-3xl">
+              គណនីបុគ្គលិកដែលបានបង្កើតនៅទីនេះ ពេល Login ចូលប្រើប្រាស់នឹងទទួលបានតែឧបករណ៍ចំគោលដៅការងាររបស់ខ្លួន (Doctor: ពិគ្រោះ & ព្យាបាល, Pharmacist: ឱសថ & ស្តុក, Cashier: គិតលុយ & KHQR, Receptionist: ចុះឈ្មោះ & Queue) ដោយលាក់ប៊ូតុងមិនចាំបាច់ដើម្បីការពារការវង្វេង។
+            </p>
+          </div>
+          <div className="text-[11px] font-semibold text-teal-900 bg-white/80 border border-teal-200 px-3 py-1.5 rounded-xl shrink-0">
+            Protected Multi-Tenant RBAC
+          </div>
+        </div>
+      </div>
 
       {/* Filters & Search */}
       <div className="flex flex-col sm:flex-row gap-4 justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-sm">

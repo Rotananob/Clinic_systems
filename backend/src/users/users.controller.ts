@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Body, Param, Query, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, UseGuards, Req, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -8,7 +8,7 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 import { TestAccountThrottleService } from '../common/services/test-account-throttle.service';
 
-@ApiTags('Staff & Users (RBAC)')
+@ApiTags('Users & Staff')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('users')
@@ -18,8 +18,8 @@ export class UsersController {
     private readonly throttleService: TestAccountThrottleService,
   ) {}
 
-  @ApiOperation({ summary: 'Create staff account (Admin & Super Admin only)' })
-  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Create staff account (Admin, Doctor & Super Admin)' })
+  @Roles(Role.ADMIN, Role.DOCTOR)
   @Post()
   create(@Body() dto: CreateUserDto, @Req() req: any) {
     this.throttleService.checkAndIncrement(
@@ -33,7 +33,7 @@ export class UsersController {
   }
 
   @ApiOperation({ summary: 'List all staff users' })
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.DOCTOR)
   @ApiQuery({ name: 'role', enum: Role, required: false })
   @Get()
   findAll(@Query('role') role?: Role) {
@@ -58,8 +58,8 @@ export class UsersController {
     return this.usersService.updateProfile(req.user.id, dto);
   }
 
-  @ApiOperation({ summary: 'Toggle user active status (Admin & Super Admin only)' })
-  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Toggle user active status (Admin, Doctor & Super Admin)' })
+  @Roles(Role.ADMIN, Role.DOCTOR)
   @Patch(':id/toggle-active')
   toggleActive(@Param('id') id: string, @Req() req: any) {
     return this.usersService.toggleActive(id, req.user?.role);

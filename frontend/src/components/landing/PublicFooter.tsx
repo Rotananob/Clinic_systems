@@ -20,7 +20,7 @@ export const PublicFooter: React.FC = () => {
                 <Activity className="w-4 h-4 text-teal-100" />
               </div>
               <span className="font-bold text-base text-stone-900 tracking-tight font-sans">
-                ClinicOS PaaS
+                X-Clinic PaaS
               </span>
             </div>
             <p className="text-xs text-stone-500 leading-relaxed">
@@ -135,7 +135,7 @@ export const PublicFooter: React.FC = () => {
         {/* Bottom copyright & disclaimer */}
         <div className="pt-8 border-t border-[#EAE3D5] flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-stone-500">
           <div>
-            &copy; {new Date().getFullYear()} ClinicOS PaaS (Cambodia). All rights reserved.
+            &copy; {new Date().getFullYear()} X-Clinic PaaS (Cambodia). All rights reserved.
           </div>
           <div className="flex items-center gap-4">
             <Link href="/help" className="hover:text-stone-800 transition-colors">

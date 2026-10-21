@@ -13,6 +13,7 @@ import { OfflineSyncBanner } from '../common/OfflineSyncBanner';
 import { PwaRegister } from '../common/PwaRegister';
 import { CommandPalette } from '../common/CommandPalette';
 import { ClinicLogo } from '../common/ClinicLogo';
+import { FirstTimeClinicSetupModal } from '../onboarding/FirstTimeClinicSetupModal';
 import { ShieldCheck, Loader2, Sparkles, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { isRouteAllowed, getRoleDisplayName, isRouteAllowedForPlan, getRequiredPlanForRoute } from '../../lib/rbac';
@@ -265,6 +266,17 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
         <MobileNavDock />
         <PwaRegister />
         <CommandPalette />
+        <FirstTimeClinicSetupModal
+          isOpen={Boolean(
+            mounted &&
+            user &&
+            !isPublicRoute &&
+            (user.role === 'ADMIN' || user.role === 'DOCTOR') &&
+            user.tenant &&
+            (!user.tenant.clinicNameKh || user.tenant.clinicNameEn === 'New Clinic' || (!user.tenant.paywayPaymentUrl && !user.tenant.bakongAccountId))
+          )}
+          onComplete={() => {}}
+        />
       </div>
     </div>
   );

@@ -175,6 +175,14 @@ export class AuthService {
           'គណនីគ្លីនិកនេះត្រូវបានផ្អាកដំណើរការជាបណ្ដោះអាសន្ន។ សូមទាក់ទង Super Admin (Clinic workspace is currently suspended).',
         );
       }
+      if (tenantInfo) {
+        (tenantInfo as any).isOnboarded = Boolean(
+          tenantInfo.clinicNameKh &&
+          tenantInfo.clinicNameEn &&
+          tenantInfo.clinicNameEn !== 'New Clinic' &&
+          (tenantInfo.paywayPaymentUrl || tenantInfo.bakongAccountId)
+        );
+      }
     }
 
     const isMatch = await bcrypt.compare(password, user.passwordHash);
@@ -272,8 +280,14 @@ export class AuthService {
       throw new BadRequestException('An account with this email address already exists.');
     }
 
-    // 2. Generate unique subdomain slug from English clinic name
-    let baseSlug = (dto.clinicNameEn || 'clinic')
+    // 2. Resolve clinic names with optional defaults
+    const clinicNameEn = (dto.clinicNameEn || '').trim() || (dto.adminName?.trim() ? `${dto.adminName.trim()} Clinic` : 'New Clinic');
+    const clinicNameKh = (dto.clinicNameKh || '').trim();
+    const phone = (dto.phone || '').trim();
+    const clinicType = dto.clinicType?.trim() || 'General Medical Clinic';
+
+    // 3. Generate unique subdomain slug from English clinic name
+    let baseSlug = clinicNameEn
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '');
@@ -290,22 +304,22 @@ export class AuthService {
       }
     }
 
-    // 3. Resolve plan tier configuration and quotas
+    // 4. Resolve plan tier configuration and quotas
     const selectedTier = dto.planTier || PlanTier.FREE;
     const planConfig = SAAS_PLANS[selectedTier] || SAAS_PLANS[PlanTier.FREE];
     const passwordHash = await bcrypt.hash(dto.password, 10);
     const now = new Date();
     const periodEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
-    // 4. Atomically provision Isolated Tenant Workspace, Subscription, and Admin User within 2 seconds
+    // 5. Atomically provision Isolated Tenant Workspace, Subscription, and Admin User within 2 seconds
     const result = await this.prisma.$transaction(async (tx) => {
       const tenant = await tx.tenant.create({
         data: {
           slug: uniqueSlug,
-          clinicNameKh: dto.clinicNameKh.trim(),
-          clinicNameEn: dto.clinicNameEn.trim(),
-          clinicType: dto.clinicType?.trim() || 'Polyclinic & Outpatient Center',
-          phonePrimary: dto.phone.trim(),
+          clinicNameKh,
+          clinicNameEn,
+          clinicType,
+          phonePrimary: phone,
           email: normalizedEmail,
           planTier: selectedTier,
           subscriptionStatus: SubscriptionStatus.ACTIVE,
@@ -335,10 +349,10 @@ export class AuthService {
           tenantId: tenant.id,
           email: normalizedEmail,
           passwordHash,
-          fullNameEn: dto.adminName?.trim() || `${dto.clinicNameEn.trim()} Admin`,
-          fullNameKh: dto.clinicNameKh.trim(),
+          fullNameEn: dto.adminName?.trim() || `${clinicNameEn} Admin`,
+          fullNameKh: clinicNameKh || dto.adminName?.trim() || 'គ្លីនិកថ្មី',
           role: Role.ADMIN,
-          phone: dto.phone.trim(),
+          phone: phone,
           department: 'Management',
           isActive: true,
         },
@@ -418,6 +432,7 @@ export class AuthService {
         planTier: result.tenant.planTier,
         maxDailyKhqr: result.tenant.maxDailyKhqr,
         maxMonthlyPatients: result.tenant.maxMonthlyPatients,
+        isOnboarded: Boolean(result.tenant.clinicNameKh && result.tenant.paywayPaymentUrl),
       },
       message: 'Clinic workspace provisioned successfully.',
     };
@@ -463,6 +478,15 @@ export class AuthService {
 
     if (!user || !user.isActive) {
       throw new UnauthorizedException('User account is inactive or not found');
+    }
+
+    if (user.tenant) {
+      (user.tenant as any).isOnboarded = Boolean(
+        user.tenant.clinicNameKh &&
+        user.tenant.clinicNameEn &&
+        user.tenant.clinicNameEn !== 'New Clinic' &&
+        (user.tenant.paywayPaymentUrl || user.tenant.bakongAccountId)
+      );
     }
 
     const permissions = ROLE_PERMISSIONS_MATRIX[user.role] || [];

@@ -26,14 +26,14 @@ export const PublicNavbar: React.FC = () => {
           <div>
             <div className="flex items-center gap-2">
               <span className="font-bold text-base sm:text-lg text-stone-900 tracking-tight font-sans">
-                ClinicOS
+                X-Clinic
               </span>
               <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-teal-100 text-teal-800 border border-teal-200">
                 PaaS
               </span>
             </div>
             <p className="text-[11px] text-stone-500 hidden sm:block">
-              {isKm ? 'ប្រព័ន្ធគ្រប់គ្រងគ្លីនិក & KHQR Cambodia' : 'Cambodia Medical Cloud Platform'}
+              {isKm ? 'ប្រព័ន្ធគ្រប់គ្រងគ្លីនិក & ABA PayWay KHQR' : 'Smart Cloud Clinic Platform'}
             </p>
           </div>
         </Link>

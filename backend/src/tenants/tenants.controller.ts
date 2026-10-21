@@ -21,16 +21,16 @@ export class TenantsController {
     return this.tenantsService.getTenantProfile(req.user);
   }
 
-  @ApiOperation({ summary: 'Update clinic workspace profile, identity, and merchant credentials (Admin only)' })
-  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Update clinic workspace profile, identity, and merchant credentials (Admin & Doctor)' })
+  @Roles(Role.ADMIN, Role.DOCTOR)
   @ApiResponse({ status: 200, description: 'Clinic profile and merchant settings updated successfully' })
   @Patch('profile')
   updateTenantProfile(@Request() req: any, @Body() dto: UpdateTenantProfileDto) {
     return this.tenantsService.updateTenantProfile(dto, req.user);
   }
 
-  @ApiOperation({ summary: 'Paste & Go: Setup Bakong Account ID and PayWay Merchant Credentials (Admin only)' })
-  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Paste & Go: Setup Bakong Account ID and PayWay Merchant Credentials (Admin & Doctor)' })
+  @Roles(Role.ADMIN, Role.DOCTOR)
   @ApiResponse({ status: 200, description: 'Merchant credentials saved and isolated dynamic KHQR activated' })
   @Post('setup-merchant')
   setupMerchant(@Request() req: any, @Body() dto: SetupMerchantDto) {
@@ -38,7 +38,7 @@ export class TenantsController {
   }
 
   @ApiOperation({ summary: 'Generate instant test Dynamic KHQR to verify merchant credentials' })
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.DOCTOR)
   @Post('test-merchant-khqr')
   testMerchantKhqr(@Body() dto: SetupMerchantDto) {
     return this.tenantsService.generateTestKhqr(dto);

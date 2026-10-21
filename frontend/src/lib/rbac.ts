@@ -186,7 +186,7 @@ export const ROUTE_PERMISSIONS: RoutePermission[] = [
   },
   {
     path: '/staff',
-    allowedRoles: ['SUPER_ADMIN', 'ADMIN'],
+    allowedRoles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR'],
     labelEn: 'Staff & Role Management',
     labelKh: 'គ្រប់គ្រងបុគ្គលិក & តួនាទី',
     descriptionEn: 'Create and manage clinic staff credentials and accounts',

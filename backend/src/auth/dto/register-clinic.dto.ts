@@ -3,20 +3,20 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PlanTier } from '@prisma/client';
 
 export class RegisterClinicDto {
-  @ApiProperty({ example: 'គ្លីនិក សុខភាពល្អ', description: 'Clinic Name in Khmer' })
+  @ApiPropertyOptional({ example: 'គ្លីនិក សុខភាពល្អ', description: 'Clinic Name in Khmer' })
   @IsString()
-  @IsNotEmpty()
-  clinicNameKh: string;
+  @IsOptional()
+  clinicNameKh?: string;
 
-  @ApiProperty({ example: 'Sokhapheap LOR Clinic', description: 'Clinic Name in English' })
+  @ApiPropertyOptional({ example: 'Sokhapheap LOR Clinic', description: 'Clinic Name in English' })
   @IsString()
-  @IsNotEmpty()
-  clinicNameEn: string;
+  @IsOptional()
+  clinicNameEn?: string;
 
-  @ApiProperty({ example: '012345678', description: 'Primary contact phone' })
+  @ApiPropertyOptional({ example: '012345678', description: 'Primary contact phone' })
   @IsString()
-  @IsNotEmpty()
-  phone: string;
+  @IsOptional()
+  phone?: string;
 
   @ApiProperty({ example: 'admin@sokhapheap.com', description: 'Administrator email' })
   @IsEmail()

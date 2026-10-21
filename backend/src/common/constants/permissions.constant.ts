@@ -164,6 +164,7 @@ export const ROLE_PERMISSIONS_MATRIX: Record<Role, string[]> = {
     'QUEUE_MANAGE',
     'PRESCRIPTIONS_CREATE',
     'INVENTORY_MANAGE', // Doctor can view medications catalog
+    'STAFF_MANAGE',
   ],
   RECEPTIONIST: [
     'PATIENTS_READ',
@@ -259,6 +260,7 @@ export const ROLE_ALLOWED_ROUTES: Record<Role, string[]> = {
     '/dental',
     '/teleconsult',
     '/eclaim',
+    '/staff',
     '/profile',
   ],
   RECEPTIONIST: [

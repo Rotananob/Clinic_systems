@@ -1,16 +1,12 @@
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
-import { QRCodeSVG } from 'qrcode.react';
-import { buildDynamicKhqr, buildDynamicPaywayKhqr } from '../../lib/khqr';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslation } from '../../context/I18nContext';
 import { api } from '../../lib/api';
 import { PublicNavbar } from '../../components/landing/PublicNavbar';
 import { PublicFooter } from '../../components/landing/PublicFooter';
-import { MerchantSetupModal } from '../../components/tenants/MerchantSetupModal';
-import { getClinicTargetRoute } from '../../lib/rbac';
 import {
   Clock,
   ShieldCheck,
@@ -18,80 +14,17 @@ import {
   AlertCircle,
   Building2,
   UserCheck,
-  Phone,
   Mail,
   Lock,
   ArrowRight,
   Sparkles,
-  QrCode,
-  Layers,
   Check,
   RefreshCw,
   KeyRound,
   ArrowLeft,
   Send,
-  CreditCard,
+  User,
 } from 'lucide-react';
-
-
-const CLINIC_TYPES = [
-  {
-    id: 'Polyclinic & Outpatient Center',
-    nameKh: 'មន្ទីរសម្រាកព្យាបាល & ពហុព្យាបាល (Polyclinic & Outpatient)',
-    nameEn: 'Polyclinic & Outpatient Center',
-    descKh: 'ពហុឯកទេស មានគ្រែសម្រាក និងបន្ទប់ពិគ្រោះច្រើន',
-    descEn: 'Multi-specialist rooms, bed management, and triage',
-  },
-  {
-    id: 'General Medical Clinic',
-    nameKh: 'គ្លីនិកទូទៅ & វេជ្ជសាស្ត្រគ្រួសារ (General Practice)',
-    nameEn: 'General Medical Clinic',
-    descKh: 'ពិគ្រោះជំងឺទូទៅ កត់ត្រា SOAP និងចេញវេជ្ជបញ្ជា MoH',
-    descEn: 'Outpatient consultations, SOAP clinical notes, e-prescriptions',
-  },
-  {
-    id: 'Dental & Oral Surgery Clinic',
-    nameKh: 'គ្លីនិកទន្តសាស្ត្រ & ធ្មេញ (Dental & Oral Surgery)',
-    nameEn: 'Dental & Oral Surgery Clinic',
-    descKh: 'គំនូសធ្មេញ Odontogram ៣២ គ្រាប់ និងផែនការព្យាបាលតាមដំណាក់កាល',
-    descEn: '32-tooth odontogram mapping and multi-session dental plans',
-  },
-  {
-    id: 'Pharmacy & Community Drugstore',
-    nameKh: 'ឱសថស្ថាន & ហាងលក់ថ្នាំ (Pharmacy & Drugstore)',
-    nameEn: 'Pharmacy & Community Drugstore',
-    descKh: 'គ្រប់គ្រងស្តុកឱសថ បើកថ្នាំតាមវេជ្ជបញ្ជា និងគិតលុយ KHQR POS',
-    descEn: 'Dispensary POS, prescription fulfillment, FEFO inventory tracking',
-  },
-  {
-    id: "Maternity & Women's Health",
-    nameKh: "គ្លីនិកសម្ភព & រោគស្ត្រី (Maternity & Women's Health)",
-    nameEn: "Maternity & Women's Health",
-    descKh: 'តាមដានផ្ទៃពោះ ANC គណនាថ្ងៃសម្រាល និងរូបភាពអេកូសាស្ត្រ',
-    descEn: 'Antenatal care tracking, EDD calculation, ultrasound records',
-  },
-  {
-    id: 'Pediatric & Child Health',
-    nameKh: 'គ្លីនិកកុមារ & វ៉ាក់សាំង (Pediatric & Child Health)',
-    nameEn: 'Pediatric & Child Health',
-    descKh: 'កាលវិភាគវ៉ាក់សាំងកម្ពុជា បន្ទាត់លូតលាស់ WHO និងកម្រិតថ្នាំតាមគីឡូ',
-    descEn: 'Cambodian vaccination schedule, WHO growth chart, dosage calculator',
-  },
-  {
-    id: 'Dermatology & Aesthetic Clinic',
-    nameKh: 'គ្លីនិកសើស្បែក & សម្រស់ (Dermatology & Aesthetics)',
-    nameEn: 'Dermatology & Aesthetic Clinic',
-    descKh: 'ព្យាបាលជំងឺសើស្បែក ឡាស៊ែរ និងសេវាកម្មថែរក្សាសម្រស់',
-    descEn: 'Dermatology procedures, skin therapies, aesthetic wellness',
-  },
-  {
-    id: 'Eye & ENT Specialty Clinic',
-    nameKh: 'គ្លីនិកចក្ខុរោគ & ច្រមុះបំពង់ក (Eye & ENT Clinic)',
-    nameEn: 'Eye & ENT Specialty Clinic',
-    descKh: 'ពិនិត្យភ្នែក វាស់កម្រិតគំហើញ និងជំងឺត្រចៀក ច្រមុះ បំពង់ក',
-    descEn: 'Vision examination, ophthalmic care, and ENT procedures',
-  },
-];
 
 const PLAN_CARDS = [
   {
@@ -162,17 +95,12 @@ function RegisterContent() {
     }
   }, [searchParams]);
 
-  const [clinicType, setClinicType] = useState('Polyclinic & Outpatient Center');
-  const initialClinicName = searchParams.get('clinicName') || '';
-  const [clinicNameKh, setClinicNameKh] = useState(initialClinicName);
-  const [clinicNameEn, setClinicNameEn] = useState('');
   const [adminName, setAdminName] = useState('');
-  const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  // 2-step verification code state
-  const [step, setStep] = useState<'FORM' | 'VERIFY_CODE' | 'PAYMENT_CHECKOUT'>('FORM');
+  // 2-step fast verification code state
+  const [step, setStep] = useState<'FORM' | 'VERIFY_CODE'>('FORM');
   const [verificationCode, setVerificationCode] = useState('');
   const [devCodePreview, setDevCodePreview] = useState<string | null>(null);
   const [countdown, setCountdown] = useState(600); // 10 minutes
@@ -180,8 +108,6 @@ function RegisterContent() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
-  const [registeredData, setRegisteredData] = useState<any>(null);
-  const [isMerchantModalOpen, setIsMerchantModalOpen] = useState(false);
 
   // Countdown timer for verification code
   useEffect(() => {
@@ -198,22 +124,17 @@ function RegisterContent() {
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
-  // Compute live slug preview from clinicNameEn
-  const liveSlug = clinicNameEn
-    ? clinicNameEn.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'clinic'
-    : 'your-clinic';
-
   // Step 1: Send 6-digit confirmation code to Gmail
   const handleRequestCode = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
     setInfoMessage(null);
 
-    if (!clinicNameKh.trim() || !clinicNameEn.trim() || !email.trim() || !password || !phone.trim()) {
+    if (!email.trim() || !password.trim()) {
       setErrorMessage(
         isKm
-          ? 'សូមបំពេញរាល់ព័ត៌មានចាំបាច់ទាំងអស់ជាមុនសិន។'
-          : 'Please complete all required fields first.'
+          ? 'សូមបញ្ចូលអ៊ីមែល Gmail និងពាក្យសម្ងាត់របស់អ្នក។'
+          : 'Please enter your email and password.'
       );
       return;
     }
@@ -247,7 +168,7 @@ function RegisterContent() {
     }
   };
 
-  // Step 2: Verify code and register clinic
+  // Step 2: Verify code and immediately register account
   const handleVerifyAndRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
@@ -265,13 +186,9 @@ function RegisterContent() {
 
     try {
       const res = await api.auth.registerWithCode({
-        clinicNameKh: clinicNameKh.trim(),
-        clinicNameEn: clinicNameEn.trim(),
-        clinicType,
-        adminName: adminName.trim() || undefined,
-        phone: phone.trim(),
         email: email.trim().toLowerCase(),
         password,
+        adminName: adminName.trim() || undefined,
         planTier: selectedPlan,
         verificationCode: verificationCode.trim(),
       });
@@ -280,48 +197,16 @@ function RegisterContent() {
         const fullUser = {
           ...res.user,
           tenant: res.tenant,
-          targetRoute: (res as any).targetRoute,
+          targetRoute: (res as any).targetRoute || '/dashboard',
         };
         localStorage.setItem('clinic_access_token', res.accessToken);
         localStorage.setItem('clinic_user', JSON.stringify(fullUser));
-        setRegisteredData(res);
+
+        // Directly route to dashboard where first-time clinic setup wizard pops up immediately
+        router.push('/dashboard');
       }
     } catch (err: any) {
       setErrorMessage(err.message || 'Verification failed. Please check the code and try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  
-  const handleCompletePaidPayment = async () => {
-    setLoading(true);
-    setErrorMessage(null);
-    try {
-      const res = await api.auth.registerWithCode({
-        clinicNameKh: clinicNameKh.trim(),
-        clinicNameEn: clinicNameEn.trim(),
-        clinicType,
-        adminName: adminName.trim() || undefined,
-        phone: phone.trim(),
-        email: email.trim().toLowerCase(),
-        password,
-        planTier: selectedPlan,
-        verificationCode: verificationCode.trim(),
-      });
-
-      if (res.success && res.accessToken) {
-        const fullUser = {
-          ...res.user,
-          tenant: res.tenant,
-          targetRoute: (res as any).targetRoute,
-        };
-        localStorage.setItem('clinic_access_token', res.accessToken);
-        localStorage.setItem('clinic_user', JSON.stringify(fullUser));
-        setRegisteredData(res);
-      }
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Activation failed. Please check your verification code.');
     } finally {
       setLoading(false);
     }
@@ -352,211 +237,29 @@ function RegisterContent() {
       <PublicNavbar />
 
       <main className="flex-1 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-2xl mx-auto">
           {/* Header Title & Speed Badge */}
           <div className="text-center space-y-3 mb-8">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-100/80 border border-teal-200 text-teal-900 text-xs font-semibold shadow-2xs">
               <Clock className="w-3.5 h-3.5 text-teal-700" />
-              <span>{isKm ? 'ដំណើរការចុះឈ្មោះរហ័ស ៦០ វិនាទី' : '60-Second Instant Onboarding'}</span>
+              <span>{isKm ? 'ចុះឈ្មោះរហ័សត្រឹម ១៥ វិនាទី' : '15-Second Instant Signup'}</span>
             </div>
 
             <h1 className="text-2xl sm:text-3xl font-extrabold text-stone-900 font-sans tracking-tight">
               {isKm
-                ? 'បង្កើត Workspace គ្លីនិករបស់លោកអ្នក'
-                : 'Create Your Clinic Workspace'}
+                ? 'បង្កើតគណនី X-Clinic របស់លោកអ្នក'
+                : 'Create Your X-Clinic Account'}
             </h1>
-            <p className="text-xs sm:text-sm text-stone-600 max-w-xl mx-auto">
+            <p className="text-xs sm:text-sm text-stone-600 max-w-lg mx-auto">
               {isKm
-                ? 'ប្រព័ន្ធបង្កើត Isolated Workspace ជូនក្នុង ២ វិនាទី រួមជាមួយ Dynamic KHQR និងការគ្រប់គ្រងវេជ្ជសាស្ត្រស្តង់ដារ។'
-                : 'Auto-provision your isolated clinic workspace within 2 seconds with native dynamic KHQR and HIPAA medical standards.'}
+                ? 'ចុះឈ្មោះភ្លាមៗតាម Gmail។ លោកអ្នកអាចកំណត់ឈ្មោះគ្លីនិក និងដាក់ ABA Merchant Link ពេល Login លើកដំបូង។'
+                : 'Sign up instantly with Gmail. You can configure your clinic identity and free ABA Merchant Link upon first login.'}
             </p>
           </div>
 
-          {/* Success Screen After Auto-Provisioning */}
-          {registeredData ? (
-            <div className="bg-white rounded-2xl border border-stone-200 p-8 shadow-xl text-center space-y-6">
-              <div className="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center mx-auto shadow-xs">
-                <CheckCircle2 className="w-8 h-8" />
-              </div>
-
-              <div className="space-y-2">
-                <h2 className="text-xl font-bold text-stone-900 font-sans">
-                  {isKm ? 'បង្កើត Workspace ជោគជ័យ!' : 'Workspace Created Successfully!'}
-                </h2>
-                <p className="text-xs text-stone-600 max-w-md mx-auto">
-                  {isKm
-                    ? `គ្លីនិក ${registeredData.tenant?.clinicNameKh} ត្រូវបានបង្កើតរួចរាល់ ជាមួយ Subdomain ផ្លូវការ:`
-                    : `Clinic workspace for ${registeredData.tenant?.clinicNameEn} is provisioned with official subdomain:`}
-                </p>
-                <div className="inline-block px-4 py-2 bg-stone-100 rounded-xl border border-stone-200 text-xs font-mono font-bold text-teal-800">
-                  {registeredData.tenant?.slug}.clinicplatform.com
-                </div>
-              </div>
-
-              <div className="p-4 bg-teal-50 border border-teal-200 rounded-xl text-left space-y-2 max-w-lg mx-auto">
-                <div className="flex items-center gap-2 text-xs font-bold text-teal-900">
-                  <QrCode className="w-4 h-4 text-teal-700" />
-                  <span>
-                    {isKm
-                      ? 'ជំហានបន្ទាប់៖ រៀបចំ Merchant KHQR (Paste & Go)'
-                      : 'Next Step: Setup Merchant KHQR (Paste & Go)'}
-                  </span>
-                </div>
-                <p className="text-[11px] text-teal-950 leading-relaxed">
-                  {isKm
-                    ? 'គ្រាន់តែ Paste Bakong ID ឬ ABA Merchant Link របស់លោកអ្នក នោះ Dynamic KHQR នឹងដំណើរការភ្លាមៗ។'
-                    : 'Paste your Bakong ID or ABA Merchant Link to immediately activate isolated dynamic KHQR generation.'}
-                </p>
-              </div>
-
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsMerchantModalOpen(true)}
-                  className="w-full sm:w-auto px-6 py-2.5 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center justify-center gap-2"
-                >
-                  <QrCode className="w-4 h-4" />
-                  <span>{isKm ? 'រៀបចំ Merchant ឥឡូវនេះ (Paste & Go)' : 'Configure Merchant Now'}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const destination =
-                      registeredData?.targetRoute ||
-                      getClinicTargetRoute({
-                        role: 'ADMIN',
-                        tenant: { clinicType: registeredData?.tenant?.clinicType || clinicType },
-                      });
-                    router.push(destination);
-                  }}
-                  className="w-full sm:w-auto px-6 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-semibold border border-stone-300 transition-colors"
-                >
-                  {isKm ? 'ចូលទៅកាន់ផ្ទាំងគ្រប់គ្រងគ្លីនិក' : 'Go to Clinic Workspace'}
-                </button>
-              </div>
-            </div>
-          
-          ) : step === 'PAYMENT_CHECKOUT' ? (
-            /* Step 3: Instant SaaS Subscription Dynamic KHQR Checkout */
-            <div className="bg-white rounded-3xl border border-stone-200 p-6 sm:p-8 shadow-xl space-y-6">
-              <div className="flex items-center justify-between border-b border-stone-100 pb-4">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setStep('VERIFY_CODE');
-                    setErrorMessage(null);
-                  }}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 transition-colors"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  <span>{isKm ? 'ត្រឡប់ក្រោយ (Back)' : 'Back to Code'}</span>
-                </button>
-                <span className="text-xs font-bold text-teal-800 bg-teal-50 px-2.5 py-1 rounded-full border border-teal-200">
-                  {selectedPlan === 'STARTER_5' ? 'Clinic Starter ($5.00)' : selectedPlan === 'PRO_8' ? 'Polyclinic Pro ($8.00)' : 'Hospital Enterprise ($12.00)'}
-                </span>
-              </div>
-
-              {errorMessage && (
-                <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-                  <span>{errorMessage}</span>
-                </div>
-              )}
-
-              <div className="text-center space-y-2">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-bold border border-amber-200">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-700" />
-                  <span>{isKm ? 'ទូទាត់ប្រាក់ជាវគម្រោង (Subscription Checkout)' : 'Instant KHQR Subscription Checkout'}</span>
-                </div>
-                <h2 className="text-xl sm:text-2xl font-extrabold text-stone-900">
-                  {isKm
-                    ? `ទូទាត់ប្រាក់សម្រាប់គម្រោង ${PLAN_CARDS.find((p) => p.id === selectedPlan)?.nameKh || selectedPlan}`
-                    : `Checkout for ${PLAN_CARDS.find((p) => p.id === selectedPlan)?.nameEn || selectedPlan}`}
-                </h2>
-                <p className="text-xs text-stone-600 max-w-md mx-auto">
-                  {isKm
-                    ? 'ស្កេន Dynamic KHQR ឬចុចប៊ូតុង ABA PayWay ខាងក្រោមដើម្បីបង់ប្រាក់។ លុយចូលគណនី Platform ផ្ទាល់ ១០០% ហើយគ្លីនិករបស់លោកអ្នកនឹងដំណើរការភ្លាមៗ!'
-                    : 'Scan dynamic KHQR or tap the ABA PayWay direct link below. Workspace is auto-provisioned upon confirmation.'}
-                </p>
-              </div>
-
-              {/* Dynamic KHQR Card */}
-              <div className="bg-[#FAF7F2] rounded-2xl border border-[#DFD6C6] p-6 max-w-md mx-auto text-center space-y-4">
-                <div className="p-3 bg-white rounded-2xl border border-stone-200 shadow-md inline-block">
-                  <QRCodeSVG
-                    value={buildDynamicPaywayKhqr({
-                      paywayUrl: 'https://link.payway.com.kh/ABAPAYCK539089j',
-                      merchantName: 'NOB ROTANA',
-                      amount: selectedPlan === 'STARTER_5' ? 5.0 : selectedPlan === 'PRO_8' ? 8.0 : 12.0,
-                      currency: 'USD',
-                      billNumber: `SUB-${selectedPlan}-${Date.now().toString().slice(-4)}`,
-                    })}
-                    size={200}
-                    level="M"
-                    includeMargin={false}
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <div className="text-2xl font-black text-teal-900 font-sans">
-                    {selectedPlan === 'STARTER_5' ? '$5.00' : selectedPlan === 'PRO_8' ? '$8.00' : '$12.00'}
-                    <span className="text-xs font-normal text-stone-500 ml-1">USD / month</span>
-                  </div>
-                  <div className="text-xs font-semibold text-stone-700 font-mono">
-                    Merchant: NOB ROTANA (ABA PayWay Direct Link)
-                  </div>
-                  <div className="flex items-center justify-center gap-1.5 text-[11px] text-emerald-800 font-bold pt-1">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span>{isKm ? 'កំពុងរង់ចាំការទូទាត់ប្រាក់ (Waiting for Settlement)...' : 'Waiting for PayWay Settlement...'}</span>
-                  </div>
-                </div>
-
-                {/* ABA PayWay Direct Link Button */}
-                <div className="pt-2">
-                  <a
-                    href="https://link.payway.com.kh/ABAPAYCK539089j"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full py-2.5 px-4 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs font-bold shadow-xs transition-all flex items-center justify-center gap-2"
-                  >
-                    <CreditCard className="w-4 h-4" />
-                    <span>{isKm ? 'បើកបង់ប្រាក់ក្នុង ABA Mobile (PayWay Direct)' : 'Open in ABA Mobile (PayWay Direct)'}</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </a>
-                </div>
-              </div>
-
-              {/* Confirm / Activate Button */}
-              <div className="space-y-3 max-w-md mx-auto pt-2">
-                <button
-                  type="button"
-                  onClick={handleCompletePaidPayment}
-                  disabled={loading}
-                  className="w-full py-3 px-6 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
-                >
-                  {loading ? (
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <CheckCircle2 className="w-4 h-4" />
-                  )}
-                  <span>
-                    {isKm
-                      ? 'ខ្ញុំបានបង់ប្រាក់រួចរាល់ / ដំណើរការគ្លីនិកឥឡូវនេះ'
-                      : 'I Have Paid / Activate Clinic Workspace'}
-                  </span>
-                </button>
-
-                <p className="text-[11px] text-stone-500 text-center">
-                  {isKm
-                    ? 'បន្ទាប់ពីចុច គ្លីនិករបស់លោកអ្នកនឹងទទួលបានគម្រោងនេះភ្លាមៗ និងបើកផ្ទាំងគ្រប់គ្រងដោយស្វ័យប្រវត្ត។'
-                    : 'Your workspace will be auto-provisioned with the selected plan tier immediately.'}
-                </p>
-              </div>
-            </div>
-
-          ) : step === 'VERIFY_CODE' ? (
+          {step === 'VERIFY_CODE' ? (
             /* Step 2: 6-Digit Gmail Confirmation Code Screen */
-            <div className="bg-white rounded-2xl border border-stone-200 p-6 sm:p-8 shadow-xl space-y-6">
+            <div className="bg-white rounded-3xl border border-stone-200 p-6 sm:p-8 shadow-xl space-y-6 card-3d">
               <div className="flex items-center justify-between border-b border-stone-100 pb-4">
                 <button
                   type="button"
@@ -567,7 +270,7 @@ function RegisterContent() {
                   className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 transition-colors"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  <span>{isKm ? 'កែប្រែព័ត៌មាន (Back to Edit)' : 'Back to Edit Details'}</span>
+                  <span>{isKm ? 'ត្រឡប់ក្រោយ (Back)' : 'Back to Edit Details'}</span>
                 </button>
                 <span className="text-xs font-mono text-stone-500 bg-stone-100 px-2.5 py-1 rounded-md">
                   {isKm ? 'សុពលភាព:' : 'Expires in:'} {formatCountdown(countdown)}
@@ -633,7 +336,7 @@ function RegisterContent() {
                     className="w-full text-center text-3xl font-mono tracking-[0.5em] font-extrabold px-4 py-3 bg-[#FAF7F2] border-2 border-teal-700/60 rounded-2xl text-teal-950 focus:outline-hidden focus:ring-4 focus:ring-teal-700/20 transition-all placeholder:text-stone-300 shadow-inner"
                   />
                   <p className="text-[11px] text-center text-stone-500">
-                    {isKm ? 'បញ្ចូលលេខ ៦ ខ្ទង់ដែលបានទទួលតាម Gmail' : 'Enter the 6-digit digits received via Gmail'}
+                    {isKm ? 'បញ្ចូលលេខ ៦ ខ្ទង់ដែលបានទទួលតាម Gmail' : 'Enter the 6 digits received via Gmail'}
                   </p>
                 </div>
 
@@ -641,17 +344,17 @@ function RegisterContent() {
                   <button
                     type="submit"
                     disabled={loading || verificationCode.trim().length !== 6}
-                    className="w-full py-3 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs font-bold shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="w-full py-3 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs font-bold shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
                   >
                     {loading ? (
                       <>
                         <RefreshCw className="w-4 h-4 animate-spin" />
-                        <span>{isKm ? 'កំពុងផ្ទៀងផ្ទាត់ និងបង្កើតគ្លីនិក...' : 'Verifying and provisioning workspace...'}</span>
+                        <span>{isKm ? 'កំពុងផ្ទៀងផ្ទាត់ និងបង្កើតគណនី...' : 'Verifying and creating account...'}</span>
                       </>
                     ) : (
                       <>
                         <Check className="w-4 h-4" />
-                        <span>{isKm ? 'បញ្ជាក់លេខកូដ និងបង្កើតគ្លីនិក' : 'Verify Code & Create Clinic Workspace'}</span>
+                        <span>{isKm ? 'បញ្ជាក់លេខកូដ & ចូលប្រើប្រាស់' : 'Verify Code & Launch Dashboard'}</span>
                       </>
                     )}
                   </button>
@@ -666,15 +369,15 @@ function RegisterContent() {
                       disabled={loading}
                       className="font-bold text-teal-800 hover:underline disabled:opacity-50"
                     >
-                      {isKm ? 'ផ្ញើលេខកូដឡើងវិញ (Resend)' : 'Resend Verification Code'}
+                      {isKm ? 'ផ្ញើលេខកូដឡើងវិញ (Resend)' : 'Resend Code'}
                     </button>
                   </div>
                 </div>
               </form>
             </div>
           ) : (
-            /* Step 1: Registration Form Card */
-            <div className="bg-white rounded-2xl border border-stone-200 p-6 sm:p-8 shadow-xl space-y-6">
+            /* Step 1: Ultra-Fast Registration Form Card */
+            <div className="bg-white rounded-3xl border border-stone-200 p-6 sm:p-8 shadow-xl space-y-6 card-3d">
               {errorMessage && (
                 <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
@@ -690,7 +393,7 @@ function RegisterContent() {
                       {isKm ? '១. ជ្រើសរើសគម្រោង (Select Plan Tier)' : '1. Select Plan Tier'}
                     </label>
                     <span className="text-[11px] font-bold text-teal-900 bg-teal-100/90 px-2.5 py-0.5 rounded-md border border-teal-300">
-                      {isKm ? 'គម្រោងដែលបានជ្រើស៖ ' : 'Active: '}
+                      {isKm ? 'គម្រោងដែលបានជ្រើស៖ ' : 'Selected: '}
                       <strong className="font-black text-teal-950">
                         {PLAN_CARDS.find((p) => p.id === selectedPlan)?.[isKm ? 'nameKh' : 'nameEn'] || selectedPlan}
                       </strong>
@@ -705,44 +408,30 @@ function RegisterContent() {
                           key={p.id}
                           type="button"
                           onClick={() => setSelectedPlan(p.id)}
-                          className={`p-3.5 rounded-2xl border text-left transition-all relative cursor-pointer select-none ${
+                          className={`p-3 rounded-2xl border text-left transition-all relative cursor-pointer select-none ${
                             isSelected
-                              ? 'bg-teal-50/90 border-2 border-teal-800 ring-4 ring-teal-700/20 shadow-md scale-[1.02]'
+                              ? 'bg-teal-50/90 border-2 border-teal-800 ring-2 ring-teal-700/20 shadow-md'
                               : 'bg-white border-stone-200 hover:border-stone-400 hover:bg-stone-50/80 shadow-2xs'
                           }`}
                         >
                           {isSelected ? (
-                            <span className="absolute -top-2.5 right-2 px-2 py-0.5 rounded-full text-[10px] font-black bg-teal-800 text-white shadow-xs flex items-center gap-1 border border-teal-900 animate-in fade-in zoom-in duration-150">
-                              <Check className="w-3 h-3 stroke-[3]" />
-                              <span>{isKm ? 'បានជ្រើសរើស' : 'SELECTED'}</span>
+                            <span className="absolute -top-2 right-2 px-1.5 py-0.2 rounded-full text-[9px] font-black bg-teal-800 text-white shadow-xs">
+                              {isKm ? '✓' : 'ACTIVE'}
                             </span>
                           ) : p.popular ? (
-                            <span className="absolute -top-2 right-2 px-1.5 py-0.5 rounded-full text-[9px] font-black bg-amber-500 text-white shadow-2xs">
+                            <span className="absolute -top-2 right-2 px-1.5 py-0.2 rounded-full text-[9px] font-black bg-amber-500 text-white shadow-2xs">
                               Popular
                             </span>
                           ) : null}
 
-                          <div className={`text-xs font-sans transition-colors ${isSelected ? 'font-black text-teal-950' : 'font-bold text-stone-900'}`}>
+                          <div className={`text-xs font-sans ${isSelected ? 'font-black text-teal-950' : 'font-bold text-stone-900'}`}>
                             {isKm ? p.nameKh : p.nameEn}
                           </div>
-                          <div className={`text-base font-sans mt-0.5 transition-colors ${isSelected ? 'font-black text-teal-900' : 'font-extrabold text-stone-800'}`}>
+                          <div className={`text-base font-sans mt-0.5 ${isSelected ? 'font-black text-teal-900' : 'font-extrabold text-stone-800'}`}>
                             {p.price}
                           </div>
-                          <div className={`text-[10px] mt-1 transition-colors ${isSelected ? 'font-bold text-teal-900/80' : 'text-stone-500'}`}>
+                          <div className={`text-[10px] mt-1 ${isSelected ? 'font-bold text-teal-900/80' : 'text-stone-500'}`}>
                             {isKm ? p.khqrLimitKh : p.khqrLimitEn}
-                          </div>
-
-                          <div className="mt-2.5 pt-2 border-t border-stone-200/60 flex items-center justify-between">
-                            {isSelected ? (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-black text-teal-950 bg-teal-200/90 px-2 py-0.5 rounded-md border border-teal-300 shadow-2xs">
-                                <Check className="w-3.5 h-3.5 stroke-[3] text-teal-900" />
-                                <span className="font-black tracking-wide">{isKm ? 'បានជ្រើសរើស ✓' : 'SELECTED ✓'}</span>
-                              </span>
-                            ) : (
-                              <span className="text-[10px] font-semibold text-stone-400">
-                                {isKm ? 'ចុចជ្រើសរើស' : 'Click to select'}
-                              </span>
-                            )}
                           </div>
                         </button>
                       );
@@ -750,177 +439,91 @@ function RegisterContent() {
                   </div>
                 </div>
 
-                {/* 2. Clinic Details */}
-                <div className="space-y-3 pt-2 border-t border-stone-100">
+                {/* 2. Fast Account Credentials */}
+                <div className="space-y-4 pt-3 border-t border-stone-100">
                   <label className="block text-xs font-bold text-stone-800 uppercase tracking-wider">
-                    {isKm ? '២. ព័ត៌មានគ្លីនិក (Clinic Profile)' : '2. Clinic Profile'}
+                    {isKm ? '២. ព័ត៌មានគណនី (Account Credentials)' : '2. Account Credentials'}
                   </label>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-semibold text-stone-700 mb-1">
-                        {isKm ? 'ប្រភេទគ្លីនិក ឬឯកទេសព្យាបាល *' : 'Clinic Specialization *'}
-                      </label>
-                      <select
-                        value={clinicType}
-                        onChange={(e) => setClinicType(e.target.value)}
-                        className="w-full px-3.5 py-2.5 bg-[#FAF7F2] border border-[#DCD5C8] rounded-xl text-xs font-semibold text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-teal-700 transition-all cursor-pointer"
-                      >
-                        {CLINIC_TYPES.map((ct) => (
-                          <option key={ct.id} value={ct.id}>
-                            {isKm ? ct.nameKh : ct.nameEn}
-                          </option>
-                        ))}
-                      </select>
-                      <p className="text-[10px] text-teal-800 font-medium mt-1">
-                        {isKm
-                          ? CLINIC_TYPES.find((c) => c.id === clinicType)?.descKh
-                          : CLINIC_TYPES.find((c) => c.id === clinicType)?.descEn}
-                      </p>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-semibold text-stone-700 mb-1">
-                        {isKm ? 'ឈ្មោះគ្លីនិកជាភាសាខ្មែរ *' : 'Clinic Name (Khmer) *'}
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={clinicNameKh}
-                        onChange={(e) => setClinicNameKh(e.target.value)}
-                        placeholder="ឧ. គ្លីនិក សុខភាពល្អ"
-                        className="w-full px-3.5 py-2.5 bg-[#FAF7F2] border border-[#DCD5C8] rounded-xl text-xs font-medium text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-teal-700 transition-all placeholder:text-stone-400"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-semibold text-stone-700 mb-1">
-                        {isKm ? 'ឈ្មោះគ្លីនិកជាភាសាអង់គ្លេស *' : 'Clinic Name (English) *'}
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={clinicNameEn}
-                        onChange={(e) => setClinicNameEn(e.target.value)}
-                        placeholder="e.g. Sokhapheap LOR Clinic"
-                        className="w-full px-3.5 py-2.5 bg-[#FAF7F2] border border-[#DCD5C8] rounded-xl text-xs font-medium text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-teal-700 transition-all placeholder:text-stone-400"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Subdomain Preview */}
-                  <div className="p-2.5 bg-stone-100/70 rounded-xl border border-stone-200 text-xs flex items-center justify-between text-stone-600">
-                    <span className="text-[11px] font-medium">
-                      {isKm ? 'Subdomain ស្វ័យប្រវត្ត:' : 'Subdomain Preview:'}
-                    </span>
-                    <span className="font-mono font-bold text-teal-800 text-[11px]">
-                      {liveSlug}.clinicplatform.com
-                    </span>
-                  </div>
-                </div>
-
-                {/* 3. Administrator Account */}
-                <div className="space-y-3 pt-2 border-t border-stone-100">
-                  <label className="block text-xs font-bold text-stone-800 uppercase tracking-wider">
-                    {isKm ? '៣. គណនីអ្នកគ្រប់គ្រង (Admin Account)' : '3. Administrator Credentials'}
-                  </label>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-semibold text-stone-700 mb-1">
-                        {isKm ? 'ឈ្មោះពេញអ្នកគ្រប់គ្រង' : 'Admin Full Name'}
-                      </label>
+                  <div>
+                    <label className="block text-xs font-semibold text-stone-700 mb-1">
+                      {isKm ? 'ឈ្មោះពេញ / ឈ្មោះគ្រូពេទ្យ' : 'Full Name / Doctor Name'}
+                    </label>
+                    <div className="relative">
+                      <User className="w-4 h-4 text-stone-400 absolute left-3.5 top-3 pointer-events-none" />
                       <input
                         type="text"
                         value={adminName}
                         onChange={(e) => setAdminName(e.target.value)}
                         placeholder="e.g. Dr. Sok Chea"
-                        className="w-full px-3.5 py-2.5 bg-[#FAF7F2] border border-[#DCD5C8] rounded-xl text-xs font-medium text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-teal-700 transition-all placeholder:text-stone-400"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-semibold text-stone-700 mb-1">
-                        {isKm ? 'លេខទូរស័ព្ទ *' : 'Contact Phone *'}
-                      </label>
-                      <input
-                        type="tel"
-                        required
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        placeholder="012 345 678"
-                        className="w-full px-3.5 py-2.5 bg-[#FAF7F2] border border-[#DCD5C8] rounded-xl text-xs font-medium text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-teal-700 transition-all placeholder:text-stone-400"
+                        className="w-full pl-10 pr-3.5 py-2.5 bg-[#FAF7F2] border border-[#DCD5C8] rounded-xl text-xs sm:text-sm font-medium text-stone-900 focus:outline-none focus:border-teal-700 transition-all placeholder:text-stone-400"
                       />
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-semibold text-stone-700 mb-1">
-                        {isKm ? 'អ៊ីមែល Gmail សម្រាប់ទទួលលេខកូដបញ្ជាក់ *' : 'Gmail Email for Verification Code *'}
-                      </label>
+                  <div>
+                    <label className="block text-xs font-semibold text-stone-700 mb-1">
+                      {isKm ? 'អ៊ីមែល Gmail សម្រាប់ទទួលលេខកូដបញ្ជាក់ *' : 'Gmail Email for Verification Code *'}
+                    </label>
+                    <div className="relative">
+                      <Mail className="w-4 h-4 text-stone-400 absolute left-3.5 top-3 pointer-events-none" />
                       <input
                         type="email"
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="doctor@gmail.com"
-                        className="w-full px-3.5 py-2.5 bg-[#FAF7F2] border border-[#DCD5C8] rounded-xl text-xs font-medium text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-teal-700 transition-all placeholder:text-stone-400"
+                        className="w-full pl-10 pr-3.5 py-2.5 bg-[#FAF7F2] border border-[#DCD5C8] rounded-xl text-xs sm:text-sm font-medium text-stone-900 focus:outline-none focus:border-teal-700 transition-all placeholder:text-stone-400 font-mono"
                       />
                     </div>
+                  </div>
 
-                    <div>
-                      <label className="block text-xs font-semibold text-stone-700 mb-1">
-                        {isKm ? 'ពាក្យសម្ងាត់សុវត្ថិភាព *' : 'Secure Password *'}
-                      </label>
+                  <div>
+                    <label className="block text-xs font-semibold text-stone-700 mb-1">
+                      {isKm ? 'ពាក្យសម្ងាត់ (Password) *' : 'Password (min 6 characters) *'}
+                    </label>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 text-stone-400 absolute left-3.5 top-3 pointer-events-none" />
                       <input
                         type="password"
                         required
                         minLength={6}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Min. 6 characters"
-                        className="w-full px-3.5 py-2.5 bg-[#FAF7F2] border border-[#DCD5C8] rounded-xl text-xs font-medium text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-teal-700 transition-all placeholder:text-stone-400"
+                        placeholder="••••••••"
+                        className="w-full pl-10 pr-3.5 py-2.5 bg-[#FAF7F2] border border-[#DCD5C8] rounded-xl text-xs sm:text-sm font-medium text-stone-900 focus:outline-none focus:border-teal-700 transition-all placeholder:text-stone-400"
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* Submit Action */}
-                <div className="pt-4 border-t border-stone-200">
+                <div className="pt-2">
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-3 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs font-bold shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="w-full py-3.5 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs sm:text-sm font-bold shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                   >
                     {loading ? (
                       <>
                         <RefreshCw className="w-4 h-4 animate-spin" />
-                        <span>
-                          {isKm
-                            ? 'កំពុងផ្ញើលេខកូដ ៦ ខ្ទង់ទៅកាន់ Gmail...'
-                            : 'Dispatching 6-digit confirmation code...'}
-                        </span>
+                        <span>{isKm ? 'កំពុងផ្ញើលេខកូដ...' : 'Dispatching code...'}</span>
                       </>
                     ) : (
                       <>
                         <Send className="w-4 h-4" />
-                        <span>
-                          {isKm
-                            ? 'ផ្ញើលេខកូដបញ្ជាក់ទៅកាន់ Gmail (Get Verification Code)'
-                            : 'Send Verification Code to Gmail'}
-                        </span>
+                        <span>{isKm ? 'ផ្ញើលេខកូដបញ្ជាក់ទៅ Gmail (Send 6-Digit Code)' : 'Send Confirmation Code to Gmail'}</span>
                         <ArrowRight className="w-4 h-4" />
                       </>
                     )}
                   </button>
-                </div>
 
-                <div className="text-center text-xs text-stone-500">
-                  {isKm ? 'មានគណនីគ្លីនិករួចហើយ?' : 'Already have a clinic account?'}{' '}
-                  <Link href="/login" className="font-bold text-teal-800 hover:underline">
-                    {isKm ? 'ចូលប្រើប្រាស់' : 'Sign In'}
-                  </Link>
+                  <p className="text-center text-xs text-stone-500 mt-4">
+                    {isKm ? 'មានគណនីរួចហើយ?' : 'Already have an account?'}{' '}
+                    <Link href="/login" className="font-bold text-teal-800 hover:underline">
+                      {isKm ? 'ចូលប្រើប្រាស់ (Log in)' : 'Sign In'}
+                    </Link>
+                  </p>
                 </div>
               </form>
             </div>
@@ -929,27 +532,6 @@ function RegisterContent() {
       </main>
 
       <PublicFooter />
-
-      {/* Modal for Merchant Setup */}
-      {registeredData && (
-        <MerchantSetupModal
-          isOpen={isMerchantModalOpen}
-          onClose={() => setIsMerchantModalOpen(false)}
-          initialValues={{
-            merchantName: registeredData.tenant?.clinicNameEn || '',
-            merchantCity: 'Phnom Penh',
-          }}
-          onSuccess={() => {
-            const destination =
-              registeredData?.targetRoute ||
-              getClinicTargetRoute({
-                role: 'ADMIN',
-                tenant: { clinicType: registeredData?.tenant?.clinicType || clinicType },
-              });
-            router.push(destination);
-          }}
-        />
-      )}
     </div>
   );
 }
@@ -958,8 +540,8 @@ export default function RegisterPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#FAF7F2] flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-teal-800 border-t-transparent rounded-full animate-spin" />
+        <div className="min-h-screen flex items-center justify-center bg-[#FAF7F2]">
+          <div className="w-8 h-8 border-4 border-teal-800 border-t-transparent rounded-full animate-spin" />
         </div>
       }
     >

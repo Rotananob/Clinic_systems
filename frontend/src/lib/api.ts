@@ -428,9 +428,9 @@ class ApiClient {
         body: JSON.stringify({ email }),
       }),
     registerWithCode: (data: {
-      clinicNameKh: string;
-      clinicNameEn: string;
-      phone: string;
+      clinicNameKh?: string;
+      clinicNameEn?: string;
+      phone?: string;
       email: string;
       password: string;
       verificationCode: string;

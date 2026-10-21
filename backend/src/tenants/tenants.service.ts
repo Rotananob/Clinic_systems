@@ -109,7 +109,7 @@ export class TenantsService {
       throw new NotFoundException('No clinic tenant association found.');
     }
 
-    if (user?.role !== 'ADMIN' && user?.role !== 'SUPER_ADMIN') {
+    if (user?.role !== 'ADMIN' && user?.role !== 'SUPER_ADMIN' && user?.role !== 'DOCTOR') {
       throw new ForbiddenException('Only clinic administrators can configure merchant credentials.');
     }
 
@@ -186,7 +186,7 @@ export class TenantsService {
       throw new NotFoundException('No clinic tenant association found.');
     }
 
-    if (user?.role !== 'ADMIN' && user?.role !== 'SUPER_ADMIN') {
+    if (user?.role !== 'ADMIN' && user?.role !== 'SUPER_ADMIN' && user?.role !== 'DOCTOR') {
       throw new ForbiddenException('Only clinic administrators can update clinic profile settings.');
     }
 
