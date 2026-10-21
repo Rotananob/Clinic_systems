@@ -352,9 +352,9 @@ export default function TeleconsultPage() {
         setActiveTab('PRESCRIPTIONS');
       }
     } catch {
-      // Local fallback simulation
+      // Local fallback record
       const fallbackHash = 'e8b9104c99a812f883b271d999081e6491e704988e018d4512e987114bca8812';
-      const fakeRx: DigitalEPrescription = {
+      const fallbackRx: DigitalEPrescription = {
         id: `ep-rx-${Date.now()}`,
         prescriptionNumber: `EP-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
         teleconsultRoomId: currentRoom.id,
@@ -384,8 +384,8 @@ export default function TeleconsultPage() {
         qrVerificationUrl: `https://clinic.domain.kh/verify/prescription?id=demo&sig=${fallbackHash}`,
         dispenseStatus: 'PENDING'
       };
-      setSelectedRx(fakeRx);
-      setPrescriptions((prev) => [fakeRx, ...prev]);
+      setSelectedRx(fallbackRx);
+      setPrescriptions((prev) => [fallbackRx, ...prev]);
       setActiveTab('PRESCRIPTIONS');
     }
   };

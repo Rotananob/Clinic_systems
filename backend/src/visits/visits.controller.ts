@@ -40,15 +40,17 @@ export class VisitsController {
     return this.visitsService.findAll({ status, patientId, doctorId });
   }
 
-  @ApiOperation({ summary: 'Transcribe medical voice dictation into structured SOAP clinical note' })
+  @ApiOperation({ summary: 'Transcribe medical voice dictation into structured SOAP clinical note using Gemini AI' })
   @Roles(Role.ADMIN, Role.DOCTOR)
   @Post('voice-transcribe')
-  transcribeVoiceDictation(
+  async transcribeVoiceDictation(
     @Body() body: { transcript: string; doctorName?: string },
     @Req() req: any,
   ) {
     const doctorName = body.doctorName || req.user?.fullNameEn || req.user?.username || 'Doctor';
-    return this.voiceNlpService.parseClinicalDictation(body.transcript, doctorName);
+    const rateLimitKey = `gemini_voice_${req.user?.id || req.user?.tenantId || req.ip || 'anonymous'}`;
+    this.voiceNlpService.enforceRateLimit(rateLimitKey);
+    return this.voiceNlpService.parseWithGemini(body.transcript, doctorName);
   }
 
   @ApiOperation({ summary: 'Apply parsed SOAP notes directly to active patient visit chart' })

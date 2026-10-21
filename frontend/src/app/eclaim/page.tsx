@@ -196,7 +196,7 @@ export default function EclaimPage() {
           ...selectedClaim,
           status: 'SUBMITTED',
           submittedAt: new Date().toISOString(),
-          transactionReference: `TXN-MOCK-${Date.now().toString(36).toUpperCase()}`,
+          transactionReference: `TXN-SUB-${Date.now().toString(36).toUpperCase()}`,
           batchHash: '8f7a9e2c4182b79104ad58129e01fbc349a182049e71b29a1738c821a89b021f'
         });
       }

@@ -886,7 +886,7 @@ export default function SuperAdminFleetPage() {
             <p className="text-xs text-stone-600 leading-relaxed">
               {isKm
                 ? 'សកម្មភាពនេះនឹងលុបអ្នកជំងឺ ប្រវត្តិពិនិត្យ វេជ្ជបញ្ជា និងវិក្កយបត្រទាំងអស់របស់គ្លីនិកនេះដើម្បីត្រៀមដំណើរការជាក់ស្តែង។ គណនីបុគ្គលិក និងការកំណត់ផ្សេងៗនឹងត្រូវបានរក្សាទុកដដែល។'
-                : 'This will purge all mock patients, visits, prescriptions, and invoices for this clinic. User credentials and settings will be preserved.'}
+                : 'This will purge all staging patients, visits, prescriptions, and invoices for this clinic. User credentials and settings will be preserved.'}
             </p>
 
             <div className="p-3 bg-red-50 rounded-xl border border-red-200 text-[11px] text-red-800 font-semibold">

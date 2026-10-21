@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 
 export interface ClinicalVitals {
   bloodPressure?: string;
@@ -50,6 +50,7 @@ export interface SoapNoteStructure {
   formattedSoapKhmer: string;
   formattedSoapEnglish: string;
   confidenceScore: number;
+  aiProvider?: string;
 }
 
 export interface DiagnosticReference {
@@ -282,6 +283,184 @@ export const COMMON_MEDICATIONS: StandardMedication[] = [
 
 export class VoiceMedicalNlpService {
   private readonly logger = new Logger(VoiceMedicalNlpService.name);
+  private static readonly rateLimitMap = new Map<string, number[]>();
+
+  /**
+   * Enforce rate limit (1-2 calls per 60 seconds per user/clinic)
+   */
+  public enforceRateLimit(key: string, maxRequests = 2, windowMs = 60000): void {
+    const now = Date.now();
+    const timestamps = (VoiceMedicalNlpService.rateLimitMap.get(key) || []).filter(ts => now - ts < windowMs);
+    if (timestamps.length >= maxRequests) {
+      const oldestTimestamp = timestamps[0];
+      const remainingSeconds = Math.max(1, Math.ceil((windowMs - (now - oldestTimestamp)) / 1000));
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.TOO_MANY_REQUESTS,
+          error: 'Too Many Requests',
+          message: `សូមរង់ចាំបន្តិច! លោកអ្នកអាចប្រើមុខងារ AI Medical Voice/SOAP បានត្រឹមតែ ១ ទៅ ២ ដងប៉ុណ្ណោះក្នុង ១ នាទី ដើម្បីការពារការ Spam ប្រព័ន្ធ។ សូមព្យាយាមម្តងទៀតនៅ ${remainingSeconds} វិនាទីទៀត។`,
+          retryAfterSeconds: remainingSeconds,
+        },
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+    timestamps.push(now);
+    VoiceMedicalNlpService.rateLimitMap.set(key, timestamps);
+  }
+
+  /**
+   * Parse clinical consultation transcript into structured SOAP notes using Google Gemini 3.8 Flash
+   * Automatically falls back to deterministic rule-based NLP engine if Gemini is unreachable or rate limited externally.
+   */
+  public async parseWithGemini(transcript: string, doctorName = 'Doctor'): Promise<SoapNoteStructure> {
+    const cleanText = (transcript || '').trim();
+    if (!cleanText) {
+      return this.parseClinicalDictation(cleanText, doctorName);
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY || '';
+    const modelName = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
+
+    if (!apiKey) {
+      this.logger.warn('GEMINI_API_KEY is not configured. Falling back to local deterministic rule engine.');
+      return this.parseClinicalDictation(cleanText, doctorName);
+    }
+
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+      const systemInstruction = `You are an expert clinical physician and medical AI parser specializing in Khmer and English clinical documentation for private clinics and polyclinics in Cambodia.
+Parse the doctor's spoken medical consultation dictation into a structured clinical SOAP note.
+Return strictly valid JSON conforming to this schema:
+{
+  "subjective": {
+    "chiefComplaint": string,
+    "symptoms": string[],
+    "duration": string,
+    "history": string
+  },
+  "objective": {
+    "vitals": {
+      "bloodPressure": string,
+      "heartRate": number,
+      "temperature": number,
+      "respiratoryRate": number,
+      "spO2": number,
+      "weightKg": number,
+      "heightCm": number
+    },
+    "physicalExamFindings": string[],
+    "observations": string
+  },
+  "assessment": {
+    "primaryDiagnosis": string,
+    "icd11Code": string,
+    "icd10Code": string,
+    "differentialDiagnoses": string[],
+    "severity": "MILD" | "MODERATE" | "SEVERE"
+  },
+  "plan": {
+    "prescriptions": [
+      {
+        "medicineName": string,
+        "dosage": string,
+        "quantity": number,
+        "route": string,
+        "frequency": string,
+        "timing": string,
+        "durationDays": number,
+        "instructions": string
+      }
+    ],
+    "treatmentAdvice": string[],
+    "followUpDays": number,
+    "labTestsOrdered": string[]
+  },
+  "rawTranscription": string,
+  "formattedSoapKhmer": string,
+  "formattedSoapEnglish": string,
+  "confidenceScore": number
+}
+CRITICAL RULES:
+- ZERO emojis anywhere across all keys and text.
+- Accurately parse numbers for vitals: bloodPressure (e.g. "120/80"), heartRate (e.g. 78), temperature (e.g. 38.5), spO2 (e.g. 98).
+- Structure prescriptions with exact medicine names, dosages, frequencies, and instructions.
+- Provide clean formatted SOAP summaries in Khmer and English.`;
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: `Doctor consultation transcript to parse:\n${cleanText}` }] }],
+          systemInstruction: { parts: [{ text: systemInstruction }] },
+          generationConfig: {
+            responseMimeType: 'application/json',
+            temperature: 0.1,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        const errBody = await response.text();
+        this.logger.error(`Gemini API HTTP ${response.status}: ${errBody}`);
+        return this.parseClinicalDictation(cleanText, doctorName);
+      }
+
+      const data = await response.json();
+      const rawJson = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!rawJson) {
+        throw new Error('Empty response parts from Gemini API');
+      }
+
+      const parsed = JSON.parse(rawJson);
+
+      const vitals: ClinicalVitals = {
+        bloodPressure: parsed.objective?.vitals?.bloodPressure || undefined,
+        heartRate: typeof parsed.objective?.vitals?.heartRate === 'number' ? parsed.objective.vitals.heartRate : undefined,
+        temperature: typeof parsed.objective?.vitals?.temperature === 'number' ? parsed.objective.vitals.temperature : undefined,
+        respiratoryRate: typeof parsed.objective?.vitals?.respiratoryRate === 'number' ? parsed.objective.vitals.respiratoryRate : undefined,
+        spO2: typeof parsed.objective?.vitals?.spO2 === 'number' ? parsed.objective.vitals.spO2 : undefined,
+        weightKg: typeof parsed.objective?.vitals?.weightKg === 'number' ? parsed.objective.vitals.weightKg : undefined,
+        heightCm: typeof parsed.objective?.vitals?.heightCm === 'number' ? parsed.objective.vitals.heightCm : undefined,
+      };
+
+      const fallback = this.parseClinicalDictation(cleanText, doctorName);
+
+      return {
+        subjective: {
+          chiefComplaint: parsed.subjective?.chiefComplaint || fallback.subjective.chiefComplaint,
+          symptoms: Array.isArray(parsed.subjective?.symptoms) && parsed.subjective.symptoms.length > 0 ? parsed.subjective.symptoms : fallback.subjective.symptoms,
+          duration: parsed.subjective?.duration || fallback.subjective.duration,
+          history: parsed.subjective?.history || fallback.subjective.history,
+        },
+        objective: {
+          vitals: Object.keys(vitals).some(k => vitals[k] !== undefined) ? vitals : fallback.objective.vitals,
+          physicalExamFindings: Array.isArray(parsed.objective?.physicalExamFindings) && parsed.objective.physicalExamFindings.length > 0 ? parsed.objective.physicalExamFindings : fallback.objective.physicalExamFindings,
+          observations: parsed.objective?.observations || fallback.objective.observations,
+        },
+        assessment: {
+          primaryDiagnosis: parsed.assessment?.primaryDiagnosis || fallback.assessment.primaryDiagnosis,
+          icd11Code: parsed.assessment?.icd11Code || fallback.assessment.icd11Code,
+          icd10Code: parsed.assessment?.icd10Code || fallback.assessment.icd10Code,
+          differentialDiagnoses: Array.isArray(parsed.assessment?.differentialDiagnoses) && parsed.assessment.differentialDiagnoses.length > 0 ? parsed.assessment.differentialDiagnoses : fallback.assessment.differentialDiagnoses,
+          severity: (['MILD', 'MODERATE', 'SEVERE'].includes(parsed.assessment?.severity) ? parsed.assessment.severity : fallback.assessment.severity),
+        },
+        plan: {
+          prescriptions: Array.isArray(parsed.plan?.prescriptions) && parsed.plan.prescriptions.length > 0 ? parsed.plan.prescriptions : fallback.plan.prescriptions,
+          treatmentAdvice: Array.isArray(parsed.plan?.treatmentAdvice) && parsed.plan.treatmentAdvice.length > 0 ? parsed.plan.treatmentAdvice : fallback.plan.treatmentAdvice,
+          followUpDays: typeof parsed.plan?.followUpDays === 'number' ? parsed.plan.followUpDays : fallback.plan.followUpDays,
+          labTestsOrdered: Array.isArray(parsed.plan?.labTestsOrdered) ? parsed.plan.labTestsOrdered : fallback.plan.labTestsOrdered,
+        },
+        rawTranscription: cleanText,
+        formattedSoapKhmer: parsed.formattedSoapKhmer || fallback.formattedSoapKhmer,
+        formattedSoapEnglish: parsed.formattedSoapEnglish || fallback.formattedSoapEnglish,
+        confidenceScore: typeof parsed.confidenceScore === 'number' ? (parsed.confidenceScore <= 1 ? Math.round(parsed.confidenceScore * 100) : Math.min(parsed.confidenceScore, 100)) : fallback.confidenceScore,
+        aiProvider: 'Google Gemini 3.8 Flash',
+      };
+    } catch (err) {
+      this.logger.error(`Error during Gemini SOAP parsing: ${err.message}. Falling back to rule engine.`);
+      return this.parseClinicalDictation(cleanText, doctorName);
+    }
+  }
 
   /**
    * Parse clinical voice transcript or dictation text into structured SOAP format

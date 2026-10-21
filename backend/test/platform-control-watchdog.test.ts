@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 // Plan tiers & quotas mirroring SAAS_PLANS
 const SAAS_PLANS = {
-  FREE: { maxMonthlyPatients: 50, maxDailyKhqr: 5, maxStaffAccounts: 2 },
+  FREE: { maxMonthlyPatients: 50, maxDailyKhqr: 10, maxStaffAccounts: 2 },
   STARTER_5: { maxMonthlyPatients: 500, maxDailyKhqr: 250, maxStaffAccounts: 5 },
   PRO_8: { maxMonthlyPatients: -1, maxDailyKhqr: 1500, maxStaffAccounts: 15 },
   ENTERPRISE_12: { maxMonthlyPatients: -1, maxDailyKhqr: -1, maxStaffAccounts: -1 },

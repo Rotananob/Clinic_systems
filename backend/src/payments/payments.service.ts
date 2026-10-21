@@ -34,6 +34,8 @@ function loadKhqrHelper(): any {
 import { TelegramService } from '../telegram/telegram.service';
 import { TestAccountThrottleService } from '../common/services/test-account-throttle.service';
 import { QuotaGuardService } from '../subscriptions/quota-guard.service';
+import { SAAS_PLANS } from '../common/constants/plans.constant';
+import { PlanTier } from '@prisma/client';
 
 const khqrHelper = loadKhqrHelper();
 const { KhqrGateway, verifySettlement, buildKhqr, buildBankDeeplinks, computeMd5 } = khqrHelper;
@@ -910,8 +912,101 @@ export class PaymentsService {
     return updated;
   }
 
+
+  async generateTestKhqr(user?: any, amount = 1.0, currency = 'USD') {
+    let tenantId = user?.tenantId;
+    if (!tenantId && user?.id) {
+      const dbUser = await this.prisma.user.findUnique({
+        where: { id: user.id },
+        select: { tenantId: true },
+      });
+      tenantId = dbUser?.tenantId;
+    }
+
+    if (tenantId && this.quotaGuardService) {
+      await this.quotaGuardService.checkAndEnforceKhqrQuota(tenantId);
+    }
+
+    const tenant = tenantId
+      ? await this.prisma.tenant.findUnique({ where: { id: tenantId } })
+      : null;
+
+    const paywayLink =
+      tenant?.paywayPaymentUrl ||
+      this.configService.get<string>('PAYWAY_PAYMENT_URL') ||
+      'https://link.payway.com.kh/ABAPAYCK539089j';
+    const merchantName = tenant?.merchantName || tenant?.clinicNameEn || 'X-Clinic';
+    const merchantCity = tenant?.merchantCity || 'Phnom Penh';
+    const bakongId = tenant?.bakongAccountId || 'rotana_clinic@aba';
+
+    let qrString = '';
+    let tranId = `TEST-${Date.now().toString().slice(-6)}`;
+    let deeplinks: any = {};
+    let md5 = '';
+
+    try {
+      const direct = await this.paywayDirectService.createInvoice({
+        amount: Number(amount) || 1.0,
+        currency: (currency as 'USD' | 'KHR') || 'USD',
+        checkoutUrl: paywayLink,
+      });
+      qrString = direct.qrString;
+      tranId = direct.tranId;
+      deeplinks = buildBankDeeplinks(qrString);
+      md5 = computeMd5 ? computeMd5(qrString) : '';
+    } catch {
+      const local = buildKhqr({
+        bakongId,
+        merchantName,
+        merchantCity,
+        amount: Number(amount) || 1.0,
+        currency: (currency as 'USD' | 'KHR') || 'USD',
+        billNumber: `TEST-${Date.now().toString().slice(-5)}`,
+      });
+      qrString = local.qrString;
+      md5 = local.md5;
+      deeplinks = buildBankDeeplinks(qrString);
+    }
+
+    if (deeplinks?.aba) {
+      deeplinks.aba.paywayLink = paywayLink;
+    }
+    deeplinks.paywayUrl = paywayLink;
+
+    const planTier = tenant?.planTier || PlanTier.FREE;
+    const planConfig = SAAS_PLANS[planTier] || SAAS_PLANS[PlanTier.FREE];
+    const maxLimit = tenant?.maxDailyKhqr ?? planConfig.maxDailyKhqr;
+
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const todayCount = tenantId
+      ? await this.prisma.paymentTransaction.count({
+          where: {
+            invoice: { tenantId },
+            createdAt: { gte: startOfToday },
+          },
+        })
+      : 1;
+
+    return {
+      success: true,
+      qrString,
+      md5,
+      tranId,
+      amount: Number(amount) || 1.0,
+      currency,
+      merchantName,
+      paywayLink,
+      deeplinks,
+      currentUsage: todayCount,
+      maxLimit,
+      planTier,
+    };
+  }
+
   getTestQuotaStatus(user?: any) {
-    const khqr = this.throttleService.getUsage(user, 'KHQR_GENERATE', 5);
+    const khqr = this.throttleService.getUsage(user, 'KHQR_GENERATE', 10);
     const quickInv = this.throttleService.getUsage(user, 'QUICK_INVOICE', 10);
     const editInv = this.throttleService.getUsage(user, 'INVOICE_EDIT', 10);
     return {

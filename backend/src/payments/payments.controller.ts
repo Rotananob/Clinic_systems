@@ -34,7 +34,7 @@ export class PaymentsController {
   }
 
   @ApiOperation({ summary: 'Generate dynamic KHQR Tag 01=12 and bank deeplinks for an invoice' })
-  @Roles(Role.ADMIN, Role.CASHIER, Role.RECEPTIONIST)
+  @Roles(Role.ADMIN, Role.CASHIER, Role.RECEPTIONIST, Role.DOCTOR)
   @Post('generate-qr')
   generateQr(@Body() dto: GenerateInvoiceQrDto, @Request() req: any) {
     return this.paymentsService.generateInvoiceKhqr(dto.invoiceId, req?.user);
@@ -82,8 +82,16 @@ export class PaymentsController {
     return this.paymentsService.updateInvoice(id, dto, userId, req?.user);
   }
 
+
+  @ApiOperation({ summary: 'Generate quick test KHQR to verify ABA PayWay merchant link' })
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.CASHIER, Role.RECEPTIONIST)
+  @Post('test-khqr')
+  testKhqr(@Body() body: { amount?: number; currency?: string }, @Request() req: any) {
+    return this.paymentsService.generateTestKhqr(req?.user, body?.amount || 1.0, body?.currency || 'USD');
+  }
+
   @ApiOperation({ summary: 'Get current evaluation account daily quota status' })
-  @Roles(Role.ADMIN, Role.CASHIER)
+  @Roles(Role.ADMIN, Role.CASHIER, Role.DOCTOR, Role.RECEPTIONIST)
   @Get('quota-status')
   getQuotaStatus(@Request() req: any) {
     return this.paymentsService.getTestQuotaStatus(req?.user);

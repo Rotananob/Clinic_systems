@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 import { RegisterPatientDrawer } from '../../components/patients/RegisterPatientDrawer';
 import { ExploreModulesModal } from '../../components/dashboard/ExploreModulesModal';
+import { AbaPaywayTesterCard } from '../../components/dashboard/AbaPaywayTesterCard';
 
 function DashboardView() {
   const { t, locale } = useTranslation();
@@ -170,6 +171,9 @@ function DashboardView() {
           </button>
         </div>
       </div>
+
+      {/* ABA PayWay Quick Setup & Live KHQR Tester Widget */}
+      <AbaPaywayTesterCard />
 
       {/* KPI Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

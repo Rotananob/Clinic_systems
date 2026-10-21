@@ -28,7 +28,7 @@ interface LineItem {
   amount: number;
 }
 
-interface MockInvoice {
+interface SampleInvoicePreview {
   invoiceNumber: string;
   status: string;
   payableAmount: number;
@@ -51,7 +51,7 @@ interface MockInvoice {
 }
 
 interface InvoiceTemplateDesignerProps {
-  invoice?: MockInvoice;
+  invoice?: SampleInvoicePreview;
 }
 
 // ---------------------------------------------------------------------------
@@ -100,7 +100,7 @@ function ReceiptPreview({
   invoice,
 }: {
   config: InvoiceTemplateConfig;
-  invoice: MockInvoice;
+  invoice: SampleInvoicePreview;
 }) {
   const amount = Number(invoice.payableAmount || 0);
   const amountKhr = Math.round(amount * 4100);
@@ -574,7 +574,7 @@ function LayoutPanel({
 // Main Designer
 // ---------------------------------------------------------------------------
 
-const DEFAULT_MOCK_INVOICE: MockInvoice = {
+const DEFAULT_PREVIEW_INVOICE: SampleInvoicePreview = {
   invoiceNumber: 'INV-2026-00127',
   status: 'PAID',
   payableAmount: 25.0,
@@ -607,7 +607,7 @@ const DESIGNER_TABS: { id: DesignerTab; label: string; icon: React.ElementType }
   { id: 'layout', label: 'Layout', icon: Layout },
 ];
 
-export function InvoiceTemplateDesigner({ invoice = DEFAULT_MOCK_INVOICE }: InvoiceTemplateDesignerProps) {
+export function InvoiceTemplateDesigner({ invoice = DEFAULT_PREVIEW_INVOICE }: InvoiceTemplateDesignerProps) {
   const [config, setConfig] = React.useState<InvoiceTemplateConfig>(() => {
     if (typeof window === 'undefined') return { ...DEFAULT_TEMPLATE_CONFIG };
     try {

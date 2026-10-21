@@ -20,7 +20,7 @@ export const SAAS_PLANS: Record<PlanTier, PlanConfig> = {
     nameEn: 'Free Starter',
     priceUsd: 0,
     maxMonthlyPatients: 50,
-    maxDailyKhqr: 5,
+    maxDailyKhqr: 10,
     maxStaffAccounts: 2,
     telegramTopicsAllowed: false,
     voiceCallAllowed: false,

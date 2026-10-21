@@ -652,6 +652,24 @@ class ApiClient {
         body: JSON.stringify(data),
       }),
     getQuotaStatus: () => this.request<any>('/payments/quota-status'),
+    testKhqr: (data?: { amount?: number; currency?: string }) =>
+      this.request<{
+        success: boolean;
+        qrString: string;
+        md5: string;
+        tranId: string;
+        amount: number;
+        currency: string;
+        merchantName: string;
+        paywayLink: string;
+        deeplinks: any;
+        currentUsage: number;
+        maxLimit: number;
+        planTier: string;
+      }>('/payments/test-khqr', {
+        method: 'POST',
+        body: JSON.stringify(data || {}),
+      }),
   };
 
   // Follow-ups & Recalls

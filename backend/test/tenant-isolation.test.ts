@@ -39,7 +39,7 @@ describe('SaaS Multi-Tenant Context & Automatic Isolation Test Suite', () => {
   test('should verify SaaS plan quotas matching exact specifications', () => {
     // Defined quotas matching user specifications
     const SAAS_PLAN_LIMITS = {
-      FREE: { price: 0, maxDailyKhqr: 5, maxMonthlyPatients: 50 },
+      FREE: { price: 0, maxDailyKhqr: 10, maxMonthlyPatients: 50 },
       STARTER_5: { price: 5, maxDailyKhqr: 250, maxMonthlyPatients: 500 }, // $5: 250 dynamic QR trans/day
       PRO_8: { price: 8, maxDailyKhqr: 1500, maxMonthlyPatients: -1 }, // $8: 1,500 dynamic QR trans/day
       ENTERPRISE_12: { price: 12, maxDailyKhqr: -1, maxMonthlyPatients: -1 }, // $12: Unlimited (-1)
@@ -62,7 +62,7 @@ describe('SaaS Multi-Tenant Context & Automatic Isolation Test Suite', () => {
 
     // Free Starter Plan
     assert.equal(SAAS_PLAN_LIMITS.FREE.price, 0);
-    assert.equal(SAAS_PLAN_LIMITS.FREE.maxDailyKhqr, 5);
+    assert.equal(SAAS_PLAN_LIMITS.FREE.maxDailyKhqr, 10);
     assert.equal(SAAS_PLAN_LIMITS.FREE.maxMonthlyPatients, 50);
   });
 

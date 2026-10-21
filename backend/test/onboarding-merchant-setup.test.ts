@@ -18,7 +18,7 @@ describe('Step 13 & Step 14: Onboarding Wizard, Paste Merchant Setup & Payment S
   test('should allocate correct plan quotas on instant 60-second onboarding', () => {
     const freePlan = SAAS_PLANS[PlanTier.FREE];
     assert.equal(freePlan.priceUsd, 0);
-    assert.equal(freePlan.maxDailyKhqr, 5);
+    assert.equal(freePlan.maxDailyKhqr, 10);
     assert.equal(freePlan.maxMonthlyPatients, 50);
 
     const starterPlan = SAAS_PLANS[PlanTier.STARTER_5];

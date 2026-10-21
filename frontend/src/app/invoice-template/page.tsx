@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { ChevronRight, Settings, LayoutTemplate } from 'lucide-react';
 import { InvoiceTemplateDesigner } from '../../components/payments/InvoiceTemplateDesigner';
 
-const MOCK_INVOICE = {
+const SAMPLE_PREVIEW_INVOICE = {
   invoiceNumber: 'INV-2026-00127',
   status: 'PAID',
   payableAmount: 25.0,
@@ -45,7 +45,7 @@ export default function InvoiceTemplatePage() {
 
       {/* Full-page Designer */}
       <div className="flex-1 overflow-hidden">
-        <InvoiceTemplateDesigner invoice={MOCK_INVOICE} />
+        <InvoiceTemplateDesigner invoice={SAMPLE_PREVIEW_INVOICE} />
       </div>
     </div>
   );

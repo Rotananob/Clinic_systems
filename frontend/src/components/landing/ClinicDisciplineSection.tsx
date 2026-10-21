@@ -329,7 +329,7 @@ export const ClinicDisciplineSection: React.FC = () => {
                   href="/login"
                   className="inline-flex items-center gap-2 px-5 py-2.5 bg-white hover:bg-stone-50 text-stone-800 border border-[#D5CDBD] rounded-xl text-xs font-semibold shadow-2xs transition-colors"
                 >
-                  <span>{isKm ? 'សាកល្បងគណនី Demo' : 'Try Free Demo'}</span>
+                  <span>{isKm ? 'ចាប់ផ្តើមប្រើប្រាស់ឥតគិតថ្លៃ' : 'Start Free Trial'}</span>
                 </Link>
               </div>
             </div>
@@ -346,7 +346,7 @@ export const ClinicDisciplineSection: React.FC = () => {
                       <div className="text-xs font-bold text-stone-900">
                         {isKm ? selectedCategory.mockupTitleKh : selectedCategory.mockupTitleEn}
                       </div>
-                      <div className="text-[10px] text-stone-500 font-mono">Live Workspace Simulation</div>
+                      <div className="text-[10px] text-stone-500 font-mono">Live Workspace Preview</div>
                     </div>
                   </div>
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />

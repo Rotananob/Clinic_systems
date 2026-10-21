@@ -131,4 +131,46 @@ describe('Phase 3: Telegram Voice Medical Notes & SOAP Structuring Engine', () =
       assert.equal(emojiRegex.test(soap.formattedSoapEnglish), false, `Emoji found in generated English SOAP: ${soap.formattedSoapEnglish}`);
     }
   });
+  it('should enforce strict 2-request per minute rate limiting and block spam with 429', () => {
+    const rateService = new VoiceMedicalNlpService();
+    const testKey = 'doctor_quota_test_' + Date.now();
+
+    // Call 1: Allowed
+    assert.doesNotThrow(() => {
+      rateService.enforceRateLimit(testKey, 2, 60000);
+    });
+
+    // Call 2: Allowed
+    assert.doesNotThrow(() => {
+      rateService.enforceRateLimit(testKey, 2, 60000);
+    });
+
+    // Call 3: Throws 429 Too Many Requests
+    assert.throws(
+      () => {
+        rateService.enforceRateLimit(testKey, 2, 60000);
+      },
+      (err: any) => {
+        assert.equal(err.status, 429);
+        assert.equal(typeof err.response?.message, 'string');
+        assert.equal(err.response?.message.includes('Spam'), true);
+        assert.equal(err.response?.retryAfterSeconds > 0, true);
+        return true;
+      }
+    );
+  });
+
+  it('should guarantee zero emojis in rate limit error responses', () => {
+    const rateService = new VoiceMedicalNlpService();
+    const testKey = 'emoji_rate_test_' + Date.now();
+    const emojiRegex = /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E0}-\u{1F1FF}]/u;
+
+    rateService.enforceRateLimit(testKey, 1, 60000);
+    try {
+      rateService.enforceRateLimit(testKey, 1, 60000);
+      assert.fail('Should have thrown 429');
+    } catch (err: any) {
+      assert.equal(emojiRegex.test(err.response?.message), false, 'Found emoji in rate limit error message');
+    }
+  });
 });
