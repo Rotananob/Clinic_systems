@@ -6,9 +6,10 @@ import { SubscriptionInvoiceService } from './subscription-invoice.service';
 import { SubscriptionsController } from './subscriptions.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 import { TelegramModule } from '../telegram/telegram.module';
+import { PaymentsModule } from '../payments/payments.module';
 
 @Module({
-  imports: [PrismaModule, TelegramModule],
+  imports: [PrismaModule, TelegramModule, forwardRef(() => PaymentsModule)],
   controllers: [SubscriptionsController],
   providers: [
     BillingCycleService,

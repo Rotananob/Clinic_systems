@@ -1017,6 +1017,21 @@ class ApiClient {
       }>('/subscriptions/quota-status'),
     getReceipt: (subscriptionId: string) =>
       this.request<any>(`/subscriptions/invoices/${subscriptionId}/receipt`),
+    requestSupport: (data: {
+      subscriptionId: string;
+      contactPhone?: string;
+      telegramUsername?: string;
+      issueDescription?: string;
+    }) =>
+      this.request<{
+        success: boolean;
+        messageKh: string;
+        messageEn: string;
+        support: any;
+      }>('/subscriptions/request-support', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
   };
 
   // Step 21 & Step 22: Platform Super Admin Fleet & Remote Governance

@@ -6,13 +6,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { PlanTier } from '@prisma/client';
+import { PlanTier, SubscriptionStatus } from '@prisma/client';
 import { SAAS_PLANS, ROUTE_MINIMUM_PLAN, isRouteAllowedForPlan } from '../common/constants/plans.constant';
 
 export interface QuotaStatus {
   planTier: PlanTier;
   planNameEn: string;
   planNameKh: string;
+  isExpired?: boolean;
   dailyKhqr: {
     used: number;
     limit: number;
@@ -67,8 +68,54 @@ export class QuotaGuardService {
   }
 
   /**
+   * Resolves the real, tamper-proof effective plan tier.
+   * If a clinic's subscription has expired (currentPeriodEnd in the past or status EXPIRED),
+   * strictly restricts effective quotas and permissions to FREE tier limits to prevent bypass.
+   */
+  public resolveEffectivePlan(tenant: {
+    id: string;
+    slug?: string;
+    planTier: PlanTier;
+    subscriptionStatus?: SubscriptionStatus | null;
+    currentPeriodEnd?: Date | null;
+  }): { planTier: PlanTier; isExpired: boolean } {
+    if (tenant.planTier === PlanTier.FREE) {
+      return { planTier: PlanTier.FREE, isExpired: false };
+    }
+
+    const now = new Date();
+    const isPastPeriodEnd = Boolean(
+      tenant.currentPeriodEnd && tenant.currentPeriodEnd.getTime() < now.getTime(),
+    );
+    const isStatusExpired =
+      tenant.subscriptionStatus === SubscriptionStatus.EXPIRED;
+
+    if (isPastPeriodEnd || isStatusExpired) {
+      this.logger.warn(
+        `Anti-Bypass Guard: Tenant ${tenant.slug || tenant.id} (${tenant.planTier}) subscription is expired (End: ${tenant.currentPeriodEnd?.toISOString() || 'N/A'}, Status: ${tenant.subscriptionStatus}). Demoting effective tier strictly to FREE limits.`,
+      );
+
+      // Lazily sync subscriptionStatus in DB if not already marked EXPIRED
+      if (tenant.subscriptionStatus !== SubscriptionStatus.EXPIRED) {
+        this.prisma.tenant
+          .update({
+            where: { id: tenant.id },
+            data: { subscriptionStatus: SubscriptionStatus.EXPIRED },
+          })
+          .catch((err) => {
+            this.logger.debug(`Background expired status sync skipped: ${err.message}`);
+          });
+      }
+
+      return { planTier: PlanTier.FREE, isExpired: true };
+    }
+
+    return { planTier: tenant.planTier, isExpired: false };
+  }
+
+  /**
    * Step 19: Enforces daily dynamic KHQR transaction limits per SaaS plan tier.
-   * - Plan Free: 5 / day
+   * - Plan Free: 5 / day (or 10 / day free trial)
    * - Plan $5 (Starter): 250 / day
    * - Plan $8 (Pro): 1,500 / day
    * - Plan $12 (Enterprise): Unlimited (-1)
@@ -76,15 +123,25 @@ export class QuotaGuardService {
   async checkAndEnforceKhqrQuota(tenantId: string): Promise<{ warning?: boolean; message?: string }> {
     const tenant = await this.prisma.tenant.findUnique({
       where: { id: tenantId },
-      select: { id: true, slug: true, planTier: true, maxDailyKhqr: true },
+      select: {
+        id: true,
+        slug: true,
+        planTier: true,
+        subscriptionStatus: true,
+        currentPeriodEnd: true,
+        maxDailyKhqr: true,
+      },
     });
 
     if (!tenant) {
       throw new NotFoundException(`Tenant ${tenantId} not found`);
     }
 
-    const planConfig = SAAS_PLANS[tenant.planTier] || SAAS_PLANS[PlanTier.FREE];
-    const maxLimit = tenant.maxDailyKhqr ?? planConfig.maxDailyKhqr;
+    const effective = this.resolveEffectivePlan(tenant);
+    const planConfig = SAAS_PLANS[effective.planTier] || SAAS_PLANS[PlanTier.FREE];
+    const maxLimit = effective.isExpired
+      ? planConfig.maxDailyKhqr
+      : (tenant.maxDailyKhqr ?? planConfig.maxDailyKhqr);
 
     // Unlimited tier (-1)
     if (maxLimit === -1) {
@@ -103,7 +160,7 @@ export class QuotaGuardService {
 
     if (todayCount >= maxLimit) {
       this.logger.warn(
-        `Quota exceeded for tenant ${tenant.slug} (${tenant.planTier}): ${todayCount}/${maxLimit} daily KHQR generated`,
+        `Quota exceeded for tenant ${tenant.slug} (${tenant.planTier}, effective: ${effective.planTier}): ${todayCount}/${maxLimit} daily KHQR generated`,
       );
 
       throw new HttpException(
@@ -113,10 +170,16 @@ export class QuotaGuardService {
           quotaType: 'DAILY_KHQR',
           currentUsage: todayCount,
           maxLimit,
-          planTier: tenant.planTier,
-          upgradeRecommended: tenant.planTier === PlanTier.STARTER_5 ? 'PRO_8' : 'ENTERPRISE_12',
-          messageKh: `លោកអ្នកបានប្រើប្រាស់កូតា Dynamic KHQR ពេញ ${maxLimit}/${maxLimit} សម្រាប់ថ្ងៃនេះហើយ។ សូម Upgrade គម្រោង Polyclinic Pro ឬ Hospital Enterprise ដើម្បីទទួលបានកូតាបន្ថែម។`,
-          messageEn: `You have reached your daily limit of ${maxLimit} dynamic KHQR transactions. Please upgrade to Polyclinic Pro ($8/mo) or Hospital Enterprise ($12/mo) for higher limits.`,
+          planTier: effective.planTier,
+          isSubscriptionExpired: effective.isExpired,
+          upgradeRecommended:
+            effective.planTier === PlanTier.STARTER_5 ? 'PRO_8' : 'ENTERPRISE_12',
+          messageKh: effective.isExpired
+            ? `គម្រោងសេវាកម្មបានផុតកំណត់។ លោកអ្នកត្រូវបានកំណត់កូតាត្រឹម ${maxLimit}/${maxLimit} សម្រាប់គម្រោង Free។ សូមបន្តគម្រោង Starter ឬ Pro ដើម្បីទទួលបានកូតាបន្ថែម។`
+            : `លោកអ្នកបានប្រើប្រាស់កូតា Dynamic KHQR ពេញ ${maxLimit}/${maxLimit} សម្រាប់ថ្ងៃនេះហើយ។ សូម Upgrade គម្រោង Polyclinic Pro ឬ Hospital Enterprise ដើម្បីទទួលបានកូតាបន្ថែម។`,
+          messageEn: effective.isExpired
+            ? `Your subscription has expired and reverted to Free tier (${maxLimit} daily KHQR). Please renew to unlock full quota.`
+            : `You have reached your daily limit of ${maxLimit} dynamic KHQR transactions. Please upgrade to Polyclinic Pro ($8/mo) or Hospital Enterprise ($12/mo) for higher limits.`,
         },
         HttpStatus.TOO_MANY_REQUESTS,
       );
@@ -144,15 +207,25 @@ export class QuotaGuardService {
   async checkAndEnforcePatientQuota(tenantId: string): Promise<{ warning?: boolean; message?: string }> {
     const tenant = await this.prisma.tenant.findUnique({
       where: { id: tenantId },
-      select: { id: true, slug: true, planTier: true, maxMonthlyPatients: true },
+      select: {
+        id: true,
+        slug: true,
+        planTier: true,
+        subscriptionStatus: true,
+        currentPeriodEnd: true,
+        maxMonthlyPatients: true,
+      },
     });
 
     if (!tenant) {
       throw new NotFoundException(`Tenant ${tenantId} not found`);
     }
 
-    const planConfig = SAAS_PLANS[tenant.planTier] || SAAS_PLANS[PlanTier.FREE];
-    const maxLimit = tenant.maxMonthlyPatients ?? planConfig.maxMonthlyPatients;
+    const effective = this.resolveEffectivePlan(tenant);
+    const planConfig = SAAS_PLANS[effective.planTier] || SAAS_PLANS[PlanTier.FREE];
+    const maxLimit = effective.isExpired
+      ? planConfig.maxMonthlyPatients
+      : (tenant.maxMonthlyPatients ?? planConfig.maxMonthlyPatients);
 
     if (maxLimit === -1) {
       return {};
@@ -169,7 +242,7 @@ export class QuotaGuardService {
 
     if (patientCount >= maxLimit) {
       this.logger.warn(
-        `Patient quota exceeded for tenant ${tenant.slug} (${tenant.planTier}): ${patientCount}/${maxLimit} monthly patients registered`,
+        `Patient quota exceeded for tenant ${tenant.slug} (${tenant.planTier}, effective: ${effective.planTier}): ${patientCount}/${maxLimit} monthly patients registered`,
       );
 
       throw new HttpException(
@@ -179,10 +252,15 @@ export class QuotaGuardService {
           quotaType: 'MONTHLY_PATIENTS',
           currentUsage: patientCount,
           maxLimit,
-          planTier: tenant.planTier,
+          planTier: effective.planTier,
+          isSubscriptionExpired: effective.isExpired,
           upgradeRecommended: 'PRO_8',
-          messageKh: `លោកអ្នកបានចុះឈ្មោះអ្នកជំងឺដល់កម្រិតកំណត់ ${maxLimit}/${maxLimit} នាក់ក្នុងខែនេះហើយ។ សូម Upgrade គម្រោង Polyclinic Pro ($8/ខែ) ដើម្បីទទួលបាន Unlimited អ្នកជំងឺ។`,
-          messageEn: `You have reached your monthly limit of ${maxLimit} registered patients. Please upgrade to Polyclinic Pro ($8/mo) for unlimited patient records.`,
+          messageKh: effective.isExpired
+            ? `គម្រោងសេវាកម្មបានផុតកំណត់។ លោកអ្នកបានចុះឈ្មោះអ្នកជំងឺដល់កម្រិតកំណត់ ${maxLimit}/${maxLimit} នាក់ក្នុងខែនេះ។ សូមបន្តសុពលភាពគម្រោងឡើងវិញ។`
+            : `លោកអ្នកបានចុះឈ្មោះអ្នកជំងឺដល់កម្រិតកំណត់ ${maxLimit}/${maxLimit} នាក់ក្នុងខែនេះហើយ។ សូម Upgrade គម្រោង Polyclinic Pro ($8/ខែ) ដើម្បីទទួលបាន Unlimited អ្នកជំងឺ។`,
+          messageEn: effective.isExpired
+            ? `Your subscription has expired and patient intake is capped at ${maxLimit}/month. Please renew your paid plan.`
+            : `You have reached your monthly limit of ${maxLimit} registered patients. Please upgrade to Polyclinic Pro ($8/mo) for unlimited patient records.`,
         },
         HttpStatus.TOO_MANY_REQUESTS,
       );
@@ -208,15 +286,25 @@ export class QuotaGuardService {
   async checkAndEnforceStaffQuota(tenantId: string): Promise<void> {
     const tenant = await this.prisma.tenant.findUnique({
       where: { id: tenantId },
-      select: { id: true, slug: true, planTier: true, maxStaffAccounts: true },
+      select: {
+        id: true,
+        slug: true,
+        planTier: true,
+        subscriptionStatus: true,
+        currentPeriodEnd: true,
+        maxStaffAccounts: true,
+      },
     });
 
     if (!tenant) {
       throw new NotFoundException(`Tenant ${tenantId} not found`);
     }
 
-    const planConfig = SAAS_PLANS[tenant.planTier] || SAAS_PLANS[PlanTier.FREE];
-    const maxLimit = tenant.maxStaffAccounts ?? planConfig.maxStaffAccounts;
+    const effective = this.resolveEffectivePlan(tenant);
+    const planConfig = SAAS_PLANS[effective.planTier] || SAAS_PLANS[PlanTier.FREE];
+    const maxLimit = effective.isExpired
+      ? planConfig.maxStaffAccounts
+      : (tenant.maxStaffAccounts ?? planConfig.maxStaffAccounts);
 
     if (maxLimit === -1) {
       return;
@@ -234,9 +322,14 @@ export class QuotaGuardService {
           quotaType: 'STAFF_ACCOUNTS',
           currentUsage: staffCount,
           maxLimit,
-          planTier: tenant.planTier,
-          messageKh: `គ្លីនិករបស់លោកអ្នកបានបង្កើតគណនីបុគ្គលិកពេញ ${maxLimit}/${maxLimit} ហើយ។ សូម Upgrade គម្រោងដើម្បីបន្ថែមបុគ្គលិក។`,
-          messageEn: `You have reached your staff account limit of ${maxLimit} members. Please upgrade your subscription to add more team members.`,
+          planTier: effective.planTier,
+          isSubscriptionExpired: effective.isExpired,
+          messageKh: effective.isExpired
+            ? `គម្រោងសេវាកម្មបានផុតកំណត់។ គណនីបុគ្គលិកត្រូវបានកំណត់ត្រឹម ${maxLimit}/${maxLimit} នាក់។ សូមបន្តសុពលភាពគម្រោងឡើងវិញ។`
+            : `គ្លីនិករបស់លោកអ្នកបានបង្កើតគណនីបុគ្គលិកពេញ ${maxLimit}/${maxLimit} ហើយ។ សូម Upgrade គម្រោងដើម្បីបន្ថែមបុគ្គលិក។`,
+          messageEn: effective.isExpired
+            ? `Your subscription has expired and team accounts are restricted to ${maxLimit}. Please renew to add more team members.`
+            : `You have reached your staff account limit of ${maxLimit} members. Please upgrade your subscription to add more team members.`,
         },
         HttpStatus.TOO_MANY_REQUESTS,
       );
@@ -245,18 +338,28 @@ export class QuotaGuardService {
 
   /**
    * Enforces progressive feature tier gating (Free -> Starter -> Pro -> Enterprise)
+   * with anti-bypass demotion if subscription is expired.
    */
   async checkFeatureAccess(tenantId: string, pathname: string): Promise<void> {
     const tenant = await this.prisma.tenant.findUnique({
       where: { id: tenantId },
-      select: { id: true, slug: true, planTier: true, clinicType: true },
+      select: {
+        id: true,
+        slug: true,
+        planTier: true,
+        clinicType: true,
+        subscriptionStatus: true,
+        currentPeriodEnd: true,
+      },
     });
 
     if (!tenant) {
       throw new NotFoundException(`Tenant ${tenantId} not found`);
     }
 
-    if (!isRouteAllowedForPlan(tenant.planTier, pathname, tenant.clinicType)) {
+    const effective = this.resolveEffectivePlan(tenant);
+
+    if (!isRouteAllowedForPlan(effective.planTier, pathname, tenant.clinicType)) {
       const requiredPlan = ROUTE_MINIMUM_PLAN[pathname] || PlanTier.STARTER_5;
       const planCfg = SAAS_PLANS[requiredPlan];
 
@@ -264,11 +367,16 @@ export class QuotaGuardService {
         {
           statusCode: HttpStatus.FORBIDDEN,
           error: 'FEATURE_UPGRADE_REQUIRED',
-          currentPlan: tenant.planTier,
+          currentPlan: effective.planTier,
           requiredPlan,
           requiredPlanName: planCfg?.nameKh || requiredPlan,
-          messageKh: `មុខងារនេះទាមទារគម្រោង ${planCfg?.nameKh} ($${planCfg?.priceUsd}/ខែ) ឬខ្ពស់ជាងនេះ។ សូម Upgrade គម្រោងរបស់អ្នក។`,
-          messageEn: `This feature requires ${planCfg?.nameEn} ($${planCfg?.priceUsd}/mo) or higher. Please upgrade your subscription.`,
+          isSubscriptionExpired: effective.isExpired,
+          messageKh: effective.isExpired
+            ? `គម្រោងសេវាកម្មរបស់អ្នកបានផុតកំណត់ហើយ។ សូមបង់ប្រាក់បន្តគម្រោង ${planCfg?.nameKh} ($${planCfg?.priceUsd}/ខែ) ដើម្បីប្រើប្រាស់មុខងារនេះឡើងវិញ។`
+            : `មុខងារនេះទាមទារគម្រោង ${planCfg?.nameKh} ($${planCfg?.priceUsd}/ខែ) ឬខ្ពស់ជាងនេះ។ សូម Upgrade គម្រោងរបស់អ្នក។`,
+          messageEn: effective.isExpired
+            ? `Your subscription has expired. Please renew your ${planCfg?.nameEn} ($${planCfg?.priceUsd}/mo) plan to access this feature.`
+            : `This feature requires ${planCfg?.nameEn} ($${planCfg?.priceUsd}/mo) or higher. Please upgrade your subscription.`,
         },
         HttpStatus.FORBIDDEN,
       );
@@ -287,7 +395,8 @@ export class QuotaGuardService {
       throw new NotFoundException(`Tenant ${tenantId} not found`);
     }
 
-    const planConfig = SAAS_PLANS[tenant.planTier] || SAAS_PLANS[PlanTier.FREE];
+    const effective = this.resolveEffectivePlan(tenant);
+    const planConfig = SAAS_PLANS[effective.planTier] || SAAS_PLANS[PlanTier.FREE];
     const startOfToday = this.getStartOfTodayCambodia();
     const cycleStart = this.getStartOfCurrentCycle();
 
@@ -312,9 +421,15 @@ export class QuotaGuardService {
       }),
     ]);
 
-    const khqrLimit = tenant.maxDailyKhqr ?? planConfig.maxDailyKhqr;
-    const patientLimit = tenant.maxMonthlyPatients ?? planConfig.maxMonthlyPatients;
-    const staffLimit = tenant.maxStaffAccounts ?? planConfig.maxStaffAccounts;
+    const khqrLimit = effective.isExpired
+      ? planConfig.maxDailyKhqr
+      : (tenant.maxDailyKhqr ?? planConfig.maxDailyKhqr);
+    const patientLimit = effective.isExpired
+      ? planConfig.maxMonthlyPatients
+      : (tenant.maxMonthlyPatients ?? planConfig.maxMonthlyPatients);
+    const staffLimit = effective.isExpired
+      ? planConfig.maxStaffAccounts
+      : (tenant.maxStaffAccounts ?? planConfig.maxStaffAccounts);
 
     const calcMetric = (used: number, limit: number) => {
       if (limit === -1) {
@@ -339,9 +454,10 @@ export class QuotaGuardService {
     };
 
     return {
-      planTier: tenant.planTier,
+      planTier: effective.planTier,
       planNameEn: planConfig.nameEn,
       planNameKh: planConfig.nameKh,
+      isExpired: effective.isExpired,
       dailyKhqr: calcMetric(todayKhqrCount, khqrLimit),
       monthlyPatients: calcMetric(monthlyPatientCount, patientLimit),
       staffAccounts: calcMetric(staffCount, staffLimit),

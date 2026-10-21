@@ -15,7 +15,10 @@ import { SubscriptionPaymentService } from './subscription-payment.service';
 import { QuotaGuardService } from './quota-guard.service';
 import { SubscriptionInvoiceService } from './subscription-invoice.service';
 import { CreateSubscriptionCheckoutDto } from './dto/create-subscription-checkout.dto';
-import { VerifySubscriptionSettlementDto } from './dto/verify-subscription-settlement.dto';
+import {
+  VerifySubscriptionSettlementDto,
+  RequestSubscriptionSupportDto,
+} from './dto/verify-subscription-settlement.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 
 @ApiTags('Subscriptions & Billing Engine')
@@ -89,7 +92,7 @@ export class SubscriptionsController {
     return this.subscriptionPaymentService.createCheckout(tenantId, dto);
   }
 
-  @ApiOperation({ summary: 'Step 18: Instant automated settlement verification & plan activation' })
+  @ApiOperation({ summary: 'Step 18: Instant automated settlement verification & plan activation with anti-bypass guard' })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @ApiResponse({ status: 200, description: 'Plan activated and +30 days extended' })
@@ -99,7 +102,32 @@ export class SubscriptionsController {
     if (!tenantId) {
       throw new ForbiddenException('Tenant context required');
     }
-    return this.subscriptionPaymentService.verifyAndActivateSettlement(tenantId, dto);
+    return this.subscriptionPaymentService.verifyAndActivateSettlement(tenantId, dto, req.user);
+  }
+
+  @ApiOperation({ summary: 'Request 24/7 instant human support for stuck or disputed subscription payment' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiResponse({ status: 200, description: 'Support alert submitted to Super Admin Master Bot' })
+  @Post('request-support')
+  requestSupport(@Request() req: any, @Body() dto: RequestSubscriptionSupportDto) {
+    const tenantId = req.user?.tenantId;
+    if (!tenantId) {
+      throw new ForbiddenException('Tenant context required');
+    }
+    return this.subscriptionPaymentService.requestSupport(tenantId, dto, req.user);
+  }
+
+  @ApiOperation({ summary: 'Super Admin manual approval for verified offline bank settlements' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiResponse({ status: 200, description: 'Subscription manually approved by Super Admin' })
+  @Post('admin-confirm/:id')
+  adminConfirm(@Request() req: any, @Param('id') id: string) {
+    if (req.user?.role !== 'SUPER_ADMIN') {
+      throw new ForbiddenException('Only Super Admin can execute administrative subscription approval');
+    }
+    return this.subscriptionPaymentService.adminConfirmSubscription(id, req.user);
   }
 
   @ApiOperation({ summary: 'Step 20: Get official electronic tax receipt JSON data for subscription invoice' })

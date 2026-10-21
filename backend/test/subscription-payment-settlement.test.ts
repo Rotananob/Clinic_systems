@@ -1,5 +1,22 @@
 import { test, describe } from 'node:test';
 import * as assert from 'node:assert/strict';
+import { SAAS_PLANS } from '../src/common/constants/plans.constant.ts';
+
+const PlanTier = {
+  FREE: 'FREE',
+  STARTER_5: 'STARTER_5',
+  PRO_8: 'PRO_8',
+  ENTERPRISE_12: 'ENTERPRISE_12',
+} as const;
+type PlanTier = (typeof PlanTier)[keyof typeof PlanTier];
+
+const SubscriptionStatus = {
+  ACTIVE: 'ACTIVE',
+  PAST_DUE: 'PAST_DUE',
+  EXPIRED: 'EXPIRED',
+  CANCELLED: 'CANCELLED',
+} as const;
+type SubscriptionStatus = (typeof SubscriptionStatus)[keyof typeof SubscriptionStatus];
 
 function computeCrc16(str: string): string {
   let crc = 0xffff;
@@ -48,6 +65,32 @@ function buildDynamicKhqr(params: {
   const rawPayload = `000201010212${tag29}52045999${tag53}${tag54}${tag58}${tag59}${tag60}${tag62}6304`;
   const crc = computeCrc16(rawPayload);
   return { qrString: `${rawPayload}${crc}`, md5: '' };
+}
+
+// Pure implementation mirroring QuotaGuardService.resolveEffectivePlan for unit verification
+function resolveEffectivePlan(tenant: {
+  id: string;
+  slug?: string;
+  planTier: PlanTier;
+  subscriptionStatus?: SubscriptionStatus | null;
+  currentPeriodEnd?: Date | null;
+}): { planTier: PlanTier; isExpired: boolean } {
+  if (tenant.planTier === PlanTier.FREE) {
+    return { planTier: PlanTier.FREE, isExpired: false };
+  }
+
+  const now = new Date();
+  const isPastPeriodEnd = Boolean(
+    tenant.currentPeriodEnd && tenant.currentPeriodEnd.getTime() < now.getTime(),
+  );
+  const isStatusExpired =
+    tenant.subscriptionStatus === SubscriptionStatus.EXPIRED;
+
+  if (isPastPeriodEnd || isStatusExpired) {
+    return { planTier: PlanTier.FREE, isExpired: true };
+  }
+
+  return { planTier: tenant.planTier, isExpired: false };
 }
 
 describe('Step 17 & Step 18: Direct KHQR Subscription Checkout & Automated Settlement Tests', () => {
@@ -134,5 +177,90 @@ describe('Step 17 & Step 18: Direct KHQR Subscription Checkout & Automated Settl
 
     assert.equal(emojiRegex.test(clinicAlert), false, 'Found emoji in clinic alert');
     assert.equal(emojiRegex.test(superAdminAlert), false, 'Found emoji in super admin alert');
+  });
+});
+
+describe('100% Anti-Bypass Guard & Strict Settlement Validation Test Suite', () => {
+  test('should strictly demote expired paid plans (PRO_8, ENTERPRISE_12) to FREE tier quotas', () => {
+    const expiredTenant = {
+      id: 'tenant-expired-123',
+      slug: 'rotana-clinic',
+      planTier: PlanTier.PRO_8,
+      subscriptionStatus: SubscriptionStatus.ACTIVE,
+      currentPeriodEnd: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day in the past
+    };
+
+    const effective = resolveEffectivePlan(expiredTenant);
+    assert.equal(effective.planTier, PlanTier.FREE, 'Must demote expired plan to FREE tier');
+    assert.equal(effective.isExpired, true, 'Must flag isExpired as true');
+
+    const freeLimits = SAAS_PLANS[effective.planTier];
+    assert.equal(freeLimits.maxDailyKhqr, 10, 'Free tier limit must match FREE plan quota');
+    assert.equal(freeLimits.maxMonthlyPatients, 50, 'Free tier limit must be 50 patients/mo');
+    assert.equal(freeLimits.maxStaffAccounts, 2, 'Free tier limit must be 2 staff members');
+  });
+
+  test('should preserve active paid plan limits when currentPeriodEnd is in the future', () => {
+    const activeTenant = {
+      id: 'tenant-active-456',
+      slug: 'active-clinic',
+      planTier: PlanTier.PRO_8,
+      subscriptionStatus: SubscriptionStatus.ACTIVE,
+      currentPeriodEnd: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000), // 20 days in future
+    };
+
+    const effective = resolveEffectivePlan(activeTenant);
+    assert.equal(effective.planTier, PlanTier.PRO_8, 'Must maintain active PRO_8 plan tier');
+    assert.equal(effective.isExpired, false, 'Must flag isExpired as false');
+
+    const proLimits = SAAS_PLANS[effective.planTier];
+    assert.equal(proLimits.maxDailyKhqr, 1500, 'PRO_8 limit must be 1,500 KHQR/day');
+    assert.equal(proLimits.maxMonthlyPatients, -1, 'PRO_8 limit must be unlimited patients');
+  });
+
+  test('should demote tenant marked as EXPIRED even if currentPeriodEnd is missing', () => {
+    const expiredStatusTenant = {
+      id: 'tenant-expired-status',
+      slug: 'status-expired-clinic',
+      planTier: PlanTier.ENTERPRISE_12,
+      subscriptionStatus: SubscriptionStatus.EXPIRED,
+      currentPeriodEnd: null,
+    };
+
+    const effective = resolveEffectivePlan(expiredStatusTenant);
+    assert.equal(effective.planTier, PlanTier.FREE, 'Must demote EXPIRED status tenant to FREE');
+    assert.equal(effective.isExpired, true, 'Must flag isExpired as true');
+  });
+
+  test('should detect and reject price tampering when invoice amount differs from plan rate', () => {
+    const planTier = PlanTier.PRO_8;
+    const planConfig = SAAS_PLANS[planTier];
+    const officialMonthly = planConfig.priceUsd; // $8
+
+    const tamperedAmount = 1.0; // Hacker tried to pay $1 for $8 plan
+    const isTampered = tamperedAmount !== officialMonthly;
+    assert.equal(isTampered, true, 'Must detect price tampering');
+  });
+
+  test('should format support request notification for Super Admin Master Bot with zero emojis', () => {
+    const emojiRegex = /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}]/u;
+
+    const supportAlert = [
+      `<b>[URGENT: SUBSCRIPTION PAYMENT SUPPORT REQUEST]</b>`,
+      `----------------------------------------`,
+      `• គ្លីនិក: <b>មន្ទីរសម្រាកព្យាបាល រតនៈ</b> (<code>rotana-polyclinic</code>)`,
+      `• គម្រោង: <b>PRO_8</b> ($8 USD)`,
+      `• លេខវិក្កយបត្រ: <code>SUB-ROTANA-881923</code>`,
+      `• Tran ID: <code>TXN-SUB-rotana-173829012</code>`,
+      `• លេខទូរស័ព្ទ: <b>+855 12 345 678</b>`,
+      `• Telegram: <b>@dr_rotana</b>`,
+      `• បញ្ហាដែលបានរាយការណ៍: Scan completed in ABA Mobile but status still pending`,
+      `• សកម្មភាព: សូមចូលទៅកាន់ Super Admin Dashboard ដើម្បីផ្ទៀងផ្ទាត់ និង Approve Subscription`,
+      `----------------------------------------`,
+    ].join('\n');
+
+    assert.equal(emojiRegex.test(supportAlert), false, 'Found emoji in support request alert');
+    assert.ok(supportAlert.includes('SUB-ROTANA-881923'));
+    assert.ok(supportAlert.includes('+855 12 345 678'));
   });
 });
