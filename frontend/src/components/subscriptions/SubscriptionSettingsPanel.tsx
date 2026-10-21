@@ -255,7 +255,12 @@ export const SubscriptionSettingsPanel: React.FC = () => {
           >
             <div className="flex items-center justify-between">
               <span className="font-bold text-xs text-stone-900">Clinic Starter</span>
-              <span className="text-sm font-extrabold text-teal-800">$5/mo</span>
+              <div className="text-right">
+                <span className="text-sm font-extrabold text-teal-800">$5/mo</span>
+                <span className="block text-[10px] text-emerald-700 font-bold">
+                  {isKm ? '$48/ឆ្នាំ (ចុះ ២០%)' : '$48/yr (20% off)'}
+                </span>
+              </div>
             </div>
             <div className="text-[11px] text-stone-500 mt-2 space-y-1">
               <div>• 250 Dynamic KHQR / ថ្ងៃ</div>
@@ -290,7 +295,12 @@ export const SubscriptionSettingsPanel: React.FC = () => {
             </div>
             <div className="flex items-center justify-between">
               <span className="font-bold text-xs text-stone-900">Polyclinic Pro</span>
-              <span className="text-sm font-extrabold text-teal-800">$8/mo</span>
+              <div className="text-right">
+                <span className="text-sm font-extrabold text-teal-800">$8/mo</span>
+                <span className="block text-[10px] text-emerald-700 font-bold">
+                  {isKm ? '$76/ឆ្នាំ (ចុះ ២០%)' : '$76/yr (20% off)'}
+                </span>
+              </div>
             </div>
             <div className="text-[11px] text-stone-500 mt-2 space-y-1">
               <div>• 1,500 Dynamic KHQR / ថ្ងៃ</div>
@@ -322,7 +332,12 @@ export const SubscriptionSettingsPanel: React.FC = () => {
           >
             <div className="flex items-center justify-between">
               <span className="font-bold text-xs text-stone-900">Hospital Enterprise</span>
-              <span className="text-sm font-extrabold text-teal-800">$12/mo</span>
+              <div className="text-right">
+                <span className="text-sm font-extrabold text-teal-800">$12/mo</span>
+                <span className="block text-[10px] text-emerald-700 font-bold">
+                  {isKm ? '$115/ឆ្នាំ (ចុះ ២០%)' : '$115/yr (20% off)'}
+                </span>
+              </div>
             </div>
             <div className="text-[11px] text-stone-500 mt-2 space-y-1">
               <div>• Unlimited KHQR / ថ្ងៃ</div>

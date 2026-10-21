@@ -32,8 +32,10 @@ const PLAN_CARDS = [
     nameKh: 'Free Starter',
     nameEn: 'Free Starter',
     price: '$0',
-    khqrLimitKh: '៥ ប្រតិបត្តិការ / ថ្ងៃ',
-    khqrLimitEn: '5 transactions / day',
+    priceYearly: '$0',
+    priceYearlyEn: '$0',
+    khqrLimitKh: '១០ ប្រតិបត្តិការ / ថ្ងៃ',
+    khqrLimitEn: '10 transactions / day',
     patientsKh: 'អ្នកជំងឺ ៥០ នាក់',
     patientsEn: '50 patients',
   },
@@ -42,6 +44,8 @@ const PLAN_CARDS = [
     nameKh: 'Clinic Starter',
     nameEn: 'Clinic Starter',
     price: '$5/mo',
+    priceYearly: '$48/ឆ្នាំ (-20%)',
+    priceYearlyEn: '$48/yr (-20%)',
     khqrLimitKh: '២៥០ ប្រតិបត្តិការ / ថ្ងៃ',
     khqrLimitEn: '250 transactions / day',
     patientsKh: 'អ្នកជំងឺ ៥០០ នាក់',
@@ -52,6 +56,8 @@ const PLAN_CARDS = [
     nameKh: 'Polyclinic Pro',
     nameEn: 'Polyclinic Pro',
     price: '$8/mo',
+    priceYearly: '$76/ឆ្នាំ (-20%)',
+    priceYearlyEn: '$76/yr (-20%)',
     khqrLimitKh: '១,៥០០ ប្រតិបត្តិការ / ថ្ងៃ',
     khqrLimitEn: '1,500 transactions / day',
     patientsKh: 'មិនកំណត់ចំនួនអ្នកជំងឺ',
@@ -63,6 +69,8 @@ const PLAN_CARDS = [
     nameKh: 'Hospital Enterprise',
     nameEn: 'Hospital Enterprise',
     price: '$12/mo',
+    priceYearly: '$115/ឆ្នាំ (-20%)',
+    priceYearlyEn: '$115/yr (-20%)',
     khqrLimitKh: 'Unlimited KHQR',
     khqrLimitEn: 'Unlimited KHQR',
     patientsKh: 'មិនកំណត់ចំនួនអ្នកជំងឺ',
@@ -86,6 +94,7 @@ function RegisterContent() {
   const isKm = locale === 'km';
 
   const initialPlan = normalizePlanTier(searchParams.get('plan'));
+  const isYearly = searchParams.get('billing') === 'yearly';
   const [selectedPlan, setSelectedPlan] = useState<string>(initialPlan);
 
   useEffect(() => {
@@ -389,9 +398,16 @@ function RegisterContent() {
                 {/* 1. Plan Tier Selection */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <label className="block text-xs font-black text-stone-900 uppercase tracking-wider">
-                      {isKm ? '១. ជ្រើសរើសគម្រោង (Select Plan Tier)' : '1. Select Plan Tier'}
-                    </label>
+                    <div className="flex items-center gap-2">
+                      <label className="block text-xs font-black text-stone-900 uppercase tracking-wider">
+                        {isKm ? '១. ជ្រើសរើសគម្រោង (Select Plan Tier)' : '1. Select Plan Tier'}
+                      </label>
+                      {isYearly && (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-800 border border-amber-300">
+                          {isKm ? 'វដ្តបង់ប្រចាំឆ្នាំ ចុះ ២០%' : 'Yearly Plan 20% OFF'}
+                        </span>
+                      )}
+                    </div>
                     <span className="text-[11px] font-bold text-teal-900 bg-teal-100/90 px-2.5 py-0.5 rounded-md border border-teal-300">
                       {isKm ? 'គម្រោងដែលបានជ្រើស៖ ' : 'Selected: '}
                       <strong className="font-black text-teal-950">
@@ -427,8 +443,8 @@ function RegisterContent() {
                           <div className={`text-xs font-sans ${isSelected ? 'font-black text-teal-950' : 'font-bold text-stone-900'}`}>
                             {isKm ? p.nameKh : p.nameEn}
                           </div>
-                          <div className={`text-base font-sans mt-0.5 ${isSelected ? 'font-black text-teal-900' : 'font-extrabold text-stone-800'}`}>
-                            {p.price}
+                          <div className={`text-sm sm:text-base font-sans mt-0.5 ${isSelected ? 'font-black text-teal-900' : 'font-extrabold text-stone-800'}`}>
+                            {isYearly ? (isKm ? p.priceYearly : p.priceYearlyEn) : p.price}
                           </div>
                           <div className={`text-[10px] mt-1 ${isSelected ? 'font-bold text-teal-900/80' : 'text-stone-500'}`}>
                             {isKm ? p.khqrLimitKh : p.khqrLimitEn}

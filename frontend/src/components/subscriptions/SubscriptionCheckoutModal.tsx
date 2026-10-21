@@ -55,7 +55,7 @@ const PLAN_OPTIONS: PlanOption[] = [
     nameKh: 'គ្លីនិកវិជ្ជាជីវៈ (Polyclinic Pro)',
     nameEn: 'Polyclinic Pro ($8/mo)',
     monthlyUsd: 8,
-    annualUsd: 77,
+    annualUsd: 76,
     khqrQuotaKh: '១,៥០០ ប្រតិបត្តិការ / ថ្ងៃ',
     khqrQuotaEn: '1,500 dynamic QR / day',
     patientQuotaKh: 'មិនកំណត់ចំនួនអ្នកជំងឺ',
@@ -341,11 +341,23 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
                         <div className={`text-xs ${isSelected ? 'font-black text-teal-950' : 'font-bold text-stone-900'}`}>
                           {isKm ? plan.nameKh : plan.nameEn}
                         </div>
-                        <div className={`text-lg font-black mt-1 ${isSelected ? 'text-teal-950' : 'text-teal-900'}`}>
-                          ${price}
-                          <span className="text-xs font-normal text-stone-500">
-                            {isKm ? unit : unitEn}
-                          </span>
+                        <div className="flex items-baseline gap-1.5 mt-1 flex-wrap">
+                          {billingCycle === 'ANNUAL' && (
+                            <span className="text-xs font-bold text-stone-400 line-through decoration-rose-500 decoration-1 font-mono">
+                              ${plan.monthlyUsd * 12}
+                            </span>
+                          )}
+                          <div className={`text-lg font-black ${isSelected ? 'text-teal-950' : 'text-teal-900'}`}>
+                            ${price}
+                            <span className="text-xs font-normal text-stone-500">
+                              {isKm ? unit : unitEn}
+                            </span>
+                          </div>
+                          {billingCycle === 'ANNUAL' && (
+                            <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-rose-100 text-rose-700">
+                              -20%
+                            </span>
+                          )}
                         </div>
                         <div className={`text-[11px] mt-1 line-clamp-1 ${isSelected ? 'font-bold text-teal-900/80' : 'text-stone-500'}`}>
                           {isKm ? plan.khqrQuotaKh : plan.khqrQuotaEn}

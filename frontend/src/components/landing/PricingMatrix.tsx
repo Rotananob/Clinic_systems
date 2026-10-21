@@ -23,6 +23,9 @@ export interface PricingPlan {
   descEn: string;
   monthlyUsd: number;
   yearlyUsd: number;
+  originalYearlyUsd: number;
+  yearlySavingsUsd: number;
+  equivalentMonthlyUsd: string;
   isPopular?: boolean;
   khqrLimitKh: string;
   khqrLimitEn: string;
@@ -51,20 +54,23 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
       descEn: 'Perfect for small medical cabinets or evaluation before upgrading.',
       monthlyUsd: 0,
       yearlyUsd: 0,
-      khqrLimitKh: '៥ ប្រតិបត្តិការ / ថ្ងៃ',
-      khqrLimitEn: '5 dynamic QR / day',
+      originalYearlyUsd: 0,
+      yearlySavingsUsd: 0,
+      equivalentMonthlyUsd: '0.00',
+      khqrLimitKh: '១០ ប្រតិបត្តិការ / ថ្ងៃ',
+      khqrLimitEn: '10 dynamic QR / day',
       patientLimitKh: '៥០ នាក់ / ខែ',
       patientLimitEn: '50 patients / month',
       staffLimitKh: '២ គណនីបុគ្គលិក',
       staffLimitEn: '2 staff accounts',
       featuresKh: [
-        'បង្កើត Dynamic KHQR (កូតា ៥ ដង/ថ្ងៃ)',
+        'បង្កើត Dynamic KHQR (កូតា ១០ ដង/ថ្ងៃ)',
         'កត់ត្រាអ្នកជំងឺមូលដ្ឋាន (៥០ នាក់/ខែ)',
         'ចេញវិក្កយបត្រអេឡិចត្រូនិច',
         'ជំនួយតាមរយៈសហគមន៍ (Community Support)',
       ],
       featuresEn: [
-        'Dynamic KHQR (5 transactions / day)',
+        'Dynamic KHQR (10 transactions / day)',
         'Basic patient records (50 patients / mo)',
         'Electronic invoice generator',
         'Community documentation support',
@@ -78,6 +84,9 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
       descEn: 'For private outpatient practices requiring daily KHQR and voice queue calling.',
       monthlyUsd: 5,
       yearlyUsd: 48, // 20% discount ($4/mo)
+      originalYearlyUsd: 60,
+      yearlySavingsUsd: 12,
+      equivalentMonthlyUsd: '4.00',
       khqrLimitKh: '២៥០ ប្រតិបត្តិការ / ថ្ងៃ',
       khqrLimitEn: '250 dynamic QR / day',
       patientLimitKh: '៥០០ នាក់ / ខែ',
@@ -109,6 +118,9 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
       descEn: 'Most popular tier for high-volume polyclinics and multi-consultant practices.',
       monthlyUsd: 8,
       yearlyUsd: 76, // 20% discount ($6.33/mo)
+      originalYearlyUsd: 96,
+      yearlySavingsUsd: 20,
+      equivalentMonthlyUsd: '6.33',
       isPopular: true,
       khqrLimitKh: '១,៥០០ ប្រតិបត្តិការ / ថ្ងៃ',
       khqrLimitEn: '1,500 dynamic QR / day',
@@ -143,6 +155,9 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
       descEn: 'For hospitals and medical centers requiring full unlimited throughput and custom subdomain.',
       monthlyUsd: 12,
       yearlyUsd: 115, // 20% discount ($9.58/mo)
+      originalYearlyUsd: 144,
+      yearlySavingsUsd: 29,
+      equivalentMonthlyUsd: '9.58',
       khqrLimitKh: 'មិនកំណត់ចំនួន (Unlimited)',
       khqrLimitEn: 'Unlimited dynamic QR / day',
       patientLimitKh: 'មិនកំណត់ចំនួន (Unlimited)',
@@ -152,7 +167,7 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
       featuresKh: [
         'មិនកំណត់រាល់ប្រតិបត្តិការ KHQR (Unlimited Dynamic KHQR)',
         'មិនកំណត់ចំនួនអ្នកជំងឺ និងបុគ្គលិក',
-        'ទទួលបាន Subdomain ផ្លូវការ (ឧ. yourclinic.clinicplatform.com)',
+        'ទទួលបាន Subdomain ផ្លូវការ (ឧ. yourclinic.clinic.com)',
         'គ្រប់គ្រងសាខាច្រើន និងគ្រូពេទ្យឯកទេសច្រើនផ្នែក',
         'Dedicated Database Performance & Cloud Backup',
         'ជំនួយពិសេសផ្ទាល់តាមទូរស័ព្ទ និង Telegram 24/7 VIP SLA',
@@ -160,7 +175,7 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
       featuresEn: [
         'Unlimited dynamic KHQR transactions',
         'Unlimited patients and staff accounts',
-        'Dedicated custom subdomain (e.g. yourclinic.clinicplatform.com)',
+        'Dedicated custom subdomain (e.g. yourclinic.clinic.com)',
         'Multi-branch & multi-department routing',
         'Dedicated high-performance database instance',
         '24/7 VIP Phone and Telegram SLA support',
@@ -215,14 +230,14 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
 
         {/* Monthly / Annual Toggle */}
         <div className="pt-2 flex items-center justify-center">
-          <div className="inline-flex items-center p-1 rounded-2xl bg-[#EBE4D5] border border-[#DDD3C2] text-xs font-semibold">
+          <div className="inline-flex items-center p-1.5 rounded-2xl bg-[#EBE4D5] border border-[#DDD3C2] text-xs font-semibold shadow-inner">
             <button
               type="button"
               onClick={() => setIsAnnual(false)}
-              className={`px-4 py-2 rounded-xl transition-all ${
+              className={`px-4 py-2 rounded-xl transition-all cursor-pointer ${
                 !isAnnual
-                  ? 'bg-white text-stone-900 shadow-xs font-bold'
-                  : 'text-stone-600 hover:text-stone-900'
+                  ? 'bg-white text-stone-900 shadow-xs font-black'
+                  : 'text-stone-600 hover:text-stone-900 font-bold'
               }`}
             >
               {isKm ? 'បង់ប្រចាំខែ (Monthly)' : 'Billed Monthly'}
@@ -231,15 +246,21 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
             <button
               type="button"
               onClick={() => setIsAnnual(true)}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl transition-all ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all cursor-pointer ${
                 isAnnual
-                  ? 'bg-white text-stone-900 shadow-xs font-bold'
-                  : 'text-stone-600 hover:text-stone-900'
+                  ? 'bg-teal-800 text-white shadow-md font-black'
+                  : 'text-stone-600 hover:text-stone-900 font-bold'
               }`}
             >
-              <span>{isKm ? 'បង់ប្រចាំឆ្នាំ (Yearly)' : 'Billed Annually'}</span>
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
-                {isKm ? 'ចុះ ២០%' : 'Save 20%'}
+              <span>{isKm ? 'បង់ប្រចាំឆ្នាំ (Yearly Plan)' : 'Billed Annually'}</span>
+              <span
+                className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide transition-all ${
+                  isAnnual
+                    ? 'bg-amber-400 text-stone-950 shadow-xs ring-1 ring-amber-300'
+                    : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                }`}
+              >
+                {isKm ? 'ចុះ ២០% (សន្សំ ២ ខែ)' : 'Save 20% (2 Months Free)'}
               </span>
             </button>
           </div>
@@ -250,11 +271,6 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
         {plans.map((p) => {
           const isSelected = selectedPlanId === p.id;
-          const priceDisplay = isAnnual
-            ? p.yearlyUsd === 0
-              ? '$0'
-              : `${(p.yearlyUsd / 12).toFixed(2)}`
-            : `${p.monthlyUsd}`;
 
           return (
             <div
@@ -291,19 +307,102 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
 
                 {/* Price Display */}
                 <div className="pt-2 border-t border-[#EFEAE0]">
-                  <div className="flex items-baseline gap-1.5">
-                    <span className={`text-3xl font-sans tracking-tight ${isSelected ? 'font-black text-teal-950' : 'font-extrabold text-stone-900'}`}>
-                      {priceDisplay}
-                    </span>
-                    <span className="text-xs text-stone-500">
-                      {p.monthlyUsd === 0
-                        ? isKm ? 'ឥតគិតថ្លៃ' : 'Free forever'
-                        : isKm ? '/ ខែ' : '/ month'}
-                    </span>
-                  </div>
-                  {isAnnual && p.yearlyUsd > 0 && (
-                    <div className="text-[10px] text-emerald-700 font-semibold mt-0.5">
-                      {isKm ? `បង់ ${p.yearlyUsd}/ឆ្នាំ (សន្សំ ២០%)` : `Billed ${p.yearlyUsd}/yr (20% off)`}
+                  {p.id === 'FREE' ? (
+                    <div>
+                      <div className="flex items-baseline gap-1.5">
+                        <span
+                          className={`text-3xl sm:text-4xl font-black font-sans tracking-tight ${
+                            isSelected ? 'text-teal-950' : 'text-stone-900'
+                          }`}
+                        >
+                          $0
+                        </span>
+                        <span className="text-xs font-bold text-stone-500">
+                          {isKm ? 'ឥតគិតថ្លៃរហូត' : 'Free forever'}
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-stone-500 font-medium mt-1">
+                        {isKm ? 'សាកល្បងដោយគ្មានការប្តេជ្ញាចិត្ត' : 'No credit card required'}
+                      </div>
+                    </div>
+                  ) : isAnnual ? (
+                    <div>
+                      {/* Original price strike-through + discount badges */}
+                      <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
+                        <span className="text-xs font-bold text-stone-400 line-through decoration-rose-500 decoration-2 font-mono">
+                          ${p.originalYearlyUsd}
+                        </span>
+                        <span className="px-1.5 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-700 border border-rose-200">
+                          {isKm ? 'ចុះ ២០%' : '20% OFF'}
+                        </span>
+                        <span className="px-1.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-200">
+                          {isKm ? `សន្សំ $${p.yearlySavingsUsd}/ឆ្នាំ` : `Save $${p.yearlySavingsUsd}/yr`}
+                        </span>
+                      </div>
+
+                      {/* Prominent Hero Yearly Price */}
+                      <div className="flex items-baseline gap-1.5">
+                        <span
+                          className={`text-4xl sm:text-5xl font-black font-sans tracking-tight ${
+                            isSelected ? 'text-teal-950' : 'text-teal-900'
+                          }`}
+                        >
+                          ${p.yearlyUsd}
+                        </span>
+                        <div className="flex flex-col">
+                          <span className="text-xs font-black text-stone-900 leading-tight">
+                            {isKm ? '/ ឆ្នាំ (Yearly)' : '/ year'}
+                          </span>
+                          <span className="text-[10px] font-semibold text-emerald-700">
+                            {isKm ? 'គិតជាឆ្នាំ' : 'Billed annually'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Equivalent monthly breakdown banner */}
+                      <div className="mt-2.5 p-2 rounded-xl bg-gradient-to-r from-emerald-50/90 to-teal-50/80 border border-emerald-200/80 text-[11px] text-emerald-950 font-semibold flex items-center justify-between">
+                        <span>
+                          {isKm ? 'ស្មើនឹង: ' : 'Equivalent: '}
+                          <strong className="font-black text-emerald-900 font-mono">
+                            ${p.equivalentMonthlyUsd}
+                          </strong>
+                          {isKm ? ' / ខែ' : ' / mo'}
+                        </span>
+                        <span className="px-1.5 py-0.2 rounded bg-emerald-700 text-white font-extrabold text-[9px]">
+                          {isKm ? 'ចំណេញ ២ ខែ' : '2 Mo Free'}
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      {/* Monthly pricing with yearly incentive hint */}
+                      <div className="flex items-baseline gap-1.5">
+                        <span
+                          className={`text-3xl sm:text-4xl font-extrabold font-sans tracking-tight ${
+                            isSelected ? 'text-teal-950' : 'text-stone-900'
+                          }`}
+                        >
+                          ${p.monthlyUsd}
+                        </span>
+                        <span className="text-xs font-bold text-stone-600">
+                          {isKm ? '/ ខែ (Monthly)' : '/ month'}
+                        </span>
+                      </div>
+                      <div className="mt-1 flex items-center justify-between text-[11px] text-stone-500 font-medium">
+                        <span>
+                          {isKm ? `សរុប $${p.originalYearlyUsd}/ឆ្នាំ` : `$${p.originalYearlyUsd}/yr full price`}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setIsAnnual(true);
+                          }}
+                          className="text-[10px] font-bold text-teal-800 hover:text-teal-950 hover:underline cursor-pointer"
+                        >
+                          {isKm ? 'បង់ប្រចាំឆ្នាំ សន្សំ ២០%' : 'Switch to annual, save 20%'}
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -349,7 +448,7 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
               {/* Action Button */}
               <div className="pt-6">
                 <Link
-                  href={`/register?plan=${p.id}`}
+                  href={`/register?plan=${p.id}${isAnnual ? '&billing=yearly' : '&billing=monthly'}`}
                   onClick={(e) => {
                     e.stopPropagation();
                     setSelectedPlanId(p.id);
@@ -368,7 +467,9 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
                       <span className="font-black">
                         {p.id === 'FREE'
                           ? isKm ? 'បានជ្រើសរើស ✓ ចាប់ផ្ដើម Free' : 'Selected ✓ Start Free'
-                          : isKm ? 'បានជ្រើសរើស ✓ ចុះឈ្មោះភ្លាមៗ' : 'Selected ✓ Register Now'}
+                          : isAnnual
+                          ? isKm ? `បានជ្រើសរើស ✓ ចុះឈ្មោះ ($${p.yearlyUsd}/ឆ្នាំ)` : `Selected ✓ Register ($${p.yearlyUsd}/yr)`
+                          : isKm ? `បានជ្រើសរើស ✓ ចុះឈ្មោះ ($${p.monthlyUsd}/ខែ)` : `Selected ✓ Register ($${p.monthlyUsd}/mo)`}
                       </span>
                     </>
                   ) : (
@@ -376,7 +477,9 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
                       <span className="font-bold">
                         {p.id === 'FREE'
                           ? isKm ? 'ចាប់ផ្ដើមដោយឥតគិតថ្លៃ' : 'Start Free Trial'
-                          : isKm ? 'ជ្រើសរើសគម្រោងនេះ' : 'Select Plan'}
+                          : isAnnual
+                          ? isKm ? `ជ្រើសរើស ($${p.yearlyUsd}/ឆ្នាំ)` : `Select Plan ($${p.yearlyUsd}/yr)`
+                          : isKm ? `ជ្រើសរើស ($${p.monthlyUsd}/ខែ)` : `Select Plan ($${p.monthlyUsd}/mo)`}
                       </span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </>
@@ -417,7 +520,7 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
                 <tbody className="divide-y divide-[#EAE3D5]">
                   <tr>
                     <td className="p-4 font-semibold">{isKm ? 'កូតាប្រតិបត្តិការ KHQR' : 'Dynamic KHQR Daily Limit'}</td>
-                    <td className="p-4 text-center font-mono">5 / ថ្ងៃ</td>
+                    <td className="p-4 text-center font-mono">10 / ថ្ងៃ</td>
                     <td className="p-4 text-center font-mono font-bold text-teal-800">250 / ថ្ងៃ</td>
                     <td className="p-4 text-center font-mono font-bold text-teal-800 bg-teal-50/30">1,500 / ថ្ងៃ</td>
                     <td className="p-4 text-center font-mono font-bold text-teal-800">Unlimited</td>
