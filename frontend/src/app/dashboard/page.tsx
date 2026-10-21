@@ -28,16 +28,22 @@ import {
   AlertTriangle,
   History,
   BarChart3,
+  Compass,
+  Sparkles,
 } from 'lucide-react';
 import { RegisterPatientDrawer } from '../../components/patients/RegisterPatientDrawer';
+import { ExploreModulesModal } from '../../components/dashboard/ExploreModulesModal';
 
 function DashboardView() {
   const { t, locale } = useTranslation();
   const isKm = locale === 'km';
+  const { user } = useAuth();
+  const clinicType = user?.tenant?.clinicType;
 
   const [metrics, setMetrics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const [isExploreOpen, setIsExploreOpen] = useState(false);
 
   const fetchMetrics = async () => {
     try {
@@ -58,10 +64,10 @@ function DashboardView() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
-      {/* Header Banner */}
+      {/* Header Banner - Streamlined & Decluttered */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#FDFBF7] p-5 rounded-2xl border border-[#E7E1D4] shadow-xs relative overflow-hidden card-3d">
         <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-[#EADDC9]/20 to-[#E3D4BC]/30 rounded-full blur-2xl pointer-events-none" />
-        
+
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-lg sm:text-xl font-bold text-stone-900 tracking-tight">
@@ -86,6 +92,7 @@ function DashboardView() {
           </div>
         </div>
 
+        {/* Clean, Targeted Header Actions */}
         <div className="flex items-center flex-wrap gap-2 z-10">
           <button
             onClick={fetchMetrics}
@@ -94,6 +101,8 @@ function DashboardView() {
           >
             <RefreshCw className="w-4 h-4" />
           </button>
+
+          {/* Quick Command Palette Launcher */}
           <button
             onClick={() => window.dispatchEvent(new CustomEvent('open-command-palette'))}
             className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 bg-[#F2EDE2] hover:bg-[#EBE4D6] text-stone-700 border border-[#DFD7C7] rounded-xl text-xs font-semibold transition-colors shadow-2xs active:scale-95"
@@ -104,34 +113,61 @@ function DashboardView() {
               Ctrl K
             </kbd>
           </button>
-          <Link
-            href="/reports"
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#F5EFE4] hover:bg-[#EFE6D8] text-stone-800 border border-[#DFD6C6] rounded-xl text-xs font-semibold transition-colors shadow-2xs active:scale-95"
+
+          {/* Explore Modules Trigger */}
+          <button
+            onClick={() => setIsExploreOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#F5EFE4] hover:bg-[#EFE6D8] text-teal-900 border border-[#DFD6C6] rounded-xl text-xs font-semibold transition-colors shadow-2xs active:scale-95"
           >
-            <BarChart3 className="w-4 h-4 text-stone-700" />
-            <span>{isKm ? 'របាយការណ៍' : 'Reports'}</span>
-          </Link>
+            <Compass className="w-4 h-4 text-teal-800" />
+            <span>{isKm ? 'រុករកមុខងារ' : 'Explore Tools'}</span>
+          </button>
+
+          {/* Primary Doctor Action */}
           <button
             onClick={() => setIsRegisterOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs font-semibold transition-colors shadow-xs active:scale-95"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs font-semibold transition-colors shadow-xs active:scale-95"
           >
             <Plus className="w-4 h-4" />
             <span>{t.dashboard.registerPatient}</span>
           </button>
-          <Link
-            href="/queue"
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-semibold transition-colors shadow-xs active:scale-95"
+        </div>
+      </div>
+
+      {/* Doctor Productivity & Navigation Guide Bar */}
+      <div className="bg-[#F8F5EE] border border-[#E7DFC9] p-3 sm:p-3.5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-2xs">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-7 h-7 rounded-lg bg-teal-800 text-white flex items-center justify-center shrink-0 shadow-2xs">
+            <Compass className="w-4 h-4" />
+          </div>
+          <div className="min-w-0">
+            <span className="font-bold text-stone-900">
+              {isKm ? 'លំហូរការងារស្នូលប្រចាំថ្ងៃរបស់គ្រូពេទ្យ' : 'Core Daily Clinical Operations'}
+            </span>
+            <p className="text-stone-500 text-[11px] truncate sm:whitespace-normal">
+              {isKm
+                ? 'ចុច [Ctrl + K] ឬចុចប៊ូតុង [រុករកមុខងារ] ដើម្បីស្វែងរក និងបើកមុខងារឯកទេសទាំងអស់ (PACS, LIS, ធ្មេញ, IPD, Teleconsult, ឃ្លាំង...)'
+                : 'Press [Ctrl + K] or click [Explore Tools] to discover all specialized suites (PACS, LIS Lab, Dental, IPD, Teleconsult, Inventory...)'}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={() => setIsExploreOpen(true)}
+            className="px-3 py-1.5 bg-white hover:bg-stone-50 text-teal-900 border border-[#DDD5C5] rounded-xl font-semibold transition-colors shadow-2xs text-[11px] flex items-center gap-1.5 active:scale-95"
           >
-            <Monitor className="w-4 h-4 text-amber-400" />
-            <span>{t.dashboard.queueCallingBtn}</span>
-          </Link>
-          <Link
-            href="/billing"
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#2D6A4F] hover:bg-[#24563F] text-white rounded-xl text-xs font-semibold transition-colors shadow-xs active:scale-95"
+            <Compass className="w-3.5 h-3.5 text-teal-800" />
+            <span>{isKm ? 'បើក Explore' : 'Open Explore'}</span>
+          </button>
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('open-command-palette'))}
+            className="px-2.5 py-1.5 bg-[#ECE4D4] hover:bg-[#E3D9C5] text-stone-700 rounded-xl font-mono text-[11px] transition-colors shadow-2xs flex items-center gap-1 active:scale-95"
+            title="Press Ctrl+K"
           >
-            <CreditCard className="w-4 h-4" />
-            <span>KHQR & Billing</span>
-          </Link>
+            <span>Ctrl</span>
+            <span className="font-bold">K</span>
+          </button>
         </div>
       </div>
 
@@ -256,18 +292,20 @@ function DashboardView() {
 
       {/* Clinical Operations & Activity Feed */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: Quick Launch Navigation (2 cols) */}
+        {/* Left: Quick Launch Targeted Workflows (2 cols) */}
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 font-mono">
-              {t.dashboard.quickWorkflows}
+            <h2 className="text-xs font-bold uppercase tracking-wider text-stone-600 font-mono">
+              {isKm ? 'លំហូរការងារគោលដៅប្រចាំថ្ងៃ' : 'Targeted Clinical Workflows'}
             </h2>
-            <span className="text-[10px] text-teal-700 font-mono font-medium">
-              Enterprise Grade
+            <span className="text-[10px] text-teal-800 font-mono font-medium">
+              Daily Outpatient Operations
             </span>
           </div>
 
+          {/* 4 Targeted Doctor Action Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* 1. Queue Calling Screen */}
             <Link
               href="/queue"
               className="group p-4 bg-[#FDFBF7] rounded-2xl border border-[#E7E1D4] hover:border-teal-700 transition-all shadow-xs card-3d flex flex-col justify-between"
@@ -278,7 +316,9 @@ function DashboardView() {
                 </div>
                 <h3 className="font-bold text-stone-900 text-sm">{t.queue.title}</h3>
                 <p className="text-xs text-stone-500 mt-1">
-                  {t.queue.subtitle}
+                  {isKm
+                    ? 'ប្រព័ន្ធហៅលេខតាមសំឡេង និងគ្រប់គ្រងអ្នកជំងឺរង់ចាំ'
+                    : t.queue.subtitle}
                 </p>
               </div>
               <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-teal-800 group-hover:translate-x-1 transition-transform">
@@ -287,36 +327,69 @@ function DashboardView() {
               </div>
             </Link>
 
-            <Link
-              href="/certificates"
-              className="group p-4 bg-[#FDFBF7] rounded-2xl border border-[#E7E1D4] hover:border-teal-700 transition-all shadow-xs card-3d flex flex-col justify-between"
-            >
-              <div>
-                <div className="w-9 h-9 rounded-xl bg-[#F0EAE0] text-stone-800 flex items-center justify-center mb-2.5 border border-[#DFD6C6]">
-                  <FileCheck className="w-4 h-4" />
+            {/* 2. Doctor Consultation & Vitals (or Dental if Dental clinic) */}
+            {clinicType === 'DENTAL' ? (
+              <Link
+                href="/dental"
+                className="group p-4 bg-[#FDFBF7] rounded-2xl border border-[#E7E1D4] hover:border-teal-700 transition-all shadow-xs card-3d flex flex-col justify-between"
+              >
+                <div>
+                  <div className="w-9 h-9 rounded-xl bg-teal-50 text-teal-800 flex items-center justify-center mb-2.5 border border-teal-200/60">
+                    <Sparkles className="w-4 h-4" />
+                  </div>
+                  <h3 className="font-bold text-stone-900 text-sm">
+                    {isKm ? 'ពេទ្យធ្មេញ FDI Odontogram' : 'Dental Odontogram'}
+                  </h3>
+                  <p className="text-xs text-stone-500 mt-1">
+                    {isKm
+                      ? 'ប្លង់ 32 ធ្មេញកាយវិភាគវិទ្យា និងតាមដានរោគពុកធ្មេញ WHO DMFT'
+                      : 'FDI 32-tooth anatomical chart & dental treatment'}
+                  </p>
                 </div>
-                <h3 className="font-bold text-stone-900 text-sm">{t.certificates.title}</h3>
-                <p className="text-xs text-stone-500 mt-1">
-                  {t.certificates.subtitle}
-                </p>
-              </div>
-              <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-teal-800 group-hover:translate-x-1 transition-transform">
-                <span>{isKm ? 'ចេញលិខិតផ្លូវការ' : 'Issue Certificate'}</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </div>
-            </Link>
+                <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-teal-800 group-hover:translate-x-1 transition-transform">
+                  <span>{isKm ? 'បើកប្លង់ធ្មេញ' : 'Open Odontogram'}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </div>
+              </Link>
+            ) : (
+              <Link
+                href="/visits"
+                className="group p-4 bg-[#FDFBF7] rounded-2xl border border-[#E7E1D4] hover:border-teal-700 transition-all shadow-xs card-3d flex flex-col justify-between"
+              >
+                <div>
+                  <div className="w-9 h-9 rounded-xl bg-teal-50 text-teal-800 flex items-center justify-center mb-2.5 border border-teal-200/60">
+                    <Stethoscope className="w-4 h-4" />
+                  </div>
+                  <h3 className="font-bold text-stone-900 text-sm">
+                    {isKm ? 'ការពិគ្រោះ & វាស់ Vitals' : 'Consultations & Vitals'}
+                  </h3>
+                  <p className="text-xs text-stone-500 mt-1">
+                    {isKm
+                      ? 'កត់ត្រាសញ្ញាជីវិត ពិនិត្យរោគវិនិច្ឆ័យ ICD-10 និងចេញវេជ្ជបញ្ជា'
+                      : 'Active encounters, vital triage and clinical SOAP notes'}
+                  </p>
+                </div>
+                <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-teal-800 group-hover:translate-x-1 transition-transform">
+                  <span>{isKm ? 'ចាប់ផ្តើមពិនិត្យ' : 'Start Consultation'}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </div>
+              </Link>
+            )}
 
+            {/* 3. Patient Master Directory */}
             <Link
               href="/patients"
               className="group p-4 bg-[#FDFBF7] rounded-2xl border border-[#E7E1D4] hover:border-teal-700 transition-all shadow-xs card-3d flex flex-col justify-between"
             >
               <div>
-                <div className="w-9 h-9 rounded-xl bg-teal-50 text-teal-800 flex items-center justify-center mb-2.5 border border-teal-200/60">
+                <div className="w-9 h-9 rounded-xl bg-[#F0EAE0] text-stone-800 flex items-center justify-center mb-2.5 border border-[#DFD6C6]">
                   <Users className="w-4 h-4" />
                 </div>
                 <h3 className="font-bold text-stone-900 text-sm">{t.patients.title}</h3>
                 <p className="text-xs text-stone-500 mt-1">
-                  {t.patients.subtitle}
+                  {isKm
+                    ? 'ស្វែងរកប្រវត្តិជំងឺ ឯកសារចាស់ៗ និងកែសម្រួលព័ត៌មាន'
+                    : t.patients.subtitle}
                 </p>
               </div>
               <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-teal-800 group-hover:translate-x-1 transition-transform">
@@ -325,6 +398,7 @@ function DashboardView() {
               </div>
             </Link>
 
+            {/* 4. Billing & Dynamic KHQR POS */}
             <Link
               href="/billing"
               className="group p-4 bg-[#FDFBF7] rounded-2xl border border-[#E7E1D4] hover:border-emerald-700 transition-all shadow-xs card-3d flex flex-col justify-between"
@@ -335,7 +409,9 @@ function DashboardView() {
                 </div>
                 <h3 className="font-bold text-stone-900 text-sm">{t.billing.title}</h3>
                 <p className="text-xs text-stone-500 mt-1">
-                  {t.billing.subtitle}
+                  {isKm
+                    ? 'គិតលុយទូទាត់រហ័ស ស្កេន KHQR និងចេញវិក្កយបត្រ'
+                    : t.billing.subtitle}
                 </p>
               </div>
               <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-emerald-800 group-hover:translate-x-1 transition-transform">
@@ -344,11 +420,42 @@ function DashboardView() {
               </div>
             </Link>
           </div>
+
+          {/* Explore Extended Diagnostic & Clinical Suites Card */}
+          <div className="bg-[#F8F5EE] border border-[#E3DAC7] rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs card-3d">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded-full bg-teal-800 text-white text-[10px] font-bold font-mono uppercase tracking-wider">
+                  Specialized Modules
+                </span>
+                <span className="text-xs font-bold text-stone-900">
+                  {isKm
+                    ? 'ត្រូវការប្រើប្រាស់មុខងាររោគវិនិច្ឆ័យ ឬម៉ូឌុលឯកទេសផ្សេងទៀត?'
+                    : 'Need Diagnostic or Advanced Clinical Suites?'}
+                </span>
+              </div>
+              <p className="text-xs text-stone-600 max-w-xl">
+                {isKm
+                  ? 'ចូលមើល PACS DICOM, មន្ទីរពិសោធន៍ LIS, ធ្មេញ Odontogram, សម្រាកពេទ្យ IPD, Teleconsult, ឃ្លាំងឱសថ FEFO, លិខិតវេជ្ជសាស្ត្រ និងការកំណត់...'
+                  : 'Access PACS DICOM imaging, LIS analyzers, Dental odontogram, IPD beds, Teleconsult, FEFO stock, Certificates and Clinic Settings...'}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={() => setIsExploreOpen(true)}
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs font-bold transition-all shadow-xs active:scale-95"
+              >
+                <Compass className="w-4 h-4" />
+                <span>{isKm ? 'រុករកម៉ូឌុលទាំងអស់' : 'Explore All Modules'}</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Right: Real-time Activity Stream & Audit Log */}
         <div className="space-y-4">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-stone-400 font-mono">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-stone-600 font-mono">
             {t.dashboard.recentActivity}
           </h2>
 
@@ -429,6 +536,11 @@ function DashboardView() {
         isOpen={isRegisterOpen}
         onClose={() => setIsRegisterOpen(false)}
         onPatientCreated={() => fetchMetrics()}
+      />
+
+      <ExploreModulesModal
+        isOpen={isExploreOpen}
+        onClose={() => setIsExploreOpen(false)}
       />
     </div>
   );

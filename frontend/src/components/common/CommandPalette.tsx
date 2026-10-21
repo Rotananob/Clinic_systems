@@ -15,17 +15,28 @@ import {
   CreditCard,
   FileCheck,
   Settings,
-  UserPlus,
   Globe,
   Volume2,
   ArrowRight,
   User,
-  Clock,
   X,
-  Command,
   BarChart3,
   LayoutTemplate,
   Cpu,
+  Boxes,
+  CalendarDays,
+  FolderOpen,
+  Film,
+  Tv,
+  FlaskConical,
+  BedDouble,
+  TrendingUp,
+  Sparkles,
+  Video,
+  FileSpreadsheet,
+  ShieldCheck,
+  ShieldPlus,
+  HeartHandshake,
 } from 'lucide-react';
 
 interface CommandItem {
@@ -36,6 +47,7 @@ interface CommandItem {
   icon: React.ComponentType<{ className?: string }>;
   action: () => void;
   shortcut?: string;
+  keywords?: string[];
 }
 
 export const CommandPalette: React.FC = () => {
@@ -45,7 +57,6 @@ export const CommandPalette: React.FC = () => {
 
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [selectedIndex, setSelectedIndex] = useState(0);
   const [patientResults, setPatientResults] = useState<any[]>([]);
   const [searchingPatients, setSearchingPatients] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -79,7 +90,6 @@ export const CommandPalette: React.FC = () => {
   useEffect(() => {
     if (isOpen) {
       setQuery('');
-      setSelectedIndex(0);
       setTimeout(() => {
         inputRef.current?.focus();
       }, 50);
@@ -109,11 +119,11 @@ export const CommandPalette: React.FC = () => {
     return () => clearTimeout(timer);
   }, [query]);
 
-  // Standard Navigation Actions
+  // Standard Navigation Actions across all 25 clinical suites
   const navigationItems: CommandItem[] = [
     {
       id: 'nav-dashboard',
-      category: isKm ? 'ការរុករក' : 'Navigation',
+      category: isKm ? 'ការរុករកស្នូល' : 'Core Navigation',
       title: t.nav.dashboard,
       subtitle: isKm ? 'ផ្ទាំងបញ្ជា និងស្ថិតិសរុប' : 'Main clinical overview & KPIs',
       icon: LayoutDashboard,
@@ -121,10 +131,11 @@ export const CommandPalette: React.FC = () => {
         router.push('/');
         setIsOpen(false);
       },
+      keywords: ['dashboard', 'home', 'kpi', 'ស្ថិតិ', 'ផ្ទាំងបញ្ជា'],
     },
     {
       id: 'nav-patients',
-      category: isKm ? 'ការរុករក' : 'Navigation',
+      category: isKm ? 'ការរុករកស្នូល' : 'Core Navigation',
       title: t.nav.patients,
       subtitle: isKm ? 'បញ្ជីឈ្មោះ និងប្រវត្តិអ្នកជំងឺ' : 'Search & manage patient records',
       icon: Users,
@@ -132,10 +143,11 @@ export const CommandPalette: React.FC = () => {
         router.push('/patients');
         setIsOpen(false);
       },
+      keywords: ['patient', 'patients', 'medical records', 'អ្នកជំងឺ', 'ឈ្មោះ', 'ប្រវត្តិ'],
     },
     {
       id: 'nav-queue',
-      category: isKm ? 'ការរុករក' : 'Navigation',
+      category: isKm ? 'ការរុករកស្នូល' : 'Core Navigation',
       title: t.nav.queue,
       subtitle: isKm ? 'ក្ដារជួរ និងប្រព័ន្ធហៅលេខ' : 'Live token display & calling screen',
       icon: Monitor,
@@ -143,10 +155,11 @@ export const CommandPalette: React.FC = () => {
         router.push('/queue');
         setIsOpen(false);
       },
+      keywords: ['queue', 'token', 'calling', 'sound', 'voice', 'ហៅលេខ', 'ជួរ', 'សំឡេង'],
     },
     {
       id: 'nav-visits',
-      category: isKm ? 'ការរុករក' : 'Navigation',
+      category: isKm ? 'ការរុករកស្នូល' : 'Core Navigation',
       title: t.nav.visits,
       subtitle: isKm ? 'ជួរពិនិត្យ វាស់ Vitals & ពិគ្រោះ' : 'Active encounters & vital triage',
       icon: Calendar,
@@ -154,10 +167,11 @@ export const CommandPalette: React.FC = () => {
         router.push('/visits');
         setIsOpen(false);
       },
+      keywords: ['visits', 'vitals', 'consultation', 'doctor', 'ពិនិត្យ', 'ពិគ្រោះ', 'សញ្ញាជីវិត'],
     },
     {
       id: 'nav-prescriptions',
-      category: isKm ? 'ការរុករក' : 'Navigation',
+      category: isKm ? 'ឱសថ & ឃ្លាំង' : 'Pharmacy & Stock',
       title: t.nav.prescriptions,
       subtitle: isKm ? 'ឱសថស្ថាន ចេញថ្នាំ & ស្តុក' : 'Pharmacy orders & dispensation',
       icon: Pill,
@@ -165,10 +179,23 @@ export const CommandPalette: React.FC = () => {
         router.push('/prescriptions');
         setIsOpen(false);
       },
+      keywords: ['prescriptions', 'pharmacy', 'medicine', 'drug', 'dispense', 'ថ្នាំ', 'ឱសថ'],
+    },
+    {
+      id: 'nav-inventory',
+      category: isKm ? 'ឱសថ & ឃ្លាំង' : 'Pharmacy & Stock',
+      title: isKm ? 'ឃ្លាំងឱសថ FEFO ច្រើនសាខា' : 'Multi-Branch Inventory & FEFO',
+      subtitle: isKm ? 'គ្រប់គ្រងស្តុកថ្នាំ កាលបរិច្ឆេទផុតកំណត់ និងការផ្ទេរសាខា' : 'Batch tracking, FEFO dispensing and stock replenishment',
+      icon: Boxes,
+      action: () => {
+        router.push('/inventory');
+        setIsOpen(false);
+      },
+      keywords: ['inventory', 'warehouse', 'fefo', 'stock', 'batch', 'expiry', 'ឃ្លាំង', 'ស្តុក'],
     },
     {
       id: 'nav-billing',
-      category: isKm ? 'ការរុករក' : 'Navigation',
+      category: isKm ? 'ហិរញ្ញវត្ថុ & ទូទាត់' : 'Finance & Billing',
       title: t.nav.billing,
       subtitle: isKm ? 'វិក្កយបត្រ ទូទាត់ KHQR & សាច់ប្រាក់' : 'Invoices & KHQR payments',
       icon: CreditCard,
@@ -176,10 +203,95 @@ export const CommandPalette: React.FC = () => {
         router.push('/billing');
         setIsOpen(false);
       },
+      keywords: ['billing', 'invoice', 'khqr', 'payment', 'cash', 'bakong', 'វិក្កយបត្រ', 'គិតលុយ', 'ទូទាត់'],
+    },
+    {
+      id: 'nav-pacs',
+      category: isKm ? 'រោគវិនិច្ឆ័យឯកទេស' : 'Specialized Diagnostics',
+      title: isKm ? 'រូបភាពវេជ្ជសាស្ត្រ WebGL PACS' : 'Medical Imaging PACS (DICOM)',
+      subtitle: isKm ? 'មើលរូបភាពឆ្លុះ X-Ray, CT Scan, MRI និង Ultrasound' : 'High-performance DICOM viewer with calipers & zoom',
+      icon: Film,
+      action: () => {
+        router.push('/pacs');
+        setIsOpen(false);
+      },
+      keywords: ['pacs', 'dicom', 'xray', 'ct', 'mri', 'ultrasound', 'ស្កេន', 'ឆ្លុះ', 'រូបភាព'],
+    },
+    {
+      id: 'nav-lab',
+      category: isKm ? 'រោគវិនិច្ឆ័យឯកទេស' : 'Specialized Diagnostics',
+      title: isKm ? 'មន្ទីរពិសោធន៍ & វិភាគឈាម (LIS)' : 'Laboratory Information System (LIS)',
+      subtitle: isKm ? 'គ្រប់គ្រងលទ្ធផលតេស្តឈាម ASTM/HL7 និង Panic Alerts' : 'Automated analyzer interfacing and panic value alerts',
+      icon: FlaskConical,
+      action: () => {
+        router.push('/lab');
+        setIsOpen(false);
+      },
+      keywords: ['lab', 'laboratory', 'lis', 'blood', 'analyzer', 'astm', 'hl7', 'ឈាម', 'ពិសោធន៍'],
+    },
+    {
+      id: 'nav-dental',
+      category: isKm ? 'រោគវិនិច្ឆ័យឯកទេស' : 'Specialized Diagnostics',
+      title: isKm ? 'ពេទ្យធ្មេញ FDI Odontogram' : 'Dental Odontogram & WHO DMFT',
+      subtitle: isKm ? 'ប្លង់ 32 ធ្មេញកាយវិភាគវិទ្យា និងប្រវត្តិព្យាបាលធ្មេញ' : '32-tooth odontogram chart, restorations and WHO DMFT index',
+      icon: Sparkles,
+      action: () => {
+        router.push('/dental');
+        setIsOpen(false);
+      },
+      keywords: ['dental', 'tooth', 'teeth', 'odontogram', 'dmft', 'ធ្មេញ', 'ពុកធ្មេញ', 'ដកធ្មេញ'],
+    },
+    {
+      id: 'nav-ipd',
+      category: isKm ? 'សម្រាកពេទ្យ & ថែទាំ' : 'Inpatient & Care',
+      title: isKm ? 'សម្រាកពេទ្យ & e-MAR (IPD)' : 'Inpatient Beds & e-MAR (IPD)',
+      subtitle: isKm ? 'គ្រប់គ្រងគ្រែសម្រាកពេទ្យ និងការផ្តល់ថ្នាំ 5-Rights' : 'Ward bed management and electronic MAR bedside delivery',
+      icon: BedDouble,
+      action: () => {
+        router.push('/ipd');
+        setIsOpen(false);
+      },
+      keywords: ['ipd', 'bed', 'ward', 'admission', 'emar', 'សម្រាកពេទ្យ', 'គ្រែ'],
+    },
+    {
+      id: 'nav-teleconsult',
+      category: isKm ? 'សម្រាកពេទ្យ & ថែទាំ' : 'Inpatient & Care',
+      title: isKm ? 'ពិគ្រោះជំងឺពីចម្ងាយ (Teleconsult)' : 'Teleconsultation WebRTC',
+      subtitle: isKm ? 'វីដេអូខល WebRTC និងចេញ QR e-Prescription' : 'Encrypted video encounters and signed QR e-prescriptions',
+      icon: Video,
+      action: () => {
+        router.push('/teleconsult');
+        setIsOpen(false);
+      },
+      keywords: ['teleconsult', 'video', 'webrtc', 'remote', 'call', 'វីដេអូ', 'ពិគ្រោះពីចម្ងាយ'],
+    },
+    {
+      id: 'nav-concierge',
+      category: isKm ? 'សម្រាកពេទ្យ & ថែទាំ' : 'Inpatient & Care',
+      title: isKm ? 'ថែទាំតាមដានអ្នកជំងឺ (Concierge)' : 'Care Concierge & Adherence',
+      subtitle: isKm ? 'ផ្ញើសាររំលឹកការលេបថ្នាំតាម Telegram & SMS' : 'Automated medication reminders and adherence tracking',
+      icon: HeartHandshake,
+      action: () => {
+        router.push('/concierge');
+        setIsOpen(false);
+      },
+      keywords: ['concierge', 'reminder', 'adherence', 'sms', 'telegram', 'ថែទាំ', 'តាមដាន'],
+    },
+    {
+      id: 'nav-follow-ups',
+      category: isKm ? 'សម្រាកពេទ្យ & ថែទាំ' : 'Inpatient & Care',
+      title: isKm ? 'ការណាត់ជួបតាមដានជំងឺ' : 'Follow-up Appointments',
+      subtitle: isKm ? 'ប្រតិទិនណាត់ជួប និងការតាមដានការវិវត្តរបស់អ្នកជំងឺ' : 'Physician calendar, appointments and SMS reminders',
+      icon: CalendarDays,
+      action: () => {
+        router.push('/follow-ups');
+        setIsOpen(false);
+      },
+      keywords: ['follow-up', 'appointment', 'calendar', 'schedule', 'ណាត់ជួប', 'ប្រតិទិន'],
     },
     {
       id: 'nav-reports',
-      category: isKm ? 'ការរុករក' : 'Navigation',
+      category: isKm ? 'ហិរញ្ញវត្ថុ & របាយការណ៍' : 'Finance & Reports',
       title: t.nav.reports,
       subtitle: isKm ? 'របាយការណ៍ហិរញ្ញវត្ថុ និងស្ថិតិព្យាបាល' : 'Financial revenue & clinical operations reports',
       icon: BarChart3,
@@ -187,10 +299,47 @@ export const CommandPalette: React.FC = () => {
         router.push('/reports');
         setIsOpen(false);
       },
+      keywords: ['reports', 'analytics', 'revenue', 'income', 'របាយការណ៍', 'ចំណូល', 'ស្ថិតិ'],
+    },
+    {
+      id: 'nav-finance',
+      category: isKm ? 'ហិរញ្ញវត្ថុ & របាយការណ៍' : 'Finance & Reports',
+      title: isKm ? 'គណនេយ្យវេជ្ជបណ្ឌិត & P&L' : 'Doctor Commission & Finance P&L',
+      subtitle: isKm ? 'គណនាប្រាក់កម្រៃគ្រូពេទ្យ និងរបាយការណ៍ EBITDA' : 'Doctor split commissions, clinic OPEX and EBITDA analysis',
+      icon: TrendingUp,
+      action: () => {
+        router.push('/finance');
+        setIsOpen(false);
+      },
+      keywords: ['finance', 'commission', 'profit', 'loss', 'ebitda', 'pnl', 'ហិរញ្ញវត្ថុ', 'កម្រៃ'],
+    },
+    {
+      id: 'nav-insurance',
+      category: isKm ? 'ហិរញ្ញវត្ថុ & របាយការណ៍' : 'Finance & Reports',
+      title: isKm ? 'បេឡាជាតិ ប.ស.ស & ធានារ៉ាប់រង' : 'NSSF & Insurance Direct Adjudication',
+      subtitle: isKm ? 'ផ្ទៀងផ្ទាត់កាត ប.ស.ស និងការទូទាត់សំណង' : 'NSSF eligibility verification and insurance claim settlement',
+      icon: ShieldPlus,
+      action: () => {
+        router.push('/insurance');
+        setIsOpen(false);
+      },
+      keywords: ['insurance', 'nssf', 'claims', 'bssc', 'ធានារ៉ាប់រង', 'បសស'],
+    },
+    {
+      id: 'nav-eclaim',
+      category: isKm ? 'ហិរញ្ញវត្ថុ & របាយការណ៍' : 'Finance & Reports',
+      title: isKm ? 'សំណងអេឡិចត្រូនិក eClaim & MoH' : 'Electronic Claims & MoH DHIS2',
+      subtitle: isKm ? 'បញ្ជូនទិន្នន័យក្រសួងសុខាភិបាល XML/FHIR' : 'National DHIS2 XML reporting and FHIR data exports',
+      icon: FileSpreadsheet,
+      action: () => {
+        router.push('/eclaim');
+        setIsOpen(false);
+      },
+      keywords: ['eclaim', 'dhis2', 'moh', 'fhir', 'xml', 'ក្រសួងសុខាភិបាល', 'សំណង'],
     },
     {
       id: 'nav-certificates',
-      category: isKm ? 'ការរុករក' : 'Navigation',
+      category: isKm ? 'លិខិត & ឯកសារ' : 'Documents & Certificates',
       title: t.nav.certificates,
       subtitle: isKm ? 'លិខិតឈប់សម្រាកព្យាបាល & កាយសម្បទា' : 'Printable medical certificates A4',
       icon: FileCheck,
@@ -198,10 +347,47 @@ export const CommandPalette: React.FC = () => {
         router.push('/certificates');
         setIsOpen(false);
       },
+      keywords: ['certificate', 'sick leave', 'fitness', 'print', 'លិខិត', 'វិញ្ញាបនបត្រ', 'សម្រាក'],
+    },
+    {
+      id: 'nav-documents',
+      category: isKm ? 'លិខិត & ឯកសារ' : 'Documents & Certificates',
+      title: isKm ? 'កម្រងឯកសារវេជ្ជសាស្ត្រ (Documents)' : 'Medical Document Archives',
+      subtitle: isKm ? 'ផ្ទុកឯកសារស្កេន លទ្ធផលពិនិត្យក្រៅ និងរូបភាពជំងឺ' : 'Digital clinical archives, PDF attachments and scans',
+      icon: FolderOpen,
+      action: () => {
+        router.push('/documents');
+        setIsOpen(false);
+      },
+      keywords: ['documents', 'archive', 'pdf', 'scan', 'ឯកសារ', 'កម្រង'],
+    },
+    {
+      id: 'nav-signage',
+      category: isKm ? 'រដ្ឋបាល & ហាតវែរ' : 'Admin & Hardware',
+      title: isKm ? 'ស្លាកអេក្រង់ Smart TV Signage' : 'Waiting Room TV Signage',
+      subtitle: isKm ? 'បង្ហាញជួរហៅលេខលើទូរទស្សន៍ និងវីដេអូអប់រំសុខភាព' : 'Full-screen waiting room token display and announcements',
+      icon: Tv,
+      action: () => {
+        router.push('/signage');
+        setIsOpen(false);
+      },
+      keywords: ['signage', 'tv', 'screen', 'display', 'ទូរទស្សន៍', 'អេក្រង់'],
+    },
+    {
+      id: 'nav-staff',
+      category: isKm ? 'រដ្ឋបាល & ហាតវែរ' : 'Admin & Hardware',
+      title: isKm ? 'គ្រប់គ្រងបុគ្គលិកគ្លីនិក' : 'Staff & Team Management',
+      subtitle: isKm ? 'គ្រប់គ្រងគណនីគ្រូពេទ្យ គិលានុបដ្ឋាយិកា និងបុគ្គលិកបេឡា' : 'Manage user credentials, medical licenses and roles',
+      icon: ShieldCheck,
+      action: () => {
+        router.push('/staff');
+        setIsOpen(false);
+      },
+      keywords: ['staff', 'team', 'doctor', 'nurse', 'cashier', 'users', 'បុគ្គលិក'],
     },
     {
       id: 'nav-invoice-template',
-      category: isKm ? 'ការរុករក' : 'Navigation',
+      category: isKm ? 'រដ្ឋបាល & ហាតវែរ' : 'Admin & Hardware',
       title: isKm ? 'រចនាម៉ូតវិក្កយបត្រ (Invoice Template)' : 'Invoice Template Designer',
       subtitle: isKm ? 'រចនារូបរាង Logo ពណ៌ និងទម្រង់បោះពុម្ព' : 'Customize invoice layouts, logo, colors & fonts',
       icon: LayoutTemplate,
@@ -209,10 +395,11 @@ export const CommandPalette: React.FC = () => {
         router.push('/invoice-template');
         setIsOpen(false);
       },
+      keywords: ['invoice template', 'designer', 'receipt', 'print', 'រចនា', 'ម៉ូតវិក្កយបត្រ'],
     },
     {
       id: 'nav-hardware',
-      category: isKm ? 'ការរុករក' : 'Navigation',
+      category: isKm ? 'រដ្ឋបាល & ហាតវែរ' : 'Admin & Hardware',
       title: isKm ? 'ហាតវែរ & ឧបករណ៍ (Hardware & Devices)' : 'Hardware & Peripherals',
       subtitle: isKm ? 'តភ្ជាប់ម៉ាស៊ីនព្រីន POS កេសលុយ និងម៉ាស៊ីនស្កេន' : 'Connect thermal printers, cash drawer & barcode scanner',
       icon: Cpu,
@@ -220,10 +407,11 @@ export const CommandPalette: React.FC = () => {
         router.push('/settings');
         setIsOpen(false);
       },
+      keywords: ['hardware', 'printer', 'thermal', 'cash drawer', 'scanner', 'ព្រីន', 'កេសលុយ', 'ហាតវែរ'],
     },
     {
       id: 'nav-sound-settings',
-      category: isKm ? 'ការរុករក' : 'Navigation',
+      category: isKm ? 'រដ្ឋបាល & ហាតវែរ' : 'Admin & Hardware',
       title: isKm ? 'កំណត់សំឡេង & ថតសំឡេងនិយាយ (Sound Studio)' : 'Sound & Voice Settings',
       subtitle: isKm ? 'បញ្ចូល MP3 ឬថតសំឡេងប្រកាសផ្ទាល់ខ្លួន' : 'Upload MP3 or record real voice announcements',
       icon: Volume2,
@@ -231,10 +419,11 @@ export const CommandPalette: React.FC = () => {
         router.push('/settings?tab=sound');
         setIsOpen(false);
       },
+      keywords: ['sound', 'voice', 'audio', 'tts', 'chime', 'សំឡេង', 'ហៅ'],
     },
     {
       id: 'nav-settings',
-      category: isKm ? 'ការរុករក' : 'Navigation',
+      category: isKm ? 'រដ្ឋបាល & ហាតវែរ' : 'Admin & Hardware',
       title: t.nav.settings,
       subtitle: isKm ? 'ការកំណត់គ្លីនិក KHQR & តារាងថ្លៃ' : 'System configuration & fees',
       icon: Settings,
@@ -242,6 +431,19 @@ export const CommandPalette: React.FC = () => {
         router.push('/settings');
         setIsOpen(false);
       },
+      keywords: ['settings', 'config', 'profile', 'clinic', 'កំណត់'],
+    },
+    {
+      id: 'nav-pricing',
+      category: isKm ? 'រដ្ឋបាល & ហាតវែរ' : 'Admin & Hardware',
+      title: isKm ? 'គម្រោងប្រើប្រាស់ & Upgrade (SaaS Plans)' : 'SaaS Subscription Plans',
+      subtitle: isKm ? 'ជ្រើសរើស ឬផ្លាស់ប្តូរគម្រោងប្រើប្រាស់គ្លីនិក' : 'Upgrade to Starter, Pro or Enterprise tiers',
+      icon: Sparkles,
+      action: () => {
+        router.push('/pricing');
+        setIsOpen(false);
+      },
+      keywords: ['pricing', 'plan', 'tier', 'upgrade', 'subscription', 'គម្រោង', 'តម្លៃ'],
     },
   ];
 
@@ -282,19 +484,21 @@ export const CommandPalette: React.FC = () => {
   ];
 
   // Filter items matching query
-  const filteredNav = query.trim()
+  const queryLower = query.toLowerCase().trim();
+  const filteredNav = queryLower
     ? navigationItems.filter(
         (item) =>
-          item.title.toLowerCase().includes(query.toLowerCase()) ||
-          (item.subtitle && item.subtitle.toLowerCase().includes(query.toLowerCase()))
+          item.title.toLowerCase().includes(queryLower) ||
+          (item.subtitle && item.subtitle.toLowerCase().includes(queryLower)) ||
+          (item.keywords && item.keywords.some((k) => k.toLowerCase().includes(queryLower)))
       )
     : navigationItems;
 
-  const filteredQuick = query.trim()
+  const filteredQuick = queryLower
     ? quickActions.filter(
         (item) =>
-          item.title.toLowerCase().includes(query.toLowerCase()) ||
-          (item.subtitle && item.subtitle.toLowerCase().includes(query.toLowerCase()))
+          item.title.toLowerCase().includes(queryLower) ||
+          (item.subtitle && item.subtitle.toLowerCase().includes(queryLower))
       )
     : quickActions;
 
@@ -308,10 +512,7 @@ export const CommandPalette: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-150">
-      <div
-        className="fixed inset-0"
-        onClick={() => setIsOpen(false)}
-      />
+      <div className="fixed inset-0" onClick={() => setIsOpen(false)} />
 
       <div className="relative w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden z-10 flex flex-col max-h-[75vh] animate-in zoom-in-95 duration-150">
         {/* Search Input Header */}
@@ -384,7 +585,7 @@ export const CommandPalette: React.FC = () => {
           {filteredNav.length > 0 && (
             <div>
               <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">
-                {isKm ? 'ទំព័រ និងការរុករក' : 'Navigation'}
+                {isKm ? 'ទំព័រ និងម៉ូឌុលគ្លីនិក (All Modules)' : 'Navigation & Modules'}
               </div>
               <div className="space-y-0.5 mt-1">
                 {filteredNav.map((item) => {
