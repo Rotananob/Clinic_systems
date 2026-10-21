@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
+import { buildDynamicKhqr } from '../../lib/khqr';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslation } from '../../context/I18nContext';
@@ -27,6 +29,7 @@ import {
   KeyRound,
   ArrowLeft,
   Send,
+  CreditCard,
 } from 'lucide-react';
 
 
@@ -136,7 +139,8 @@ function RegisterContent() {
   const [selectedPlan, setSelectedPlan] = useState<string>(initialPlan);
 
   const [clinicType, setClinicType] = useState('Polyclinic & Outpatient Center');
-  const [clinicNameKh, setClinicNameKh] = useState('');
+  const initialClinicName = searchParams.get('clinicName') || '';
+  const [clinicNameKh, setClinicNameKh] = useState(initialClinicName);
   const [clinicNameEn, setClinicNameEn] = useState('');
   const [adminName, setAdminName] = useState('');
   const [phone, setPhone] = useState('');
@@ -144,7 +148,7 @@ function RegisterContent() {
   const [password, setPassword] = useState('');
 
   // 2-step verification code state
-  const [step, setStep] = useState<'FORM' | 'VERIFY_CODE'>('FORM');
+  const [step, setStep] = useState<'FORM' | 'VERIFY_CODE' | 'PAYMENT_CHECKOUT'>('FORM');
   const [verificationCode, setVerificationCode] = useState('');
   const [devCodePreview, setDevCodePreview] = useState<string | null>(null);
   const [countdown, setCountdown] = useState(600); // 10 minutes
@@ -259,6 +263,35 @@ function RegisterContent() {
     }
   };
 
+  
+  const handleCompletePaidPayment = async () => {
+    setLoading(true);
+    setErrorMessage(null);
+    try {
+      const res = await api.auth.registerWithCode({
+        clinicNameKh: clinicNameKh.trim(),
+        clinicNameEn: clinicNameEn.trim(),
+        clinicType,
+        adminName: adminName.trim() || undefined,
+        phone: phone.trim(),
+        email: email.trim().toLowerCase(),
+        password,
+        planTier: selectedPlan,
+        verificationCode: verificationCode.trim(),
+      });
+
+      if (res.success && res.accessToken) {
+        localStorage.setItem('clinic_access_token', res.accessToken);
+        localStorage.setItem('clinic_user', JSON.stringify(res.user));
+        setRegisteredData(res);
+      }
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Activation failed. Please check your verification code.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleResendCode = async () => {
     setErrorMessage(null);
     setLoading(true);
@@ -352,13 +385,132 @@ function RegisterContent() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => router.push('/')}
+                  onClick={() => router.push('/dashboard')}
                   className="w-full sm:w-auto px-6 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-semibold border border-stone-300 transition-colors"
                 >
                   {isKm ? 'ចូលទៅកាន់ផ្ទាំងគ្រប់គ្រង' : 'Go to Clinic Dashboard'}
                 </button>
               </div>
             </div>
+          
+          ) : step === 'PAYMENT_CHECKOUT' ? (
+            /* Step 3: Instant SaaS Subscription Dynamic KHQR Checkout */
+            <div className="bg-white rounded-3xl border border-stone-200 p-6 sm:p-8 shadow-xl space-y-6">
+              <div className="flex items-center justify-between border-b border-stone-100 pb-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStep('VERIFY_CODE');
+                    setErrorMessage(null);
+                  }}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 transition-colors"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span>{isKm ? 'ត្រឡប់ក្រោយ (Back)' : 'Back to Code'}</span>
+                </button>
+                <span className="text-xs font-bold text-teal-800 bg-teal-50 px-2.5 py-1 rounded-full border border-teal-200">
+                  {selectedPlan === 'STARTER_5' ? 'Clinic Starter ($5.00)' : selectedPlan === 'PRO_8' ? 'Polyclinic Pro ($8.00)' : 'Hospital Enterprise ($12.00)'}
+                </span>
+              </div>
+
+              {errorMessage && (
+                <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                  <span>{errorMessage}</span>
+                </div>
+              )}
+
+              <div className="text-center space-y-2">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-bold border border-amber-200">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-700" />
+                  <span>{isKm ? 'ទូទាត់ប្រាក់ជាវគម្រោង (Subscription Checkout)' : 'Instant KHQR Subscription Checkout'}</span>
+                </div>
+                <h2 className="text-xl sm:text-2xl font-extrabold text-stone-900">
+                  {isKm
+                    ? `ទូទាត់ប្រាក់សម្រាប់គម្រោង ${PLAN_CARDS.find((p) => p.id === selectedPlan)?.nameKh || selectedPlan}`
+                    : `Checkout for ${PLAN_CARDS.find((p) => p.id === selectedPlan)?.nameEn || selectedPlan}`}
+                </h2>
+                <p className="text-xs text-stone-600 max-w-md mx-auto">
+                  {isKm
+                    ? 'ស្កេន Dynamic KHQR ឬចុចប៊ូតុង ABA PayWay ខាងក្រោមដើម្បីបង់ប្រាក់។ លុយចូលគណនី Platform ផ្ទាល់ ១០០% ហើយគ្លីនិករបស់លោកអ្នកនឹងដំណើរការភ្លាមៗ!'
+                    : 'Scan dynamic KHQR or tap the ABA PayWay direct link below. Workspace is auto-provisioned upon confirmation.'}
+                </p>
+              </div>
+
+              {/* Dynamic KHQR Card */}
+              <div className="bg-[#FAF7F2] rounded-2xl border border-[#DFD6C6] p-6 max-w-md mx-auto text-center space-y-4">
+                <div className="p-3 bg-white rounded-2xl border border-stone-200 shadow-md inline-block">
+                  <QRCodeSVG
+                    value={buildDynamicKhqr({
+                      bakongId: 'rotana_clinic@aba',
+                      merchantName: 'Rotana Clinic',
+                      amount: selectedPlan === 'STARTER_5' ? 5.0 : selectedPlan === 'PRO_8' ? 8.0 : 12.0,
+                      currency: 'USD',
+                      billNumber: `SUB-${selectedPlan}-${Date.now().toString().slice(-4)}`,
+                    })}
+                    size={200}
+                    level="M"
+                    includeMargin={false}
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <div className="text-2xl font-black text-teal-900 font-sans">
+                    {selectedPlan === 'STARTER_5' ? '$5.00' : selectedPlan === 'PRO_8' ? '$8.00' : '$12.00'}
+                    <span className="text-xs font-normal text-stone-500 ml-1">USD / month</span>
+                  </div>
+                  <div className="text-xs font-semibold text-stone-700 font-mono">
+                    Merchant: Rotana Clinic (rotana_clinic@aba)
+                  </div>
+                  <div className="flex items-center justify-center gap-1.5 text-[11px] text-emerald-800 font-bold pt-1">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span>{isKm ? 'កំពុងរង់ចាំការទូទាត់ប្រាក់ (Waiting for Settlement)...' : 'Waiting for Bakong Settlement...'}</span>
+                  </div>
+                </div>
+
+                {/* ABA PayWay Direct Link Button */}
+                <div className="pt-2">
+                  <a
+                    href="https://link.payway.com.kh/ABAPAYCK539089j"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-2.5 px-4 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs font-bold shadow-xs transition-all flex items-center justify-center gap-2"
+                  >
+                    <CreditCard className="w-4 h-4" />
+                    <span>{isKm ? 'បើកបង់ប្រាក់ក្នុង ABA Mobile (PayWay Direct)' : 'Open in ABA Mobile (PayWay Direct)'}</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+              </div>
+
+              {/* Confirm / Activate Button */}
+              <div className="space-y-3 max-w-md mx-auto pt-2">
+                <button
+                  type="button"
+                  onClick={handleCompletePaidPayment}
+                  disabled={loading}
+                  className="w-full py-3 px-6 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
+                >
+                  {loading ? (
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="w-4 h-4" />
+                  )}
+                  <span>
+                    {isKm
+                      ? 'ខ្ញុំបានបង់ប្រាក់រួចរាល់ / ដំណើរការគ្លីនិកឥឡូវនេះ'
+                      : 'I Have Paid / Activate Clinic Workspace'}
+                  </span>
+                </button>
+
+                <p className="text-[11px] text-stone-500 text-center">
+                  {isKm
+                    ? 'បន្ទាប់ពីចុច គ្លីនិករបស់លោកអ្នកនឹងទទួលបានគម្រោងនេះភ្លាមៗ និងបើកផ្ទាំងគ្រប់គ្រងដោយស្វ័យប្រវត្ត។'
+                    : 'Your workspace will be auto-provisioned with the selected plan tier immediately.'}
+                </p>
+              </div>
+            </div>
+
           ) : step === 'VERIFY_CODE' ? (
             /* Step 2: 6-Digit Gmail Confirmation Code Screen */
             <div className="bg-white rounded-2xl border border-stone-200 p-6 sm:p-8 shadow-xl space-y-6">

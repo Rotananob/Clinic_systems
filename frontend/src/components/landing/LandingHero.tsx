@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useTranslation } from '../../context/I18nContext';
 import {
   QrCode,
@@ -22,6 +23,8 @@ export const LandingHero: React.FC = () => {
   const { locale } = useTranslation();
   const isKm = locale === 'km';
 
+  const router = useRouter();
+  const [clinicInput, setClinicInput] = useState('');
   const [activeTab, setActiveTab] = useState<'khqr' | 'voice' | 'receipt'>('khqr');
   const [countdown, setCountdown] = useState(172);
 
@@ -62,6 +65,36 @@ export const LandingHero: React.FC = () => {
               ? 'ដំណោះស្រាយវេជ្ជសាស្ត្រ All-in-One សម្រាប់គ្លីនិកឯកជន និងមន្ទីរសម្រាកព្យាបាលទូទាំងប្រទេសកម្ពុជា៖ បង្កើត Dynamic KHQR ក្នុង ២ វិនាទី, ហៅអ្នកជំងឺជាសំឡេងខ្មែរ, គ្រប់គ្រងស្តុកឱសថ, និងបាញ់ដំណឹង Telegram Topics ស្វ័យប្រវត្ត។'
               : 'Complete SaaS solution for private clinics and polyclinics in Cambodia: 2-second dynamic Tag 01=12 KHQR generation, Khmer voice queue announcement, automated inventory, and multi-channel Telegram forum topics.'}
           </p>
+
+          
+          {/* Quick Registration Bar (Gemini / Claude / ChatGPT Style) */}
+          <div className="max-w-lg mx-auto pt-2">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                router.push(`/register${clinicInput.trim() ? `?clinicName=${encodeURIComponent(clinicInput.trim())}` : ''}`);
+              }}
+              className="flex items-center gap-2 p-1.5 bg-white border border-[#D5CDBD] rounded-2xl shadow-md focus-within:ring-2 focus-within:ring-teal-700 transition-all"
+            >
+              <div className="pl-3 text-stone-400">
+                <Building2 className="w-4 h-4 text-teal-800" />
+              </div>
+              <input
+                type="text"
+                value={clinicInput}
+                onChange={(e) => setClinicInput(e.target.value)}
+                placeholder={isKm ? 'បញ្ចូលឈ្មោះគ្លីនិករបស់អ្នក (ឧ. គ្លីនិក សុខភាព)...' : 'Enter clinic name (e.g. Sokhapheap Clinic)...'}
+                className="flex-1 bg-transparent border-none text-xs sm:text-sm font-medium text-stone-900 focus:outline-hidden placeholder:text-stone-400"
+              />
+              <button
+                type="submit"
+                className="px-4 py-2.5 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center gap-1.5 shrink-0 active:scale-95"
+              >
+                <span>{isKm ? 'ចុះឈ្មោះភ្លាមៗ' : 'Get Started'}</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </form>
+          </div>
 
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
