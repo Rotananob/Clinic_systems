@@ -31,6 +31,7 @@ import { LisModule } from './lis/lis.module';
 import { IpdModule } from './ipd/ipd.module';
 import { FinanceModule } from './finance/finance.module';
 import { DentalModule } from './dental/dental.module';
+import { TeleconsultModule } from './teleconsult/teleconsult.module';
 import { RateLimiterMiddleware } from './common/middleware/rate-limiter.middleware';
 import { TenantContextMiddleware } from './common/middleware/tenant-context.middleware';
 import { CommonModule } from './common/common.module';
@@ -78,6 +79,7 @@ import { CommonModule } from './common/common.module';
     IpdModule,
     FinanceModule,
     DentalModule,
+    TeleconsultModule,
   ],
 })
 export class AppModule implements NestModule {

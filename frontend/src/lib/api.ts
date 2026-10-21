@@ -1411,6 +1411,85 @@ class ApiClient {
         },
       ),
   };
+
+  // Teleconsultation WebRTC Video Call & Digital e-Prescription (Phase 16)
+  teleconsult = {
+    getIceServers: () => this.request<any[]>('/teleconsult/ice-servers'),
+    listRooms: (params?: { status?: string; doctorId?: string; patientId?: string }) => {
+      const q = new URLSearchParams();
+      if (params?.status) q.set('status', params.status);
+      if (params?.doctorId) q.set('doctorId', params.doctorId);
+      if (params?.patientId) q.set('patientId', params.patientId);
+      const query = q.toString() ? '?' + q.toString() : '';
+      return this.request<any[]>('/teleconsult/rooms' + query);
+    },
+    getRoom: (id: string) => this.request<any>('/teleconsult/rooms/' + encodeURIComponent(id)),
+    createRoom: (data: any) =>
+      this.request<any>('/teleconsult/rooms', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    joinRoom: (id: string, role: string, name: string) =>
+      this.request<any>('/teleconsult/rooms/' + encodeURIComponent(id) + '/join', {
+        method: 'POST',
+        body: JSON.stringify({ role, name }),
+      }),
+    leaveRoom: (id: string, role: string) =>
+      this.request<any>('/teleconsult/rooms/' + encodeURIComponent(id) + '/leave', {
+        method: 'POST',
+        body: JSON.stringify({ role }),
+      }),
+    updateMediaState: (id: string, role: string, state: any) =>
+      this.request<any>('/teleconsult/rooms/' + encodeURIComponent(id) + '/media-state', {
+        method: 'POST',
+        body: JSON.stringify({ role, ...state }),
+      }),
+    postSignal: (id: string, signal: any) =>
+      this.request<any>('/teleconsult/rooms/' + encodeURIComponent(id) + '/signals', {
+        method: 'POST',
+        body: JSON.stringify(signal),
+      }),
+    getSignals: (id: string, since?: string, recipientRole?: string) => {
+      const q = new URLSearchParams();
+      if (since) q.set('since', since);
+      if (recipientRole) q.set('recipientRole', recipientRole);
+      const query = q.toString() ? '?' + q.toString() : '';
+      return this.request<any[]>('/teleconsult/rooms' + encodeURIComponent(id) + '/signals' + query);
+    },
+    sendChatMessage: (id: string, message: { senderRole: string; senderName: string; message: string }) =>
+      this.request<any>('/teleconsult/rooms/' + encodeURIComponent(id) + '/chat', {
+        method: 'POST',
+        body: JSON.stringify(message),
+      }),
+    getChatMessages: (id: string) =>
+      this.request<any[]>('/teleconsult/rooms/' + encodeURIComponent(id) + '/chat'),
+    endCall: (id: string, clinicalNotes?: string) =>
+      this.request<any>('/teleconsult/rooms/' + encodeURIComponent(id) + '/end', {
+        method: 'POST',
+        body: JSON.stringify({ clinicalNotes }),
+      }),
+    listPrescriptions: (patientId?: string) => {
+      const q = patientId ? '?patientId=' + encodeURIComponent(patientId) : '';
+      return this.request<any[]>('/teleconsult/prescriptions' + q);
+    },
+    getPrescription: (id: string) =>
+      this.request<any>('/teleconsult/prescriptions/' + encodeURIComponent(id)),
+    createPrescription: (data: any) =>
+      this.request<any>('/teleconsult/prescriptions', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    verifyPrescription: (id: string, signatureHash: string) =>
+      this.request<any>('/teleconsult/prescriptions/' + encodeURIComponent(id) + '/verify', {
+        method: 'POST',
+        body: JSON.stringify({ signatureHash }),
+      }),
+    dispensePrescription: (id: string, pharmacyName: string) =>
+      this.request<any>('/teleconsult/prescriptions/' + encodeURIComponent(id) + '/dispense', {
+        method: 'POST',
+        body: JSON.stringify({ pharmacyName }),
+      }),
+  };
 };
 
 export const api = new ApiClient();

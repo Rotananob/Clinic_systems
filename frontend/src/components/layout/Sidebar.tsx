@@ -30,6 +30,7 @@ import {
   Lock,
   UserCheck,
   Globe,
+  Video,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from '../../context/I18nContext';
@@ -69,6 +70,7 @@ export const Sidebar: React.FC = () => {
     { label: t.nav.ipd || 'Inpatient & e-MAR (IPD)', href: '/ipd', icon: BedDouble },
     { label: t.nav.finance || 'Finance & P&L', href: '/finance', icon: TrendingUp },
     { label: t.nav.dental || 'Dental & Odontogram', href: '/dental', icon: Sparkles },
+    { label: t.nav.teleconsult || 'Teleconsultation', href: '/teleconsult', icon: Video },
     { label: t.nav.staff, href: '/staff', icon: ShieldCheck },
     { label: isKh ? 'បណ្តាញគ្លីនិក (Fleet)' : 'Platform Fleet', href: '/super-admin', icon: Globe },
     { label: t.nav.ownerControl, href: '/owner', icon: Building2 },

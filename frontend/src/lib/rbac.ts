@@ -169,6 +169,14 @@ export const ROUTE_PERMISSIONS: RoutePermission[] = [
     descriptionKh: 'ដ្យាក្រាមធ្មេញមនុស្សពេញវ័យ ៣២ ធ្មេញតាម FDI និងសន្ទស្សន៍ពុកធ្មេញ WHO DMFT',
   },
   {
+    path: '/teleconsult',
+    allowedRoles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR'],
+    labelEn: 'Teleconsultation WebRTC & Digital e-Prescription',
+    labelKh: 'ពិគ្រោះជំងឺពីចម្ងាយ WebRTC & វេជ្ជបញ្ជាឌីជីថល',
+    descriptionEn: 'Peer-to-peer WebRTC video consultation and tamper-proof QR signed e-prescriptions',
+    descriptionKh: 'ការពិគ្រោះជំងឺពីចម្ងាយតាមវីដេអូ WebRTC និងវេជ្ជបញ្ជាឌីជីថលចុះហត្ថលេខា QR Code',
+  },
+  {
     path: '/staff',
     allowedRoles: ['SUPER_ADMIN', 'ADMIN'],
     labelEn: 'Staff & Role Management',
