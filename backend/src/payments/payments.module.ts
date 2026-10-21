@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PaymentsService } from './payments.service';
 import { PaymentsController } from './payments.controller';
@@ -7,7 +7,7 @@ import { TelegramModule } from '../telegram/telegram.module';
 import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
 
 @Module({
-  imports: [ConfigModule, TelegramModule, SubscriptionsModule],
+  imports: [ConfigModule, TelegramModule, forwardRef(() => SubscriptionsModule)],
   controllers: [PaymentsController],
   providers: [PaymentsService, PaywayDirectService],
   exports: [PaymentsService, PaywayDirectService],
