@@ -3,7 +3,8 @@
 import React from 'react';
 import Link from 'next/link';
 import { useTranslation } from '../../context/I18nContext';
-import { Activity, ShieldCheck, Heart, ExternalLink } from 'lucide-react';
+import { ClinicLogo } from '../common/ClinicLogo';
+import { ShieldCheck } from 'lucide-react';
 
 export const PublicFooter: React.FC = () => {
   const { locale } = useTranslation();
@@ -15,15 +16,10 @@ export const PublicFooter: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand Info */}
           <div className="space-y-3 md:col-span-1">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-teal-800 text-white flex items-center justify-center shadow-xs">
-                <Activity className="w-4 h-4 text-teal-100" />
-              </div>
-              <span className="font-bold text-base text-stone-900 tracking-tight font-sans">
-                X-Clinic PaaS
-              </span>
-            </div>
-            <p className="text-xs text-stone-500 leading-relaxed">
+            <Link href="/" className="inline-block">
+              <ClinicLogo variant="navbar" size="md" />
+            </Link>
+            <p className="text-xs text-stone-500 leading-relaxed mt-2">
               {isKm
                 ? 'ប្រព័ន្ធគ្រប់គ្រងគ្លីនិក និងទូទាត់ប្រាក់ KHQR ទំនើបឈានមុខគេនៅកម្ពុជា។ បង្កើតឡើងដោយការយកចិត្តទុកដាក់ខ្ពស់លើសុវត្ថិភាពទិន្នន័យវេជ្ជសាស្ត្រ។'
                 : 'Next-generation clinical operating platform for Cambodia. Built with strict medical data isolation and instant dynamic KHQR settlement.'}
@@ -41,27 +37,27 @@ export const PublicFooter: React.FC = () => {
             </div>
             <ul className="space-y-2">
               <li>
-                <Link href="/landing#features" className="hover:text-stone-900 transition-colors">
+                <Link href="/#features" className="hover:text-stone-900 transition-colors">
                   {isKm ? 'បង្កើត Dynamic KHQR 2 វិនាទី' : '2-Second Dynamic KHQR'}
                 </Link>
               </li>
               <li>
-                <Link href="/landing#features" className="hover:text-stone-900 transition-colors">
+                <Link href="/#features" className="hover:text-stone-900 transition-colors">
                   {isKm ? 'ហៅអ្នកជំងឺជាសំឡេងខ្មែរ' : 'Native Khmer Voice Calling'}
                 </Link>
               </li>
               <li>
-                <Link href="/landing#features" className="hover:text-stone-900 transition-colors">
+                <Link href="/#features" className="hover:text-stone-900 transition-colors">
                   {isKm ? 'Telegram Forum Topics Bridge' : 'Telegram Forum Topics'}
                 </Link>
               </li>
               <li>
-                <Link href="/landing#features" className="hover:text-stone-900 transition-colors">
+                <Link href="/#features" className="hover:text-stone-900 transition-colors">
                   {isKm ? 'ម៉ាស៊ីនព្រីន 80mm & ថតប្រាក់' : 'ESC/POS 80mm Thermal Hardware'}
                 </Link>
               </li>
               <li>
-                <Link href="/landing#features" className="hover:text-stone-900 transition-colors">
+                <Link href="/#features" className="hover:text-stone-900 transition-colors">
                   {isKm ? 'គ្រប់គ្រងអ្នកជំងឺ EMR & ឱសថ' : 'Clinical Records & Pharmacy'}
                 </Link>
               </li>
@@ -142,11 +138,11 @@ export const PublicFooter: React.FC = () => {
               {isKm ? 'ឯកសារបច្ចេកទេស' : 'Docs & Help'}
             </Link>
             <span>•</span>
-            <Link href="/landing#security" className="hover:text-stone-800 transition-colors">
+            <Link href="/#security" className="hover:text-stone-800 transition-colors">
               {isKm ? 'គោលការណ៍សន្តិសុខទិន្នន័យ' : 'Security Policy'}
             </Link>
             <span>•</span>
-            <Link href="/landing#faq" className="hover:text-stone-800 transition-colors">
+            <Link href="/#faq" className="hover:text-stone-800 transition-colors">
               {isKm ? 'សំណួរញឹកញាប់' : 'FAQ'}
             </Link>
           </div>

@@ -83,6 +83,18 @@ html, body {
 }
 
 /* 3D Depth Card & Perspective Tilt */
+.perspective-1200 {
+  perspective: 1200px;
+}
+
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
 .card-3d {
   transform-style: preserve-3d;
   perspective: 1000px;

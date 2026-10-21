@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useTranslation } from '../../context/I18nContext';
 import { useAuth } from '../../context/AuthContext';
 import { LanguageSwitcher } from '../common/LanguageSwitcher';
+import { ClinicLogo } from '../common/ClinicLogo';
 import { Activity, ArrowRight, Shield, CheckCircle2, ChevronRight, Menu, X, LayoutDashboard } from 'lucide-react';
 
 export const PublicNavbar: React.FC = () => {
@@ -19,23 +20,8 @@ export const PublicNavbar: React.FC = () => {
     <header className="sticky top-0 z-50 w-full bg-[#FAF7F2]/90 backdrop-blur-md border-b border-[#E7E1D4] shadow-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand Logo */}
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-xl bg-teal-800 text-white flex items-center justify-center shadow-xs group-hover:bg-teal-900 transition-colors">
-            <Activity className="w-5 h-5 text-teal-100" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-base sm:text-lg text-stone-900 tracking-tight font-sans">
-                X-Clinic
-              </span>
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-teal-100 text-teal-800 border border-teal-200">
-                PaaS
-              </span>
-            </div>
-            <p className="text-[11px] text-stone-500 hidden sm:block">
-              {isKm ? 'ប្រព័ន្ធគ្រប់គ្រងគ្លីនិក & ABA PayWay KHQR' : 'Smart Cloud Clinic Platform'}
-            </p>
-          </div>
+        <Link href="/" className="flex items-center group">
+          <ClinicLogo variant="navbar" size="md" />
         </Link>
 
         {/* Desktop Navigation Links */}
