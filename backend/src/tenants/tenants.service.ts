@@ -121,25 +121,27 @@ export class TenantsService {
       throw new NotFoundException(`Tenant workspace ${tenantId} not found.`);
     }
 
-    const bakongAccountId = dto.bakongAccountId.trim();
-    const merchantName = dto.merchantName.trim();
-    const merchantCity = dto.merchantCity?.trim() || 'Phnom Penh';
     const paywayPaymentUrl = dto.paywayPaymentUrl?.trim() || null;
+    const bakongAccountId = dto.bakongAccountId?.trim() || null;
+    const merchantName =
+      dto.merchantName?.trim() ||
+      tenant.merchantName ||
+      tenant.clinicNameEn ||
+      tenant.clinicNameKh ||
+      'Clinic';
+    const merchantCity = dto.merchantCity?.trim() || tenant.merchantCity || 'Phnom Penh';
 
-    if (!bakongAccountId) {
-      throw new BadRequestException('Bakong Account ID is required.');
-    }
-    if (!merchantName) {
-      throw new BadRequestException('Merchant Name is required.');
+    if (!paywayPaymentUrl && !bakongAccountId) {
+      throw new BadRequestException('Merchant ABA PayWay Link or Bakong Account ID is required.');
     }
 
     const updated = await this.prisma.tenant.update({
       where: { id: tenantId },
       data: {
-        bakongAccountId,
+        bakongAccountId: bakongAccountId || tenant.bakongAccountId,
         merchantName,
         merchantCity,
-        paywayPaymentUrl,
+        paywayPaymentUrl: paywayPaymentUrl || tenant.paywayPaymentUrl,
       },
     });
 
@@ -240,13 +242,14 @@ export class TenantsService {
   }
 
   generateTestKhqr(dto: SetupMerchantDto) {
-    const bakongId = dto.bakongAccountId.trim();
-    const merchantName = dto.merchantName.trim();
+    const paywayUrl = dto.paywayPaymentUrl?.trim();
+    const bakongId = dto.bakongAccountId?.trim() || (paywayUrl ? 'aba_payway@aba' : '');
+    const merchantName = dto.merchantName?.trim() || 'Clinic';
     const merchantCity = dto.merchantCity?.trim() || 'Phnom Penh';
     const testBillNumber = `TEST-${Date.now().toString().slice(-4)}`;
 
-    if (!bakongId) {
-      throw new BadRequestException('Bakong Account ID is required for KHQR generation test.');
+    if (!bakongId && !paywayUrl) {
+      throw new BadRequestException('Merchant ABA PayWay Link or Bakong Account ID is required for KHQR generation test.');
     }
 
     if (buildKhqr) {

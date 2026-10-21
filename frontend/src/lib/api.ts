@@ -841,33 +841,34 @@ class ApiClient {
         body: JSON.stringify(data),
       }),
     setupMerchant: (data: {
-      bakongAccountId: string;
-      merchantName: string;
-      merchantCity?: string;
       paywayPaymentUrl?: string;
+      bakongAccountId?: string;
+      merchantName?: string;
+      merchantCity?: string;
     }) =>
       this.request<{ success: boolean; message: string; tenant: any }>('/tenants/setup-merchant', {
         method: 'POST',
         body: JSON.stringify(data),
       }),
     testMerchantKhqr: (data: {
-      bakongAccountId: string;
-      merchantName: string;
-      merchantCity?: string;
       paywayPaymentUrl?: string;
+      bakongAccountId?: string;
+      merchantName?: string;
+      merchantCity?: string;
     }) =>
       this.request<{
         success: boolean;
         testMode: boolean;
         qrString: string;
-        md5: string;
-        bakongId: string;
-        merchantName: string;
-        merchantCity: string;
+        md5?: string;
+        tranId?: string;
+        bakongId?: string;
+        merchantName?: string;
+        merchantCity?: string;
         amount: number;
         currency: string;
-        billNumber: string;
-        deeplinks: any;
+        billNumber?: string;
+        deeplinks?: any;
         paywayPaymentUrl?: string;
         message: string;
       }>('/tenants/test-merchant-khqr', {

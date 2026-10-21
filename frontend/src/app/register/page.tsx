@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { buildDynamicKhqr } from '../../lib/khqr';
+import { buildDynamicKhqr, buildDynamicPaywayKhqr } from '../../lib/khqr';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslation } from '../../context/I18nContext';
@@ -441,9 +441,9 @@ function RegisterContent() {
               <div className="bg-[#FAF7F2] rounded-2xl border border-[#DFD6C6] p-6 max-w-md mx-auto text-center space-y-4">
                 <div className="p-3 bg-white rounded-2xl border border-stone-200 shadow-md inline-block">
                   <QRCodeSVG
-                    value={buildDynamicKhqr({
-                      bakongId: 'rotana_clinic@aba',
-                      merchantName: 'Rotana Clinic',
+                    value={buildDynamicPaywayKhqr({
+                      paywayUrl: 'https://link.payway.com.kh/ABAPAYCK539089j',
+                      merchantName: 'NOB ROTANA',
                       amount: selectedPlan === 'STARTER_5' ? 5.0 : selectedPlan === 'PRO_8' ? 8.0 : 12.0,
                       currency: 'USD',
                       billNumber: `SUB-${selectedPlan}-${Date.now().toString().slice(-4)}`,
@@ -460,11 +460,11 @@ function RegisterContent() {
                     <span className="text-xs font-normal text-stone-500 ml-1">USD / month</span>
                   </div>
                   <div className="text-xs font-semibold text-stone-700 font-mono">
-                    Merchant: Rotana Clinic (rotana_clinic@aba)
+                    Merchant: NOB ROTANA (ABA PayWay Direct Link)
                   </div>
                   <div className="flex items-center justify-center gap-1.5 text-[11px] text-emerald-800 font-bold pt-1">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span>{isKm ? 'កំពុងរង់ចាំការទូទាត់ប្រាក់ (Waiting for Settlement)...' : 'Waiting for Bakong Settlement...'}</span>
+                    <span>{isKm ? 'កំពុងរង់ចាំការទូទាត់ប្រាក់ (Waiting for Settlement)...' : 'Waiting for PayWay Settlement...'}</span>
                   </div>
                 </div>
 

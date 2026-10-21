@@ -53,11 +53,11 @@ export const MerchantSetupModal: React.FC<MerchantSetupModalProps> = ({
   if (!isOpen) return null;
 
   const handleTestKhqr = async () => {
-    if (!bakongAccountId.trim() || !merchantName.trim()) {
+    if (!paywayPaymentUrl.trim() && !bakongAccountId.trim()) {
       setErrorMessage(
         isKm
-          ? 'សូមបញ្ចូល Bakong Account ID និងឈ្មោះ Merchant ជាមុនសិន។'
-          : 'Please enter both Bakong Account ID and Merchant Name first.'
+          ? 'សូមបញ្ចូល Merchant ABA PayWay Link ជាមុនសិន (មិនបាច់មាន Bakong ID ឡើយ)។'
+          : 'Please enter your Merchant ABA PayWay Link first (no Bakong ID needed).'
       );
       return;
     }
@@ -67,10 +67,10 @@ export const MerchantSetupModal: React.FC<MerchantSetupModalProps> = ({
 
     try {
       const res = await api.tenants.testMerchantKhqr({
-        bakongAccountId: bakongAccountId.trim(),
-        merchantName: merchantName.trim(),
-        merchantCity: merchantCity.trim() || 'Phnom Penh',
         paywayPaymentUrl: paywayPaymentUrl.trim() || undefined,
+        bakongAccountId: bakongAccountId.trim() || undefined,
+        merchantName: merchantName.trim() || undefined,
+        merchantCity: merchantCity.trim() || 'Phnom Penh',
       });
 
       if (res.success) {
@@ -86,11 +86,11 @@ export const MerchantSetupModal: React.FC<MerchantSetupModalProps> = ({
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!bakongAccountId.trim() || !merchantName.trim()) {
+    if (!paywayPaymentUrl.trim() && !bakongAccountId.trim()) {
       setErrorMessage(
         isKm
-          ? 'សូមបញ្ចូល Bakong Account ID និងឈ្មោះ Merchant ជាមុនសិន។'
-          : 'Please enter both Bakong Account ID and Merchant Name.'
+          ? 'សូមបញ្ចូល Merchant ABA PayWay Link (https://link.payway.com.kh/...)។'
+          : 'Please enter your Merchant ABA PayWay Link (https://link.payway.com.kh/...)'
       );
       return;
     }
@@ -101,10 +101,10 @@ export const MerchantSetupModal: React.FC<MerchantSetupModalProps> = ({
 
     try {
       const res = await api.tenants.setupMerchant({
-        bakongAccountId: bakongAccountId.trim(),
-        merchantName: merchantName.trim(),
-        merchantCity: merchantCity.trim() || 'Phnom Penh',
         paywayPaymentUrl: paywayPaymentUrl.trim() || undefined,
+        bakongAccountId: bakongAccountId.trim() || undefined,
+        merchantName: merchantName.trim() || undefined,
+        merchantCity: merchantCity.trim() || 'Phnom Penh',
       });
 
       if (res.success) {
@@ -184,8 +184,8 @@ export const MerchantSetupModal: React.FC<MerchantSetupModalProps> = ({
                 </span>
                 <span className="text-[11px] leading-relaxed">
                   {isKm
-                    ? 'Copy Bakong ID (ឧ. clinic@aba) ឬ Merchant Link'
-                    : 'Copy Bakong ID (e.g. clinic@aba) or Merchant Link'}
+                    ? 'Copy Merchant ABA Link (https://link.payway.com.kh/...)'
+                    : 'Copy Merchant ABA Link (https://link.payway.com.kh/...)'}
                 </span>
               </div>
               <div className="p-2.5 bg-white/80 rounded-lg border border-teal-100 flex flex-col gap-1">
@@ -218,70 +218,66 @@ export const MerchantSetupModal: React.FC<MerchantSetupModalProps> = ({
 
           <form onSubmit={handleSave} className="space-y-4">
             {/* Form Fields */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-stone-800 mb-1">
-                  {isKm ? 'Bakong Account ID *' : 'Bakong Account ID *'}
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={bakongAccountId}
-                  onChange={(e) => setBakongAccountId(e.target.value)}
-                  placeholder="e.g. my_clinic@aba"
-                  className="w-full px-3.5 py-2.5 bg-[#FAF7F2] border border-[#DCD5C8] rounded-xl text-xs font-medium text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-teal-700 transition-all placeholder:text-stone-400"
-                />
-                <p className="text-[11px] text-stone-500 mt-1">
-                  {isKm ? 'គណនីបាគង ឬ ABA Mobile ID' : 'Bakong ID or ABA Mobile account'}
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-stone-800 mb-1">
-                  {isKm ? 'ឈ្មោះ Merchant លើ KHQR *' : 'Merchant Name on KHQR *'}
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={merchantName}
-                  onChange={(e) => setMerchantName(e.target.value)}
-                  placeholder="e.g. Sokhapheap Clinic"
-                  className="w-full px-3.5 py-2.5 bg-[#FAF7F2] border border-[#DCD5C8] rounded-xl text-xs font-medium text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-teal-700 transition-all placeholder:text-stone-400"
-                />
-                <p className="text-[11px] text-stone-500 mt-1">
-                  {isKm ? 'ឈ្មោះផ្លូវការបង្ហាញពេលស្កេន' : 'Official display name on customer screen'}
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-stone-800 mb-1">
-                  {isKm ? 'ទីក្រុង / ខេត្ត' : 'Merchant City'}
-                </label>
-                <input
-                  type="text"
-                  value={merchantCity}
-                  onChange={(e) => setMerchantCity(e.target.value)}
-                  placeholder="Phnom Penh"
-                  className="w-full px-3.5 py-2.5 bg-[#FAF7F2] border border-[#DCD5C8] rounded-xl text-xs font-medium text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-teal-700 transition-all placeholder:text-stone-400"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-stone-800 mb-1">
-                  {isKm ? 'ABA PayWay Checkout Link (បើមាន)' : 'ABA PayWay Checkout Link (Optional)'}
+                <label className="block text-xs font-bold text-teal-900 mb-1 flex items-center justify-between">
+                  <span>{isKm ? 'តំណភ្ជាប់ Merchant ABA PayWay Link (សំខាន់បំផុត *)' : 'Merchant ABA PayWay Link (Required *)'}</span>
+                  <span className="text-[11px] text-teal-700 font-normal">{isKm ? 'ដំណើរការតាម pay-helper (មិនបាច់មាន Bakong ID)' : 'Powered by pay-helper (Zero Bakong ID required)'}</span>
                 </label>
                 <input
                   type="url"
+                  required
                   value={paywayPaymentUrl}
                   onChange={(e) => setPaywayPaymentUrl(e.target.value)}
-                  placeholder="https://link.payway.com.kh/ABAPAYCK..."
-                  className="w-full px-3.5 py-2.5 bg-[#FAF7F2] border border-[#DCD5C8] rounded-xl text-xs font-medium text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-teal-700 transition-all placeholder:text-stone-400"
+                  placeholder="https://link.payway.com.kh/ABAPAYCK539089j"
+                  className="w-full px-3.5 py-2.5 bg-white border-2 border-teal-600 rounded-xl text-xs font-medium text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-teal-700 transition-all placeholder:text-stone-400 shadow-xs"
                 />
-                <p className="text-[11px] text-stone-500 mt-1">
-                  {isKm ? 'តំណភ្ជាប់ PayWay ឥតគិតថ្លៃសម្រាប់ Deep Link' : 'Free direct PayWay link for deep linking'}
+                <p className="text-[11px] text-stone-600 mt-1">
+                  {isKm
+                    ? 'ដាក់តែតំណភ្ជាប់ ABA PayWay Link នេះមួយគត់ ប្រព័ន្ធនឹងទាញយក Dynamic KHQR និង Deeplink ដោយស្វ័យប្រវត្តិ!'
+                    : 'Paste your ABA PayWay link. Headless bridge resolves live dynamic KHQR and deeplinks automatically.'}
                 </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-stone-800 mb-1">
+                    {isKm ? 'ឈ្មោះ Merchant លើ KHQR' : 'Merchant Name on KHQR'}
+                  </label>
+                  <input
+                    type="text"
+                    value={merchantName}
+                    onChange={(e) => setMerchantName(e.target.value)}
+                    placeholder="e.g. Sokhapheap Clinic"
+                    className="w-full px-3.5 py-2 bg-[#FAF7F2] border border-[#DCD5C8] rounded-xl text-xs font-medium text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-teal-700 transition-all placeholder:text-stone-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-stone-800 mb-1">
+                    {isKm ? 'ទីក្រុង / ខេត្ត' : 'Merchant City'}
+                  </label>
+                  <input
+                    type="text"
+                    value={merchantCity}
+                    onChange={(e) => setMerchantCity(e.target.value)}
+                    placeholder="Phnom Penh"
+                    className="w-full px-3.5 py-2 bg-[#FAF7F2] border border-[#DCD5C8] rounded-xl text-xs font-medium text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-teal-700 transition-all placeholder:text-stone-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-stone-500 mb-1">
+                    {isKm ? 'Bakong Account ID (មិនចាំបាច់)' : 'Bakong ID (Optional)'}
+                  </label>
+                  <input
+                    type="text"
+                    value={bakongAccountId}
+                    onChange={(e) => setBakongAccountId(e.target.value)}
+                    placeholder="e.g. my_clinic@aba (Optional)"
+                    className="w-full px-3.5 py-2 bg-[#FAF7F2] border border-[#DCD5C8] rounded-xl text-xs font-medium text-stone-500 focus:outline-hidden focus:ring-2 focus:ring-teal-700 transition-all placeholder:text-stone-400"
+                  />
+                </div>
               </div>
             </div>
 

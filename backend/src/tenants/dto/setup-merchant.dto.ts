@@ -1,22 +1,30 @@
-import { IsNotEmpty, IsString, IsOptional } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsString, IsOptional } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class SetupMerchantDto {
-  @ApiProperty({
-    example: 'my_clinic@aba',
-    description: 'Bakong Account ID / Merchant ID (e.g. clinic@aba)',
+  @ApiPropertyOptional({
+    example: 'https://link.payway.com.kh/ABAPAYCK539089j',
+    description: 'Merchant ABA PayWay public checkout link (Only credential required for pay-helper dynamic KHQR)',
   })
   @IsString()
-  @IsNotEmpty()
-  bakongAccountId: string;
+  @IsOptional()
+  paywayPaymentUrl?: string;
 
-  @ApiProperty({
-    example: 'Sokhapheap LOR Clinic',
+  @ApiPropertyOptional({
+    example: 'my_clinic@aba',
+    description: 'Optional Bakong Account ID if not using PayWay link',
+  })
+  @IsString()
+  @IsOptional()
+  bakongAccountId?: string;
+
+  @ApiPropertyOptional({
+    example: 'Sokhapheap Clinic',
     description: 'Official Merchant Name displayed on KHQR payment screens',
   })
   @IsString()
-  @IsNotEmpty()
-  merchantName: string;
+  @IsOptional()
+  merchantName?: string;
 
   @ApiPropertyOptional({
     example: 'Phnom Penh',
@@ -26,12 +34,4 @@ export class SetupMerchantDto {
   @IsString()
   @IsOptional()
   merchantCity?: string;
-
-  @ApiPropertyOptional({
-    example: 'https://link.payway.com.kh/ABAPAYCK539089j',
-    description: 'Optional direct ABA PayWay checkout payment link',
-  })
-  @IsString()
-  @IsOptional()
-  paywayPaymentUrl?: string;
 }
