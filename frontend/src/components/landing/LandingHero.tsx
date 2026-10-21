@@ -260,7 +260,7 @@ export const LandingHero: React.FC = () => {
                 <div className="flex items-center gap-1 truncate">
                   <span className="text-teal-800 font-semibold">Workspace URL:</span>
                   <span className="text-stone-700 font-bold bg-[#FAF7F2] px-1.5 py-0.5 rounded border border-[#E5DEC\-D]">
-                    https://{slugPreview}.xclinic.kh
+                    https://{slugPreview}.clinic.com
                   </span>
                 </div>
                 <span className="text-[10px] text-emerald-700 font-bold hidden sm:inline">

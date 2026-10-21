@@ -21,7 +21,8 @@ const RESERVED_SUBDOMAINS = new Set([
   'status',
 ]);
 
-const DEFAULT_APEX_DOMAIN = 'clinicos.app';
+export const DEFAULT_APEX_DOMAIN =
+  (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_APP_DOMAIN) || 'clinic.com';
 
 export function sanitizeHostname(rawHost: string | null | undefined): string {
   if (!rawHost) return '';
@@ -41,7 +42,11 @@ export function extractTenantSubdomain(
     host === '127.0.0.1' ||
     host === '0.0.0.0' ||
     host === apexDomain ||
-    host === `www.${apexDomain}`
+    host === `www.${apexDomain}` ||
+    host === 'clinic.com' ||
+    host === 'www.clinic.com' ||
+    host === 'clinicos.app' ||
+    host === 'www.clinicos.app'
   ) {
     return null;
   }
@@ -56,18 +61,21 @@ export function extractTenantSubdomain(
     return null;
   }
 
-  // Handle production or staging wildcard: e.g. rotana.clinicos.app or rotana.staging.clinicos.app
-  if (host.endsWith(`.${apexDomain}`)) {
-    const prefix = host.slice(0, host.length - apexDomain.length - 1);
-    const parts = prefix.split('.');
-    const candidate = parts[0]?.trim();
-    if (candidate && !RESERVED_SUBDOMAINS.has(candidate)) {
-      return candidate;
+  // Handle production or staging wildcard: e.g. rotana.clinic.com or vannda.clinic.com
+  const candidateDomains = Array.from(new Set([apexDomain, 'clinic.com', 'clinicos.app']));
+  for (const domain of candidateDomains) {
+    if (host.endsWith(`.${domain}`)) {
+      const prefix = host.slice(0, host.length - domain.length - 1);
+      const parts = prefix.split('.');
+      const candidate = parts[0]?.trim();
+      if (candidate && !RESERVED_SUBDOMAINS.has(candidate)) {
+        return candidate;
+      }
+      return null;
     }
-    return null;
   }
 
-  // Fallback for custom or multi-level domains
+  // Fallback for custom or multi-level domains (e.g. rotana.custom-domain.com)
   const parts = host.split('.');
   if (parts.length >= 3) {
     const candidate = parts[0]?.trim();
