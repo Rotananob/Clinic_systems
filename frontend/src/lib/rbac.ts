@@ -177,6 +177,14 @@ export const ROUTE_PERMISSIONS: RoutePermission[] = [
     descriptionKh: 'ការពិគ្រោះជំងឺពីចម្ងាយតាមវីដេអូ WebRTC និងវេជ្ជបញ្ជាឌីជីថលចុះហត្ថលេខា QR Code',
   },
   {
+    path: '/eclaim',
+    allowedRoles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR'],
+    labelEn: 'Electronic Insurance Claims & MoH Surveillance',
+    labelKh: 'ការទាមទារធានារ៉ាប់រងអេឡិចត្រូនិក & ជំងឺឆ្លង MoH',
+    descriptionEn: 'ANSI 837P XML/FHIR electronic claim generation and DHIS2 communicable disease surveillance',
+    descriptionKh: 'បង្កើតឯកសារទាមទារធានារ៉ាប់រង XML/FHIR និងរាយការណ៍ជំងឺឆ្លងតាមប្រព័ន្ធ MoH DHIS2',
+  },
+  {
     path: '/staff',
     allowedRoles: ['SUPER_ADMIN', 'ADMIN'],
     labelEn: 'Staff & Role Management',

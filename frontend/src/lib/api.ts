@@ -1490,6 +1490,61 @@ class ApiClient {
         body: JSON.stringify({ pharmacyName }),
       }),
   };
+
+  // Electronic Claim XML/JSON Format for Insurance & MoH Disease Surveillance (Phase 17)
+  eclaim = {
+    listClaims: (params?: { insurer?: string; status?: string; patientId?: string }) => {
+      const q = new URLSearchParams();
+      if (params?.insurer) q.set('insurer', params.insurer);
+      if (params?.status) q.set('status', params.status);
+      if (params?.patientId) q.set('patientId', params.patientId);
+      const query = q.toString() ? '?' + q.toString() : '';
+      return this.request<any[]>('/eclaim/claims' + query);
+    },
+    getClaim: (id: string) => this.request<any>('/eclaim/claims/' + encodeURIComponent(id)),
+    createClaim: (data: any) =>
+      this.request<any>('/eclaim/claims', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    getClaimXml: (id: string) => this.request<any>('/eclaim/claims/' + encodeURIComponent(id) + '/xml'),
+    getClaimFhir: (id: string) => this.request<any>('/eclaim/claims/' + encodeURIComponent(id) + '/fhir'),
+    submitClaim: (id: string) =>
+      this.request<any>('/eclaim/claims/' + encodeURIComponent(id) + '/submit', {
+        method: 'POST',
+      }),
+    adjudicateClaim: (id: string, decision: { status: string; notes: string }) =>
+      this.request<any>('/eclaim/claims/' + encodeURIComponent(id) + '/adjudicate', {
+        method: 'POST',
+        body: JSON.stringify(decision),
+      }),
+    validateXml: (xml: string) =>
+      this.request<any>('/eclaim/validate-xml', {
+        method: 'POST',
+        body: JSON.stringify({ xml }),
+      }),
+    listDiseases: () => this.request<any[]>('/eclaim/surveillance/diseases'),
+    listSurveillanceCases: (params?: { period?: string; diseaseCode?: string }) => {
+      const q = new URLSearchParams();
+      if (params?.period) q.set('period', params.period);
+      if (params?.diseaseCode) q.set('diseaseCode', params.diseaseCode);
+      const query = q.toString() ? '?' + q.toString() : '';
+      return this.request<any[]>('/eclaim/surveillance/cases' + query);
+    },
+    recordSurveillanceCase: (data: any) =>
+      this.request<any>('/eclaim/surveillance/cases', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    getDhis2Xml: (period?: string) => {
+      const q = period ? '?period=' + encodeURIComponent(period) : '';
+      return this.request<any>('/eclaim/surveillance/dhis2-xml' + q);
+    },
+    getDhis2Json: (period?: string) => {
+      const q = period ? '?period=' + encodeURIComponent(period) : '';
+      return this.request<any>('/eclaim/surveillance/dhis2-json' + q);
+    },
+  };
 };
 
 export const api = new ApiClient();
