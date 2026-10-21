@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import {
+  Check,
   CreditCard,
   QrCode,
   ShieldCheck,
@@ -325,23 +326,41 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
                           setSelectedPlanTier(plan.id);
                           initCheckout(plan.id, billingCycle);
                         }}
-                        className={`p-3.5 rounded-2xl border text-left transition-all ${
+                        className={`p-3.5 rounded-2xl border text-left transition-all relative cursor-pointer select-none ${
                           isSelected
-                            ? 'bg-teal-50 border-teal-700 ring-2 ring-teal-700 shadow-xs'
-                            : 'bg-white border-stone-200 hover:border-stone-300'
+                            ? 'bg-teal-50/90 border-2 border-teal-800 ring-4 ring-teal-700/20 shadow-md scale-[1.01]'
+                            : 'bg-white border-stone-200 hover:border-stone-400 shadow-2xs'
                         }`}
                       >
-                        <div className="text-xs font-bold text-stone-900">
+                        {isSelected && (
+                          <span className="absolute -top-2.5 right-2 px-2 py-0.5 rounded-full text-[10px] font-black bg-teal-800 text-white shadow-xs flex items-center gap-1 border border-teal-900 animate-in fade-in zoom-in duration-150">
+                            <Check className="w-3 h-3 stroke-[3]" />
+                            <span>{isKm ? 'បានជ្រើសរើស' : 'SELECTED'}</span>
+                          </span>
+                        )}
+                        <div className={`text-xs ${isSelected ? 'font-black text-teal-950' : 'font-bold text-stone-900'}`}>
                           {isKm ? plan.nameKh : plan.nameEn}
                         </div>
-                        <div className="text-lg font-extrabold text-teal-900 mt-1">
+                        <div className={`text-lg font-black mt-1 ${isSelected ? 'text-teal-950' : 'text-teal-900'}`}>
                           ${price}
                           <span className="text-xs font-normal text-stone-500">
                             {isKm ? unit : unitEn}
                           </span>
                         </div>
-                        <div className="text-[11px] text-stone-500 mt-1 line-clamp-1">
+                        <div className={`text-[11px] mt-1 line-clamp-1 ${isSelected ? 'font-bold text-teal-900/80' : 'text-stone-500'}`}>
                           {isKm ? plan.khqrQuotaKh : plan.khqrQuotaEn}
+                        </div>
+                        <div className="mt-2.5 pt-2 border-t border-stone-200/60 flex items-center justify-between">
+                          {isSelected ? (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-black text-teal-950 bg-teal-200/90 px-2 py-0.5 rounded-md border border-teal-300 shadow-2xs">
+                              <Check className="w-3.5 h-3.5 stroke-[3] text-teal-900" />
+                              <span className="font-black tracking-wide">{isKm ? 'បានជ្រើសរើស ✓' : 'SELECTED ✓'}</span>
+                            </span>
+                          ) : (
+                            <span className="text-[10px] font-semibold text-stone-400">
+                              {isKm ? 'ចុចជ្រើសរើស' : 'Click to select'}
+                            </span>
+                          )}
                         </div>
                       </button>
                     );

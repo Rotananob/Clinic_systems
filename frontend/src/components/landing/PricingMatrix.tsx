@@ -40,6 +40,7 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
 
   const [isAnnual, setIsAnnual] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
+  const [selectedPlanId, setSelectedPlanId] = useState<string>('PRO_8');
 
   const plans: PricingPlan[] = [
     {
@@ -248,30 +249,39 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
       {/* 4 Pricing Cards Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
         {plans.map((p) => {
+          const isSelected = selectedPlanId === p.id;
           const priceDisplay = isAnnual
             ? p.yearlyUsd === 0
               ? '$0'
-              : `$${(p.yearlyUsd / 12).toFixed(2)}`
-            : `$${p.monthlyUsd}`;
+              : `${(p.yearlyUsd / 12).toFixed(2)}`
+            : `${p.monthlyUsd}`;
 
           return (
             <div
               key={p.id}
-              className={`rounded-3xl p-6 flex flex-col justify-between transition-all relative ${
-                p.isPopular
-                  ? 'bg-[#FDFBF7] border-2 border-teal-700 shadow-lg ring-4 ring-teal-700/10'
-                  : 'bg-[#FDFBF7] border border-[#E3DBCB] shadow-2xs hover:shadow-md'
+              onClick={() => setSelectedPlanId(p.id)}
+              className={`rounded-3xl p-6 flex flex-col justify-between transition-all relative cursor-pointer select-none ${
+                isSelected
+                  ? 'bg-[#FDFBF7] border-2 border-teal-800 shadow-xl ring-4 ring-teal-700/25 scale-[1.01]'
+                  : p.isPopular
+                  ? 'bg-[#FDFBF7] border-2 border-teal-700/70 shadow-md ring-2 ring-teal-700/10 hover:shadow-lg'
+                  : 'bg-[#FDFBF7] border border-[#E3DBCB] shadow-2xs hover:shadow-md hover:border-stone-400'
               }`}
             >
-              {p.isPopular && (
+              {isSelected ? (
+                <div className="absolute -top-3.5 right-6 px-3 py-1 bg-teal-800 text-white text-[10px] font-black rounded-full uppercase tracking-wider shadow-md flex items-center gap-1 border border-teal-900 animate-in fade-in zoom-in duration-150">
+                  <Check className="w-3 h-3 stroke-[3]" />
+                  <span>{isKm ? 'បានជ្រើសរើស (Selected)' : 'Selected'}</span>
+                </div>
+              ) : p.isPopular ? (
                 <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3 py-1 bg-teal-800 text-white text-[10px] font-bold rounded-full uppercase tracking-wider shadow-xs">
                   {isKm ? 'ពេញនិយមបំផុត (Most Popular)' : 'Most Popular'}
                 </div>
-              )}
+              ) : null}
 
               <div className="space-y-4">
                 <div>
-                  <h3 className="text-base font-bold text-stone-900 font-sans">
+                  <h3 className={`text-base font-sans transition-colors ${isSelected ? 'font-black text-teal-950' : 'font-bold text-stone-900'}`}>
                     {isKm ? p.nameKh : p.nameEn}
                   </h3>
                   <p className="text-[11px] text-stone-500 mt-1 min-h-[32px] leading-relaxed">
@@ -282,7 +292,7 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
                 {/* Price Display */}
                 <div className="pt-2 border-t border-[#EFEAE0]">
                   <div className="flex items-baseline gap-1.5">
-                    <span className="text-3xl font-extrabold text-stone-900 font-sans tracking-tight">
+                    <span className={`text-3xl font-sans tracking-tight ${isSelected ? 'font-black text-teal-950' : 'font-extrabold text-stone-900'}`}>
                       {priceDisplay}
                     </span>
                     <span className="text-xs text-stone-500">
@@ -293,7 +303,7 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
                   </div>
                   {isAnnual && p.yearlyUsd > 0 && (
                     <div className="text-[10px] text-emerald-700 font-semibold mt-0.5">
-                      {isKm ? `បង់ $${p.yearlyUsd}/ឆ្នាំ (សន្សំ ២០%)` : `Billed $${p.yearlyUsd}/yr (20% off)`}
+                      {isKm ? `បង់ ${p.yearlyUsd}/ឆ្នាំ (សន្សំ ២០%)` : `Billed ${p.yearlyUsd}/yr (20% off)`}
                     </div>
                   )}
                 </div>
@@ -302,19 +312,19 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
                 <div className="p-3 bg-[#FAF7F2] rounded-xl border border-[#EAE3D5] text-xs space-y-1.5">
                   <div className="flex justify-between items-center text-stone-600">
                     <span className="text-[11px] font-medium">{isKm ? 'កូតា KHQR:' : 'KHQR Daily:'}</span>
-                    <span className="font-bold text-stone-900 text-[11px]">
+                    <span className={`text-[11px] ${isSelected ? 'font-black text-teal-950' : 'font-bold text-stone-900'}`}>
                       {isKm ? p.khqrLimitKh : p.khqrLimitEn}
                     </span>
                   </div>
                   <div className="flex justify-between items-center text-stone-600">
                     <span className="text-[11px] font-medium">{isKm ? 'កូតាអ្នកជំងឺ:' : 'Patients:'}</span>
-                    <span className="font-bold text-stone-900 text-[11px]">
+                    <span className={`text-[11px] ${isSelected ? 'font-black text-teal-950' : 'font-bold text-stone-900'}`}>
                       {isKm ? p.patientLimitKh : p.patientLimitEn}
                     </span>
                   </div>
                   <div className="flex justify-between items-center text-stone-600">
                     <span className="text-[11px] font-medium">{isKm ? 'គណនីបុគ្គលិក:' : 'Staff Users:'}</span>
-                    <span className="font-bold text-stone-900 text-[11px]">
+                    <span className={`text-[11px] ${isSelected ? 'font-black text-teal-950' : 'font-bold text-stone-900'}`}>
                       {isKm ? p.staffLimitKh : p.staffLimitEn}
                     </span>
                   </div>
@@ -340,18 +350,37 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
               <div className="pt-6">
                 <Link
                   href={`/register?plan=${p.id}`}
-                  className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-95 ${
-                    p.isPopular
-                      ? 'bg-teal-800 hover:bg-teal-900 text-white shadow-md'
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedPlanId(p.id);
+                  }}
+                  className={`w-full py-2.5 px-4 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-95 cursor-pointer ${
+                    isSelected
+                      ? 'bg-teal-800 hover:bg-teal-900 text-white shadow-md ring-2 ring-teal-700/30'
+                      : p.isPopular
+                      ? 'bg-teal-700 hover:bg-teal-800 text-white shadow-xs'
                       : 'bg-[#FAF7F2] hover:bg-[#F2ECE1] text-stone-800 border border-[#DFD6C6]'
                   }`}
                 >
-                  <span>
-                    {p.id === 'FREE'
-                      ? isKm ? 'ចាប់ផ្ដើមដោយឥតគិតថ្លៃ' : 'Start Free Trial'
-                      : isKm ? 'ជ្រើសរើសគម្រោងនេះ' : 'Select Plan'}
-                  </span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  {isSelected ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 stroke-[3]" />
+                      <span className="font-black">
+                        {p.id === 'FREE'
+                          ? isKm ? 'បានជ្រើសរើស ✓ ចាប់ផ្ដើម Free' : 'Selected ✓ Start Free'
+                          : isKm ? 'បានជ្រើសរើស ✓ ចុះឈ្មោះភ្លាមៗ' : 'Selected ✓ Register Now'}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="font-bold">
+                        {p.id === 'FREE'
+                          ? isKm ? 'ចាប់ផ្ដើមដោយឥតគិតថ្លៃ' : 'Start Free Trial'
+                          : isKm ? 'ជ្រើសរើសគម្រោងនេះ' : 'Select Plan'}
+                      </span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </>
+                  )}
                 </Link>
               </div>
             </div>

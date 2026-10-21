@@ -129,14 +129,30 @@ const PLAN_CARDS = [
   },
 ];
 
+function normalizePlanTier(raw?: string | null): string {
+  if (!raw) return 'FREE';
+  const clean = raw.trim().toUpperCase();
+  if (clean === 'STARTER' || clean === 'STARTER_5') return 'STARTER_5';
+  if (clean === 'PRO' || clean === 'PRO_8') return 'PRO_8';
+  if (clean === 'ENTERPRISE' || clean === 'ENTERPRISE_12') return 'ENTERPRISE_12';
+  return 'FREE';
+}
+
 function RegisterContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { locale } = useTranslation();
   const isKm = locale === 'km';
 
-  const initialPlan = searchParams.get('plan') || 'FREE';
+  const initialPlan = normalizePlanTier(searchParams.get('plan'));
   const [selectedPlan, setSelectedPlan] = useState<string>(initialPlan);
+
+  useEffect(() => {
+    const raw = searchParams.get('plan');
+    if (raw) {
+      setSelectedPlan(normalizePlanTier(raw));
+    }
+  }, [searchParams]);
 
   const [clinicType, setClinicType] = useState('Polyclinic & Outpatient Center');
   const initialClinicName = searchParams.get('clinicName') || '';
@@ -642,9 +658,18 @@ function RegisterContent() {
               <form onSubmit={handleRequestCode} className="space-y-6">
                 {/* 1. Plan Tier Selection */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-bold text-stone-800 uppercase tracking-wider">
-                    {isKm ? '១. ជ្រើសរើសគម្រោង (Select Plan Tier)' : '1. Select Plan Tier'}
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-black text-stone-900 uppercase tracking-wider">
+                      {isKm ? '១. ជ្រើសរើសគម្រោង (Select Plan Tier)' : '1. Select Plan Tier'}
+                    </label>
+                    <span className="text-[11px] font-bold text-teal-900 bg-teal-100/90 px-2.5 py-0.5 rounded-md border border-teal-300">
+                      {isKm ? 'គម្រោងដែលបានជ្រើស៖ ' : 'Active: '}
+                      <strong className="font-black text-teal-950">
+                        {PLAN_CARDS.find((p) => p.id === selectedPlan)?.[isKm ? 'nameKh' : 'nameEn'] || selectedPlan}
+                      </strong>
+                    </span>
+                  </div>
+
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                     {PLAN_CARDS.map((p) => {
                       const isSelected = selectedPlan === p.id;
@@ -653,25 +678,44 @@ function RegisterContent() {
                           key={p.id}
                           type="button"
                           onClick={() => setSelectedPlan(p.id)}
-                          className={`p-3 rounded-xl border text-left transition-all relative ${
+                          className={`p-3.5 rounded-2xl border text-left transition-all relative cursor-pointer select-none ${
                             isSelected
-                              ? 'bg-teal-50 border-teal-700 ring-2 ring-teal-700/20 shadow-xs'
-                              : 'bg-white border-stone-200 hover:border-stone-300 hover:bg-stone-50'
+                              ? 'bg-teal-50/90 border-2 border-teal-800 ring-4 ring-teal-700/20 shadow-md scale-[1.02]'
+                              : 'bg-white border-stone-200 hover:border-stone-400 hover:bg-stone-50/80 shadow-2xs'
                           }`}
                         >
-                          {p.popular && (
-                            <span className="absolute -top-2 right-2 px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-500 text-white">
+                          {isSelected ? (
+                            <span className="absolute -top-2.5 right-2 px-2 py-0.5 rounded-full text-[10px] font-black bg-teal-800 text-white shadow-xs flex items-center gap-1 border border-teal-900 animate-in fade-in zoom-in duration-150">
+                              <Check className="w-3 h-3 stroke-[3]" />
+                              <span>{isKm ? 'បានជ្រើសរើស' : 'SELECTED'}</span>
+                            </span>
+                          ) : p.popular ? (
+                            <span className="absolute -top-2 right-2 px-1.5 py-0.5 rounded-full text-[9px] font-black bg-amber-500 text-white shadow-2xs">
                               Popular
                             </span>
-                          )}
-                          <div className="font-bold text-xs text-stone-900 font-sans">
+                          ) : null}
+
+                          <div className={`text-xs font-sans transition-colors ${isSelected ? 'font-black text-teal-950' : 'font-bold text-stone-900'}`}>
                             {isKm ? p.nameKh : p.nameEn}
                           </div>
-                          <div className="text-sm font-extrabold text-teal-800 mt-0.5">
+                          <div className={`text-base font-sans mt-0.5 transition-colors ${isSelected ? 'font-black text-teal-900' : 'font-extrabold text-stone-800'}`}>
                             {p.price}
                           </div>
-                          <div className="text-[10px] text-stone-500 mt-1">
+                          <div className={`text-[10px] mt-1 transition-colors ${isSelected ? 'font-bold text-teal-900/80' : 'text-stone-500'}`}>
                             {isKm ? p.khqrLimitKh : p.khqrLimitEn}
+                          </div>
+
+                          <div className="mt-2.5 pt-2 border-t border-stone-200/60 flex items-center justify-between">
+                            {isSelected ? (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-black text-teal-950 bg-teal-200/90 px-2 py-0.5 rounded-md border border-teal-300 shadow-2xs">
+                                <Check className="w-3.5 h-3.5 stroke-[3] text-teal-900" />
+                                <span className="font-black tracking-wide">{isKm ? 'បានជ្រើសរើស ✓' : 'SELECTED ✓'}</span>
+                              </span>
+                            ) : (
+                              <span className="text-[10px] font-semibold text-stone-400">
+                                {isKm ? 'ចុចជ្រើសរើស' : 'Click to select'}
+                              </span>
+                            )}
                           </div>
                         </button>
                       );
