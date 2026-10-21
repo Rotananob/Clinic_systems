@@ -423,7 +423,7 @@ class ApiClient {
         body: JSON.stringify(credentials),
       }),
     sendVerificationCode: (email: string) =>
-      this.request<{ success: boolean; message: string; devCode?: string }>('/auth/send-verification-code', {
+      this.request<{ success: boolean; message: string }>('/auth/send-verification-code', {
         method: 'POST',
         body: JSON.stringify({ email }),
       }),

@@ -20,7 +20,6 @@ import {
   Sparkles,
   Check,
   RefreshCw,
-  KeyRound,
   ArrowLeft,
   Send,
   User,
@@ -111,7 +110,6 @@ function RegisterContent() {
   // 2-step fast verification code state
   const [step, setStep] = useState<'FORM' | 'VERIFY_CODE'>('FORM');
   const [verificationCode, setVerificationCode] = useState('');
-  const [devCodePreview, setDevCodePreview] = useState<string | null>(null);
   const [countdown, setCountdown] = useState(600); // 10 minutes
 
   const [loading, setLoading] = useState(false);
@@ -164,11 +162,8 @@ function RegisterContent() {
       if (res.success) {
         setStep('VERIFY_CODE');
         setCountdown(600);
+        setVerificationCode('');
         setInfoMessage(res.message);
-        if (res.devCode) {
-          setDevCodePreview(res.devCode);
-          setVerificationCode(res.devCode);
-        }
       }
     } catch (err: any) {
       setErrorMessage(err.message || 'Failed to dispatch verification code. Please try again.');
@@ -228,11 +223,8 @@ function RegisterContent() {
       const res = await api.auth.sendVerificationCode(email.trim().toLowerCase());
       if (res.success) {
         setCountdown(600);
+        setVerificationCode('');
         setInfoMessage(res.message);
-        if (res.devCode) {
-          setDevCodePreview(res.devCode);
-          setVerificationCode(res.devCode);
-        }
       }
     } catch (err: any) {
       setErrorMessage(err.message || 'Failed to resend code.');
@@ -300,23 +292,6 @@ function RegisterContent() {
                 </div>
               )}
 
-              {/* Dev/Fallback Preview Banner */}
-              {devCodePreview && (
-                <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 space-y-1">
-                  <div className="font-bold flex items-center gap-1.5">
-                    <KeyRound className="w-4 h-4 text-amber-700" />
-                    <span>{isKm ? 'លេខកូដបញ្ជាក់ Local Preview:' : 'Local Testing Code Preview:'}</span>
-                    <span className="font-mono text-sm bg-white px-2 py-0.5 rounded border border-amber-300 font-extrabold text-amber-900">
-                      {devCodePreview}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-amber-800">
-                    {isKm
-                      ? 'លេខកូដត្រូវបានបំពេញស្វ័យប្រវត្តសម្រាប់សាកល្បង Local ឬសូមពិនិត្យមើល Gmail របស់អ្នក។'
-                      : 'Auto-filled for rapid local evaluation, or check your Gmail inbox.'}
-                  </p>
-                </div>
-              )}
 
               <div className="text-center space-y-2">
                 <div className="w-12 h-12 rounded-2xl bg-teal-50 text-teal-800 border border-teal-200 flex items-center justify-center mx-auto">

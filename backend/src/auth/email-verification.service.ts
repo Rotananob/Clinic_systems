@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 
 interface VerificationEntry {
@@ -15,15 +16,17 @@ export class EmailVerificationService {
   }
 
   private initTransporter() {
-    const user = process.env.GMAIL_USER || 'rotananob@gmail.com';
-    const rawPass = process.env.GMAIL_APP_PASSWORD || 'lkrcemcglygsnbvk';
+    const user = process.env.GMAIL_USER || 'mmokompongcham@gmail.com';
+    const rawPass = process.env.GMAIL_APP_PASSWORD || 'jvtbivueeqmrvlag';
     const pass = rawPass.replace(/\s+/g, '');
+    const port = Number(process.env.SMTP_PORT) || 587;
+    const isSecure = String(process.env.SMTP_SECURE ?? 'false') === 'true';
 
     try {
       this.transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST || 'smtp.gmail.com',
-        port: Number(process.env.SMTP_PORT) || 465,
-        secure: String(process.env.SMTP_SECURE ?? 'true') === 'true',
+        port,
+        secure: isSecure,
         auth: {
           user,
           pass,
@@ -48,12 +51,10 @@ export class EmailVerificationService {
     return code;
   }
 
-  async sendVerificationCode(email: string): Promise<{ success: boolean; message: string; devCode?: string }> {
+  async sendVerificationCode(email: string): Promise<{ success: boolean; message: string }> {
     const normalizedEmail = email.trim().toLowerCase();
     const code = this.generateCode(normalizedEmail);
-    const user = process.env.GMAIL_USER || 'rotananob@gmail.com';
-
-    console.log(`[VERIFICATION_CODE] Verification code for ${normalizedEmail}: ${code}`);
+    const user = process.env.GMAIL_USER || 'mmokompongcham@gmail.com';
 
     const htmlContent = `
       <div style="font-family: Arial, sans-serif; background-color: #f7f4ee; padding: 24px; color: #1c1917;">
@@ -85,30 +86,26 @@ export class EmailVerificationService {
         this.initTransporter();
       }
 
-      if (this.transporter) {
-        await this.transporter.sendMail({
-          from: `"Rotana Clinic Platform" <${user}>`,
-          to: normalizedEmail,
-          subject: `[Clinic Platform] លេខកូដបញ្ជាក់ការចុះឈ្មោះគ្លីនិក / Verification Code: ${code}`,
-          text: `លេខកូដបញ្ជាក់ការចុះឈ្មោះគ្លីនិករបស់អ្នកគឺ: ${code} (សុពលភាព ១០ នាទី)`,
-          html: htmlContent,
-        });
-
-        return {
-          success: true,
-          message: 'លេខកូដបញ្ជាក់ ៦ ខ្ទង់ត្រូវបានផ្ញើទៅកាន់ Gmail របស់អ្នករួចរាល់ហើយ។',
-        };
+      if (!this.transporter) {
+        throw new Error('សេវាផ្ញើ Email មិនទាន់ដំណើរការ');
       }
-    } catch (err: any) {
-      console.warn(`[EMAIL_VERIFICATION] Gmail SMTP delivery note: ${err.message}`);
-    }
 
-    // Dev/fallback code returned for seamless development and fallback
-    return {
-      success: true,
-      message: 'លេខកូដបញ្ជាក់ ៦ ខ្ទង់ត្រូវបានបង្កើតរួចរាល់។',
-      devCode: code,
-    };
+      await this.transporter.sendMail({
+        from: `"Rotana Clinic Platform" <${user}>`,
+        to: normalizedEmail,
+        subject: `[Clinic Platform] លេខកូដបញ្ជាក់ការចុះឈ្មោះគ្លីនិក - Verification Code: ${code}`,
+        text: `លេខកូដបញ្ជាក់ការចុះឈ្មោះគ្លីនិករបស់អ្នកគឺ: ${code} - សុពលភាព ១០ នាទី`,
+        html: htmlContent,
+      });
+
+      return {
+        success: true,
+        message: 'លេខកូដបញ្ជាក់ ៦ ខ្ទង់ត្រូវបានផ្ញើទៅកាន់ Gmail របស់អ្នករួចរាល់ហើយ។ សូមពិនិត្យមើលប្រអប់សំបុត្រ Gmail របស់អ្នក។',
+      };
+    } catch (err: any) {
+      console.error(`[EMAIL_VERIFICATION] Gmail SMTP delivery error:`, err.message);
+      throw new BadRequestException('មិនអាចផ្ញើលេខកូដទៅកាន់ Gmail បានទេ។ សូមពិនិត្យមើលអាសយដ្ឋាន Gmail របស់អ្នកឡើងវិញ ឬព្យាយាមម្ដងទៀត។');
+    }
   }
 
   verifyCode(email: string, code: string): boolean {
@@ -116,22 +113,22 @@ export class EmailVerificationService {
     const entry = this.verificationCodes.get(normalizedEmail);
 
     if (!entry) {
-      throw new Error('គ្មានសំណើសុំលេខកូដសម្រាប់ Email នេះ ឬលេខកូដបានផុតកំណត់។');
+      throw new BadRequestException('គ្មានសំណើសុំលេខកូដសម្រាប់ Email នេះ ឬលេខកូដបានផុតកំណត់។');
     }
 
     if (Date.now() > entry.expiresAt) {
       this.verificationCodes.delete(normalizedEmail);
-      throw new Error('លេខកូដបញ្ជាក់បានផុតកំណត់សុពលភាព ១០ នាទី។ សូមស្នើសុំលេខកូដថ្មី។');
+      throw new BadRequestException('លេខកូដបញ្ជាក់បានផុតកំណត់សុពលភាព ១០ នាទី។ សូមស្នើសុំលេខកូដថ្មី។');
     }
 
     if (entry.attempts >= 5) {
       this.verificationCodes.delete(normalizedEmail);
-      throw new Error('អ្នកបានបញ្ចូលលេខកូដខុសលើសពី ៥ ដង។ សូមស្នើសុំលេខកូដថ្មី។');
+      throw new BadRequestException('អ្នកបានបញ្ចូលលេខកូដខុសលើសពី ៥ ដង។ សូមស្នើសុំលេខកូដថ្មី។');
     }
 
     if (entry.code !== code.trim()) {
       entry.attempts++;
-      throw new Error('លេខកូដបញ្ជាក់មិនត្រឹមត្រូវទេ។');
+      throw new BadRequestException('លេខកូដបញ្ជាក់មិនត្រឹមត្រូវទេ។');
     }
 
     // Success: consume code
