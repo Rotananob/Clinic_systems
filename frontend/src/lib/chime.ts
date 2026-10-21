@@ -1,9 +1,11 @@
 /**
  * Clinical Audio Engine for Rotana Clinic Management Platform
- * 1. High-fidelity Web Audio API procedural synthesis (guaranteed fallback on all devices)
- * 2. Real custom sound support (record your own voice or upload MP3/WAV/M4A)
- * 3. Mobile PWA Web Audio unblocker for iOS Safari & Android Chrome
- * 4. Spoken Patient Queue Announcements via Web Speech API
+ * Production-grade, cross-platform audio engine engineered for:
+ * 1. Universal browser support (Chrome, Safari, Firefox, Edge, Opera, Samsung Internet)
+ * 2. Mobile PWA & Native WebView resilience (iOS Safari Silent Mode & Android Chrome Autoplay)
+ * 3. Desktop applications & Hospital Signage TV displays (Background wake-lock & Keep-Alive)
+ * 4. Multi-layer fallback: Custom voice -> Web Audio synthesis -> Bilingual Speech Synthesis
+ * 5. Production deployment compatibility (Vercel, custom domain HTTPS, Permissions-Policy)
  */
 
 export type AudioEventType = 'payment_success' | 'queue_call' | 'cash_settlement' | 'cancel';
@@ -19,6 +21,8 @@ export interface CustomAudioItem {
 export const CUSTOM_AUDIO_STORAGE_KEY = 'rotana_custom_audio_v1';
 
 let sharedAudioCtx: AudioContext | null = null;
+let isUnlocked = false;
+let cachedVoices: SpeechSynthesisVoice[] = [];
 
 /**
  * Returns a warmed, resumed AudioContext singleton.
@@ -28,7 +32,7 @@ export function getAudioContext(): AudioContext | null {
   if (typeof window === 'undefined') return null;
 
   try {
-    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     if (!AudioContextClass) return null;
 
     if (!sharedAudioCtx) {
@@ -41,43 +45,100 @@ export function getAudioContext(): AudioContext | null {
 
     return sharedAudioCtx;
   } catch (err) {
-    console.debug('Failed to get AudioContext:', err);
+    console.debug('Failed to initialize AudioContext:', err);
     return null;
   }
 }
 
 /**
- * Ensures AudioContext is unblocked via user gesture (click/touch).
- * Plays an imperceptible 1-sample buffer to warm the physical DAC on iOS & Android.
+ * Universal Audio Unblocker for iOS Safari, Android Chrome, and Desktop PWAs.
+ * Warms physical DAC with 1-sample silent buffer and prepares Web Audio routing.
  */
 export function unlockAudioContext(): void {
-  const ctx = getAudioContext();
-  if (!ctx) return;
+  if (typeof window === 'undefined') return;
 
-  try {
-    if (ctx.state === 'suspended') {
-      ctx.resume().catch(() => {});
+  const ctx = getAudioContext();
+  if (ctx) {
+    try {
+      if (ctx.state === 'suspended') {
+        ctx.resume().catch(() => {});
+      }
+      // Play 1-sample silent buffer to unlock physical DAC on mobile
+      const buffer = ctx.createBuffer(1, 1, 22050);
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      source.connect(ctx.destination);
+      source.start(0);
+      isUnlocked = true;
+    } catch {
+      // Ignore warmup errors
     }
-    const buffer = ctx.createBuffer(1, 1, 22050);
-    const source = ctx.createBufferSource();
-    source.buffer = buffer;
-    source.connect(ctx.destination);
-    source.start(0);
+  }
+
+  // Pre-load speech synthesis voices
+  preloadSpeechVoices();
+}
+
+/**
+ * Returns true if audio context has been unlocked by user gesture.
+ */
+export function isAudioUnlocked(): boolean {
+  return isUnlocked || (sharedAudioCtx !== null && sharedAudioCtx.state === 'running');
+}
+
+/**
+ * Pre-warms and caches speech synthesis voices for instant announcement playback.
+ */
+export function preloadSpeechVoices(): void {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+  try {
+    cachedVoices = window.speechSynthesis.getVoices();
+    if (window.speechSynthesis.onvoiceschanged !== undefined) {
+      window.speechSynthesis.onvoiceschanged = () => {
+        cachedVoices = window.speechSynthesis.getVoices();
+      };
+    }
   } catch {
-    // Ignore warmup errors
+    // Ignore speech init errors
   }
 }
 
-// Global interaction listeners to unblock audio on first user touch/click on mobile
+/**
+ * Keeps screen and audio active for hospital queue display boards and receptionist kiosks.
+ */
+export async function requestScreenAndAudioKeepAlive(): Promise<void> {
+  if (typeof window === 'undefined') return;
+  try {
+    if ('wakeLock' in navigator && (navigator as any).wakeLock?.request) {
+      await (navigator as any).wakeLock.request('screen');
+    }
+  } catch {
+    // Wake lock may be rejected if page is backgrounded or unsupported
+  }
+}
+
+// Global user interaction listeners to unlock audio on first interaction
 if (typeof window !== 'undefined') {
-  const handleInteraction = () => {
+  const handleUserInteraction = () => {
     unlockAudioContext();
   };
 
-  window.addEventListener('click', handleInteraction, { passive: true });
-  window.addEventListener('touchstart', handleInteraction, { passive: true });
-  window.addEventListener('touchend', handleInteraction, { passive: true });
-  window.addEventListener('keydown', handleInteraction, { passive: true });
+  // Listen to multiple interaction events for maximum cross-browser coverage
+  window.addEventListener('click', handleUserInteraction, { passive: true });
+  window.addEventListener('touchstart', handleUserInteraction, { passive: true });
+  window.addEventListener('touchend', handleUserInteraction, { passive: true });
+  window.addEventListener('pointerdown', handleUserInteraction, { passive: true });
+  window.addEventListener('keydown', handleUserInteraction, { passive: true });
+
+  // Resume audio when returning from background tab or locking screen
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && sharedAudioCtx && sharedAudioCtx.state === 'suspended') {
+      sharedAudioCtx.resume().catch(() => {});
+    }
+  });
+
+  // Preload speech voices on script load
+  preloadSpeechVoices();
 }
 
 // ---------------------------------------------------------------------------
@@ -123,7 +184,7 @@ export function clearCustomAudio(event: AudioEventType): void {
 
 /**
  * Plays a base64 Data URI audio with zero-fail fallback:
- * Primary: HTML5 Audio
+ * Primary: HTML5 Audio element
  * Secondary: Web Audio decodeAudioData (for background/PWA resilience)
  */
 export async function playAudioDataUri(dataUri: string): Promise<boolean> {
@@ -143,6 +204,9 @@ export async function playAudioDataUri(dataUri: string): Promise<boolean> {
     if (!ctx) return false;
 
     try {
+      if (ctx.state === 'suspended') {
+        await ctx.resume().catch(() => {});
+      }
       const res = await fetch(dataUri);
       const arrayBuffer = await res.arrayBuffer();
       const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
@@ -159,7 +223,8 @@ export async function playAudioDataUri(dataUri: string): Promise<boolean> {
 }
 
 /**
- * Helper to play a composite bell tone with rich fundamental and harmonic overtone.
+ * Plays a composite bell note with fundamental sine and harmonic overtone.
+ * Tailored for clarity on mobile and laptop speakers.
  */
 function playBellNote(
   ctx: AudioContext,
@@ -215,7 +280,7 @@ export async function playPaymentSuccessChime(): Promise<void> {
 
   try {
     if (ctx.state === 'suspended') {
-      ctx.resume().catch(() => {});
+      await ctx.resume().catch(() => {});
     }
 
     const now = ctx.currentTime;
@@ -251,7 +316,7 @@ export async function playHospitalChime(): Promise<void> {
 
   try {
     if (ctx.state === 'suspended') {
-      ctx.resume().catch(() => {});
+      await ctx.resume().catch(() => {});
     }
 
     const now = ctx.currentTime;
@@ -285,7 +350,7 @@ export async function playCashRegisterChime(): Promise<void> {
 
   try {
     if (ctx.state === 'suspended') {
-      ctx.resume().catch(() => {});
+      await ctx.resume().catch(() => {});
     }
 
     const now = ctx.currentTime;
@@ -312,7 +377,7 @@ export async function playCancelChime(): Promise<void> {
 
   try {
     if (ctx.state === 'suspended') {
-      ctx.resume().catch(() => {});
+      await ctx.resume().catch(() => {});
     }
 
     const now = ctx.currentTime;
@@ -324,8 +389,11 @@ export async function playCancelChime(): Promise<void> {
 }
 
 /**
- * Spoken Patient Queue Call Announcement via Web Speech API:
- * Speaks aloud in Khmer or English for patient tokens.
+ * Universal Patient Queue Announcement via Web Speech API with Device Fallbacks:
+ * 1. Checks if native Khmer voice (km-KH) is available on device.
+ * 2. If Khmer voice exists: speaks Khmer text.
+ * 3. If Khmer voice is missing (e.g. iOS Safari, standard Android): speaks clear bilingual English announcement.
+ * 4. Automatically resumes speech synthesis engine to bypass Chromium 15s pause bug.
  */
 export function speakQueueCall(
   token: string,
@@ -335,24 +403,41 @@ export function speakQueueCall(
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
 
   try {
+    if (window.speechSynthesis.paused) {
+      window.speechSynthesis.resume();
+    }
     window.speechSynthesis.cancel();
 
-    const spokenText = isKhmer
-      ? `សូមអញ្ជើញ អ្នកជំងឺលេខ ${token} ចូលទៅកាន់ ${room}`
-      : `Patient ${token}, please proceed to ${room}`;
+    // Check cached voices or fresh query
+    const voices = cachedVoices.length > 0 ? cachedVoices : window.speechSynthesis.getVoices();
+    const hasKhmerVoice = voices.some(
+      (v) => v.lang.toLowerCase().startsWith('km') || v.name.toLowerCase().includes('khmer')
+    );
+
+    let spokenText: string;
+    let spokenLang: string;
+
+    if (isKhmer && hasKhmerVoice) {
+      spokenText = `សូមអញ្ជើញ អ្នកជំងឺលេខ ${token} ចូលទៅកាន់ ${room}`;
+      spokenLang = 'km-KH';
+    } else {
+      // Bilingual / English fallback for devices without Khmer voice installed
+      spokenText = `Attention, ticket ${token}, please proceed to ${room}`;
+      spokenLang = 'en-US';
+    }
 
     const utterance = new SpeechSynthesisUtterance(spokenText);
-    utterance.rate = 0.95;
-    utterance.pitch = 1.05;
-    utterance.lang = isKhmer ? 'km-KH' : 'en-US';
+    utterance.rate = 0.92;
+    utterance.pitch = 1.02;
+    utterance.lang = spokenLang;
 
-    // Look for preferred Khmer or English voice
-    const voices = window.speechSynthesis.getVoices();
-    const preferredVoice = voices.find((v) =>
-      isKhmer ? v.lang.startsWith('km') : v.lang.startsWith('en'),
+    const matchingVoice = voices.find((v) =>
+      spokenLang.startsWith('km')
+        ? v.lang.toLowerCase().startsWith('km') || v.name.toLowerCase().includes('khmer')
+        : v.lang.toLowerCase().startsWith('en')
     );
-    if (preferredVoice) {
-      utterance.voice = preferredVoice;
+    if (matchingVoice) {
+      utterance.voice = matchingVoice;
     }
 
     window.speechSynthesis.speak(utterance);

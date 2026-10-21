@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { api } from '../../lib/api';
 import { useTranslation } from '../../context/I18nContext';
+import { playHospitalChime, speakQueueCall, unlockAudioContext, requestScreenAndAudioKeepAlive } from '../../lib/chime';
 
 interface QueueTicket {
   id: string;
@@ -107,72 +108,22 @@ export default function SignagePage() {
     return () => clearInterval(timer);
   }, [isKh]);
 
-  // Synthesize hospital chime (two-tone chime: D5 587Hz -> A5 880Hz)
-  const playHospitalChime = useCallback(() => {
-    try {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      if (!audioCtxRef.current) {
-        audioCtxRef.current = new AudioCtx();
-      }
-      const ctx = audioCtxRef.current;
-      if (ctx.state === 'suspended') {
-        ctx.resume();
-      }
 
-      const now = ctx.currentTime;
-      // First tone (587Hz)
-      const osc1 = ctx.createOscillator();
-      const gain1 = ctx.createGain();
-      osc1.type = 'sine';
-      osc1.frequency.setValueAtTime(587.33, now);
-      gain1.gain.setValueAtTime(0.25, now);
-      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
-      osc1.connect(gain1);
-      gain1.connect(ctx.destination);
-      osc1.start(now);
-      osc1.stop(now + 0.6);
 
-      // Second tone (880Hz) after 0.25s
-      const osc2 = ctx.createOscillator();
-      const gain2 = ctx.createGain();
-      osc2.type = 'sine';
-      osc2.frequency.setValueAtTime(880.0, now + 0.25);
-      gain2.gain.setValueAtTime(0.3, now + 0.25);
-      gain2.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
-      osc2.connect(gain2);
-      gain2.connect(ctx.destination);
-      osc2.start(now + 0.25);
-      osc2.stop(now + 1.2);
-    } catch {
-      // Audio autoplay policy catch
-    }
-  }, []);
-
-  // Text-to-speech announcement in Khmer and English
+  // Text-to-speech announcement in Khmer and English via universal chime engine
   const speakAnnouncement = useCallback(
     (ticket: QueueTicket) => {
-      if (!('speechSynthesis' in window)) return;
-      window.speechSynthesis.cancel();
-
+      unlockAudioContext();
       playHospitalChime();
 
       setTimeout(() => {
-        const textToSpeak = isKh ? ticket.speechTextKh : ticket.speechTextEn;
-        const utterance = new SpeechSynthesisUtterance(textToSpeak);
-        utterance.rate = 0.9;
-        utterance.pitch = 1.0;
-
-        // Try to pick Khmer voice if available
-        const voices = window.speechSynthesis.getVoices();
-        const khmerVoice = voices.find((v) => v.lang.toLowerCase().includes('km') || v.name.toLowerCase().includes('khmer'));
-        if (khmerVoice && isKh) {
-          utterance.voice = khmerVoice;
-        }
-
-        window.speechSynthesis.speak(utterance);
-      }, 700);
+        const stationName = isKh
+          ? ticket.stationDisplayNameKh || ticket.department
+          : ticket.stationDisplayNameEn || ticket.department;
+        speakQueueCall(ticket.ticketNumber, stationName, isKh);
+      }, 800);
     },
-    [isKh, playHospitalChime],
+    [isKh],
   );
 
   // Fetch live board data
@@ -212,9 +163,11 @@ export default function SignagePage() {
     }
   };
 
-  // Enable audio by explicit user gesture
+  // Enable audio by explicit user gesture (Unlocks iOS, Android, and Desktop audio context)
   const handleEnableAudio = () => {
     setAudioEnabled(true);
+    unlockAudioContext();
+    requestScreenAndAudioKeepAlive();
     playHospitalChime();
     if (boardData && boardData.callingTickets && boardData.callingTickets.length > 0) {
       speakAnnouncement(boardData.callingTickets[0]);
