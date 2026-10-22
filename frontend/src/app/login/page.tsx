@@ -263,6 +263,10 @@ export default function LoginPage() {
         <div className="mt-6 pt-4 border-t border-[#E7E1D4] text-center">
           <p className="text-[11px] text-stone-400 font-sans">
             {isKm ? 'រក្សាសិទ្ធិគ្រប់យ៉ាងដោយ Krupet.com' : 'All rights reserved by Krupet.com'}
+            {' • '}
+            <Link href="/privacy" className="hover:text-stone-700 underline underline-offset-2">
+              {isKm ? 'គោលការណ៍ឯកជនភាព' : 'Privacy Policy'}
+            </Link>
           </p>
         </div>
       </div>

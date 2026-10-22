@@ -377,8 +377,8 @@ export class QuotaGuardService {
           requiredPlanName: planCfg?.nameKh || requiredPlan,
           isSubscriptionExpired: effective.isExpired,
           messageKh: effective.isExpired
-            ? `គម្រោងសេវាកម្មរបស់អ្នកបានផុតកំណត់ហើយ។ សូមបង់ប្រាក់បន្តគម្រោង ${planCfg?.nameKh} ($${planCfg?.priceUsd}/ខែ) ដើម្បីប្រើប្រាស់មុខងារនេះឡើងវិញ។`
-            : `មុខងារនេះទាមទារគម្រោង ${planCfg?.nameKh} ($${planCfg?.priceUsd}/ខែ) ឬខ្ពស់ជាងនេះ។ សូម Upgrade គម្រោងរបស់អ្នក។`,
+            ? `គម្រោងសេវាកម្មរបស់អ្នកបានផុតកំណត់ហើយ។ សូមបង់ប្រាក់បន្តគម្រោង ${planCfg?.nameKh} - $${planCfg?.priceUsd}/ខែ ដើម្បីប្រើប្រាស់មុខងារនេះឡើងវិញ។`
+            : `មុខងារនេះទាមទារគម្រោង ${planCfg?.nameKh} - $${planCfg?.priceUsd}/ខែ ឬខ្ពស់ជាងនេះ។ សូម Upgrade គម្រោងរបស់អ្នក។`,
           messageEn: effective.isExpired
             ? `Your subscription has expired. Please renew your ${planCfg?.nameEn} ($${planCfg?.priceUsd}/mo) plan to access this feature.`
             : `This feature requires ${planCfg?.nameEn} ($${planCfg?.priceUsd}/mo) or higher. Please upgrade your subscription.`,

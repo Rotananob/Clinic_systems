@@ -8,6 +8,8 @@ import { HardwareSettingsPanel } from '../../components/hardware/HardwareSetting
 import { TelegramSettingsPanel } from '../../components/telegram/TelegramSettingsPanel';
 import { SoundSettingsPanel } from '../../components/sound/SoundSettingsPanel';
 import { SubscriptionSettingsPanel } from '../../components/subscriptions/SubscriptionSettingsPanel';
+import { ModuleVisibilitySettingsPanel } from '../../components/settings/ModuleVisibilitySettingsPanel';
+import { SystemUpdateSettingsPanel } from '../../components/settings/SystemUpdateSettingsPanel';
 import {
   Building2,
   QrCode,
@@ -36,6 +38,8 @@ import {
   Smartphone,
   Sparkles,
   ExternalLink,
+  SlidersHorizontal,
+  RefreshCw,
 } from 'lucide-react';
 
 import { QRCodeSVG } from 'qrcode.react';
@@ -115,7 +119,7 @@ const defaultSettings: ClinicSettingsState = {
   addressEn: '',
   addressKh: '',
   openingHoursEn: 'Monday - Sunday: 07:30 AM - 08:30 PM (Emergency 24/7)',
-  openingHoursKh: 'ច័ន្ទ ដល់ អាទិត្យ៖ ម៉ោង ៧:៣០ ព្រឹក ដល់ ៨:៣០ យប់ (សង្គ្រោះបន្ទាន់ ២៤/៧)',
+  openingHoursKh: 'ច័ន្ទ ដល់ អាទិត្យ៖ ម៉ោង ៧:៣០ ព្រឹក ដល់ ៨:៣០ យប់ - សង្គ្រោះបន្ទាន់ ២៤/៧',
   missionSlogan: 'Professional Medical Care With Compassion & Precision',
 
   // 2. KHQR & PayWay
@@ -168,7 +172,7 @@ const STORAGE_KEY = 'houn_vannak_clinic_settings_v1';
 export default function SettingsPage() {
   const { locale } = useTranslation();
   const isKm = locale === 'km';
-  const [activeTab, setActiveTab] = useState<'profile' | 'khqr' | 'fees' | 'receipt' | 'hardware' | 'sound' | 'telegram' | 'security' | 'subscription'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'khqr' | 'fees' | 'receipt' | 'hardware' | 'sound' | 'telegram' | 'security' | 'subscription' | 'modules' | 'updates'>('profile');
   const [settings, setSettings] = useState<ClinicSettingsState>(defaultSettings);
   const [savedNotice, setSavedNotice] = useState(false);
   const [tenantProfile, setTenantProfile] = useState<any>(null);
@@ -418,14 +422,14 @@ export default function SettingsPage() {
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-base sm:text-lg font-bold text-slate-900 font-sans">
-                  {settings.clinicNameKh || settings.clinicNameEn || (isKm ? 'មន្ទីរសម្រាកព្យាបាលរបស់អ្នក (Your Clinic)' : 'Your Clinic Workspace')}
+                  {settings.clinicNameKh || settings.clinicNameEn || (isKm ? 'មន្ទីរសម្រាកព្យាបាលរបស់អ្នក - Your Clinic' : 'Your Clinic Workspace')}
                 </h1>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono uppercase bg-teal-50 text-teal-800 border border-teal-200">
                   {tenantProfile?.tenant?.planTier ? tenantProfile.tenant.planTier.replace('_', ' ') : 'STARTER'}
                 </span>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1">
                   <CheckCircle2 className="w-3 h-3" />
-                  <span>{isKm ? 'គណនីសកម្ម (Active)' : 'Active Workspace'}</span>
+                  <span>{isKm ? 'គណនីសកម្ម - Active' : 'Active Workspace'}</span>
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-0.5 font-mono">
@@ -441,7 +445,7 @@ export default function SettingsPage() {
               className="px-3.5 py-2 rounded-xl bg-teal-800 hover:bg-teal-900 text-white text-xs font-bold transition shadow-xs flex items-center gap-1.5"
             >
               <CreditCard className="w-3.5 h-3.5" />
-              <span>{isKm ? 'គ្រប់គ្រងគម្រោងជាវ (Subscription)' : 'Manage Subscription'}</span>
+              <span>{isKm ? 'គ្រប់គ្រងគម្រោងជាវ - Subscription' : 'Manage Subscription'}</span>
             </button>
           </div>
         </div>
@@ -641,7 +645,7 @@ export default function SettingsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {isKm ? 'ឈ្មោះគ្លីនិក (អង់គ្លេស)' : 'Clinic Name (English)'}
+                  {isKm ? 'ឈ្មោះគ្លីនិក - អង់គ្លេស' : 'Clinic Name (English)'}
                 </label>
                 <input
                   type="text"
@@ -654,7 +658,7 @@ export default function SettingsPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {isKm ? 'ឈ្មោះគ្លីនិក (ខ្មែរ)' : 'Clinic Name (Khmer)'}
+                  {isKm ? 'ឈ្មោះគ្លីនិក - ខ្មែរ' : 'Clinic Name (Khmer)'}
                 </label>
                 <input
                   type="text"
@@ -667,7 +671,7 @@ export default function SettingsPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {isKm ? 'លេខអាជ្ញាប័ណ្ណក្រសួងសុខាភិបាល (MoH License)' : 'Ministry of Health License #'}
+                  {isKm ? 'លេខអាជ្ញាប័ណ្ណក្រសួងសុខាភិបាល - MoH License' : 'Ministry of Health License #'}
                 </label>
                 <input
                   type="text"
@@ -696,7 +700,7 @@ export default function SettingsPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {isKm ? 'លេខទូរស័ព្ទទូទៅ (Primary Phone)' : 'Primary Telephone'}
+                  {isKm ? 'លេខទូរស័ព្ទទូទៅ - Primary Phone' : 'Primary Telephone'}
                 </label>
                 <div className="relative">
                   <Phone className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
@@ -711,7 +715,7 @@ export default function SettingsPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {isKm ? 'លេខសង្គ្រោះបន្ទាន់ (Emergency Hotline)' : 'Emergency Hotline 24/7'}
+                  {isKm ? 'លេខសង្គ្រោះបន្ទាន់ - Emergency Hotline' : 'Emergency Hotline 24/7'}
                 </label>
                 <div className="relative">
                   <Phone className="w-3.5 h-3.5 text-rose-500 absolute left-3 top-2.5" />
@@ -726,7 +730,7 @@ export default function SettingsPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {isKm ? 'អ៊ីមែលផ្លូវការ (Official Email)' : 'Official Email'}
+                  {isKm ? 'អ៊ីមែលផ្លូវការ - Official Email' : 'Official Email'}
                 </label>
                 <div className="relative">
                   <Mail className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
@@ -741,7 +745,7 @@ export default function SettingsPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {isKm ? 'គេហទំព័រ (Official Website)' : 'Official Website'}
+                  {isKm ? 'គេហទំព័រ - Official Website' : 'Official Website'}
                 </label>
                 <div className="relative">
                   <Globe className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
@@ -756,7 +760,7 @@ export default function SettingsPage() {
 
               <div className="sm:col-span-2">
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {isKm ? 'អាសយដ្ឋានគ្លីនិក (ភាសាខ្មែរ)' : 'Physical Address (Khmer)'}
+                  {isKm ? 'អាសយដ្ឋានគ្លីនិក - ភាសាខ្មែរ' : 'Physical Address (Khmer)'}
                 </label>
                 <div className="relative">
                   <MapPin className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
@@ -771,7 +775,7 @@ export default function SettingsPage() {
 
               <div className="sm:col-span-2">
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {isKm ? 'អាសយដ្ឋានគ្លីនិក (អង់គ្លេស)' : 'Physical Address (English)'}
+                  {isKm ? 'អាសយដ្ឋានគ្លីនិក - អង់គ្លេស' : 'Physical Address (English)'}
                 </label>
                 <div className="relative">
                   <MapPin className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
@@ -786,7 +790,7 @@ export default function SettingsPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {isKm ? 'ម៉ោងបម្រើការងារ (ខ្មែរ)' : 'Working Hours (Khmer)'}
+                  {isKm ? 'ម៉ោងបម្រើការងារ - ខ្មែរ' : 'Working Hours (Khmer)'}
                 </label>
                 <div className="relative">
                   <Clock className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
@@ -801,7 +805,7 @@ export default function SettingsPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {isKm ? 'ម៉ោងបម្រើការងារ (អង់គ្លេស)' : 'Working Hours (English)'}
+                  {isKm ? 'ម៉ោងបម្រើការងារ - អង់គ្លេស' : 'Working Hours (English)'}
                 </label>
                 <div className="relative">
                   <Clock className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
@@ -816,7 +820,7 @@ export default function SettingsPage() {
 
               <div className="sm:col-span-2">
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {isKm ? 'ពាក្យស្លោកគ្លីនិក (Slogan / Mission Statement)' : 'Clinic Motto / Mission'}
+                  {isKm ? 'ពាក្យស្លោកគ្លីនិក - Slogan / Mission Statement' : 'Clinic Motto / Mission'}
                 </label>
                 <input
                   type="text"
@@ -836,11 +840,11 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                   <QrCode className="w-4 h-4 text-teal-700" />
-                  <span>{isKm ? 'ការកំណត់ KHQR & ABA PayWay Engine (PaaS Self-Service)' : 'Bakong KHQR & PayWay Self-Service Gateway'}</span>
+                  <span>{isKm ? 'ការកំណត់ KHQR & ABA PayWay Engine - PaaS Self-Service' : 'Bakong KHQR & PayWay Self-Service Gateway'}</span>
                 </h2>
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1">
                   <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                  <span>{isKm ? 'ដាក់ហើយដើរភ្លាមៗ (Instant Working)' : 'Instant Live Working'}</span>
+                  <span>{isKm ? 'ដាក់ហើយដើរភ្លាមៗ - Instant Working' : 'Instant Live Working'}</span>
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-1">
@@ -857,7 +861,7 @@ export default function SettingsPage() {
                   <Smartphone className="w-4 h-4 text-teal-800" />
                   <span className="text-xs font-bold text-teal-950">
                     {isKm
-                      ? 'ការណែនាំរៀបចំ Merchant ដោយខ្លួនឯង (Self-Service Setup Guide)'
+                      ? 'ការណែនាំរៀបចំ Merchant ដោយខ្លួនឯង - Self-Service Setup Guide'
                       : 'Self-Service Clinic Merchant Setup Guide'}
                   </span>
                 </div>
@@ -876,7 +880,7 @@ export default function SettingsPage() {
                     </div>
                     <p className="text-[11px] text-slate-600 leading-relaxed">
                       {isKm
-                        ? 'បើក ABA Mobile -> Services -> ABA Merchant ឬ Bakong រួច Copy Bakong ID របស់អ្នក (ឧ. your_clinic@aba ឬលេខទូរស័ព្ទ)'
+                        ? 'បើក ABA Mobile -> Services -> ABA Merchant ឬ Bakong រួច Copy Bakong ID របស់អ្នក - ឧ. your_clinic@aba ឬលេខទូរស័ព្ទ'
                         : 'Open ABA Mobile -> Services -> tap ABA Merchant / Bakong and copy your Bakong ID (e.g. your_clinic@aba)'}
                     </p>
                   </div>
@@ -908,7 +912,7 @@ export default function SettingsPage() {
                   <div>
                     <div className="text-[11px] font-bold text-teal-900 mb-1 flex items-center gap-1.5">
                       <span className="w-4 h-4 rounded-full bg-teal-800 text-white flex items-center justify-center text-[10px]">3</span>
-                      <span>{isKm ? 'ឈ្មោះ Merchant (Tag 59)' : 'Merchant Name (Tag 59)'}</span>
+                      <span>{isKm ? 'ឈ្មោះ Merchant - Tag 59' : 'Merchant Name - Tag 59'}</span>
                     </div>
                     <p className="text-[11px] text-slate-600 leading-relaxed">
                       {isKm
@@ -945,7 +949,7 @@ export default function SettingsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {isKm ? 'គណនីបាគង (Bakong Account ID) *' : 'Bakong Account ID *'}
+                  {isKm ? 'គណនីបាគង - Bakong Account ID *' : 'Bakong Account ID *'}
                 </label>
                 <input
                   type="text"
@@ -962,7 +966,7 @@ export default function SettingsPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {isKm ? 'ឈ្មោះអាជីវករ KHQR (Merchant Name Tag 59) *' : 'KHQR Merchant Name (Tag 59) *'}
+                  {isKm ? 'ឈ្មោះអាជីវករ KHQR - Merchant Name Tag 59 *' : 'KHQR Merchant Name - Tag 59 *'}
                 </label>
                 <input
                   type="text"
@@ -979,7 +983,7 @@ export default function SettingsPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {isKm ? 'ទីក្រុងអាជីវករ (Merchant City Tag 60)' : 'Merchant City (Tag 60)'}
+                  {isKm ? 'ទីក្រុងអាជីវករ - Merchant City Tag 60' : 'Merchant City (Tag 60)'}
                 </label>
                 <input
                   type="text"
@@ -1009,7 +1013,7 @@ export default function SettingsPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {isKm ? 'រូបិយប័ណ្ណលំនាំដើម (Default Currency)' : 'Default Currency'}
+                  {isKm ? 'រូបិយប័ណ្ណលំនាំដើម - Default Currency' : 'Default Currency'}
                 </label>
                 <select
                   value={settings.defaultCurrency}
@@ -1023,7 +1027,7 @@ export default function SettingsPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {isKm ? 'អត្រាប្តូរប្រាក់ (1 USD to KHR)' : 'Exchange Rate (1 USD = KHR)'}
+                  {isKm ? 'អត្រាប្តូរប្រាក់ - 1 USD to KHR' : 'Exchange Rate (1 USD = KHR)'}
                 </label>
                 <input
                   type="number"
@@ -1038,7 +1042,7 @@ export default function SettingsPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {isKm ? 'គម្លាតពេលត្រួតពិនិត្យ (Polling Interval)' : 'Settlement Polling Interval'}
+                  {isKm ? 'គម្លាតពេលត្រួតពិនិត្យ - Polling Interval' : 'Settlement Polling Interval'}
                 </label>
                 <select
                   value={settings.pollingIntervalSeconds}
@@ -1265,7 +1269,7 @@ export default function SettingsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               <div className="p-3.5 bg-slate-50/70 border border-slate-200 rounded-xl space-y-1">
                 <label className="block text-xs font-semibold text-slate-700">
-                  {isKm ? 'ពិនិត្យទូទៅ (General Consult)' : 'General Consultation'}
+                  {isKm ? 'ពិនិត្យទូទៅ - General Consult' : 'General Consultation'}
                 </label>
                 <div className="flex items-center gap-1.5">
                   <span className="text-xs text-slate-400 font-bold">$</span>
@@ -1282,7 +1286,7 @@ export default function SettingsPage() {
 
               <div className="p-3.5 bg-slate-50/70 border border-slate-200 rounded-xl space-y-1">
                 <label className="block text-xs font-semibold text-slate-700">
-                  {isKm ? 'ពិគ្រោះឯកទេស (Specialist Consult)' : 'Specialist Consultation'}
+                  {isKm ? 'ពិគ្រោះឯកទេស - Specialist Consult' : 'Specialist Consultation'}
                 </label>
                 <div className="flex items-center gap-1.5">
                   <span className="text-xs text-slate-400 font-bold">$</span>
@@ -1299,7 +1303,7 @@ export default function SettingsPage() {
 
               <div className="p-3.5 bg-slate-50/70 border border-slate-200 rounded-xl space-y-1">
                 <label className="block text-xs font-semibold text-slate-700">
-                  {isKm ? 'ពិនិត្យកុមារ (Pediatric Care)' : 'Pediatric Consultation'}
+                  {isKm ? 'ពិនិត្យកុមារ - Pediatric Care' : 'Pediatric Consultation'}
                 </label>
                 <div className="flex items-center gap-1.5">
                   <span className="text-xs text-slate-400 font-bold">$</span>
@@ -1316,7 +1320,7 @@ export default function SettingsPage() {
 
               <div className="p-3.5 bg-slate-50/70 border border-slate-200 rounded-xl space-y-1">
                 <label className="block text-xs font-semibold text-slate-700">
-                  {isKm ? 'សេវាសង្គ្រោះបន្ទាន់ (Emergency)' : 'Emergency Surcharge'}
+                  {isKm ? 'សេវាសង្គ្រោះបន្ទាន់ - Emergency' : 'Emergency Surcharge'}
                 </label>
                 <div className="flex items-center gap-1.5">
                   <span className="text-xs text-slate-400 font-bold">$</span>
@@ -1333,7 +1337,7 @@ export default function SettingsPage() {
 
               <div className="p-3.5 bg-slate-50/70 border border-slate-200 rounded-xl space-y-1">
                 <label className="block text-xs font-semibold text-slate-700">
-                  {isKm ? 'អេកូសាស្ត្រ (Ultrasound Scan)' : 'Ultrasound Scan 2D/4D'}
+                  {isKm ? 'អេកូសាស្ត្រ - Ultrasound Scan' : 'Ultrasound Scan 2D/4D'}
                 </label>
                 <div className="flex items-center gap-1.5">
                   <span className="text-xs text-slate-400 font-bold">$</span>
@@ -1350,7 +1354,7 @@ export default function SettingsPage() {
 
               <div className="p-3.5 bg-slate-50/70 border border-slate-200 rounded-xl space-y-1">
                 <label className="block text-xs font-semibold text-slate-700">
-                  {isKm ? 'ពិនិត្យឈាម Lab (Blood Test CBC)' : 'Complete Blood Count (CBC)'}
+                  {isKm ? 'ពិនិត្យឈាម Lab - Blood Test CBC' : 'Complete Blood Count (CBC)'}
                 </label>
                 <div className="flex items-center gap-1.5">
                   <span className="text-xs text-slate-400 font-bold">$</span>
@@ -1367,7 +1371,7 @@ export default function SettingsPage() {
 
               <div className="p-3.5 bg-slate-50/70 border border-slate-200 rounded-xl space-y-1">
                 <label className="block text-xs font-semibold text-slate-700">
-                  {isKm ? 'ពិនិត្យបេះដូង (ECG Monitoring)' : 'ECG Heart Monitoring'}
+                  {isKm ? 'ពិនិត្យបេះដូង - ECG Monitoring' : 'ECG Heart Monitoring'}
                 </label>
                 <div className="flex items-center gap-1.5">
                   <span className="text-xs text-slate-400 font-bold">$</span>
@@ -1384,7 +1388,7 @@ export default function SettingsPage() {
 
               <div className="p-3.5 bg-slate-50/70 border border-slate-200 rounded-xl space-y-1">
                 <label className="block text-xs font-semibold text-slate-700">
-                  {isKm ? 'ដេររបួស/វះកាត់តូច (Minor Surgery)' : 'Minor Surgery & Suture Base'}
+                  {isKm ? 'ដេររបួស/វះកាត់តូច - Minor Surgery' : 'Minor Surgery & Suture Base'}
                 </label>
                 <div className="flex items-center gap-1.5">
                   <span className="text-xs text-slate-400 font-bold">$</span>
@@ -1402,7 +1406,7 @@ export default function SettingsPage() {
               <div className="p-3.5 bg-slate-50/70 border border-slate-200 rounded-xl space-y-1">
                 <label className="block text-xs font-semibold text-slate-700 flex items-center gap-1">
                   <Percent className="w-3 h-3 text-teal-700" />
-                  <span>{isKm ? 'ថ្លៃសេវាបើកថ្នាំ (Pharmacy Markup)' : 'Pharmacy Dispensing Fee'}</span>
+                  <span>{isKm ? 'ថ្លៃសេវាបើកថ្នាំ - Pharmacy Markup' : 'Pharmacy Dispensing Fee'}</span>
                 </label>
                 <div className="flex items-center gap-1.5">
                   <span className="text-xs text-slate-400 font-bold">%</span>
@@ -1431,7 +1435,7 @@ export default function SettingsPage() {
                 </div>
                 <div>
                   <h3 className="text-xs font-bold text-teal-900">
-                    {isKm ? 'ឧបករណ៍រចនាម៉ូតវិក្កយបត្រ (Invoice Template Designer)' : 'Custom Invoice Template Designer'}
+                    {isKm ? 'ឧបករណ៍រចនាម៉ូតវិក្កយបត្រ - Invoice Template Designer' : 'Custom Invoice Template Designer'}
                   </h3>
                   <p className="text-[11px] text-teal-700">
                     {isKm
@@ -1464,7 +1468,7 @@ export default function SettingsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {isKm ? 'ទំហំក្រដាសព្រីន (Paper Format)' : 'Paper Format & Layout'}
+                  {isKm ? 'ទំហំក្រដាសព្រីន - Paper Format' : 'Paper Format & Layout'}
                 </label>
                 <select
                   value={settings.paperFormat}
@@ -1479,7 +1483,7 @@ export default function SettingsPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {isKm ? 'ចំណងជើងបង្កាន់ដៃ (ខ្មែរ)' : 'Receipt Header (Khmer)'}
+                  {isKm ? 'ចំណងជើងបង្កាន់ដៃ - ខ្មែរ' : 'Receipt Header (Khmer)'}
                 </label>
                 <input
                   type="text"
@@ -1491,7 +1495,7 @@ export default function SettingsPage() {
 
               <div className="sm:col-span-2">
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {isKm ? 'ចំណងជើងបង្កាន់ដៃ (អង់គ្លេស)' : 'Receipt Header (English)'}
+                  {isKm ? 'ចំណងជើងបង្កាន់ដៃ - អង់គ្លេស' : 'Receipt Header (English)'}
                 </label>
                 <input
                   type="text"
@@ -1503,7 +1507,7 @@ export default function SettingsPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {isKm ? 'ពាក្យជូនពរចុងបង្កាន់ដៃ (ខ្មែរ)' : 'Receipt Footer Note (Khmer)'}
+                  {isKm ? 'ពាក្យជូនពរចុងបង្កាន់ដៃ - ខ្មែរ' : 'Receipt Footer Note (Khmer)'}
                 </label>
                 <input
                   type="text"
@@ -1515,7 +1519,7 @@ export default function SettingsPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {isKm ? 'ពាក្យជូនពរចុងបង្កាន់ដៃ (អង់គ្លេស)' : 'Receipt Footer Note (English)'}
+                  {isKm ? 'ពាក្យជូនពរចុងបង្កាន់ដៃ - អង់គ្លេស' : 'Receipt Footer Note (English)'}
                 </label>
                 <input
                   type="text"
@@ -1548,7 +1552,7 @@ export default function SettingsPage() {
                   className="w-4 h-4 text-teal-700 rounded border-slate-300 focus:ring-teal-700"
                 />
                 <span className="text-xs text-slate-800">
-                  {isKm ? 'បង្ហាញឈ្មោះវេជ្ជបណ្ឌិតទទួលបន្ទុក (Attending Doctor)' : 'Include Attending Doctor on the Receipt'}
+                  {isKm ? 'បង្ហាញឈ្មោះវេជ្ជបណ្ឌិតទទួលបន្ទុក - Attending Doctor' : 'Include Attending Doctor on the Receipt'}
                 </span>
               </label>
 
@@ -1560,7 +1564,7 @@ export default function SettingsPage() {
                   className="w-4 h-4 text-teal-700 rounded border-slate-300 focus:ring-teal-700"
                 />
                 <span className="text-xs text-slate-800">
-                  {isKm ? 'បង្ហាញឈ្មោះបេឡាករអ្នកគិតលុយ (Cashier Name)' : 'Include Billing Cashier Name on the Receipt'}
+                  {isKm ? 'បង្ហាញឈ្មោះបេឡាករអ្នកគិតលុយ - Cashier Name' : 'Include Billing Cashier Name on the Receipt'}
                 </span>
               </label>
 
@@ -1609,7 +1613,7 @@ export default function SettingsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {isKm ? 'រយៈពេលកំណត់ចាក់សោស្វ័យប្រវត្តិ (Auto Logout)' : 'Session Auto-Lock Timeout'}
+                  {isKm ? 'រយៈពេលកំណត់ចាក់សោស្វ័យប្រវត្តិ - Auto Logout' : 'Session Auto-Lock Timeout'}
                 </label>
                 <select
                   value={settings.inactivityTimeoutMinutes}
@@ -1625,7 +1629,7 @@ export default function SettingsPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {isKm ? 'រយៈពេលរក្សាទុក Audit Trail (ថ្ងៃ)' : 'Audit Trail Retention Period (Days)'}
+                  {isKm ? 'រយៈពេលរក្សាទុក Audit Trail - ថ្ងៃ' : 'Audit Trail Retention Period (Days)'}
                 </label>
                 <input
                   type="number"
@@ -1667,7 +1671,7 @@ export default function SettingsPage() {
                 />
                 <div>
                   <div className="text-xs font-semibold text-slate-800">
-                    {isKm ? 'ទប់ស្កាត់ការបង្កើតអ្នកជំងឺស្ទួន (National ID / Phone Duplicate Prevention)' : 'Duplicate Patient Prevention (National ID & Phone)'}
+                    {isKm ? 'ទប់ស្កាត់ការបង្កើតអ្នកជំងឺស្ទួន - National ID / Phone Duplicate Prevention' : 'Duplicate Patient Prevention (National ID & Phone)'}
                   </div>
                   <div className="text-[11px] text-slate-400">
                     {isKm
@@ -1686,7 +1690,7 @@ export default function SettingsPage() {
                 />
                 <div>
                   <div className="text-xs font-semibold text-slate-800">
-                    {isKm ? 'តម្រូវឲ្យប្រើពាក្យសម្ងាត់រឹងមាំ (Strong Staff Passwords)' : 'Enforce Complex Passwords for Medical Staff'}
+                    {isKm ? 'តម្រូវឲ្យប្រើពាក្យសម្ងាត់រឹងមាំ - Strong Staff Passwords' : 'Enforce Complex Passwords for Medical Staff'}
                   </div>
                   <div className="text-[11px] text-slate-400">
                     {isKm

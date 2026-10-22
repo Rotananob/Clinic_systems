@@ -30,10 +30,13 @@ import {
   BarChart3,
   Compass,
   Sparkles,
+  Boxes,
 } from 'lucide-react';
 import { RegisterPatientDrawer } from '../../components/patients/RegisterPatientDrawer';
 import { ExploreModulesModal } from '../../components/dashboard/ExploreModulesModal';
 import { AbaPaywayTesterCard } from '../../components/dashboard/AbaPaywayTesterCard';
+import { isRouteAllowed } from '../../lib/rbac';
+import { isModuleHidden } from '../../lib/module-visibility';
 
 function DashboardView() {
   const { t, locale } = useTranslation();
@@ -45,6 +48,97 @@ function DashboardView() {
   const [loading, setLoading] = useState(true);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [isExploreOpen, setIsExploreOpen] = useState(false);
+  const [moduleVersion, setModuleVersion] = useState(0);
+
+  useEffect(() => {
+    const handler = () => setModuleVersion((v) => v + 1);
+    window.addEventListener('krupet-modules-changed', handler);
+    return () => window.removeEventListener('krupet-modules-changed', handler);
+  }, []);
+
+  const canRegister =
+    user?.role === 'SUPER_ADMIN' ||
+    user?.role === 'ADMIN' ||
+    user?.role === 'DOCTOR' ||
+    user?.role === 'RECEPTIONIST';
+
+  const allWorkflowCards = [
+    {
+      href: '/queue',
+      titleKh: t.queue.title,
+      titleEn: t.queue.title,
+      descKh: 'ប្រព័ន្ធហៅលេខតាមសំឡេង និងគ្រប់គ្រងអ្នកជំងឺរង់ចាំ',
+      descEn: t.queue.subtitle,
+      actionKh: 'បើកផ្ទាំងហៅលេខ',
+      actionEn: 'Launch Queue',
+      icon: Monitor,
+      bg: 'bg-stone-900 text-amber-400',
+    },
+    {
+      href: clinicType === 'DENTAL' ? '/dental' : '/visits',
+      titleKh: clinicType === 'DENTAL' ? 'ពេទ្យធ្មេញ FDI Odontogram' : 'ការពិគ្រោះ & វាស់ Vitals',
+      titleEn: clinicType === 'DENTAL' ? 'Dental Odontogram' : 'Consultations & Vitals',
+      descKh:
+        clinicType === 'DENTAL'
+          ? 'ប្លង់ ៣២ ធ្មេញកាយវិភាគវិទ្យា និងរោគពុកធ្មេញ'
+          : 'កត់ត្រាសញ្ញាជីវិត ពិនិត្យរោគវិនិច្ឆ័យ ICD-10 និងចេញវេជ្ជបញ្ជា',
+      descEn: 'Active encounters, vital triage and clinical SOAP notes',
+      actionKh: clinicType === 'DENTAL' ? 'បើកប្លង់ធ្មេញ' : 'ចាប់ផ្តើមពិនិត្យ',
+      actionEn: 'Start Consultation',
+      icon: clinicType === 'DENTAL' ? Sparkles : Stethoscope,
+      bg: 'bg-teal-50 text-teal-800 border border-teal-200/60',
+    },
+    {
+      href: '/patients',
+      titleKh: t.patients.title,
+      titleEn: t.patients.title,
+      descKh: 'ស្វែងរកប្រវត្តិជំងឺ ឯកសារចាស់ៗ និងកែសម្រួលព័ត៌មាន',
+      descEn: t.patients.subtitle,
+      actionKh: t.patients.viewProfile,
+      actionEn: 'Patient Directory',
+      icon: Users,
+      bg: 'bg-[#F0EAE0] text-stone-800 border border-[#DFD6C6]',
+    },
+    {
+      href: '/billing',
+      titleKh: t.billing.title,
+      titleEn: t.billing.title,
+      descKh: 'គិតលុយទូទាត់រហ័ស ស្កេន KHQR និងចេញវិក្កយបត្រ',
+      descEn: t.billing.subtitle,
+      actionKh: t.billing.payWithKhqr,
+      actionEn: 'Open Cashier POS',
+      icon: CreditCard,
+      bg: 'bg-emerald-50 text-emerald-800 border border-emerald-200/60',
+    },
+    {
+      href: '/prescriptions',
+      titleKh: 'វេជ្ជបញ្ជា & បើកថ្នាំឱសថស្ថាន',
+      titleEn: 'Prescriptions & Pharmacy Dispensing',
+      descKh: 'ត្រួតពិនិត្យវេជ្ជបញ្ជា ផ្ទៀងផ្ទាត់កម្រិតថ្នាំ និងបើកថ្នាំជូនអ្នកជំងឺ',
+      descEn: 'Pharmacy dispensing, safety checks and prescription orders',
+      actionKh: 'បើកបញ្ជីវេជ្ជបញ្ជា',
+      actionEn: 'Open Pharmacy Queue',
+      icon: Pill,
+      bg: 'bg-amber-50 text-amber-800 border border-amber-200/60',
+    },
+    {
+      href: '/inventory',
+      titleKh: 'ឃ្លាំងឱសថ & ស្តុកថ្នាំ',
+      titleEn: 'Warehouse & Inventory Stock',
+      descKh: 'តាមដានចំនួនថ្នាំក្នុងស្តុក ការផុតកំណត់ FEFO និងការកុម្ម៉ង់បន្ថែម',
+      descEn: 'Stock balances, batch expiration and inventory controls',
+      actionKh: 'គ្រប់គ្រងស្តុក',
+      actionEn: 'View Inventory',
+      icon: Boxes,
+      bg: 'bg-blue-50 text-blue-800 border border-blue-200/60',
+    },
+  ];
+
+  const visibleWorkflowCards = allWorkflowCards.filter((card) => {
+    if (!isRouteAllowed(user?.role, card.href)) return false;
+    if (isModuleHidden(card.href)) return false;
+    return true;
+  });
 
   const fetchMetrics = async () => {
     try {
@@ -124,14 +218,16 @@ function DashboardView() {
             <span>{isKm ? 'រុករកមុខងារ' : 'Explore Tools'}</span>
           </button>
 
-          {/* Primary Doctor Action */}
-          <button
-            onClick={() => setIsRegisterOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs font-semibold transition-colors shadow-xs active:scale-95"
-          >
-            <Plus className="w-4 h-4" />
-            <span>{t.dashboard.registerPatient}</span>
-          </button>
+          {/* Primary Doctor Action - Role Guarded */}
+          {canRegister && (
+            <button
+              onClick={() => setIsRegisterOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs font-semibold transition-colors shadow-xs active:scale-95 cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>{t.dashboard.registerPatient}</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -147,7 +243,7 @@ function DashboardView() {
             </span>
             <p className="text-stone-500 text-[11px] truncate sm:whitespace-normal">
               {isKm
-                ? 'ចុច [Ctrl + K] ឬចុចប៊ូតុង [រុករកមុខងារ] ដើម្បីស្វែងរក និងបើកមុខងារឯកទេសទាំងអស់ (PACS, LIS, ធ្មេញ, IPD, Teleconsult, ឃ្លាំង...)'
+                ? 'ចុច [Ctrl + K] ឬចុចប៊ូតុង [រុករកមុខងារ] ដើម្បីស្វែងរក និងបើកមុខងារឯកទេសទាំងអស់ដូចជា PACS, LIS, ធ្មេញ, IPD, Teleconsult, ឃ្លាំង...'
                 : 'Press [Ctrl + K] or click [Explore Tools] to discover all specialized suites (PACS, LIS Lab, Dental, IPD, Teleconsult, Inventory...)'}
             </p>
           </div>
@@ -190,7 +286,7 @@ function DashboardView() {
             {metrics ? metrics.queueStatus?.waiting : '0'}
           </div>
           <p className="text-[11px] text-amber-700 font-medium mt-1">
-            {isKm ? 'រង់ចាំវាស់ Vitals & ពិគ្រោះ (~11 នាទី)' : 'Awaiting triage & consultation (~11m)'}
+            {isKm ? 'រង់ចាំវាស់ Vitals & ពិគ្រោះ - ប្រមាណ ១១ នាទី' : 'Awaiting triage & consultation (~11m)'}
           </p>
         </div>
 
@@ -307,122 +403,34 @@ function DashboardView() {
             </span>
           </div>
 
-          {/* 4 Targeted Doctor Action Cards */}
+          {/* Role-Permitted & Decluttered Clinical Workflows */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* 1. Queue Calling Screen */}
-            <Link
-              href="/queue"
-              className="group p-4 bg-[#FDFBF7] rounded-2xl border border-[#E7E1D4] hover:border-teal-700 transition-all shadow-xs card-3d flex flex-col justify-between"
-            >
-              <div>
-                <div className="w-9 h-9 rounded-xl bg-stone-900 text-amber-400 flex items-center justify-center mb-2.5 shadow-2xs">
-                  <Monitor className="w-4 h-4" />
-                </div>
-                <h3 className="font-bold text-stone-900 text-sm">{t.queue.title}</h3>
-                <p className="text-xs text-stone-500 mt-1">
-                  {isKm
-                    ? 'ប្រព័ន្ធហៅលេខតាមសំឡេង និងគ្រប់គ្រងអ្នកជំងឺរង់ចាំ'
-                    : t.queue.subtitle}
-                </p>
-              </div>
-              <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-teal-800 group-hover:translate-x-1 transition-transform">
-                <span>{isKm ? 'បើកផ្ទាំងហៅលេខ' : 'Launch Queue'}</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </div>
-            </Link>
-
-            {/* 2. Doctor Consultation & Vitals (or Dental if Dental clinic) */}
-            {clinicType === 'DENTAL' ? (
-              <Link
-                href="/dental"
-                className="group p-4 bg-[#FDFBF7] rounded-2xl border border-[#E7E1D4] hover:border-teal-700 transition-all shadow-xs card-3d flex flex-col justify-between"
-              >
-                <div>
-                  <div className="w-9 h-9 rounded-xl bg-teal-50 text-teal-800 flex items-center justify-center mb-2.5 border border-teal-200/60">
-                    <Sparkles className="w-4 h-4" />
+            {visibleWorkflowCards.map((card) => {
+              const Icon = card.icon;
+              return (
+                <Link
+                  key={card.href}
+                  href={card.href}
+                  className="group p-4 bg-[#FDFBF7] rounded-2xl border border-[#E7E1D4] hover:border-teal-700 transition-all shadow-xs card-3d flex flex-col justify-between"
+                >
+                  <div>
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-2.5 shadow-2xs ${card.bg}`}>
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <h3 className="font-bold text-stone-900 text-sm">
+                      {isKm ? card.titleKh : card.titleEn}
+                    </h3>
+                    <p className="text-xs text-stone-500 mt-1">
+                      {isKm ? card.descKh : card.descEn}
+                    </p>
                   </div>
-                  <h3 className="font-bold text-stone-900 text-sm">
-                    {isKm ? 'ពេទ្យធ្មេញ FDI Odontogram' : 'Dental Odontogram'}
-                  </h3>
-                  <p className="text-xs text-stone-500 mt-1">
-                    {isKm
-                      ? 'ប្លង់ 32 ធ្មេញកាយវិភាគវិទ្យា និងតាមដានរោគពុកធ្មេញ WHO DMFT'
-                      : 'FDI 32-tooth anatomical chart & dental treatment'}
-                  </p>
-                </div>
-                <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-teal-800 group-hover:translate-x-1 transition-transform">
-                  <span>{isKm ? 'បើកប្លង់ធ្មេញ' : 'Open Odontogram'}</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </div>
-              </Link>
-            ) : (
-              <Link
-                href="/visits"
-                className="group p-4 bg-[#FDFBF7] rounded-2xl border border-[#E7E1D4] hover:border-teal-700 transition-all shadow-xs card-3d flex flex-col justify-between"
-              >
-                <div>
-                  <div className="w-9 h-9 rounded-xl bg-teal-50 text-teal-800 flex items-center justify-center mb-2.5 border border-teal-200/60">
-                    <Stethoscope className="w-4 h-4" />
+                  <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-teal-800 group-hover:translate-x-1 transition-transform">
+                    <span>{isKm ? card.actionKh : card.actionEn}</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </div>
-                  <h3 className="font-bold text-stone-900 text-sm">
-                    {isKm ? 'ការពិគ្រោះ & វាស់ Vitals' : 'Consultations & Vitals'}
-                  </h3>
-                  <p className="text-xs text-stone-500 mt-1">
-                    {isKm
-                      ? 'កត់ត្រាសញ្ញាជីវិត ពិនិត្យរោគវិនិច្ឆ័យ ICD-10 និងចេញវេជ្ជបញ្ជា'
-                      : 'Active encounters, vital triage and clinical SOAP notes'}
-                  </p>
-                </div>
-                <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-teal-800 group-hover:translate-x-1 transition-transform">
-                  <span>{isKm ? 'ចាប់ផ្តើមពិនិត្យ' : 'Start Consultation'}</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </div>
-              </Link>
-            )}
-
-            {/* 3. Patient Master Directory */}
-            <Link
-              href="/patients"
-              className="group p-4 bg-[#FDFBF7] rounded-2xl border border-[#E7E1D4] hover:border-teal-700 transition-all shadow-xs card-3d flex flex-col justify-between"
-            >
-              <div>
-                <div className="w-9 h-9 rounded-xl bg-[#F0EAE0] text-stone-800 flex items-center justify-center mb-2.5 border border-[#DFD6C6]">
-                  <Users className="w-4 h-4" />
-                </div>
-                <h3 className="font-bold text-stone-900 text-sm">{t.patients.title}</h3>
-                <p className="text-xs text-stone-500 mt-1">
-                  {isKm
-                    ? 'ស្វែងរកប្រវត្តិជំងឺ ឯកសារចាស់ៗ និងកែសម្រួលព័ត៌មាន'
-                    : t.patients.subtitle}
-                </p>
-              </div>
-              <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-teal-800 group-hover:translate-x-1 transition-transform">
-                <span>{t.patients.viewProfile}</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </div>
-            </Link>
-
-            {/* 4. Billing & Dynamic KHQR POS */}
-            <Link
-              href="/billing"
-              className="group p-4 bg-[#FDFBF7] rounded-2xl border border-[#E7E1D4] hover:border-emerald-700 transition-all shadow-xs card-3d flex flex-col justify-between"
-            >
-              <div>
-                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center mb-2.5 border border-emerald-200/60">
-                  <CreditCard className="w-4 h-4" />
-                </div>
-                <h3 className="font-bold text-stone-900 text-sm">{t.billing.title}</h3>
-                <p className="text-xs text-stone-500 mt-1">
-                  {isKm
-                    ? 'គិតលុយទូទាត់រហ័ស ស្កេន KHQR និងចេញវិក្កយបត្រ'
-                    : t.billing.subtitle}
-                </p>
-              </div>
-              <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-emerald-800 group-hover:translate-x-1 transition-transform">
-                <span>{t.billing.payWithKhqr}</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </div>
-            </Link>
+                </Link>
+              );
+            })}
           </div>
 
           {/* Explore Extended Diagnostic & Clinical Suites Card */}

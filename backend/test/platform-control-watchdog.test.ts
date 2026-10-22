@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 const SAAS_PLANS = {
   FREE: { maxMonthlyPatients: 50, maxDailyKhqr: 5, maxStaffAccounts: 2 },
   STARTER_5: { maxMonthlyPatients: 1000, maxDailyKhqr: 250, maxStaffAccounts: 5 },
-  PRO_8: { maxMonthlyPatients: 5000, maxDailyKhqr: 1500, maxStaffAccounts: 15 },
+  PRO_8: { maxMonthlyPatients: 8000, maxDailyKhqr: 1500, maxStaffAccounts: 15 },
   ENTERPRISE_12: { maxMonthlyPatients: -1, maxDailyKhqr: -1, maxStaffAccounts: -1 },
 };
 
@@ -406,14 +406,14 @@ describe('Step 9 & Step 10: Platform Control System & Dual-Bot Profile Lock Test
     assert.ok(res.includes('[SUCCESS: CLINIC TIER UPDATED]'));
     assert.ok(res.includes('New Plan Tier: <b>PRO_8</b>'));
     assert.ok(res.includes('Daily Dynamic KHQR: <b>1500</b>'));
-    assert.ok(res.includes('Patients / Account: <b>5000</b>'));
+    assert.ok(res.includes('Patients / Account: <b>8000</b>'));
     assert.equal(emojiRegex.test(res), false);
 
     // Verify database state synchronized
     const vanna = db.findTenantBySlugOrId('vanna');
     assert.equal(vanna?.planTier, 'PRO_8');
     assert.equal(vanna?.maxDailyKhqr, 1500);
-    assert.equal(vanna?.maxMonthlyPatients, 5000);
+    assert.equal(vanna?.maxMonthlyPatients, 8000);
 
     // Verify audit log
     const log = db.auditLogs.find((l) => l.action === 'TENANT_TIER_CHANGED');

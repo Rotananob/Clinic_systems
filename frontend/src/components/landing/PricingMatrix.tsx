@@ -124,13 +124,13 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
       isPopular: true,
       khqrLimitKh: '១,៥០០ ប្រតិបត្តិការ / ថ្ងៃ',
       khqrLimitEn: '1,500 dynamic QR / day',
-      patientLimitKh: '៥,០០០ នាក់ / គណនី',
-      patientLimitEn: '5,000 patients / account',
+      patientLimitKh: '៨,០០០ នាក់ / គណនី',
+      patientLimitEn: '8,000 patients / account',
       staffLimitKh: '១៥ គណនីបុគ្គលិក',
       staffLimitEn: '15 staff accounts',
       featuresKh: [
         'បង្កើត Dynamic KHQR ១,៥០០ ដង/ថ្ងៃ',
-        'កត់ត្រាអ្នកជំងឺ ៥,០០០ នាក់ / គណនី',
+        'កត់ត្រាអ្នកជំងឺ ៨,០០០ នាក់ / គណនី',
         'Telegram Forum Topics ដាច់ដោយឡែក ៤ បន្ទប់',
         'ហៅអ្នកជំងឺជាសំឡេងខ្មែរច្រើនបន្ទប់ពិគ្រោះ',
         'របាយការណ៍ហិរញ្ញវត្ថុ និងវិភាគទិន្នន័យកម្រិតខ្ពស់',
@@ -139,7 +139,7 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
       ],
       featuresEn: [
         'Dynamic KHQR (1,500 transactions / day)',
-        '5,000 patient registry / account',
+        '8,000 patient registry / account',
         'Full Telegram Forum Topics (Payments, Queue, Pharmacy, Security)',
         'Multi-room Khmer voice queue calling',
         'Advanced financial analytics & export',
@@ -529,7 +529,7 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
                     <td className="p-4 font-semibold">{isKm ? 'កូតាអ្នកជំងឺក្នុងមួយគណនី' : 'Patient Records / Account'}</td>
                     <td className="p-4 text-center font-mono">50 នាក់ / គណនី</td>
                     <td className="p-4 text-center font-mono">1,000 នាក់ / គណនី</td>
-                    <td className="p-4 text-center font-mono font-bold text-teal-800 bg-teal-50/30">5,000 នាក់ / គណនី</td>
+                    <td className="p-4 text-center font-mono font-bold text-teal-800 bg-teal-50/30">៨,០០០ នាក់ / គណនី</td>
                     <td className="p-4 text-center font-mono font-bold text-teal-800">Unlimited</td>
                   </tr>
                   <tr>

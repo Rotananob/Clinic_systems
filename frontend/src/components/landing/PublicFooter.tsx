@@ -138,6 +138,10 @@ export const PublicFooter: React.FC = () => {
               {isKm ? 'ឯកសារបច្ចេកទេស' : 'Docs & Help'}
             </Link>
             <span>•</span>
+            <Link href="/privacy" className="hover:text-teal-800 font-semibold transition-colors">
+              {isKm ? 'គោលការណ៍ឯកជនភាព' : 'Privacy & Policy'}
+            </Link>
+            <span>•</span>
             <Link href="/#security" className="hover:text-stone-800 transition-colors">
               {isKm ? 'គោលការណ៍សន្តិសុខទិន្នន័យ' : 'Security Policy'}
             </Link>

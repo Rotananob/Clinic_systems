@@ -43,7 +43,7 @@ export const SAAS_PLANS: Record<PlanTier, PlanConfig> = {
     nameKh: 'គម្រោងវិជ្ជាជីវៈ',
     nameEn: 'Polyclinic Pro 8$/mo',
     priceUsd: 8,
-    maxMonthlyPatients: 5000, // 5,000 patients / account
+    maxMonthlyPatients: 8000, // 8,000 patients / account
     maxDailyKhqr: 1500, // 1,500 dynamic QR transactions / day
     maxStaffAccounts: 15,
     telegramTopicsAllowed: true,

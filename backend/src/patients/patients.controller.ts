@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { PatientsService } from './patients.service';
 import { CreatePatientDto } from './dto/create-patient.dto';
@@ -62,5 +62,18 @@ export class PatientsController {
     @Body() updateDto: Partial<CreatePatientDto>,
   ) {
     return this.patientsService.update(id, updateDto);
+  }
+  @ApiOperation({ summary: 'Bulk permanently delete patients - maximum 10 at once' })
+  @Roles(Role.ADMIN, Role.DOCTOR)
+  @Post('bulk-delete')
+  bulkRemove(@Body('ids') ids: string[]) {
+    return this.patientsService.bulkRemove(ids);
+  }
+
+  @ApiOperation({ summary: 'Permanently delete a patient record and all related medical data' })
+  @Roles(Role.ADMIN, Role.DOCTOR)
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.patientsService.remove(id);
   }
 }

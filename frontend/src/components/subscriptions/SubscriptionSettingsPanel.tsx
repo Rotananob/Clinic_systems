@@ -304,7 +304,7 @@ export const SubscriptionSettingsPanel: React.FC = () => {
             </div>
             <div className="text-[11px] text-stone-500 mt-2 space-y-1">
               <div>• 1,500 Dynamic KHQR / ថ្ងៃ</div>
-              <div>• 5,000 អ្នកជំងឺ / គណនី</div>
+              <div>• ៨,០០០ អ្នកជំងឺ / គណនី</div>
               <div>• 4 Forum Topics Supergroup</div>
             </div>
             <button

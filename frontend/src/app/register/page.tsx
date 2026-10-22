@@ -59,8 +59,8 @@ const PLAN_CARDS = [
     priceYearlyEn: '$76/yr (Save 20%)',
     khqrLimitKh: '១,៥០០ ប្រតិបត្តិការ / ថ្ងៃ',
     khqrLimitEn: '1,500 transactions / day',
-    patientsKh: 'អ្នកជំងឺ ៥,០០០ នាក់ / គណនី',
-    patientsEn: '5,000 patients / account',
+    patientsKh: 'អ្នកជំងឺ ៨,០០០ នាក់ / គណនី',
+    patientsEn: '8,000 patients / account',
     popular: true,
   },
   {

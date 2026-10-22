@@ -11,6 +11,7 @@ import { Sidebar } from './Sidebar';
 import { MobileNavDock } from './MobileNavDock';
 import { OfflineSyncBanner } from '../common/OfflineSyncBanner';
 import { PwaRegister } from '../common/PwaRegister';
+import { PwaUpdatePrompt } from '../common/PwaUpdatePrompt';
 import { CommandPalette } from '../common/CommandPalette';
 import { ClinicLogo } from '../common/ClinicLogo';
 import { FirstTimeClinicSetupModal } from '../onboarding/FirstTimeClinicSetupModal';
@@ -43,10 +44,14 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
     pathname === '/pricing' ||
     pathname === '/register' ||
     pathname === '/help' ||
+    pathname === '/privacy' ||
+    pathname === '/policy' ||
     pathname?.startsWith('/landing') ||
     pathname?.startsWith('/pricing') ||
     pathname?.startsWith('/register') ||
     pathname?.startsWith('/help') ||
+    pathname?.startsWith('/privacy') ||
+    pathname?.startsWith('/policy') ||
     (pathname === '/' && !user && !hasToken);
 
   // Initialize global hardware peripherals (POS auto-print & barcode scanner)
@@ -265,6 +270,7 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
         </div>
         <MobileNavDock />
         <PwaRegister />
+        <PwaUpdatePrompt />
         <CommandPalette />
         <FirstTimeClinicSetupModal
           isOpen={Boolean(

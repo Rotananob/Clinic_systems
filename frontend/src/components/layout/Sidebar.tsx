@@ -36,6 +36,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from '../../context/I18nContext';
 import { ClinicLogo } from '../common/ClinicLogo';
 import { isRouteAllowed, getRoleDisplayName, isModuleRelevantForClinic, isRouteAllowedForPlan } from '../../lib/rbac';
+import { isModuleHidden } from '../../lib/module-visibility';
 import { Sparkles as SparklesIcon } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
@@ -44,6 +45,13 @@ export const Sidebar: React.FC = () => {
   const { t, locale } = useTranslation();
   const isKh = locale === 'km';
   const [mounted, setMounted] = React.useState(false);
+  const [moduleVersion, setModuleVersion] = React.useState(0);
+
+  React.useEffect(() => {
+    const handler = () => setModuleVersion((v) => v + 1);
+    window.addEventListener('krupet-modules-changed', handler);
+    return () => window.removeEventListener('krupet-modules-changed', handler);
+  }, []);
 
   React.useEffect(() => {
     setMounted(true);
@@ -61,18 +69,18 @@ export const Sidebar: React.FC = () => {
     { label: t.nav.certificates, href: '/certificates', icon: FileCheck },
     { label: t.nav.followUps, href: '/follow-ups', icon: CalendarDays },
     { label: t.nav.documents, href: '/documents', icon: FolderOpen },
-    { label: t.nav.pacs || 'Medical Imaging (PACS)', href: '/pacs', icon: Film },
+    { label: t.nav.pacs || 'Medical Imaging - PACS', href: '/pacs', icon: Film },
     { label: t.nav.insurance || 'Insurance & NSSF', href: '/insurance', icon: ShieldPlus },
     { label: t.nav.concierge || 'Care Concierge', href: '/concierge', icon: HeartHandshake },
     { label: t.nav.signage || 'Waiting Room TV Signage', href: '/signage', icon: Tv },
-    { label: t.nav.lab || 'Laboratory & Analyzer (LIS)', href: '/lab', icon: FlaskConical },
-    { label: t.nav.ipd || 'Inpatient & e-MAR (IPD)', href: '/ipd', icon: BedDouble },
+    { label: t.nav.lab || 'Laboratory & Analyzer - LIS', href: '/lab', icon: FlaskConical },
+    { label: t.nav.ipd || 'Inpatient & e-MAR - IPD', href: '/ipd', icon: BedDouble },
     { label: t.nav.finance || 'Finance & P&L', href: '/finance', icon: TrendingUp },
     { label: t.nav.dental || 'Dental & Odontogram', href: '/dental', icon: Sparkles },
     { label: t.nav.teleconsult || 'Teleconsultation', href: '/teleconsult', icon: Video },
     { label: t.nav.eclaim || 'Insurance Claims & MoH', href: '/eclaim', icon: FileSpreadsheet },
     { label: t.nav.staff, href: '/staff', icon: ShieldCheck },
-    { label: isKh ? 'បណ្តាញគ្លីនិក (Fleet)' : 'Platform Fleet', href: '/super-admin', icon: Globe },
+    { label: isKh ? 'បណ្តាញគ្លីនិក - Fleet' : 'Platform Fleet', href: '/super-admin', icon: Globe },
     { label: t.nav.ownerControl, href: '/owner', icon: Building2 },
     { label: t.nav.invoiceTemplate, href: '/invoice-template', icon: LayoutTemplate },
     { label: t.nav.settings, href: '/settings', icon: Settings },
@@ -98,6 +106,9 @@ export const Sidebar: React.FC = () => {
     if (!isRouteAllowed(role, item.href)) return false;
     if (!isModuleRelevantForClinic(user?.tenant?.clinicType, item.href, role)) return false;
     if (!isSuperAdmin && !isRouteAllowedForPlan(tenantPlanTier, item.href, user?.tenant?.clinicType)) {
+      return false;
+    }
+    if (item.href !== '/' && item.href !== '/settings' && item.href !== '/profile' && isModuleHidden(item.href)) {
       return false;
     }
     return true;
@@ -134,8 +145,8 @@ export const Sidebar: React.FC = () => {
 
       <div className="text-[11px] font-bold text-stone-400 uppercase tracking-wider px-3 mb-1.5 font-mono">
         {isSuperAdmin
-          ? (isKh ? 'ម៉ូឌុលទាំងអស់ (All Modules)' : 'All Clinic Modules')
-          : (isKh ? 'ម៉ូឌុលអនុញ្ញាត (Allowed)' : 'Allowed Modules')}
+          ? (isKh ? 'ម៉ូឌុលទាំងអស់ - All Modules' : 'All Clinic Modules')
+          : (isKh ? 'ម៉ូឌុលអនុញ្ញាត - Allowed' : 'Allowed Modules')}
       </div>
 
       {/* Allowed Modules */}
@@ -230,10 +241,10 @@ export const Sidebar: React.FC = () => {
                 <SparklesIcon className="w-3.5 h-3.5 text-amber-300 shrink-0" />
                 <span>
                   {tenantPlanTier === 'FREE'
-                    ? (isKh ? 'ដំឡើងទៅ Starter ($5/mo)' : 'Upgrade to Starter ($5/mo)')
+                    ? (isKh ? 'ដំឡើងទៅ Starter - $5/mo' : 'Upgrade to Starter ($5/mo)')
                     : tenantPlanTier === 'STARTER_5'
-                    ? (isKh ? 'ដំឡើងទៅ Pro ($8/mo)' : 'Upgrade to Pro ($8/mo)')
-                    : (isKh ? 'ដំឡើងទៅ Enterprise ($12/mo)' : 'Upgrade to Enterprise ($12/mo)')}
+                    ? (isKh ? 'ដំឡើងទៅ Pro - $8/mo' : 'Upgrade to Pro ($8/mo)')
+                    : (isKh ? 'ដំឡើងទៅ Enterprise - $12/mo' : 'Upgrade to Enterprise ($12/mo)')}
                 </span>
               </Link>
             )}

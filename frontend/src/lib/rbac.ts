@@ -449,12 +449,12 @@ export function getRequiredPlanForRoute(pathname: string): {
   const tier = ROUTE_MINIMUM_PLAN[normalizedPath] || 'FREE';
   switch (tier) {
     case 'STARTER_5':
-      return { tier, nameKh: 'គម្រោងស្ដង់ដារ (Clinic Starter)', nameEn: 'Clinic Starter', priceUsd: 5 };
+      return { tier, nameKh: 'គម្រោងស្ដង់ដារ - Clinic Starter', nameEn: 'Clinic Starter', priceUsd: 5 };
     case 'PRO_8':
-      return { tier, nameKh: 'គម្រោងវិជ្ជាជីវៈ (Polyclinic Pro)', nameEn: 'Polyclinic Pro', priceUsd: 8 };
+      return { tier, nameKh: 'គម្រោងវិជ្ជាជីវៈ - Polyclinic Pro', nameEn: 'Polyclinic Pro', priceUsd: 8 };
     case 'ENTERPRISE_12':
-      return { tier, nameKh: 'គម្រោងមន្ទីរពេទ្យ (Hospital Enterprise)', nameEn: 'Hospital Enterprise', priceUsd: 12 };
+      return { tier, nameKh: 'គម្រោងមន្ទីរពេទ្យ - Hospital Enterprise', nameEn: 'Hospital Enterprise', priceUsd: 12 };
     default:
-      return { tier: 'FREE', nameKh: 'គម្រោងសាកល្បង (Free Starter)', nameEn: 'Free Starter', priceUsd: 0 };
+      return { tier: 'FREE', nameKh: 'គម្រោងសាកល្បង - Free Starter', nameEn: 'Free Starter', priceUsd: 0 };
   }
 }

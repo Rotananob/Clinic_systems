@@ -1,4 +1,4 @@
-import { Injectable, ConflictException, NotFoundException, Optional } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException, BadRequestException, Optional } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { QuotaGuardService } from '../subscriptions/quota-guard.service';
@@ -174,5 +174,68 @@ export class PatientsService {
         dob: updateData.dob ? new Date(updateData.dob) : undefined,
       },
     });
+  }
+  async remove(id: string) {
+    const patient = await this.prisma.patient.findUnique({
+      where: { id },
+    });
+    if (!patient) {
+      throw new NotFoundException(`Patient with ID ${id} not found`);
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      await tx.document.deleteMany({ where: { patientId: id } });
+      await tx.followUp.deleteMany({ where: { patientId: id } });
+
+      const rxList = await tx.prescription.findMany({ where: { patientId: id }, select: { id: true } });
+      const rxIds = rxList.map((r) => r.id);
+      if (rxIds.length > 0) {
+        await tx.prescriptionItem.deleteMany({ where: { prescriptionId: { in: rxIds } } });
+        await tx.prescription.deleteMany({ where: { id: { in: rxIds } } });
+      }
+
+      const invList = await tx.invoice.findMany({ where: { patientId: id }, select: { id: true } });
+      const invIds = invList.map((inv) => inv.id);
+      if (invIds.length > 0) {
+        await tx.paymentTransaction.deleteMany({ where: { invoiceId: { in: invIds } } });
+        await tx.invoiceItem.deleteMany({ where: { invoiceId: { in: invIds } } });
+        await tx.invoice.deleteMany({ where: { id: { in: invIds } } });
+      }
+
+      await tx.medicalRecord.deleteMany({ where: { patientId: id } });
+      await tx.visit.deleteMany({ where: { patientId: id } });
+
+      await tx.patient.delete({ where: { id } });
+
+      return {
+        success: true,
+        message: 'បានលុបទិន្នន័យអ្នកជំងឺជាអចិន្ត្រៃយ៍ចេញពីប្រព័ន្ធដោយជោគជ័យ។',
+      };
+    });
+  }
+
+  async bulkRemove(ids: string[]) {
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      throw new BadRequestException('សូមជ្រើសរើសអ្នកជំងឺយ៉ាងតិច ១ នាក់ដើម្បីលុប។');
+    }
+    if (ids.length > 10) {
+      throw new BadRequestException('អាចលុបទិន្នន័យអ្នកជំងឺបានអតិបរមា ១០ នាក់ក្នុងម្ដងប៉ុណ្ណោះ។');
+    }
+
+    let deletedCount = 0;
+    for (const id of ids) {
+      try {
+        await this.remove(id);
+        deletedCount++;
+      } catch (err) {
+        // continue
+      }
+    }
+
+    return {
+      success: true,
+      deletedCount,
+      message: `បានលុបទិន្នន័យអ្នកជំងឺចំនួន ${deletedCount} នាក់ជាអចិន្ត្រៃយ៍ចេញពីប្រព័ន្ធ។`,
+    };
   }
 }

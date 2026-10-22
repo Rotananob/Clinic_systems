@@ -29,7 +29,7 @@ describe('Step 13 & Step 14: Onboarding Wizard, Paste Merchant Setup & Payment S
     const proPlan = SAAS_PLANS[PlanTier.PRO_8];
     assert.equal(proPlan.priceUsd, 8);
     assert.equal(proPlan.maxDailyKhqr, 1500);
-    assert.equal(proPlan.maxMonthlyPatients, 5000);
+    assert.equal(proPlan.maxMonthlyPatients, 8000);
 
     const enterprisePlan = SAAS_PLANS[PlanTier.ENTERPRISE_12];
     assert.equal(enterprisePlan.priceUsd, 12);

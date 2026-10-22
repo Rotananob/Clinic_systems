@@ -11,6 +11,7 @@ import {
   getRequiredPlanForRoute,
   PlanTier,
 } from '../../lib/rbac';
+import { isModuleHidden, setModuleHidden } from '../../lib/module-visibility';
 import {
   Search,
   X,
@@ -74,6 +75,13 @@ export const ExploreModulesModal: React.FC<ExploreModulesModalProps> = ({
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [moduleVersion, setModuleVersion] = useState(0);
+
+  React.useEffect(() => {
+    const handler = () => setModuleVersion((v) => v + 1);
+    window.addEventListener('krupet-modules-changed', handler);
+    return () => window.removeEventListener('krupet-modules-changed', handler);
+  }, []);
 
   const role = user?.role;
   const isSuperAdmin = role === 'SUPER_ADMIN';
@@ -97,7 +105,7 @@ export const ExploreModulesModal: React.FC<ExploreModulesModalProps> = ({
       {
         id: 'queue',
         category: 'clinical',
-        titleKh: 'ក្ដារហៅលេខជួរ (Queue)',
+        titleKh: 'ក្ដារហៅលេខជួរ - Queue',
         titleEn: 'Queue & Audio Calling',
         descKh: 'ប្រព័ន្ធហៅលេខតាមសំឡេង និងគ្រប់គ្រងបន្ទប់រង់ចាំ',
         descEn: 'Live token callouts, voice synthesizer and waiting room queue',
@@ -141,7 +149,7 @@ export const ExploreModulesModal: React.FC<ExploreModulesModalProps> = ({
       {
         id: 'lab',
         category: 'clinical',
-        titleKh: 'មន្ទីរពិសោធន៍ & វិភាគឈាម (LIS)',
+        titleKh: 'មន្ទីរពិសោធន៍ & វិភាគឈាម - LIS',
         titleEn: 'Laboratory Information System (LIS)',
         descKh: 'គ្រប់គ្រងលទ្ធផលតេស្តឈាម ASTM/HL7 និងការវិភាគវេជ្ជសាស្ត្រ',
         descEn: 'Automated analyzer interfacing, ASTM/HL7 orders, and panic value alerts',
@@ -154,7 +162,7 @@ export const ExploreModulesModal: React.FC<ExploreModulesModalProps> = ({
       {
         id: 'ipd',
         category: 'care',
-        titleKh: 'សម្រាកពេទ្យ & e-MAR (IPD)',
+        titleKh: 'សម្រាកពេទ្យ & e-MAR - IPD',
         titleEn: 'Inpatient Beds & e-MAR (IPD)',
         descKh: 'គ្រប់គ្រងគ្រែសម្រាកពេទ្យ និងតារាងផ្តល់ថ្នាំ 5-Rights',
         descEn: 'Ward bed management, admission tracking, and electronic MAR bedside delivery',
@@ -325,7 +333,7 @@ export const ExploreModulesModal: React.FC<ExploreModulesModalProps> = ({
       {
         id: 'invoice-template',
         category: 'admin',
-        titleKh: 'រចនាម៉ូតវិក្កយបត្រ (Template)',
+        titleKh: 'រចនាម៉ូតវិក្កយបត្រ - Custom Template',
         titleEn: 'Custom Invoice Designer',
         descKh: 'កែសម្រួលរូបរាង Logo ពណ៌ និងទម្រង់វិក្កយបត្របោះពុម្ព',
         descEn: 'Visual invoice layout builder with custom logo, bilingual headers, and styling',
@@ -536,7 +544,33 @@ export const ExploreModulesModal: React.FC<ExploreModulesModalProps> = ({
                       </p>
                     </div>
 
-                    <div className="mt-4 pt-3 border-t border-[#F0EAE0] flex items-center justify-between text-xs font-semibold">
+                    
+                    {/* Admin Module Hide/Show Switch */}
+                    {(isSuperAdmin || role === 'ADMIN') && item.href !== '/' && item.href !== '/settings' && item.href !== '/profile' && (
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setModuleHidden(item.href, !isModuleHidden(item.href));
+                        }}
+                        className="mt-2.5 pt-2 border-t border-stone-100 flex items-center justify-between text-[11px]"
+                      >
+                        <span className="text-stone-500">
+                          {isKm ? 'ការបង្ហាញក្នុង Menu៖' : 'Menu Visibility:'}
+                        </span>
+                        <span
+                          className={`px-2 py-0.5 rounded-md font-bold text-[10px] cursor-pointer ${
+                            isModuleHidden(item.href)
+                              ? 'bg-rose-100 text-rose-800 border border-rose-200'
+                              : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                          }`}
+                        >
+                          {isModuleHidden(item.href)
+                            ? (isKm ? 'បានលាក់ពី Menu' : 'Hidden from Menu')
+                            : (isKm ? 'បង្ហាញក្នុង Menu' : 'Visible in Menu')}
+                        </span>
+                      </div>
+                    )}
+<div className="mt-4 pt-3 border-t border-[#F0EAE0] flex items-center justify-between text-xs font-semibold">
                       {isPlanAllowed ? (
                         <div className="flex items-center gap-1 text-teal-800 group-hover:translate-x-1 transition-transform">
                           <span>{isKm ? 'បើកមុខងារ' : 'Open Tool'}</span>

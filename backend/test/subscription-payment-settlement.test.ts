@@ -215,7 +215,7 @@ describe('100% Anti-Bypass Guard & Strict Settlement Validation Test Suite', () 
 
     const proLimits = SAAS_PLANS[effective.planTier];
     assert.equal(proLimits.maxDailyKhqr, 1500, 'PRO_8 limit must be 1,500 KHQR/day');
-    assert.equal(proLimits.maxMonthlyPatients, 5000, 'PRO_8 limit must be 5000 patients');
+    assert.equal(proLimits.maxMonthlyPatients, 8000, 'PRO_8 limit must be 8000 patients');
   });
 
   test('should demote tenant marked as EXPIRED even if currentPeriodEnd is missing', () => {

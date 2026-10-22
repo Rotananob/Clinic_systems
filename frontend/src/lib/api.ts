@@ -506,6 +506,15 @@ class ApiClient {
         method: 'PUT',
         body: JSON.stringify(data),
       }),
+    delete: (id: string) =>
+      this.request<{ success: boolean; message: string; deletedId: string }>(`/patients/${id}`, {
+        method: 'DELETE',
+      }),
+    bulkDelete: (ids: string[]) =>
+      this.request<{ success: boolean; count: number; deletedIds: string[] }>('/patients/bulk-delete', {
+        method: 'POST',
+        body: JSON.stringify({ ids }),
+      }),
   };
 
   // Visits

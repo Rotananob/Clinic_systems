@@ -21,7 +21,7 @@ describe('Step 19: Automated Quota Guard Unit Tests', () => {
   test('should enforce Pro $8 Plan daily KHQR limit of 1500 and unlimited patients', () => {
     const proPlan = SAAS_PLANS.PRO_8;
     assert.equal(proPlan.maxDailyKhqr, 1500);
-    assert.equal(proPlan.maxMonthlyPatients, 5000);
+    assert.equal(proPlan.maxMonthlyPatients, 8000);
     assert.equal(proPlan.maxStaffAccounts, 15);
   });
 

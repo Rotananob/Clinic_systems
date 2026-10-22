@@ -69,11 +69,11 @@ const SAAS_PLANS: Record<string, PlanConfig> = {
     monthlyUsd: 8,
     yearlyUsd: 76,
     khqrDailyLimit: 1500,
-    monthlyPatients: 5000,
+    monthlyPatients: 8000,
     staffAccounts: 15,
     featuresKh: [
       'បង្កើត Dynamic KHQR ១,៥០០ ដង/ថ្ងៃ',
-      'កត់ត្រាអ្នកជំងឺ ៥,០០០ នាក់ / គណនី',
+      'កត់ត្រាអ្នកជំងឺ ៨,០០០ នាក់ / គណនី',
       'Telegram Forum Topics ដាច់ដោយឡែក ៤ បន្ទប់',
       'ហៅអ្នកជំងឺជាសំឡេងខ្មែរច្រើនបន្ទប់ពិគ្រោះ',
       'របាយការណ៍ហិរញ្ញវត្ថុ និងវិភាគទិន្នន័យកម្រិតខ្ពស់',
@@ -82,7 +82,7 @@ const SAAS_PLANS: Record<string, PlanConfig> = {
     ],
     featuresEn: [
       'Dynamic KHQR (1,500 transactions / day)',
-      '5,000 patient registry / account',
+      '8,000 patient registry / account',
       'Full Telegram Forum Topics (Payments, Queue, Pharmacy, Security)',
       'Multi-room Khmer voice queue calling',
       'Advanced financial analytics & export',
@@ -136,7 +136,7 @@ describe('Step 11 & Step 12: SaaS Landing Page & Pricing Matrix Test Suite', () 
     // Pro $8: 1500 KHQR/day, 5,000 patients / account, 15 staff
     assert.equal(SAAS_PLANS.PRO_8.monthlyUsd, 8);
     assert.equal(SAAS_PLANS.PRO_8.khqrDailyLimit, 1500);
-    assert.equal(SAAS_PLANS.PRO_8.monthlyPatients, 5000);
+    assert.equal(SAAS_PLANS.PRO_8.monthlyPatients, 8000);
     assert.equal(SAAS_PLANS.PRO_8.staffAccounts, 15);
 
     // Enterprise $12: Unlimited KHQR, unlimited patients, unlimited staff
