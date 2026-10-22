@@ -273,8 +273,8 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
               </h2>
               <p className="text-xs text-stone-500">
                 {isKm
-                  ? 'ស្កេន Dynamic Tag 01=12 KHQR ជាមួយ App ធនាគារណាក៏បាន ប្រព័ន្ធការពារ ១០០% គ្មាន Bypass'
-                  : 'Scan dynamic Tag 01=12 KHQR with your mobile banking app. Strict bank-verified settlement.'}
+                  ? 'ស្កេន Dynamic KHQR ចាក់សោទឹកប្រាក់ជាមួយ App ធនាគារណាក៏បាន ប្រព័ន្ធការពារ ១០០% គ្មាន Bypass'
+                  : 'Scan Dynamic KHQR with locked amount using your mobile banking app. Strict bank-verified settlement.'}
               </p>
             </div>
           </div>
@@ -476,8 +476,8 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
                   <RefreshCw className="w-6 h-6 text-teal-800 animate-spin mx-auto" />
                   <div className="text-xs text-stone-600 font-medium">
                     {isKm
-                      ? 'កំពុងបង្កើត Dynamic Tag 01=12 KHQR ជូន...'
-                      : 'Generating Dynamic Tag 01=12 KHQR payload...'}
+                      ? 'កំពុងបង្កើត Dynamic KHQR ចាក់សោទឹកប្រាក់ជូន...'
+                      : 'Generating Dynamic KHQR with locked amount...'}
                   </div>
                 </div>
               ) : checkoutData ? (
@@ -492,7 +492,7 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
                         includeMargin={false}
                       />
                       <div className="text-[10px] text-teal-900 font-bold uppercase tracking-wider mt-2.5">
-                        KHQR Tag 01=12 Dynamic
+                        KHQR Dynamic Locked
                       </div>
                     </div>
 

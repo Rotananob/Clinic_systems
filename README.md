@@ -4,7 +4,7 @@
 
 > សេចក្តីណែនាំសម្រាប់បុគ្គលិក និងម្ចាស់គ្លីនិក៖ សូមមើលឯកសារ CLINIC_STAFF_TRAINING_MANUAL_KH.md សម្រាប់ការបង្រៀន និងអនុវត្តការងារជាក់ស្តែងដោយងាយស្រួល មិនប្រើពាក្យបច្ចេកទេសស្មុគស្មាញ។
 
-A hospital-grade, multi-tenant Clinical Platform as a Service - PaaS engineered for polyclinics, specialized practices, and healthcare chains in Cambodia. Architected with Next.js 14 App Router, NestJS 10, Prisma ORM, PostgreSQL 16, Google Gemini 3.8 Flash medical AI, real EMVCo Tag 01=12 dynamic KHQR settlement, ABA PayWay headless gateway, native ESC/POS thermal printing, WebRTC teleconsultation, and Ministry of Health compliance with Ed25519 digital signatures and DHIS2 disease surveillance reporting.
+A hospital-grade, multi-tenant Clinical Platform as a Service - PaaS engineered for polyclinics, specialized practices, and healthcare chains in Cambodia. Architected with Next.js 14 App Router, NestJS 10, Prisma ORM, PostgreSQL 16, Google Gemini 3.8 Flash medical AI, real Dynamic KHQR with locked amount settlement, ABA PayWay headless gateway, native ESC/POS thermal printing, WebRTC teleconsultation, and Ministry of Health compliance with Ed25519 digital signatures and DHIS2 disease surveillance reporting.
 
 ---
 
@@ -76,7 +76,7 @@ Krupet.com Platform transforms traditional clinic software into an enterprise Mu
 - **Backend**: NestJS 10, TypeScript 5, Node.js 20+, Express
 - **Database & ORM**: PostgreSQL 16, Prisma ORM 5.10+
 - **AI & Machine Learning**: Google Gemini 3.8 Flash API
-- **FinTech & Payments**: EMVCo Tag 01=12 Specification, ABA Bank PayWay API, Bakong Deep Links
+- **FinTech & Payments**: Bakong Dynamic KHQR Specification with Locked Amount, ABA Bank PayWay API, Bakong Deep Links
 - **Security**: JWT, Bcrypt (12 salt rounds), Ed25519 Keypairs, Helmet, Rate Limiter Guards
 - **Hardware Protocol**: ESC/POS, Web Serial, WebUSB, Network TCP Sockets
 - **Offline & Cache**: Service Workers, IndexedDB, CacheStorage API

@@ -27,9 +27,9 @@ export const FeaturesSection: React.FC = () => {
       titleKh: 'បង្កើត Dynamic KHQR ត្រឹមតែ ២ វិនាទី',
       titleEn: 'Instant Dynamic KHQR Engine',
       descKh:
-        'Generate Dynamic QR Tag 01=12 ជាមួយចំនួនទឹកប្រាក់ និងលេខវិក្កយបត្រស្វ័យប្រវត្ត។ អតិថិជនស្កេនបង់តាម ABA Mobile, Bakong ឬ App ធនាគារណាក៏បាន ដោយលុយចូលគណនីគ្លីនិកផ្ទាល់ ១០០% គ្មានកាត់កម្រៃជើងសារ។',
+        'បង្កើត Dynamic KHQR ចាក់សោចំនួនទឹកប្រាក់ និងលេខវិក្កយបត្រស្វ័យប្រវត្តដើម្បីការពារកុំឱ្យបន្លំ ឬច្រឡំ។ អតិថិជនស្កេនបង់តាម ABA Mobile, Bakong ឬ App ធនាគារណាក៏បាន ដោយលុយចូលគណនីគ្លីនិកផ្ទាល់ ១០០% គ្មានកាត់កម្រៃជើងសារ។',
       descEn:
-        'Automated Tag 01=12 dynamic QR with exact invoice amounts. Patients pay via ABA Mobile or Bakong app; funds settle directly to your clinic bank account with 0% platform fee.',
+        'Automated Dynamic KHQR with locked exact invoice amount to eliminate fraud. Patients pay via ABA Mobile or Bakong app; funds settle directly to your clinic bank account with 0% platform fee.',
       badge: 'Bakong EMVCo',
     },
     {

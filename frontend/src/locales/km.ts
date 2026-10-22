@@ -205,7 +205,7 @@ export const km = {
   },
   billing: {
     title: 'វិក្កយបត្រ & ការទូទាត់ Dynamic KHQR',
-    subtitle: 'ការប្រមូលប្រាក់បេឡា បង្កើត KHQR Dynamic Tag 01=12 និងផ្ទៀងផ្ទាត់ការទូទាត់ ABA & Bakong ភ្លាមៗ',
+    subtitle: 'ការប្រមូលប្រាក់បេឡា បង្កើត Dynamic KHQR ចាក់សោទឹកប្រាក់ និងផ្ទៀងផ្ទាត់ការទូទាត់ ABA & Bakong ភ្លាមៗ',
     totalRevenue: 'ចំណូលទូទាត់រួចសរុប',
     pendingDue: 'ប្រាក់មិនទាន់ទូទាត់ / ជំពាក់',
     invoiceNumber: 'លេខវិក្កយបត្រ #',
@@ -373,7 +373,7 @@ export const km = {
     testKhqrBtn: 'តេស្តបង្កើត Dynamic KHQR',
     saveBtn: 'រក្សាទុក និងដំណើរការ KHQR Engine',
     savedSuccess: 'រក្សាទុកព័ត៌មាន Merchant ជោគជ័យ។ Dynamic KHQR បានដំណើរការពេញលេញ។',
-    testSuccess: 'បានបង្កើត Dynamic Tag 01=12 តេស្តជោគជ័យ។ អាចស្កេនជាមួយ App ធនាគារបាន។',
+    testSuccess: 'បានបង្កើត Dynamic KHQR ចាក់សោទឹកប្រាក់តេស្តជោគជ័យ។ អាចស្កេនជាមួយ App ធនាគារបាន។',
     close: 'បិទ',
   },
   helpCenter: {
@@ -398,7 +398,7 @@ export const km = {
     },
     khqr: {
       title: 'ប្រព័ន្ធទូទាត់ Dynamic KHQR PayWay & Bank Deeplinks',
-      desc: 'ការរៀបចំ Bakong Merchant Link (Paste & Go) ត្រឹម ៣០ វិនាទី បង្កើត Tag 01=12 QR ឥតកាត់កម្រៃជើងសារ និងដឹងលទ្ធផលភ្លាមៗ។',
+      desc: 'ការរៀបចំ Bakong Merchant Link - Paste & Go ត្រឹម ៣០ វិនាទី បង្កើត Dynamic KHQR ចាក់សោទឹកប្រាក់ ឥតកាត់កម្រៃជើងសារ និងដឹងលទ្ធផលភ្លាមៗ។',
     },
     workflow: {
       title: 'ដំណើរការពិនិត្យព្យាបាល ប្រព័ន្ធហៅលេខ និងឱសថស្ថាន',
@@ -429,7 +429,7 @@ export const km = {
     date: 'កាលបរិច្ឆេទ',
     actions: 'សកម្មភាព',
     modalTitle: 'Upgrade គម្រោងជាវ & បង់ប្រាក់តាម Dynamic KHQR',
-    modalSubtitle: 'ស្កេន Dynamic Tag 01=12 KHQR ជាមួយ App ធនាគារណាក៏បាន ដើម្បីដំណើរការគម្រោងស្វ័យប្រវត្តក្នុង ២ វិនាទី',
+    modalSubtitle: 'ស្កេន Dynamic KHQR ចាក់សោទឹកប្រាក់ជាមួយ App ធនាគារណាក៏បាន ដើម្បីដំណើរការគម្រោងស្វ័យប្រវត្តក្នុង ២ វិនាទី',
     selectTier: '១. ជ្រើសរើសគម្រោងសេវាកម្ម',
     billingCycle: '២. ជ្រើសរើសវដ្តនៃការទូទាត់',
     monthly: 'បង់ប្រចាំខែ',

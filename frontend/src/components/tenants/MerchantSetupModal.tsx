@@ -292,7 +292,7 @@ export const MerchantSetupModal: React.FC<MerchantSetupModalProps> = ({
                   <p className="text-[11px] text-stone-500 mt-0.5">
                     {isKm
                       ? 'បង្កើតកូដ KHQR សាកល្បង $1.00 ដើម្បីបញ្ជាក់ភាពត្រឹមត្រូវនៃគណនី'
-                      : 'Generate sample $1.00 Tag 01=12 dynamic QR with your credentials'}
+                      : 'Generate sample $1.00 test Dynamic KHQR with locked amount'}
                   </p>
                 </div>
                 <button
@@ -323,7 +323,7 @@ export const MerchantSetupModal: React.FC<MerchantSetupModalProps> = ({
                   <div className="text-xs space-y-1 text-stone-600 flex-1">
                     <div className="flex items-center gap-1.5 text-emerald-800 font-bold">
                       <ShieldCheck className="w-4 h-4" />
-                      <span>{isKm ? 'Dynamic KHQR Tag 01=12 ត្រឹមត្រូវ' : 'Tag 01=12 Dynamic KHQR Verified'}</span>
+                      <span>{isKm ? 'Dynamic KHQR ចាក់សោទឹកប្រាក់ត្រឹមត្រូវ' : 'Dynamic KHQR Locked Amount Verified'}</span>
                     </div>
                     <div>
                       <span className="font-semibold text-stone-700">{isKm ? 'ឈ្មោះ Merchant (ABA): ' : 'Merchant Name: '}</span>

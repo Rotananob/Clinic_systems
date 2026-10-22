@@ -42,9 +42,9 @@ export const BeforeAfterSection: React.FC = () => {
       beforeEn:
         'Paper static QR stickers require patients to manually type amounts; staff struggle with mistyped figures, cash discrepancies, and fake payment screenshots.',
       afterKh:
-        'បង្កើត Dynamic KHQR Tag 01=12 ត្រឹមតែ ២ វិនាទី បង្ហាញចំនួនទឹកប្រាក់ពិតប្រាកដ លុយរត់ចូលកុង ABA ផ្ទាល់ ១០០% គ្មានកាត់កម្រៃជើងសារ និងដឹងលទ្ធផលភ្លាមៗ។',
+        'បង្កើត Dynamic KHQR ចាក់សោទឹកប្រាក់ត្រឹមតែ ២ វិនាទី ការពារកុំឱ្យបន្លំ ឬច្រឡំ លុយរត់ចូលកុង ABA ផ្ទាល់ ១០០% គ្មានកាត់កម្រៃជើងសារ និងដឹងលទ្ធផលភ្លាមៗ។',
       afterEn:
-        'Instant 2-second dynamic Tag 01=12 KHQR locks the exact invoice amount; funds deposit straight into your clinic ABA account with zero fee and instant audit trail.',
+        'Instant 2-second Dynamic KHQR locks the exact invoice amount to prevent tampering; funds deposit straight into your clinic ABA account with zero fee and instant audit trail.',
     },
     {
       titleKh: 'ការកត់ត្រាពិគ្រោះជំងឺ និងប្រវត្តិព្យាបាល - EMR',

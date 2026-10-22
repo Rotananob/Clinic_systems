@@ -632,7 +632,7 @@ export function KhqrCheckoutModal({
               <div className="flex justify-between items-center">
                 <span className="text-slate-400 font-sans text-[11px]">{isKm ? 'វិធីសាស្ត្រ:' : 'Method:'}</span>
                 <span className="font-medium text-slate-800">
-                  {selectedMethod === 'aba' ? 'ABA Pay (Dynamic Tag 01=12)' : 'Bakong KHQR Bridge'}
+                  {selectedMethod === 'aba' ? 'ABA Pay - Dynamic Locked Amount' : 'Bakong Dynamic KHQR'}
                 </span>
               </div>
               <div className="flex justify-between items-center pt-1.5 border-t border-slate-200/60">
@@ -856,9 +856,7 @@ export function KhqrCheckoutModal({
                   </span>
                   <span className="text-[11px]">BAKONG</span>
                 </div>
-                <span className="text-[9px] uppercase font-semibold tracking-wider opacity-90">
-                  Tag 01=12
-                </span>
+                <span className="text-[9px] uppercase font-semibold tracking-wider opacity-90">DYNAMIC LOCKED</span>
               </div>
 
               {/* CLINIC BRANDING HEADER (CUSTOMIZABLE STORE / CLINIC NAME) */}

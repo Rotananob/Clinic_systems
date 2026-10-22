@@ -432,7 +432,7 @@ export const FirstTimeClinicSetupModal: React.FC<FirstTimeClinicSetupModalProps>
                   <div className="text-xs space-y-1 text-stone-700 flex-1">
                     <div className="flex items-center gap-1 text-emerald-800 font-bold text-xs">
                       <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <span>{isKm ? 'Dynamic KHQR Tag 01=12 ត្រឹមត្រូវ' : 'Tag 01=12 Dynamic KHQR Verified'}</span>
+                      <span>{isKm ? 'Dynamic KHQR ចាក់សោទឹកប្រាក់ត្រឹមត្រូវ' : 'Dynamic KHQR Locked Amount Verified'}</span>
                     </div>
                     <div>
                       <span className="font-semibold text-stone-600">{isKm ? 'Merchant: ' : 'Merchant: '}</span>

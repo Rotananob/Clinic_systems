@@ -188,7 +188,7 @@ export const AbaPaywayTesterCard: React.FC = () => {
                   : 'ABA PayWay Quick Setup & Live KHQR Tester'}
               </h2>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-400/20 text-teal-200 border border-teal-300/30">
-                Tag 01=12 Ready
+                Dynamic KHQR Locked Ready
               </span>
             </div>
             <p className="text-xs text-teal-100/80 mt-0.5">

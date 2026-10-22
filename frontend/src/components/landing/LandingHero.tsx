@@ -319,8 +319,8 @@ export const LandingHero: React.FC = () => {
               <span className="w-2 h-2 rounded-full bg-emerald-500" />
               <span className="font-sans">
                 {isKm
-                  ? 'Krupet 2.0 • PaaS វេជ្ជសាស្ត្រជំនាន់ថ្មី • Bakong Tag 01=12 & Gemini 3.8 AI'
-                  : 'Krupet 2.0 • Next-Gen Medical PaaS • Bakong Tag 01=12 & Gemini 3.8 AI'}
+                  ? 'Krupet 2.0 • PaaS វេជ្ជសាស្ត្រជំនាន់ថ្មី • Dynamic KHQR ចាក់សោទឹកប្រាក់ & Gemini 3.8 AI'
+                  : 'Krupet 2.0 • Next-Gen Medical PaaS • Dynamic KHQR ចាក់សោទឹកប្រាក់ & Gemini 3.8 AI'}
               </span>
             </div>
           </div>
@@ -335,8 +335,8 @@ export const LandingHero: React.FC = () => {
           {/* Subtitle */}
           <p className="text-xs sm:text-sm md:text-base text-stone-600 leading-relaxed max-w-2xl mx-auto font-sans">
             {isKm
-              ? 'ដំណោះស្រាយវេជ្ជសាស្ត្រ All-in-One សម្រាប់គ្លីនិកឯកជន និងមន្ទីរសម្រាកព្យាបាលទូទាំងប្រទេសកម្ពុជា៖ បង្កើត Tag 01=12 Dynamic KHQR ត្រឹម ២ វិនាទី, កត់ត្រាវេជ្ជសាស្ត្រជាសំឡេងតាម Gemini 3.8 Flash, ហៅអ្នកជំងឺជាសំឡេងខ្មែរ, និងបាញ់ដំណឹង Telegram Topics ស្វ័យប្រវត្តិ។'
-              : 'Complete all-in-one PaaS workspace for private clinics in Cambodia: 2-second dynamic Tag 01=12 KHQR generation, Gemini 3.8 Flash voice dictation to structured SOAP, native Khmer queue calling, and automated Telegram operations.'}
+              ? 'ដំណោះស្រាយវេជ្ជសាស្ត្រ All-in-One សម្រាប់គ្លីនិកឯកជន និងមន្ទីរសម្រាកព្យាបាលទូទាំងប្រទេសកម្ពុជា៖ បង្កើត Dynamic KHQR ចាក់សោទឹកប្រាក់ត្រឹម ២ វិនាទី ការពារកុំឱ្យបន្លំ ឬច្រឡំ, កត់ត្រាវេជ្ជសាស្ត្រជាសំឡេងតាម Gemini 3.8 Flash, ហៅអ្នកជំងឺជាសំឡេងខ្មែរ, និងបាញ់ដំណឹង Telegram Topics ស្វ័យប្រវត្តិ។'
+              : 'Complete all-in-one PaaS workspace for private clinics in Cambodia: 2-second Dynamic KHQR with locked amount to prevent tampering, Gemini 3.8 Flash voice dictation to structured SOAP, native Khmer queue calling, and automated Telegram operations.'}
           </p>
 
           {/* Clean Single Action Form: Input Bar with Single Primary Button */}
@@ -400,7 +400,7 @@ export const LandingHero: React.FC = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 pt-4 text-left font-sans">
             <div className="bg-white/90 p-3 rounded-2xl border border-[#E7DFCF] shadow-2xs hover:border-teal-700/40 transition-colors">
               <div className="text-sm sm:text-base font-extrabold text-teal-800">2-Second Speed</div>
-              <div className="text-[11px] text-stone-500 font-medium">Tag 01=12 Dynamic KHQR</div>
+              <div className="text-[11px] text-stone-500 font-medium">{isKm ? 'Dynamic KHQR ចាក់សោទឹកប្រាក់' : 'Dynamic KHQR Locked Amount'}</div>
             </div>
             <div className="bg-white/90 p-3 rounded-2xl border border-[#E7DFCF] shadow-2xs hover:border-teal-700/40 transition-colors">
               <div className="text-sm sm:text-base font-extrabold text-teal-800">100% Direct ABA</div>
@@ -553,7 +553,7 @@ export const LandingHero: React.FC = () => {
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold bg-teal-950/80 text-teal-300 border border-teal-500/40 shadow-xs">
                       <Zap className="w-3.5 h-3.5 text-teal-400" />
-                      <span>EMVCo Tag 01=12 Dynamic KHQR</span>
+                      <span>{isKm ? 'Dynamic KHQR ចាក់សោទឹកប្រាក់' : 'Dynamic KHQR Locked Amount'}</span>
                     </span>
                     <span className="px-2.5 py-1 rounded-md text-[10px] font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-500/40">
                       {isKm ? 'QR ពិតប្រាកដ • សុពលភាពអចិន្ត្រៃយ៍' : 'Permanent Live • Zero Polling'}

@@ -14,13 +14,9 @@ import {
   Mail,
   AlertCircle,
   Loader2,
-  ShieldCheck,
   Eye,
   EyeOff,
-  ShieldAlert,
   Clock,
-  Zap,
-  KeyRound,
   Sparkles,
   ArrowRight,
   Home,
@@ -110,34 +106,6 @@ export default function LoginPage() {
     }
   };
 
-  const TEST_ACCOUNT_EMAIL = 'test.admin@hounvannak.com';
-  const TEST_ACCOUNT_PASS = 'TestAdmin#2026!Clinic';
-
-  const handleOneClickTestLogin = async () => {
-    if (lockoutSeconds > 0 || isLoading) return;
-    setEmail(TEST_ACCOUNT_EMAIL);
-    setPassword(TEST_ACCOUNT_PASS);
-    setError(null);
-    setIsLoading(true);
-
-    try {
-      await login(TEST_ACCOUNT_EMAIL, TEST_ACCOUNT_PASS);
-      setFailedAttempts(0);
-      router.push('/');
-    } catch (err: unknown) {
-      const friendlyMsg = getHumanErrorMessage(err, locale);
-      setError(friendlyMsg);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleAutoFillTest = () => {
-    setEmail(TEST_ACCOUNT_EMAIL);
-    setPassword(TEST_ACCOUNT_PASS);
-    setError(null);
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-[#FDFBF7] rounded-3xl border border-[#E7E1D4] p-6 sm:p-8 shadow-xl relative overflow-hidden animate-in fade-in duration-200">
@@ -149,16 +117,6 @@ export default function LoginPage() {
         {/* Brand Clinic Logo & Header */}
         <div className="mb-6 pt-2">
           <ClinicLogo variant="full" size="lg" showSubtitle={true} />
-        </div>
-
-        {/* Security Compliance Ribbon */}
-        <div className="mb-5 p-2.5 rounded-xl bg-[#FAF7F2] border border-[#E7E1D4] flex items-center gap-2.5 text-[11px] text-stone-600">
-          <ShieldCheck className="w-4 h-4 text-teal-800 shrink-0" />
-          <span className="font-medium">
-            {isKm
-              ? 'ច្រកចូលសុវត្ថិភាពវេជ្ជសាស្ត្រ MoH - ការពារដោយ bcrypt & JWT'
-              : 'MoH Clinical Security Gateway - Protected by bcrypt & JWT'}
-          </span>
         </div>
 
         {error && (
@@ -301,20 +259,10 @@ export default function LoginPage() {
           </Link>
         </div>
 
-        {/* Security Policy Notice Footer */}
-        <div className="mt-6 pt-4 border-t border-[#E7E1D4] text-center space-y-1">
-          <div className="inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-full bg-[#FAF7F2] border border-[#E7E0D2] text-[11px] font-semibold text-stone-700 shadow-2xs">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
-            <span>
-              {isKm
-                ? 'ប្រព័ន្ធសុវត្ថិភាពព័ត៌មានវិទ្យាគ្លីនិក ហាមការចូលដោយគ្មានសិទ្ធិ'
-                : 'Authorized Clinic Staff Personnel Only'}
-            </span>
-          </div>
-          <p className="text-[10px] text-stone-400 leading-relaxed font-sans">
-            {isKm
-              ? 'គ្រប់សកម្មភាពចូលប្រព័ន្ធត្រូវបានកត់ត្រាក្នុង Audit Trail ដើម្បីការពារអ្នកជំងឺ'
-              : 'All authentication events are logged for patient confidentiality and audit compliance.'}
+        {/* Minimal Professional Footer */}
+        <div className="mt-6 pt-4 border-t border-[#E7E1D4] text-center">
+          <p className="text-[11px] text-stone-400 font-sans">
+            {isKm ? 'រក្សាសិទ្ធិគ្រប់យ៉ាងដោយ Krupet.com' : 'All rights reserved by Krupet.com'}
           </p>
         </div>
       </div>

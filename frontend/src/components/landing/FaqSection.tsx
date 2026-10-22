@@ -41,7 +41,7 @@ export const FaqSection: React.FC = () => {
       aKh:
         'ងាយស្រួលបំផុត! លោកអ្នកគ្រាន់តែចូលទៅកាន់ ABA Mobile App របស់គ្លីនិកអ្នក រួចបង្កើត ABA Merchant Link ដោយឥតគិតថ្លៃ - ចំណាយពេលត្រឹមតែ ១ នាទីប៉ុណ្ណោះ ហើយយក Link នោះមក Paste ចូលទៅក្នុងប្រអប់ Settings របស់ Krupet.com ជាការស្រេច។ ប្រព័ន្ធនឹងចាប់ផ្តើមបង្កើត Dynamic KHQR ដោយស្វ័យប្រវត្តភ្លាមៗ។',
       aEn:
-        'Extremely easy! Simply open your clinic ABA Mobile app, generate a free merchant link in under 1 minute, and paste that link into your Krupet.com settings. Dynamic Tag 01=12 KHQR activates instantly.',
+        'Extremely easy! Simply open your clinic ABA Mobile app, generate a free merchant link in under 1 minute, and paste that link into your Krupet.com settings. Dynamic KHQR with locked amount activates instantly.',
     },
     {
       qKh: 'តើទិន្នន័យអ្នកជំងឺ និងគ្លីនិករបស់ខ្ញុំមានសុវត្ថិភាពកម្រិតណា?',

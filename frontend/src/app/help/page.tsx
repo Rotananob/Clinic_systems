@@ -199,8 +199,8 @@ const GUIDES: GuideItem[] = [
     category: 'khqr',
     titleKh: 'ប្រព័ន្ធទូទាត់ Dynamic KHQR PayWay & Bank Deeplinks (Paste & Go)',
     titleEn: 'Dynamic KHQR PayWay & Bank Deeplinks (Paste & Go Setup)',
-    summaryKh: 'ការរៀបចំ Bakong Account ID ត្រឹមតែ ៣០ វិនាទី, ការបង្កើត Dynamic KHQR Tag 01=12 ឥតគិតកម្រៃជើងសារ និងការបញ្ជាក់លទ្ធផលស្វ័យប្រវត្តក្នុង ២ វិនាទី។',
-    summaryEn: '30-second merchant onboarding, dynamic Tag 01=12 payment QR generation, zero intermediary transaction fees, and automated 2-second settlement detection.',
+    summaryKh: 'ការរៀបចំ Bakong Account ID ត្រឹមតែ ៣០ វិនាទី, ការបង្កើត Dynamic KHQR ចាក់សោទឹកប្រាក់ ឥតគិតកម្រៃជើងសារ និងការបញ្ជាក់លទ្ធផលស្វ័យប្រវត្តក្នុង ២ វិនាទី។',
+    summaryEn: '30-second merchant onboarding, Dynamic KHQR payment with locked amount, zero intermediary transaction fees, and automated 2-second settlement detection.',
     stepsKh: [
       {
         step: '01',
@@ -214,9 +214,9 @@ const GUIDES: GuideItem[] = [
       },
       {
         step: '03',
-        title: 'តេស្តបង្កើត Dynamic KHQR Tag 01=12',
+        title: 'តេស្តបង្កើត Dynamic KHQR ចាក់សោទឹកប្រាក់',
         desc: 'ចុចប៊ូតុង "តេស្តបង្កើត Dynamic KHQR"។ ប្រព័ន្ធនឹងគណនា CRC Checksum តាមស្តង់ដារជាតិ Bakong ភ្លាមៗ។ លោកអ្នកអាចយក App ធនាគារណាមួយមកស្កេនមើលឈ្មោះនិងចំនួនទឹកប្រាក់ជាក់ស្ដែង។',
-        tip: 'Dynamic KHQR Tag 01=12 មានផ្ទុកចំនួនទឹកប្រាក់ និងលេខវិក្កយបត្ររួចជាស្រេច អតិថិជនមិនបាច់វាយចំនួនប្រាក់ដោយដៃឡើយ។',
+        tip: 'Dynamic KHQR ចាក់សោចំនួនទឹកប្រាក់ និងលេខវិក្កយបត្ររួចជាស្រេច ការពារមិនឱ្យបន្លំ ឬច្រឡំវាយប្រាក់ខុស។',
       },
       {
         step: '04',
@@ -237,8 +237,8 @@ const GUIDES: GuideItem[] = [
       },
       {
         step: '03',
-        title: 'Generate Dynamic Tag 01=12 Test QR',
-        desc: 'Click "Test Dynamic KHQR". ClinicOS generates an official Bakong Tag 01=12 payload with 16-bit CRC checksum. Scan with any Cambodian banking app to verify name and amount accuracy.',
+        title: 'Generate Dynamic KHQR Test QR',
+        desc: 'Click "Test Dynamic KHQR". Krupet generates an official Bakong Dynamic KHQR with locked amount and 16-bit CRC checksum. Scan with any Cambodian banking app to verify name and amount accuracy.',
         tip: 'Dynamic KHQR embeds exact invoice totals and currency, preventing accidental cashier mischarges.',
       },
       {

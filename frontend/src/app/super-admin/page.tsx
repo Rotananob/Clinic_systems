@@ -679,7 +679,7 @@ export default function SuperAdminFleetPage() {
             </div>
             <div className="flex items-center gap-1.5 mt-1 text-[11px] text-stone-500">
               <CheckCircle2 className="w-3.5 h-3.5 text-teal-700" />
-              <span>Tag 01=12 Bakong Standard</span>
+              <span>Dynamic KHQR Locked Amount</span>
             </div>
           </div>
         </div>

@@ -586,7 +586,7 @@ export default function OwnerConsolePage() {
               </div>
               <div className="flex justify-between py-2">
                 <span className="text-xs text-stone-500">{isKm ? 'ស្តង់ដារទូទាត់' : 'Payment Engine'}:</span>
-                <span className="text-xs font-bold text-stone-900">National Bank of Cambodia KHQR EMVCo Tag 01=12</span>
+                <span className="text-xs font-bold text-stone-900">National Bank of Cambodia Dynamic KHQR with Locked Amount</span>
               </div>
             </div>
 

@@ -156,7 +156,7 @@ export const DoctorTestimonialsSection: React.FC = () => {
               {isKm ? 'ល្បឿន Dynamic KHQR' : 'Dynamic KHQR Speed'}
             </div>
             <div className="text-[10px] text-stone-400 font-sans">
-              {isKm ? 'Tag 01=12 Bakong Compliant' : 'EMVCo certified payload'}
+              {isKm ? 'Dynamic KHQR ចាក់សោទឹកប្រាក់ស្តង់ដារ Bakong' : 'Bakong Certified Dynamic KHQR'}
             </div>
           </div>
 

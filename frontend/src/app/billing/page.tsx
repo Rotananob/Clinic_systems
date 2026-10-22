@@ -339,7 +339,7 @@ export default function BillingPage() {
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">Billing & Dynamic KHQR Invoicing</h1>
           <p className="text-xs text-slate-500 mt-1">
-            Cashier collections, Tag 01=12 dynamic QR generator, ABA & Bakong instant settlement verification
+            Cashier collections, Dynamic KHQR with locked amount, ABA & Bakong instant settlement verification
           </p>
         </div>
 
@@ -483,7 +483,7 @@ export default function BillingPage() {
             <span className="font-mono text-teal-800 text-lg">1 USD = 4,100 KHR</span>
           </div>
           <div className="flex items-center justify-between text-[11px] text-slate-500 mt-1.5 pt-1.5 border-t border-slate-100">
-            <span className="text-emerald-700 font-medium">Tag 01=12 Dynamic</span>
+            <span className="text-emerald-700 font-medium">Dynamic KHQR Locked</span>
             <span className="font-mono text-slate-600">Bakong & ABA</span>
           </div>
         </div>
@@ -1133,7 +1133,7 @@ export default function BillingPage() {
                   onChange={(e) => setEditForm((prev) => ({ ...prev, paymentMethod: e.target.value }))}
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-teal-700 focus:bg-white"
                 >
-                  <option value="KHQR">KHQR (Dynamic Tag 01=12)</option>
+                  <option value="KHQR">KHQR - Dynamic Locked Amount</option>
                   <option value="CASH">CASH (ប្រាក់សុទ្ធ)</option>
                   <option value="BANK_TRANSFER">BANK TRANSFER (ផ្ទេរផ្ទាល់)</option>
                   <option value="CARD">POS / CARD</option>

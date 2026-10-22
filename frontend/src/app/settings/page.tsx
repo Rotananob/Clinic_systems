@@ -1074,7 +1074,7 @@ export default function SettingsPage() {
                   </h4>
                   <p className="text-[11px] text-slate-500 mt-0.5">
                     {isKm
-                      ? 'បង្កើតកូដ Dynamic Tag 01=12 ជាមួយ Bakong ID និង ABA PayWay Link របស់អ្នក ដើម្បីបញ្ជាក់ថាដើរ ១០០% មុនពេលប្រើប្រាស់ពិតប្រាកដ'
+                      ? 'បង្កើត Dynamic KHQR ចាក់សោទឹកប្រាក់ស្វ័យប្រវត្តជាមួយ Bakong ID និង ABA PayWay Link ដើម្បីបញ្ជាក់ការទូទាត់មុនពេលប្រើប្រាស់ពិតប្រាកដ'
                       : 'Generate sample $1.00 dynamic QR with your credentials to verify 100% live connectivity'}
                   </p>
                 </div>
@@ -1106,7 +1106,7 @@ export default function SettingsPage() {
                   <div className="text-xs space-y-1.5 text-slate-600 flex-1">
                     <div className="flex items-center gap-1.5 text-emerald-800 font-bold">
                       <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                      <span>{isKm ? 'Dynamic KHQR Tag 01=12 ត្រឹមត្រូវ ១០០%' : 'Tag 01=12 Dynamic KHQR 100% Valid'}</span>
+                      <span>{isKm ? 'Dynamic KHQR ចាក់សោទឹកប្រាក់ត្រឹមត្រូវ ១០០% គ្មានការបន្លំ' : 'Dynamic KHQR Locked Amount 100% Valid'}</span>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] pt-1">
                       <div>
@@ -1157,12 +1157,10 @@ export default function SettingsPage() {
                 />
                 <div>
                   <div className="text-xs font-semibold text-slate-800">
-                    {isKm ? 'ប្រើប្រាស់ Dynamic KHQR (Tag 01=12)' : 'Enforce Dynamic Tag 01=12 KHQR Specification'}
+                    {isKm ? 'ប្រើប្រាស់ Dynamic KHQR ចាក់សោទឹកប្រាក់' : 'Enforce Dynamic KHQR Locked Amount'}
                   </div>
                   <div className="text-[11px] text-slate-400">
-                    {isKm
-                      ? 'ចាក់បញ្ចូលចំនួនទឹកប្រាក់ និងលេខវិក្កយបត្រដោយស្វ័យប្រវត្តិដើម្បីទប់ស្កាត់ការវាយប្រាក់ខុស'
-                      : 'Embeds precise amount and bill reference to eliminate patient manual input errors'}
+                    {isKm ? 'ចាក់សោចំនួនទឹកប្រាក់ និងលេខវិក្កយបត្រស្វ័យប្រវត្តិដើម្បីការពារកុំឱ្យបន្លំ ឬច្រឡំវាយប្រាក់ខុស' : 'Locks precise amount and invoice reference to prevent tampering or patient payment errors'}
                   </div>
                 </div>
               </label>

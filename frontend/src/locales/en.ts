@@ -205,7 +205,7 @@ export const en = {
   },
   billing: {
     title: 'Billing & Dynamic KHQR Invoicing',
-    subtitle: 'Cashier collections, Tag 01=12 dynamic QR generator, ABA & Bakong instant settlement verification',
+    subtitle: 'Cashier collections, Dynamic KHQR with locked amount, ABA & Bakong instant settlement verification',
     totalRevenue: 'Total Settled Revenue',
     pendingDue: 'Unsettled / Pending Due',
     invoiceNumber: 'Invoice #',
@@ -373,7 +373,7 @@ export const en = {
     testKhqrBtn: 'Test Dynamic KHQR',
     saveBtn: 'Save & Activate KHQR Engine',
     savedSuccess: 'Merchant credentials saved successfully. Isolated dynamic KHQR is active.',
-    testSuccess: 'Dynamic Tag 01=12 test QR generated. Ready to scan with any banking app.',
+    testSuccess: 'Dynamic KHQR with locked amount test QR generated. Ready to scan with any banking app.',
     close: 'Close',
   },
   helpCenter: {
@@ -398,7 +398,7 @@ export const en = {
     },
     khqr: {
       title: 'Dynamic KHQR PayWay & Bank Deeplinks',
-      desc: 'Paste & go merchant setup, dynamic Tag 01=12 payment QR, zero transaction fee, and real-time webhook confirmation.',
+      desc: 'Paste & go merchant setup, Dynamic KHQR with locked amount, zero transaction fee, and real-time webhook confirmation.',
     },
     workflow: {
       title: 'Clinical Workflow, Queue & Prescriptions',
@@ -429,7 +429,7 @@ export const en = {
     date: 'Date',
     actions: 'Actions',
     modalTitle: 'SaaS Subscription Upgrade & KHQR Checkout',
-    modalSubtitle: 'Scan the dynamic Tag 01=12 KHQR with any Cambodian banking app for instant 2-second activation',
+    modalSubtitle: 'Scan the Dynamic KHQR with locked amount using any Cambodian banking app for instant 2-second activation',
     selectTier: '1. Select Subscription Tier',
     billingCycle: '2. Select Billing Cycle',
     monthly: 'Monthly Billing',

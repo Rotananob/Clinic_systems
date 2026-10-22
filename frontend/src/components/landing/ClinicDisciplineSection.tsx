@@ -84,7 +84,7 @@ const CATEGORIES: ClinicCategory[] = [
     descriptionKh:
       'បង្កើនល្បឿនពិគ្រោះជំងឺ និងកត់ត្រា SOAP - Subjective, Objective, Assessment, Plan ដោយរលូន។ បង្កើត Dynamic KHQR ភ្លាមៗពេលចេញវេជ្ជបញ្ជា លុយចូលកុងគ្លីនិក ១០០% គ្មានកាត់កម្រៃជើងសារ។',
     descriptionEn:
-      'Accelerate patient throughput with streamlined SOAP consultation workflows. Generate dynamic Tag 01=12 KHQR codes automatically as prescriptions are saved.',
+      'Accelerate patient throughput with streamlined SOAP consultation workflows. Generate Dynamic KHQR codes with locked amount automatically as prescriptions are saved.',
     featuresKh: [
       'កត់ត្រារោគសញ្ញា និងសញ្ញាជីវិត - សម្ពាធឈាម, កម្ដៅ, ជីពចរ, SpO2 ក្នុងទម្រង់តែមួយ',
       'ប្រព័ន្ធដាស់តឿនប្រតិកម្មឱសថ - Drug Allergy Alerts ការពារសុវត្ថិភាពអ្នកជំងឺ',
@@ -423,7 +423,7 @@ export const ClinicDisciplineSection: React.FC = () => {
                     </div>
 
                     <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between text-xs">
-                      <span className="text-emerald-900 font-medium">Dynamic KHQR Tag 01=12</span>
+                      <span className="text-emerald-900 font-medium">Dynamic KHQR Locked Amount</span>
                       <span className="font-mono font-bold text-emerald-800">$18.50 Ready</span>
                     </div>
                   </div>
@@ -593,7 +593,7 @@ export const ClinicDisciplineSection: React.FC = () => {
 
                     <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between text-xs">
                       <span className="text-emerald-900 font-medium">1-Click Dispense & Invoice</span>
-                      <span className="font-mono font-bold text-emerald-800">$12.00 Tag 01=12</span>
+                      <span className="font-mono font-bold text-emerald-800">$12.00 Locked</span>
                     </div>
                   </div>
                 )}
