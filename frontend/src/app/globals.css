@@ -168,3 +168,85 @@ html, body {
   animation: shimmerWarm 3s infinite linear;
 }
 
+/* Interactive 3D Tactile Wobble & Micro-Interactions */
+@keyframes microWobble {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+  }
+  20% {
+    transform: scale(1.03) rotate(-1.2deg);
+  }
+  40% {
+    transform: scale(1.03) rotate(1.2deg);
+  }
+  60% {
+    transform: scale(1.02) rotate(-0.6deg);
+  }
+  80% {
+    transform: scale(1.01) rotate(0.6deg);
+  }
+}
+
+.hover-wobble:hover {
+  animation: microWobble 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.active-wobble:active {
+  transform: scale(0.96) rotate(-0.5deg);
+}
+
+/* Cyber Scanning Line across QR Display */
+@keyframes cyberScanLine {
+  0% {
+    top: 0%;
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.9;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+.animate-cyber-scan {
+  animation: cyberScanLine 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Neon Glow Pulsing */
+@keyframes neonAura {
+  0%, 100% {
+    box-shadow: 0 0 25px rgba(20, 184, 166, 0.2), inset 0 0 15px rgba(20, 184, 166, 0.08);
+  }
+  50% {
+    box-shadow: 0 0 45px rgba(20, 184, 166, 0.38), inset 0 0 25px rgba(20, 184, 166, 0.15);
+  }
+}
+
+.animate-neon-aura {
+  animation: neonAura 3.6s ease-in-out infinite;
+}
+
+/* Smooth Tab Content Entrance */
+@keyframes tabSlideFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.99);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0px) scale(1);
+  }
+}
+
+.animate-tab-enter {
+  animation: tabSlideFadeIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
