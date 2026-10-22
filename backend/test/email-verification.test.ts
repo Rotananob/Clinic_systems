@@ -56,9 +56,32 @@ describe('EmailVerificationService Test Suite', () => {
     });
   });
 
-  it('should dispatch or fallback sendVerificationCode gracefully without throwing', async () => {
-    const res = await service.sendVerificationCode('test.user@gmail.com');
+  it('should reject dummy or placeholder test emails', async () => {
+    await assert.rejects(
+      async () => {
+        await service.sendVerificationCode('test.user@gmail.com');
+      },
+      {
+        message: 'សូមបញ្ចូលអាសយដ្ឋាន Email ពិតប្រាកដរបស់អ្នកដែលមានដំណើរការធម្មតា។ មិនអនុញ្ញាតឱ្យប្រើប្រាស់ Email សាកល្បងដូចជា test.user@gmail.com ឡើយ។',
+      }
+    );
+  });
+
+  it('should dispatch sendVerificationCode safely with mock transporter without real network bounce', async () => {
+    let capturedMail: any = null;
+    service.setTransporter({
+      sendMail: async (options: any) => {
+        capturedMail = options;
+        return { messageId: 'mock-verified-id' };
+      },
+    } as any);
+
+    const res = await service.sendVerificationCode('doctor.cheasok@krupet.health');
     assert.equal(res.success, true);
     assert.ok(res.message);
+    assert.ok(capturedMail);
+    assert.equal(capturedMail.to, 'doctor.cheasok@krupet.health');
+    assert.match(capturedMail.subject, /\[Krupet\.com\]/);
+    assert.match(capturedMail.html, /Krupet\.com/);
   });
 });

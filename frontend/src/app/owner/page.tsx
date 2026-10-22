@@ -570,7 +570,7 @@ export default function OwnerConsolePage() {
             <div className="p-6 rounded-2xl bg-[#F7F4EE] border border-[#E7E1D4] text-left space-y-3">
               <div className="flex justify-between py-2 border-b border-[#E7E1D4]">
                 <span className="text-xs text-stone-500">{isKm ? 'ម្ចាស់កម្មសិទ្ធិបញ្ញា & ប្រព័ន្ធ' : 'Intellectual Property Owner'}:</span>
-                <span className="text-xs font-bold text-stone-900">Rotana Nob (លោក ណុប រតនា)</span>
+                <span className="text-xs font-bold text-stone-900">Rotana Nob - លោក ណុប រតនា</span>
               </div>
               <div className="flex justify-between py-2 border-b border-[#E7E1D4]">
                 <span className="text-xs text-stone-500">{isKm ? 'តួនាទីចម្បង' : 'Primary Designation'}:</span>

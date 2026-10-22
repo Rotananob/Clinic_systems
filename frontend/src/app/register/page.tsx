@@ -155,6 +155,33 @@ function RegisterContent() {
       return;
     }
 
+    const cleanEmail = email.trim().toLowerCase();
+    const DUMMY_EMAILS = [
+      'test.user@gmail.com',
+      'test@gmail.com',
+      'testing@gmail.com',
+      'test1@gmail.com',
+      'admin@gmail.com',
+      'user@gmail.com',
+      'dummy@gmail.com',
+      'sample@gmail.com',
+      'example@gmail.com',
+      'asdf@gmail.com',
+      'foo@bar.com',
+    ];
+    if (
+      DUMMY_EMAILS.includes(cleanEmail) ||
+      cleanEmail.endsWith('@example.com') ||
+      cleanEmail.endsWith('@test.com')
+    ) {
+      setErrorMessage(
+        isKm
+          ? 'សូមបញ្ចូលអាសយដ្ឋាន Email ពិតប្រាកដរបស់អ្នកដែលមានដំណើរការធម្មតា។ មិនអនុញ្ញាតឱ្យប្រើប្រាស់ Email សាកល្បងដូចជា test.user@gmail.com ឡើយ។'
+          : 'Please enter a genuine, active email address. Placeholder test emails like test.user@gmail.com are not accepted.'
+      );
+      return;
+    }
+
     setLoading(true);
 
     try {
