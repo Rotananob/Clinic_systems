@@ -1,14 +1,18 @@
 {
-  "name": "ពេទ្យ ហួន វណ្ណៈ - ប្រព័ន្ធគ្រប់គ្រងគ្លីនិក (Houn Vannak Clinic)",
-  "short_name": "ពេទ្យ ហួន វណ្ណៈ",
-  "description": "Enterprise Clinic Management with Real-time KHQR Bridge and Local-First Offline Sync",
+  "name": "Krupet.com - Clinical OS",
+  "short_name": "Krupet.com",
+  "description": "Krupet.com - Next-Generation Clinical Operating System & Dynamic KHQR Platform",
   "start_url": "/",
   "id": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#F7F4EE",
-  "theme_color": "#031c19",
-  "categories": ["medical", "productivity", "business"],
+  "background_color": "#021C19",
+  "theme_color": "#021C19",
+  "categories": [
+    "medical",
+    "productivity",
+    "business"
+  ],
   "icons": [
     {
       "src": "/icons/icon-192.png",

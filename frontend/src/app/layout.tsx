@@ -3,8 +3,8 @@ import './globals.css';
 import { AppShell } from '../components/layout/AppShell';
 
 export const metadata: Metadata = {
-  title: 'ពេទ្យ ហួន វណ្ណៈ - ប្រព័ន្ធគ្រប់គ្រងគ្លីនិក (Houn Vannak Clinic)',
-  description: 'Enterprise Clinic Management with Real-time KHQR Bridge and Local-First Offline Sync',
+  title: 'Krupet.com - ប្រព័ន្ធគ្រប់គ្រងគ្លីនិក និងវេជ្ជសាស្ត្រឌីជីថល',
+  description: 'Krupet.com - Next-Generation Clinical Operating System & Dynamic KHQR Platform',
   manifest: '/manifest.json',
   icons: {
     icon: [
@@ -21,12 +21,12 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'ពេទ្យ ហួន វណ្ណៈ',
+    title: 'Krupet.com',
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: '#031c19',
+  themeColor: '#021C19',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,

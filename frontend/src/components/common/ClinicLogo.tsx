@@ -115,197 +115,129 @@ export const ClinicLogo: React.FC<ClinicLogoProps> = ({
       className="w-full h-full select-none transform-gpu"
     >
       <defs>
-        {/* Deep Medical Teal Gradient Base */}
-        <linearGradient id="xcBaseGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor={isPrint ? '#0f172a' : '#03201C'} />
-          <stop offset="50%" stopColor={isPrint ? '#020617' : '#063B34'} />
-          <stop offset="100%" stopColor={isPrint ? '#000000' : '#041815'} />
+        {/* Deep Heritage Medical Teal Base Chassis */}
+        <linearGradient id="kpBaseGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor={isPrint ? '#0f172a' : '#021C19'} />
+          <stop offset="45%" stopColor={isPrint ? '#020617' : '#063D36'} />
+          <stop offset="100%" stopColor={isPrint ? '#000000' : '#011412'} />
         </linearGradient>
 
-        {/* Dynamic X Facet A */}
-        <linearGradient id="xcFacetA" x1="20%" y1="0%" x2="80%" y2="100%">
-          <stop offset="0%" stopColor={isPrint ? '#475569' : '#14B8A6'} />
-          <stop offset="50%" stopColor={isPrint ? '#334155' : '#0D9488'} />
-          <stop offset="100%" stopColor={isPrint ? '#1e293b' : '#064E3B'} />
+        {/* Outer Chamfer Bevel Glow */}
+        <linearGradient id="kpBevelGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor={isPrint ? '#475569' : '#2DD4BF'} stopOpacity="0.6" />
+          <stop offset="50%" stopColor={isPrint ? '#334155' : '#10B981'} stopOpacity="0.25" />
+          <stop offset="100%" stopColor={isPrint ? '#1e293b' : '#047857'} stopOpacity="0.5" />
         </linearGradient>
 
-        {/* Dynamic X Facet B */}
-        <linearGradient id="xcFacetB" x1="80%" y1="0%" x2="20%" y2="100%">
-          <stop offset="0%" stopColor={isPrint ? '#94a3b8' : '#2DD4BF'} />
-          <stop offset="50%" stopColor={isPrint ? '#64748b' : '#10B981'} />
-          <stop offset="100%" stopColor={isPrint ? '#334155' : '#047857'} />
+        {/* K Pillar & Cross Stem Gradient */}
+        <linearGradient id="kpPillarGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor={isPrint ? '#334155' : '#14B8A6'} />
+          <stop offset="50%" stopColor={isPrint ? '#1e293b' : '#0D9488'} />
+          <stop offset="100%" stopColor={isPrint ? '#0f172a' : '#047857'} />
         </linearGradient>
 
-        {/* Luminous Medical Cross Core */}
-        <linearGradient id="xcCoreCross" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor={isPrint ? '#ffffff' : '#FFFFFF'} />
-          <stop offset="100%" stopColor={isPrint ? '#cbd5e1' : '#ECFDF5'} />
+        {/* Upper K Diagonal Arm Gradient */}
+        <linearGradient id="kpArmUpper" x1="20%" y1="100%" x2="90%" y2="0%">
+          <stop offset="0%" stopColor={isPrint ? '#475569' : '#10B981'} />
+          <stop offset="50%" stopColor={isPrint ? '#64748b' : '#2DD4BF'} />
+          <stop offset="100%" stopColor={isPrint ? '#94a3b8' : '#5EEAD4'} />
         </linearGradient>
 
-        {/* Glowing Pulse Neon Line */}
-        <linearGradient id="xcPulseLine" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor={isPrint ? '#ffffff' : '#A7F3D0'} />
-          <stop offset="45%" stopColor={isPrint ? '#ffffff' : '#34D399'} />
-          <stop offset="70%" stopColor={isPrint ? '#ffffff' : '#10B981'} />
-          <stop offset="100%" stopColor={isPrint ? '#cbd5e1' : '#6EE7B7'} />
+        {/* Lower K Diagonal Leg Gradient */}
+        <linearGradient id="kpArmLower" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor={isPrint ? '#334155' : '#0D9488'} />
+          <stop offset="70%" stopColor={isPrint ? '#1e293b' : '#065F46'} />
+          <stop offset="100%" stopColor={isPrint ? '#0f172a' : '#022C22'} />
         </linearGradient>
 
-        {/* Ambient Glow Filter */}
-        <filter id="xcGlowFilter" x="-20%" y="-20%" width="140%" height="140%">
-          <feGaussianBlur stdDeviation={isPrint ? '0' : '2.5'} result="blur" />
-          <feMerge>
-            <feMergeNode in="blur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
+        {/* Luminous Surgical White Medical Cross Core */}
+        <linearGradient id="kpSurgicalCross" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#FFFFFF" />
+          <stop offset="100%" stopColor={isPrint ? '#cbd5e1' : '#F0FDF4'} />
+        </linearGradient>
 
-        {/* Soft Radial Core Light */}
-        <radialGradient id="xcRadialBacklight" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor={isPrint ? '#334155' : '#10B981'} stopOpacity={isPrint ? '0.1' : '0.28'} />
+        {/* Vital Pulse (EKG) Line */}
+        <linearGradient id="kpPulseLine" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor={isPrint ? '#0f172a' : '#059669'} />
+          <stop offset="35%" stopColor={isPrint ? '#334155' : '#0F766E'} />
+          <stop offset="50%" stopColor={isPrint ? '#475569' : '#14B8A6'} />
+          <stop offset="70%" stopColor={isPrint ? '#334155' : '#0F766E'} />
+          <stop offset="100%" stopColor={isPrint ? '#0f172a' : '#059669'} />
+        </linearGradient>
+
+        {/* Ambient Backlight in Core */}
+        <radialGradient id="kpBacklight" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor={isPrint ? '#334155' : '#10B981'} stopOpacity={isPrint ? '0.08' : '0.32'} />
           <stop offset="100%" stopColor="#000000" stopOpacity="0" />
         </radialGradient>
+
+        {/* Drop Shadow Filter */}
+        <filter id="kpEmblemShadow" x="-15%" y="-15%" width="130%" height="130%">
+          <feDropShadow dx="0" dy="2.5" stdDeviation="2.5" flood-color="#000000" flood-opacity={isPrint ? '0.2' : '0.55'} />
+        </filter>
+
+        {/* Core Luminescence Filter */}
+        <filter id="kpCoreGlow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="0" stdDeviation={isPrint ? '0' : '2'} flood-color="#34D399" flood-opacity={isPrint ? '0' : '0.6'} />
+        </filter>
       </defs>
 
-      {/* 3D Drop Shadow Backplate */}
-      <rect
-        x="6"
-        y="8"
-        width="108"
-        height="108"
-        rx="28"
-        fill="#020E0D"
-        opacity="0.6"
-      />
+      {/* 1. Base Drop Shadow Plate */}
+      <rect x="6" y="8" width="108" height="108" rx="28" fill="#010D0C" opacity={isPrint ? '0.2' : '0.65'} />
 
-      {/* Outer Squircle Chassis */}
-      <rect
-        x="6"
-        y="6"
-        width="108"
-        height="108"
-        rx="28"
-        fill="url(#xcBaseGrad)"
-      />
+      {/* 2. Human-Crafted Squircle Container Chassis */}
+      <rect x="6" y="6" width="108" height="108" rx="28" fill="url(#kpBaseGrad)" />
+      <circle cx="60" cy="60" r="46" fill="url(#kpBacklight)" />
+      <rect x="7.5" y="7.5" width="105" height="105" rx="26.5" stroke="url(#kpBevelGrad)" strokeWidth="1.5" />
 
-      {/* Radial Backlight in Center */}
-      <circle cx="60" cy="60" r="44" fill="url(#xcRadialBacklight)" />
+      {/* 3. Architect Grid Precision Corner Crosshairs (Human Draft Marks) */}
+      <line x1="16" y1="22" x2="22" y2="22" stroke="#34D399" strokeWidth="1.2" strokeOpacity={isPrint ? '0.2' : '0.35'} />
+      <line x1="22" y1="16" x2="22" y2="22" stroke="#34D399" strokeWidth="1.2" strokeOpacity={isPrint ? '0.2' : '0.35'} />
+      <line x1="104" y1="22" x2="98" y2="22" stroke="#34D399" strokeWidth="1.2" strokeOpacity={isPrint ? '0.2' : '0.35'} />
+      <line x1="98" y1="16" x2="98" y2="22" stroke="#34D399" strokeWidth="1.2" strokeOpacity={isPrint ? '0.2' : '0.35'} />
+      <line x1="16" y1="98" x2="22" y2="98" stroke="#34D399" strokeWidth="1.2" strokeOpacity={isPrint ? '0.2' : '0.35'} />
+      <line x1="22" y1="104" x2="22" y2="98" stroke="#34D399" strokeWidth="1.2" strokeOpacity={isPrint ? '0.2' : '0.35'} />
+      <line x1="104" y1="98" x2="98" y2="98" stroke="#34D399" strokeWidth="1.2" strokeOpacity={isPrint ? '0.2' : '0.35'} />
+      <line x1="98" y1="104" x2="98" y2="98" stroke="#34D399" strokeWidth="1.2" strokeOpacity={isPrint ? '0.2' : '0.35'} />
 
-      {/* Chamfered Inner Bevel Border */}
-      <rect
-        x="7.5"
-        y="7.5"
-        width="105"
-        height="105"
-        rx="26.5"
-        stroke="url(#xcPulseLine)"
-        strokeWidth="1.5"
-        strokeOpacity={isPrint ? '0.4' : '0.35'}
-      />
+      {/* 4. OFFICIAL KRUPET CAPITAL "K" MONOGRAM WITH MEDICAL CROSS & PULSE */}
+      <g filter={isPrint ? undefined : 'url(#kpEmblemShadow)'}>
+        {/* (A) Vertical Pillar Stem of K */}
+        <rect x="28" y="26" width="16" height="68" rx="4.5" fill="url(#kpPillarGrad)" />
+        <line x1="31" y1="29" x2="31" y2="91" stroke="#5EEAD4" strokeWidth="1.2" strokeOpacity={isPrint ? '0.2' : '0.4'} />
 
-      {/* Micro-Precision Biometric Corner Marks */}
-      <line x1="18" y1="24" x2="24" y2="24" stroke="#34D399" strokeWidth="1.5" strokeOpacity="0.4" />
-      <line x1="24" y1="18" x2="24" y2="24" stroke="#34D399" strokeWidth="1.5" strokeOpacity="0.4" />
+        {/* (B) Upper Diagonal Arm of K (Ascending to 90, 26) */}
+        <path d="M 42 56 L 72 26 L 90 26 L 56 66 Z" fill="url(#kpArmUpper)" />
+        <line x1="45" y1="54" x2="88" y2="28" stroke="#A7F3D0" strokeWidth="1.4" strokeOpacity={isPrint ? '0.3' : '0.6'} />
 
-      <line x1="102" y1="24" x2="96" y2="24" stroke="#34D399" strokeWidth="1.5" strokeOpacity="0.4" />
-      <line x1="96" y1="18" x2="96" y2="24" stroke="#34D399" strokeWidth="1.5" strokeOpacity="0.4" />
+        {/* (C) Lower Diagonal Leg of K (Grounding to 92, 94) */}
+        <path d="M 48 58 L 72 94 L 92 94 L 62 50 Z" fill="url(#kpArmLower)" />
+        <line x1="51" y1="61" x2="88" y2="92" stroke="#2DD4BF" strokeWidth="1.2" strokeOpacity={isPrint ? '0.2' : '0.4'} />
 
-      <line x1="18" y1="96" x2="24" y2="96" stroke="#34D399" strokeWidth="1.5" strokeOpacity="0.4" />
-      <line x1="24" y1="102" x2="24" y2="96" stroke="#34D399" strokeWidth="1.5" strokeOpacity="0.4" />
+        {/* (D) Integrated Healthcare Motif: Embedded Medical Cross Bar */}
+        <rect x="16" y="52" width="40" height="16" rx="4" fill="url(#kpPillarGrad)" />
+        <rect x="28" y="44" width="16" height="32" rx="4" fill="url(#kpPillarGrad)" />
 
-      <line x1="102" y1="96" x2="96" y2="96" stroke="#34D399" strokeWidth="1.5" strokeOpacity="0.4" />
-      <line x1="96" y1="102" x2="96" y2="96" stroke="#34D399" strokeWidth="1.5" strokeOpacity="0.4" />
+        {/* (E) Luminous Surgical White Medical Cross Inset Core */}
+        <rect x="19" y="55" width="34" height="10" rx="2.5" fill="url(#kpSurgicalCross)" filter={isPrint ? undefined : 'url(#kpCoreGlow)'} />
+        <rect x="31" y="47" width="10" height="26" rx="2.5" fill="url(#kpSurgicalCross)" filter={isPrint ? undefined : 'url(#kpCoreGlow)'} />
 
-      {/* ============================================================== */}
-      {/* Dynamic Faceted "X" Emblem Structure */}
-      {/* Diagonal Arm 1: Top-Left to Bottom-Right */}
-      <path
-        d="M 31 28 L 47 28 L 89 92 L 73 92 Z"
-        fill="url(#xcFacetA)"
-        opacity="0.95"
-      />
+        {/* (F) Precision Cardiogram Vital Pulse Line */}
+        <path
+          d="M 18 60 L 25 60 L 29 52 L 34 68 L 38 54 L 42 60 L 52 60"
+          stroke="url(#kpPulseLine)"
+          strokeWidth="2.6"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
 
-      {/* Diagonal Arm 2: Top-Right to Bottom-Left (with 3D depth notch) */}
-      <path
-        d="M 89 28 L 73 28 L 31 92 L 47 92 Z"
-        fill="url(#xcFacetB)"
-        opacity="0.95"
-      />
+        {/* (G) Vital Spark Center Node */}
+        <circle cx="34" cy="68" r="2.8" fill="#FFFFFF" filter={isPrint ? undefined : 'url(#kpCoreGlow)'} />
+        <circle cx="34" cy="68" r="1.4" fill="#059669" />
 
-      {/* Subtle Facet Bevel Highlight Line */}
-      <line
-        x1="33"
-        y1="30"
-        x2="87"
-        y2="90"
-        stroke="#5EEAD4"
-        strokeWidth="1.2"
-        strokeOpacity="0.3"
-      />
-
-      {/* ============================================================== */}
-      {/* 3D Medical Cross Core Element */}
-      {/* Vertical Cross Bar */}
-      <rect
-        x="53"
-        y="30"
-        width="14"
-        height="60"
-        rx="5"
-        fill="url(#xcCoreCross)"
-        filter="url(#xcGlowFilter)"
-      />
-
-      {/* Horizontal Cross Bar */}
-      <rect
-        x="30"
-        y="53"
-        width="60"
-        height="14"
-        rx="5"
-        fill="url(#xcCoreCross)"
-        filter="url(#xcGlowFilter)"
-      />
-
-      {/* ============================================================== */}
-      {/* Vital Pulse (EKG) Cardiogram Wave Overlay */}
-      <path
-        d="M 22 60 L 40 60 L 47 48 L 54 72 L 61 38 L 68 76 L 74 52 L 79 60 L 98 60"
-        stroke="url(#xcPulseLine)"
-        strokeWidth="4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        filter="url(#xcGlowFilter)"
-      />
-
-      {/* Center Heartbeat Luminescence Node */}
-      <circle
-        cx="61"
-        cy="38"
-        r="3.5"
-        fill="#FFFFFF"
-        filter="url(#xcGlowFilter)"
-      />
-      <circle
-        cx="61"
-        cy="38"
-        r="1.5"
-        fill="#10B981"
-      />
-
-      {/* Top Precision AI Satellite Node */}
-      <circle
-        cx="94"
-        cy="26"
-        r="4"
-        fill="#34D399"
-        filter="url(#xcGlowFilter)"
-      />
-      <circle
-        cx="94"
-        cy="26"
-        r="2"
-        fill="#FFFFFF"
-      />
+        {/* (H) Apex Diamond Beacon Accent */}
+        <polygon points="86,22 88,26 92,26 89,29 90,33 86,30 82,33 83,29 80,26 84,26" fill={isPrint ? '#64748b' : '#FDE68A'} opacity={isPrint ? '0.5' : '0.85'} />
+      </g>
     </svg>
   );
 
