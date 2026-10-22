@@ -4,7 +4,7 @@
 
 > សេចក្តីណែនាំសម្រាប់បុគ្គលិក និងម្ចាស់គ្លីនិក៖ សូមមើលឯកសារ CLINIC_STAFF_TRAINING_MANUAL_KH.md សម្រាប់ការបង្រៀន និងអនុវត្តការងារជាក់ស្តែងដោយងាយស្រួល មិនប្រើពាក្យបច្ចេកទេសស្មុគស្មាញ។
 
-A hospital-grade, multi-tenant Clinical Platform as a Service - PaaS engineered for polyclinics, specialized practices, and healthcare chains in Cambodia. Architected with Next.js 14 App Router, NestJS 10, Prisma ORM, PostgreSQL 16, Google Gemini 3.8 Flash medical AI, real Dynamic KHQR with locked amount settlement, ABA PayWay headless gateway, native ESC/POS thermal printing, WebRTC teleconsultation, and Ministry of Health compliance with Ed25519 digital signatures and DHIS2 disease surveillance reporting.
+A hospital-grade, multi-tenant Clinical Platform as a Service - PaaS engineered for polyclinics, specialized practices, and healthcare chains in Cambodia. Architected with Next.js 14 App Router, NestJS 10, Prisma ORM, PostgreSQL 16, Next-Gen Intelligent Medical AI, real Dynamic KHQR with locked amount settlement, ABA PayWay headless gateway, native ESC/POS thermal printing, WebRTC teleconsultation, and Ministry of Health compliance with Ed25519 digital signatures and DHIS2 disease surveillance reporting.
 
 ---
 
@@ -31,7 +31,7 @@ Krupet.com Platform transforms traditional clinic software into an enterprise Mu
 
 1. **POS Hardware & Thermal Receipt Engine**: Silent thermal receipt printing for 80mm and 58mm printers, automatic cash drawer kick pulse, and USB HID / Keyboard Wedge barcode scanner interfacing.
 2. **Offline-First Edge Resiliency**: Client-side encrypted IndexedDB caching with optimistic UI updates and background synchronization queue, ensuring seamless patient intake and vitals recording during internet outages.
-3. **AI Voice Medical Notes & SOAP Structuring**: Real-time Khmer and English medical dictation parsing powered by Google Gemini 3.8 Flash with 2-request per minute anti-abuse rate limiting and deterministic fallback to local rule-based NLP.
+3. **AI Voice Medical Notes & SOAP Structuring**: Real-time Khmer and English medical dictation parsing powered by Next-Gen Intelligent Medical AI with 2-request per minute anti-abuse rate limiting and deterministic fallback to local rule-based NLP.
 4. **Intelligent Clinical Decision Support (CDSS)**: Automated drug-drug interaction (DDI) detection, penicillin and cephalosporin allergy cross-reactivity checking, pregnancy contraindication warnings, and NEWS2 emergency triage scoring.
 5. **Patient Telegram Mini-App & Real-Time Queue Portal**: Interactive Telegram WebApp for patients to track live queue numbers, book consultations, and view clinical records.
 6. **Multi-Branch Chain & Central Warehouse**: Centralized pharmaceutical inventory with First-Expired, First-Out (FEFO) automated dispensing, inter-branch stock transfers, and low-inventory threshold alerts.
@@ -61,7 +61,7 @@ Krupet.com Platform transforms traditional clinic software into an enterprise Mu
 [ Backend Application Layer ]
   NestJS 10 REST API (TypeScript)
   - Multi-Tenant Scoping Engine (AsyncLocalStorage)
-  - Google Gemini 3.8 Flash Medical AI
+  - Next-Gen Intelligent Medical AI
   - EMVCo Dynamic KHQR Engine & ABA PayWay Headless Gateway
   - Telegram Supergroup Forum Bot API
   - Ed25519 Cryptographic Signature Verification
@@ -75,7 +75,7 @@ Krupet.com Platform transforms traditional clinic software into an enterprise Mu
 - **Frontend**: Next.js 14.2+, React 18, TypeScript 5, Tailwind CSS, Lucide Icons, Web Audio API
 - **Backend**: NestJS 10, TypeScript 5, Node.js 20+, Express
 - **Database & ORM**: PostgreSQL 16, Prisma ORM 5.10+
-- **AI & Machine Learning**: Google Gemini 3.8 Flash API
+- **AI & Machine Learning**: Next-Gen Medical AI Engine
 - **FinTech & Payments**: Bakong Dynamic KHQR Specification with Locked Amount, ABA Bank PayWay API, Bakong Deep Links
 - **Security**: JWT, Bcrypt (12 salt rounds), Ed25519 Keypairs, Helmet, Rate Limiter Guards
 - **Hardware Protocol**: ESC/POS, Web Serial, WebUSB, Network TCP Sockets
@@ -115,7 +115,7 @@ clinic-patient-management/
 │   │   ├── telegram/                      # 1-Click Telegram Supergroup Bot bridge
 │   │   ├── teleconsult/                   # WebRTC video consultation signaling
 │   │   ├── users/                         # RBAC staff management
-│   │   ├── visits/                        # Voice dictation, Gemini AI SOAP & CDSS
+│   │   ├── visits/                        # Voice dictation, Next-Gen AI SOAP & CDSS
 │   │   ├── app.module.ts                  # Root application module
 │   │   └── main.ts                        # Application bootstrap & security headers
 │   └── test/                              # 247 Automated backend unit & integration tests

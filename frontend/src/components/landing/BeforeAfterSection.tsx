@@ -55,9 +55,9 @@ export const BeforeAfterSection: React.FC = () => {
       beforeEn:
         'Messy handwritten paper books or disconnected Word files; finding past visits wastes valuable consultation minutes, and paper notes easily tear or get lost.',
       afterKh:
-        'គ្រូពេទ្យគ្រាន់តែនិយាយជាភាសាខ្មែរ ប្រព័ន្ធ AI Gemini 3.8 Flash រៀបចំទម្រង់ SOAP និងកូដជំងឺ ICD-11 ត្រឹម ៥ វិនាទី ចំណេញពេលពិនិត្យ និងរកប្រវត្តិឃើញក្នុង ១ វិនាទី។',
+        'គ្រូពេទ្យគ្រាន់តែនិយាយជាភាសាខ្មែរ ប្រព័ន្ធ AI ជំនាន់ក្រោយដ៏ល្បីនិងវ័យឆ្លាត រៀបចំទម្រង់ SOAP និងកូដជំងឺ ICD-11 ត្រឹម ៥ វិនាទី ចំណេញពេលពិនិត្យ និងស្វែងរកប្រវត្តិអ្នកជំងឺឃើញក្នុង ១ វិនាទី។',
       afterEn:
-        'Doctors dictate naturally in Khmer; Gemini 3.8 Flash formats structured SOAP notes and ICD-11 diagnosis in 5 seconds, slashing documentation time by 75%.',
+        'Doctors dictate naturally in Khmer; Next-Gen Intelligent Medical AI formats structured SOAP notes and ICD-11 diagnosis in 5 seconds, slashing documentation time by 75%.',
     },
     {
       titleKh: 'ការគ្រប់គ្រងស្តុកឱសថ និងកាលបរិច្ឆេទផុតកំណត់',

@@ -40,7 +40,7 @@ export class VisitsController {
     return this.visitsService.findAll({ status, patientId, doctorId });
   }
 
-  @ApiOperation({ summary: 'Transcribe medical voice dictation into structured SOAP clinical note using Gemini AI' })
+  @ApiOperation({ summary: 'Transcribe medical voice dictation into structured SOAP clinical note using Next-Gen Medical AI' })
   @Roles(Role.ADMIN, Role.DOCTOR)
   @Post('voice-transcribe')
   async transcribeVoiceDictation(

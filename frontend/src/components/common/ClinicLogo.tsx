@@ -413,7 +413,7 @@ export const ClinicLogo: React.FC<ClinicLogoProps> = ({
 
         {showSubtitle && (
           <p className="text-[11px] sm:text-xs text-stone-500 mt-2 max-w-sm leading-relaxed">
-            ប្រព័ន្ធគ្រប់គ្រងគ្លីនិក និងសុខាភិបាលឌីជីថលជំនាន់ថ្មី ភ្ជាប់ជាមួយ Dynamic KHQR ចាក់សោទឹកប្រាក់ & Gemini 3.8 AI
+            ប្រព័ន្ធគ្រប់គ្រងគ្លីនិក និងសុខាភិបាលឌីជីថលជំនាន់ថ្មី ភ្ជាប់ជាមួយ Dynamic KHQR ចាក់សោទឹកប្រាក់ និង AI វេជ្ជសាស្ត្រជំនាន់ក្រោយដ៏វ័យឆ្លាត
           </p>
         )}
       </div>

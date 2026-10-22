@@ -454,7 +454,7 @@ CRITICAL RULES:
         formattedSoapKhmer: parsed.formattedSoapKhmer || fallback.formattedSoapKhmer,
         formattedSoapEnglish: parsed.formattedSoapEnglish || fallback.formattedSoapEnglish,
         confidenceScore: typeof parsed.confidenceScore === 'number' ? (parsed.confidenceScore <= 1 ? Math.round(parsed.confidenceScore * 100) : Math.min(parsed.confidenceScore, 100)) : fallback.confidenceScore,
-        aiProvider: 'Google Gemini 3.8 Flash',
+        aiProvider: 'Next-Gen Intelligent Medical AI',
       };
     } catch (err) {
       this.logger.error(`Error during Gemini SOAP parsing: ${err.message}. Falling back to rule engine.`);

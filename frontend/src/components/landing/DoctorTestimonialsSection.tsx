@@ -39,9 +39,9 @@ export const DoctorTestimonialsSection: React.FC = () => {
       disciplineKh: 'មន្ទីរសម្រាកព្យាបាល & ពហុឯកទេស',
       disciplineEn: 'Polyclinic & Inpatient Care',
       feedbackKh:
-        'មុខងារ Gemini AI Voice Dictation ជួយគ្រូពេទ្យក្នុងមន្ទីរសម្រាកព្យាបាលរបស់ខ្ញុំបានច្រើនបំផុត! គ្រូពេទ្យគ្រាន់តែនិយាយជាភាសាខ្មែរ ប្រព័ន្ធរៀបចំជាទម្រង់ SOAP និងកូដជំងឺ ICD-11 ត្រឹមត្រូវតាមក្បួនក្រសួងសុខាភិបាល។ លើសពីនេះ របាយការណ៍បាញ់ចូល Telegram ធ្វើឱ្យខ្ញុំនៅទីណាក៏ដឹងពីចំណូល និងចំនួនអ្នកជំងឺគ្រប់វិនាទី។',
+        'មុខងារ AI Voice Dictation ជំនាន់ក្រោយដ៏វ័យឆ្លាត ជួយគ្រូពេទ្យក្នុងមន្ទីរសម្រាកព្យាបាលរបស់ខ្ញុំបានច្រើនបំផុត! គ្រូពេទ្យគ្រាន់តែនិយាយជាភាសាខ្មែរ ប្រព័ន្ធរៀបចំជាទម្រង់ SOAP និងកូដជំងឺ ICD-11 ត្រឹមត្រូវតាមក្បួនក្រសួងសុខាភិបាល។ លើសពីនេះ របាយការណ៍បាញ់ចូល Telegram ធ្វើឱ្យខ្ញុំនៅទីណាក៏ដឹងពីចំណូល និងចំនួនអ្នកជំងឺគ្រប់វិនាទី។',
       feedbackEn:
-        'Gemini AI Voice Dictation is a game changer for our inpatient teams. Doctors dictate clinical observations in Khmer, and structured SOAP notes with ICD-11 codes are generated instantly. The Telegram forum bridge gives me 100% real-time oversight.',
+        'Next-Gen Intelligent AI Voice Dictation is a game changer for our inpatient teams. Doctors dictate clinical observations in Khmer, and structured SOAP notes with ICD-11 codes are generated instantly. The Telegram forum bridge gives me 100% real-time oversight.',
       badgeKh: 'ពហុបន្ទប់ពិគ្រោះ & គ្រែសម្រាក',
       badgeEn: 'Multi-Room & IPD Beds',
     },

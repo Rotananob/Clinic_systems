@@ -67,7 +67,7 @@ export const LandingHero: React.FC = () => {
   const [showTagBreakdown, setShowTagBreakdown] = useState(false);
   const [isPlayingChime, setIsPlayingChime] = useState(false);
 
-  // Mode 2: Voice & Gemini SOAP Interactive State
+  // Mode 2: Voice & Next-Gen AI SOAP Interactive State
   const [isRecording, setIsRecording] = useState(false);
   const [soapStep, setSoapStep] = useState(2);
   const [selectedDoctor, setSelectedDoctor] = useState('Dr. Visoth Ratha, MD');
@@ -298,8 +298,8 @@ export const LandingHero: React.FC = () => {
                 </span>
                 <span className="font-sans text-[11px] sm:text-xs text-left">
                   {isKm
-                    ? 'ចុះឈ្មោះថ្ងៃនេះ ទទួលបានការប្រើប្រាស់ Free Starter ៥ KHQR ក្នុងមួយថ្ងៃ + សាកល្បង AI Gemini និង Voice Queue ១៤ ថ្ងៃពេញ!'
-                    : 'Claim Free Starter Tier forever 5 KHQR/day + 14-day full AI Gemini & Voice Queue trial!'}
+                    ? 'ចុះឈ្មោះថ្ងៃនេះ ទទួលបានការប្រើប្រាស់ Free Starter ៥ KHQR ក្នុងមួយថ្ងៃ + សាកល្បង AI វេជ្ជសាស្ត្រជំនាន់ក្រោយដ៏វ័យឆ្លាត និង Voice Queue ១៤ ថ្ងៃពេញ!'
+                    : 'Claim Free Starter Tier forever 5 KHQR/day + 14-day full Next-Gen Intelligent Medical AI & Voice Queue trial!'}
                 </span>
               </div>
               <span className="text-[10px] font-bold text-teal-900 bg-white px-2 py-0.5 rounded-xl border border-stone-200 shrink-0">
@@ -319,8 +319,8 @@ export const LandingHero: React.FC = () => {
               <span className="w-2 h-2 rounded-full bg-emerald-500" />
               <span className="font-sans">
                 {isKm
-                  ? 'Krupet 2.0 • PaaS វេជ្ជសាស្ត្រជំនាន់ថ្មី • Dynamic KHQR ចាក់សោទឹកប្រាក់ & Gemini 3.8 AI'
-                  : 'Krupet 2.0 • Next-Gen Medical PaaS • Dynamic KHQR ចាក់សោទឹកប្រាក់ & Gemini 3.8 AI'}
+                  ? 'Krupet 2.0 • PaaS វេជ្ជសាស្ត្រជំនាន់ថ្មី • Dynamic KHQR ចាក់សោទឹកប្រាក់ និង AI ជំនាន់ក្រោយល្បីនិងវ័យឆ្លាត'
+                  : 'Krupet 2.0 • Next-Gen Medical PaaS • Dynamic KHQR ចាក់សោទឹកប្រាក់ និង AI ជំនាន់ក្រោយល្បីនិងវ័យឆ្លាត'}
               </span>
             </div>
           </div>
@@ -328,15 +328,15 @@ export const LandingHero: React.FC = () => {
           {/* Main Headline */}
           <h1 className="text-2xl sm:text-4xl md:text-5xl font-black text-stone-900 tracking-tight leading-tight md:leading-tight font-sans">
             {isKm
-              ? 'ប្រព័ន្ធគ្រប់គ្រងគ្លីនិក និងទូទាត់ប្រាក់ KHQR ទំនើបឈានមុខគេនៅកម្ពុជា'
-              : 'Next-Generation Clinical Operating System & Dynamic KHQR Platform'}
+              ? 'ប្រែក្លាយគ្លីនិករបស់អ្នកទៅជាមជ្ឈមណ្ឌលវេជ្ជសាស្ត្រឌីជីថលឈានមុខគេ'
+              : 'Transform Your Clinic into a High-Performing Modern Medical Center'}
           </h1>
 
           {/* Subtitle */}
           <p className="text-xs sm:text-sm md:text-base text-stone-600 leading-relaxed max-w-2xl mx-auto font-sans">
             {isKm
-              ? 'ដំណោះស្រាយវេជ្ជសាស្ត្រ All-in-One សម្រាប់គ្លីនិកឯកជន និងមន្ទីរសម្រាកព្យាបាលទូទាំងប្រទេសកម្ពុជា៖ បង្កើត Dynamic KHQR ចាក់សោទឹកប្រាក់ត្រឹម ២ វិនាទី ការពារកុំឱ្យបន្លំ ឬច្រឡំ, កត់ត្រាវេជ្ជសាស្ត្រជាសំឡេងតាម Gemini 3.8 Flash, ហៅអ្នកជំងឺជាសំឡេងខ្មែរ, និងបាញ់ដំណឹង Telegram Topics ស្វ័យប្រវត្តិ។'
-              : 'Complete all-in-one PaaS workspace for private clinics in Cambodia: 2-second Dynamic KHQR with locked amount to prevent tampering, Gemini 3.8 Flash voice dictation to structured SOAP, native Khmer queue calling, and automated Telegram operations.'}
+              ? 'កាត់បន្ថយការងាររដ្ឋបាលដល់ទៅ ៧០% និងទប់ស្កាត់ការបាត់បង់ចំណូលបេឡាទាំងស្រុង៖ បង្កើត Dynamic KHQR ចាក់សោទឹកប្រាក់លុយរត់ចូលកុង ABA ផ្ទាល់ ១០០% គ្មានកាត់កម្រៃ, ជំនួយការ AI វេជ្ជសាស្ត្រជំនាន់ក្រោយដ៏វ័យឆ្លាតកត់ត្រា SOAP តាមសំឡេង, ប្រព័ន្ធហៅជួរអ្នកជំងឺជាសំឡេងខ្មែរ និងតាមដានរបាយការណ៍គ្លីនិកគ្រប់វិនាទីតាម Telegram។'
+              : 'Eliminate 70% of clinical paperwork and prevent revenue leakage entirely: Dynamic KHQR locks exact payments straight into your bank, Next-Gen Intelligent Medical AI structures notes from doctor voice, automated Khmer queue calling impresses patients, and instant Telegram summaries keep you in control.'}
           </p>
 
           {/* Clean Single Action Form: Input Bar with Single Primary Button */}
@@ -407,7 +407,7 @@ export const LandingHero: React.FC = () => {
               <div className="text-[11px] text-stone-500 font-medium">Direct Settlement to Merchant</div>
             </div>
             <div className="bg-white/90 p-3 rounded-2xl border border-[#E7DFCF] shadow-2xs hover:border-teal-700/40 transition-colors">
-              <div className="text-sm sm:text-base font-extrabold text-teal-800">Gemini 3.8 AI</div>
+              <div className="text-sm sm:text-base font-extrabold text-teal-800">{isKm ? 'AI ជំនាន់ក្រោយ' : 'Next-Gen AI'}</div>
               <div className="text-[11px] text-stone-500 font-medium">Khmer Voice to SOAP Note</div>
             </div>
             <div className="bg-white/90 p-3 rounded-2xl border border-[#E7DFCF] shadow-2xs hover:border-teal-700/40 transition-colors">
@@ -502,7 +502,7 @@ export const LandingHero: React.FC = () => {
                   }`}
                 >
                   <Mic className="w-3.5 h-3.5 text-teal-200" />
-                  <span>Gemini 3.8 AI SOAP</span>
+                  <span>Next-Gen AI SOAP</span>
                 </button>
 
                 <button
@@ -928,7 +928,7 @@ export const LandingHero: React.FC = () => {
             )}
 
             {/* ========================================================== */}
-            {/* TAB 2: GEMINI 3.8 FLASH VOICE & AI SOAP STUDIO */}
+            {/* TAB 2: NEXT-GEN INTELLIGENT AI VOICE & SOAP STUDIO */}
             {/* ========================================================== */}
             {activeTab === 'voice' && (
               <div className="p-5 sm:p-7 bg-[#0C1417] grid grid-cols-1 lg:grid-cols-12 gap-7 items-center animate-tab-enter">
@@ -936,7 +936,7 @@ export const LandingHero: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold bg-teal-950/80 text-teal-300 border border-teal-500/40 shadow-xs">
                       <Sparkles className="w-3.5 h-3.5 text-teal-400" />
-                      <span>Google Gemini 3.8 Flash AI Model</span>
+                      <span>{isKm ? 'AI វេជ្ជសាស្ត្រជំនាន់ក្រោយដ៏វ័យឆ្លាត' : 'Next-Gen Intelligent Medical AI'}</span>
                     </span>
                     <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950/80 text-amber-300 border border-amber-500/40">
                       Anti-Spam 2 req/min
@@ -951,8 +951,8 @@ export const LandingHero: React.FC = () => {
                     </h3>
                     <p className="text-xs text-stone-300 mt-1 leading-relaxed font-sans">
                       {isKm
-                        ? 'គ្រូពេទ្យគ្រាន់តែនិយាយជាភាសាខ្មែរ ឬអង់គ្លេស ប្រព័ន្ធ AI Gemini 3.8 Flash នឹងវិភាគរកសញ្ញាជំងឺ សញ្ញាសំខាន់ៗ Vitals កូដជំងឺ ICD-11 និងរៀបចំវេជ្ជបញ្ជាដោយស្វ័យប្រវត្តិ។'
-                        : 'Dictate symptoms in Khmer or English. Gemini 3.8 Flash extracts vitals, assigns official ICD-11 codes, and generates a structured SOAP note in seconds.'}
+                        ? 'គ្រូពេទ្យគ្រាន់តែនិយាយជាភាសាខ្មែរ ឬអង់គ្លេស ប្រព័ន្ធ AI ជំនាន់ក្រោយដ៏ល្បីនិងវ័យឆ្លាត នឹងវិភាគរកសញ្ញាជំងឺ សញ្ញាសំខាន់ៗ Vitals កូដជំងឺ ICD-11 និងរៀបចំវេជ្ជបញ្ជាដោយស្វ័យប្រវត្តិ។'
+                        : 'Dictate symptoms naturally in Khmer or English. Next-Gen Intelligent Medical AI extracts vitals, assigns official ICD-11 codes, and generates a structured SOAP note in seconds.'}
                     </p>
                   </div>
 
@@ -1041,7 +1041,7 @@ export const LandingHero: React.FC = () => {
                       </span>
                     </div>
                     <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-950/80 text-teal-300 border border-teal-500/30">
-                      Gemini 3.8 Output
+                      Next-Gen AI Output
                     </span>
                   </div>
 
