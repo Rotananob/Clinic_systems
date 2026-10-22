@@ -409,8 +409,8 @@ class ApiClient {
         }
       }
 
-      // 2. Mutation (POST/PUT/PATCH/DELETE) offline / network failure -> Optimistic execution & Queue
-      if (!isGet && isNetworkError) {
+      // 2. Mutation (POST/PUT/PATCH/DELETE) offline / network failure -> Optimistic execution & Queue (exclude /auth/ endpoints)
+      if (!isGet && isNetworkError && !cleanEndpoint.startsWith('/auth/')) {
         const parsedBody = options.body ? JSON.parse(options.body as string) : {};
         return this.handleOfflineMutation<T>(endpoint, options.method as any, parsedBody);
       }

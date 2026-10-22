@@ -298,8 +298,8 @@ export const LandingHero: React.FC = () => {
                 </span>
                 <span className="font-sans text-[11px] sm:text-xs text-left">
                   {isKm
-                    ? 'ចុះឈ្មោះថ្ងៃនេះ ទទួលបានការប្រើប្រាស់ Free Starter ៥ KHQR ក្នុងមួយថ្ងៃ + សាកល្បង AI វេជ្ជសាស្ត្រជំនាន់ក្រោយដ៏វ័យឆ្លាត និង Voice Queue ១៤ ថ្ងៃពេញ!'
-                    : 'Claim Free Starter Tier forever 5 KHQR/day + 14-day full Next-Gen Intelligent Medical AI & Voice Queue trial!'}
+                    ? 'ចុះឈ្មោះភ្លាម ទទួលបានគណនី Free រហូតដោយឥតគិតថ្លៃ៖ ៥ KHQR ក្នុងមួយថ្ងៃ រួមជាមួយ AI វេជ្ជសាស្ត្រជំនាន់ក្រោយដ៏វ័យឆ្លាត និង Voice Queue ពេញចិត្តពេលណាអាចដំឡើងគម្រោងបានគ្រប់ពេល'
+                    : 'Claim Free Forever tier instantly: 5 KHQR/day with Next-Gen Intelligent Medical AI & Voice Queue included - upgrade anytime whenever you are ready!'}
                 </span>
               </div>
               <span className="text-[10px] font-bold text-teal-900 bg-white px-2 py-0.5 rounded-xl border border-stone-200 shrink-0">

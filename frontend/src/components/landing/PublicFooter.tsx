@@ -72,7 +72,7 @@ export const PublicFooter: React.FC = () => {
             <ul className="space-y-2">
               <li>
                 <Link href="/pricing" className="hover:text-stone-900 transition-colors">
-                  {isKm ? 'Free Starter - $0/ខែ' : 'Free Starter ($0/mo)'}
+                  {isKm ? 'Free Starter - $0 ឥតគិតថ្លៃរហូត' : 'Free Starter ($0 Free Forever)'}
                 </Link>
               </li>
               <li>
@@ -106,7 +106,7 @@ export const PublicFooter: React.FC = () => {
               </li>
               <li>
                 <Link href="/pricing" className="hover:text-stone-900 transition-colors">
-                  {isKm ? 'សាកល្បងឥតគិតថ្លៃ - Free Trial' : 'Start 14-Day Free Trial'}
+                  {isKm ? 'ឥតគិតថ្លៃរហូត - Free Forever' : 'Free Forever Tier'}
                 </Link>
               </li>
               <li>

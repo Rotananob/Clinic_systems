@@ -123,7 +123,7 @@ export class QuotaGuardService {
 
   /**
    * Step 19: Enforces daily dynamic KHQR transaction limits per SaaS plan tier.
-   * - Plan Free: 5 / day (or 10 / day free trial)
+   * - Plan Free Forever: 5 / day
    * - Plan $5 (Starter): 250 / day
    * - Plan $8 (Pro): 1,500 / day
    * - Plan $12 (Enterprise): Unlimited (-1)

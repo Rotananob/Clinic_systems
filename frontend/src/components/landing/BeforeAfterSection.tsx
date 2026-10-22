@@ -184,8 +184,8 @@ export const BeforeAfterSection: React.FC = () => {
             </div>
             <div className="text-xs text-teal-200 font-sans">
               {isKm
-                ? 'ចុះឈ្មោះសាកល្បងឥតគិតថ្លៃ ១៤ ថ្ងៃពេញ • មិនទាមទារកាតធនាគារ • ដំឡើងរួចរាល់ក្នុង ៦០ វិនាទី'
-                : 'Start 14-day free trial • No credit card required • Ready in 60 seconds'}
+                ? 'ចុះឈ្មោះប្រើប្រាស់ Free រហូតដោយឥតគិតថ្លៃ • មិនទាមទារកាតធនាគារ • រួចរាល់ក្នុង ៦០ វិនាទី'
+                : 'Free Forever tier included • No credit card required • Ready in 60 seconds'}
             </div>
           </div>
           <Link

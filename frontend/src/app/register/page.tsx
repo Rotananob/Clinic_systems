@@ -28,11 +28,11 @@ import {
 const PLAN_CARDS = [
   {
     id: 'FREE',
-    nameKh: 'Free Starter',
-    nameEn: 'Free Starter',
-    price: '$0',
-    priceYearly: '$0',
-    priceYearlyEn: '$0',
+    nameKh: 'Free Forever',
+    nameEn: 'Free Forever',
+    price: '$0 ឥតគិតថ្លៃរហូត',
+    priceYearly: '$0 ឥតគិតថ្លៃរហូត',
+    priceYearlyEn: '$0 Free Forever',
     khqrLimitKh: '៥ ប្រតិបត្តិការ / ថ្ងៃ',
     khqrLimitEn: '5 transactions / day',
     patientsKh: 'អ្នកជំងឺ ៥០ នាក់ / គណនី',
@@ -184,17 +184,31 @@ function RegisterContent() {
 
     setLoading(true);
 
+    const timer = setTimeout(() => {
+      setLoading(false);
+      setErrorMessage(
+        isKm
+          ? 'ដំណើរការផ្ញើមានភាពយឺតយ៉ាវដោយសារបណ្ដាញអ៊ីនធឺណិត។ សូមពិនិត្យប្រអប់សំបុត្រ Gmail របស់អ្នក ឬចុចព្យាយាមម្ដងទៀត។'
+          : 'Dispatch is taking longer than usual due to network connectivity. Please check your Gmail inbox or try again.'
+      );
+    }, 8500);
+
     try {
-      const res = await api.auth.sendVerificationCode(email.trim().toLowerCase());
-      if (res.success) {
+      const res = await api.auth.sendVerificationCode(cleanEmail);
+      clearTimeout(timer);
+      if (res?.success) {
         setStep('VERIFY_CODE');
         setCountdown(600);
         setVerificationCode('');
         setInfoMessage(res.message);
+      } else {
+        setErrorMessage(res?.message || (isKm ? 'មិនអាចផ្ញើលេខកូដបានទេ។ សូមព្យាយាមម្ដងទៀត។' : 'Failed to send code.'));
       }
     } catch (err: any) {
+      clearTimeout(timer);
       setErrorMessage(err.message || 'Failed to dispatch verification code. Please try again.');
     } finally {
+      clearTimeout(timer);
       setLoading(false);
     }
   };
@@ -246,16 +260,29 @@ function RegisterContent() {
   const handleResendCode = async () => {
     setErrorMessage(null);
     setLoading(true);
+    const timer = setTimeout(() => {
+      setLoading(false);
+      setErrorMessage(
+        isKm
+          ? 'ដំណើរការផ្ញើមានភាពយឺតយ៉ាវដោយសារបណ្ដាញអ៊ីនធឺណិត។ សូមពិនិត្យប្រអប់សំបុត្រ Gmail របស់អ្នក ឬចុចព្យាយាមម្ដងទៀត។'
+          : 'Dispatch is taking longer than usual due to network connectivity. Please check your Gmail inbox or try again.'
+      );
+    }, 8500);
     try {
       const res = await api.auth.sendVerificationCode(email.trim().toLowerCase());
-      if (res.success) {
+      clearTimeout(timer);
+      if (res?.success) {
         setCountdown(600);
         setVerificationCode('');
         setInfoMessage(res.message);
+      } else {
+        setErrorMessage(res?.message || (isKm ? 'មិនអាចផ្ញើលេខកូដបានទេ។ សូមព្យាយាមម្ដងទៀត។' : 'Failed to resend code.'));
       }
     } catch (err: any) {
+      clearTimeout(timer);
       setErrorMessage(err.message || 'Failed to resend code.');
     } finally {
+      clearTimeout(timer);
       setLoading(false);
     }
   };
@@ -287,7 +314,7 @@ function RegisterContent() {
 
           {step === 'VERIFY_CODE' ? (
             /* Step 2: 6-Digit Gmail Confirmation Code Screen */
-            <div className="bg-white rounded-3xl border border-stone-200 p-6 sm:p-8 shadow-xl space-y-6 card-3d">
+            <div className="bg-white rounded-3xl border border-stone-200 p-6 sm:p-8 shadow-xl space-y-6 card-3d animate-spring-pop">
               <div className="flex items-center justify-between border-b border-stone-100 pb-4">
                 <button
                   type="button"
@@ -355,7 +382,7 @@ function RegisterContent() {
                   <button
                     type="submit"
                     disabled={loading || verificationCode.trim().length !== 6}
-                    className="w-full py-3 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs font-bold shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                    className="w-full py-3 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs font-bold shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer interactive-tap"
                   >
                     {loading ? (
                       <>
@@ -388,7 +415,7 @@ function RegisterContent() {
             </div>
           ) : (
             /* Step 1: Ultra-Fast Registration Form Card */
-            <div className="bg-white rounded-3xl border border-stone-200 p-6 sm:p-8 shadow-xl space-y-6 card-3d">
+            <div className="bg-white rounded-3xl border border-stone-200 p-6 sm:p-8 shadow-xl space-y-6 card-3d animate-spring-pop">
               {errorMessage && (
                 <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
@@ -426,14 +453,14 @@ function RegisterContent() {
                           key={p.id}
                           type="button"
                           onClick={() => setSelectedPlan(p.id)}
-                          className={`p-3 rounded-2xl border text-left transition-all relative cursor-pointer select-none ${
+                          className={`p-3 rounded-2xl border text-left transition-all relative cursor-pointer select-none interactive-tap ${
                             isSelected
-                              ? 'bg-teal-50/90 border-2 border-teal-800 ring-2 ring-teal-700/20 shadow-md'
-                              : 'bg-white border-stone-200 hover:border-stone-400 hover:bg-stone-50/80 shadow-2xs'
+                              ? 'bg-teal-50/90 border-2 border-teal-800 ring-2 ring-teal-700/20 shadow-md animate-spring-pop'
+                              : 'bg-white border-stone-200 hover:border-stone-400 hover:bg-stone-50/80 shadow-2xs hover:-translate-y-0.5'
                           }`}
                         >
                           {isSelected ? (
-                            <span className="absolute -top-2 right-2 px-1.5 py-0.5 rounded-full text-[9px] font-black bg-teal-800 text-white shadow-xs flex items-center gap-0.5">
+                            <span className="absolute -top-2 right-2 px-1.5 py-0.5 rounded-full text-[9px] font-black bg-teal-800 text-white shadow-xs flex items-center gap-0.5 animate-badge-bounce">
                               <Check className="w-2.5 h-2.5 text-white" />
                               <span>{isKm ? 'បានជ្រើស' : 'ACTIVE'}</span>
                             </span>
@@ -521,7 +548,7 @@ function RegisterContent() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-3.5 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs sm:text-sm font-bold shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                    className="w-full py-3.5 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs sm:text-sm font-bold shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 interactive-tap"
                   >
                     {loading ? (
                       <>

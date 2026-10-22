@@ -48,10 +48,10 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
   const plans: PricingPlan[] = [
     {
       id: 'FREE',
-      nameKh: 'គម្រោងសាកល្បង Free Starter',
-      nameEn: 'Free Starter',
-      descKh: 'ល្អបំផុតសម្រាប់គ្លីនិកតូច ឬគ្រូពេទ្យចាប់ផ្ដើមដំបូង ដើម្បីសាកល្បងមុខងារ។',
-      descEn: 'Perfect for small medical cabinets or evaluation before upgrading.',
+      nameKh: 'គម្រោង Free Forever - ឥតគិតថ្លៃរហូត',
+      nameEn: 'Free Forever',
+      descKh: 'ប្រើប្រាស់ឥតគិតថ្លៃរហូតសម្រាប់គ្លីនិកតូច ឬគ្រូពេទ្យទើបបើកអាជីវកម្ម - ដំឡើងពេលណាស្រេចចិត្តដូច ChatGPT និង Claude',
+      descEn: 'Free forever for small practices - register and start instantly, upgrade anytime when ready like ChatGPT or Claude.',
       monthlyUsd: 0,
       yearlyUsd: 0,
       originalYearlyUsd: 0,
@@ -476,7 +476,7 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
                     <>
                       <span className="font-bold">
                         {p.id === 'FREE'
-                          ? isKm ? 'ចាប់ផ្ដើមដោយឥតគិតថ្លៃ' : 'Start Free Trial'
+                          ? isKm ? 'ចាប់ផ្ដើម Free រហូត' : 'Start Free Forever'
                           : isAnnual
                           ? isKm ? `ជ្រើសរើស ${p.yearlyUsd}/ឆ្នាំ` : `Select Plan (${p.yearlyUsd}/yr)`
                           : isKm ? `ជ្រើសរើស ${p.monthlyUsd}/ខែ` : `Select Plan (${p.monthlyUsd}/mo)`}

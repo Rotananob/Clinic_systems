@@ -95,7 +95,7 @@ export const PublicNavbar: React.FC = () => {
                   href="/register"
                   className="inline-flex items-center gap-1.5 px-4 py-2 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors active:scale-95"
                 >
-                  <span>{isKm ? 'សាកល្បងឥតគិតថ្លៃ' : 'Start Free Trial'}</span>
+                  <span>{isKm ? 'ឥតគិតថ្លៃរហូត' : 'Start Free Forever'}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </>
@@ -189,7 +189,7 @@ export const PublicNavbar: React.FC = () => {
                   onClick={() => setMobileMenuOpen(false)}
                   className="w-full py-2.5 bg-teal-800 text-white text-xs font-bold rounded-xl text-center block shadow-xs"
                 >
-                  {isKm ? 'សាកល្បងឥតគិតថ្លៃ' : 'Start Free Trial'}
+                  {isKm ? 'ឥតគិតថ្លៃរហូត' : 'Start Free Forever'}
                 </Link>
               </>
             )}

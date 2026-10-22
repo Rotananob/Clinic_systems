@@ -36,14 +36,25 @@ export class EmailVerificationService {
     const user = process.env.GMAIL_USER || 'xflowstudio5@gmail.com';
     const rawPass = process.env.GMAIL_APP_PASSWORD || 'lmzagtdkmojpfsfu';
     const pass = rawPass.replace(/\s+/g, '');
-    const port = Number(process.env.SMTP_PORT) || 587;
-    const isSecure = String(process.env.SMTP_SECURE ?? 'false') === 'true';
+    const host = process.env.SMTP_HOST || 'smtp.gmail.com';
+    // Port 465 with direct SSL/TLS and connection pool ensures ultra-fast 2-3s delivery and avoids STARTTLS ISP handshake throttling
+    const defaultPort = host === 'smtp.gmail.com' ? 465 : 587;
+    const port = Number(process.env.SMTP_PORT) || defaultPort;
+    const isSecure = process.env.SMTP_SECURE !== undefined
+      ? String(process.env.SMTP_SECURE) === 'true'
+      : (port === 465);
 
     try {
       this.transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST || 'smtp.gmail.com',
+        host,
         port,
         secure: isSecure,
+        pool: true,
+        maxConnections: 3,
+        maxMessages: 100,
+        connectionTimeout: 7000,
+        greetingTimeout: 7000,
+        socketTimeout: 10000,
         auth: {
           user,
           pass,
@@ -172,13 +183,18 @@ export class EmailVerificationService {
         throw new Error('សេវាផ្ញើ Email មិនទាន់ដំណើរការ');
       }
 
-      await this.transporter.sendMail({
-        from: `"KruPet - Clinical OS" <${user}>`,
-        to: normalizedEmail,
-        subject: `[KruPet] លេខកូដបញ្ជាក់ការចុះឈ្មោះគ្លីនិក - Verification Code: ${code}`,
-        text: `KruPet - លេខកូដបញ្ជាក់ការចុះឈ្មោះគ្លីនិករបស់អ្នកគឺ: ${code} - មានសុពលភាព ១០ នាទី។`,
-        html: htmlContent,
-      });
+      await Promise.race([
+        this.transporter.sendMail({
+          from: `"KruPet - Clinical OS" <${user}>`,
+          to: normalizedEmail,
+          subject: `[KruPet] លេខកូដបញ្ជាក់ការចុះឈ្មោះគ្លីនិក - Verification Code: ${code}`,
+          text: `KruPet - លេខកូដបញ្ជាក់ការចុះឈ្មោះគ្លីនិករបស់អ្នកគឺ: ${code} - មានសុពលភាព ១០ នាទី។`,
+          html: htmlContent,
+        }),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Gmail SMTP delivery timed out after 9 seconds')), 9000)
+        ),
+      ]);
 
       return {
         success: true,

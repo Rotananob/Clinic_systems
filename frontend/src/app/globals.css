@@ -265,3 +265,77 @@ html, body {
 .animate-progress-strip {
   animation: progressStrip 6s linear forwards;
 }
+
+/* Modern Lightweight Micro-Animations for High Performance (Zero Phone Heating) */
+@keyframes springPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.96) translateY(4px);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.01) translateY(-1px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-spring-pop {
+  animation: springPop 0.38s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes activeBadgeBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+.animate-badge-bounce {
+  animation: activeBadgeBounce 2.2s ease-in-out infinite;
+}
+
+@keyframes haloGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 1px rgba(13, 95, 88, 0.15), 0 4px 14px -2px rgba(13, 95, 88, 0.12);
+  }
+  50% {
+    box-shadow: 0 0 0 2px rgba(13, 95, 88, 0.3), 0 8px 24px -4px rgba(13, 95, 88, 0.22);
+  }
+}
+
+.animate-halo-glow {
+  animation: haloGlow 3s ease-in-out infinite;
+}
+
+@keyframes stepSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-step-slide {
+  animation: stepSlideIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Touch & Click Tap Ripple Micro-Interaction */
+.interactive-tap {
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.15s ease;
+}
+
+.interactive-tap:active {
+  transform: scale(0.97);
+}
+
+.interactive-tap:hover {
+  transform: translateY(-1.5px);
+}

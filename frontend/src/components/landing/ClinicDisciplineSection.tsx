@@ -329,7 +329,7 @@ export const ClinicDisciplineSection: React.FC = () => {
                   href="/login"
                   className="inline-flex items-center gap-2 px-5 py-2.5 bg-white hover:bg-stone-50 text-stone-800 border border-[#D5CDBD] rounded-xl text-xs font-semibold shadow-2xs transition-colors"
                 >
-                  <span>{isKm ? 'ចាប់ផ្តើមប្រើប្រាស់ឥតគិតថ្លៃ' : 'Start Free Trial'}</span>
+                  <span>{isKm ? 'ចាប់ផ្តើម Free រហូត' : 'Start Free Forever'}</span>
                 </Link>
               </div>
             </div>
