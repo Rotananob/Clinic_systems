@@ -67,7 +67,7 @@ export const FeaturesSection: React.FC = () => {
       titleKh: 'គ្រប់គ្រងអ្នកជំងឺ ស្តុកឱសថ និងវេជ្ជបញ្ជា',
       titleEn: 'Complete Patient EMR & Pharmacy Inventory',
       descKh:
-        'កត់ត្រាប្រវត្តិព្យាបាល, គណនាសញ្ញាជីវិត (BMI, សម្ពាធឈាម), ចេញវេជ្ជបញ្ជាអេឡិចត្រូនិក, និងដាស់តឿនស្វ័យប្រវត្តពេលថ្នាំជិតអស់ស្តុក ដើម្បីឱ្យគ្លីនិកគ្រប់គ្រងបានរលូន ២៤/៧។',
+        'កត់ត្រាប្រវត្តិព្យាបាល, គណនាសញ្ញាជីវិត - BMI, សម្ពាធឈាម, ចេញវេជ្ជបញ្ជាអេឡិចត្រូនិក, និងដាស់តឿនស្វ័យប្រវត្តពេលថ្នាំជិតអស់ស្តុក ដើម្បីឱ្យគ្លីនិកគ្រប់គ្រងបានរលូន ២៤/៧។',
       descEn:
         'Comprehensive clinical record keeping, vitals indexing, multi-item electronic prescriptions, and automated low-stock inventory alerts for 24/7 reliability.',
       badge: 'Clinical EMR',

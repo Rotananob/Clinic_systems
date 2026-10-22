@@ -20,7 +20,7 @@ export const DoctorTestimonialsSection: React.FC = () => {
     {
       nameKh: 'វេជ្ជបណ្ឌិត ចាន់ សុវណ្ណ',
       nameEn: 'Dr. Chan Sovann, MD',
-      roleKh: 'ប្រធានគ្លីនិក សុខភាពរុងរឿង (រាជធានីភ្នំពេញ)',
+      roleKh: 'ប្រធានគ្លីនិក សុខភាពរុងរឿង - រាជធានីភ្នំពេញ',
       roleEn: 'Founder, Sokhapheap Rungroeung Clinic (Phnom Penh)',
       disciplineKh: 'គ្លីនិកពិគ្រោះជំងឺទូទៅ & OPD',
       disciplineEn: 'General Outpatient Practice',
@@ -34,7 +34,7 @@ export const DoctorTestimonialsSection: React.FC = () => {
     {
       nameKh: 'វេជ្ជបណ្ឌិត ហេង សិរី',
       nameEn: 'Dr. Heng Serey, MD, MPH',
-      roleKh: 'នាយកមន្ទីរសម្រាកព្យាបាលមិត្តភាព (ខេត្តបាត់ដំបង)',
+      roleKh: 'នាយកមន្ទីរសម្រាកព្យាបាលមិត្តភាព - ខេត្តបាត់ដំបង',
       roleEn: 'Medical Director, Mittapheap Polyclinic (Battambang)',
       disciplineKh: 'មន្ទីរសម្រាកព្យាបាល & ពហុឯកទេស',
       disciplineEn: 'Polyclinic & Inpatient Care',
@@ -48,7 +48,7 @@ export const DoctorTestimonialsSection: React.FC = () => {
     {
       nameKh: 'ទន្តបណ្ឌិត កែវ ពេជ្រ',
       nameEn: 'Dr. Keo Pich, DDS',
-      roleKh: 'ម្ចាស់គ្លីនិកព្យាបាលធ្មេញ ស្មាយ (ខេត្តសៀមរាប)',
+      roleKh: 'ម្ចាស់គ្លីនិកព្យាបាលធ្មេញ ស្មាយ - ខេត្តសៀមរាប',
       roleEn: 'Principal Dentist, Smile Dental Clinic (Siem Reap)',
       disciplineKh: 'ទន្តសាស្ត្រ & សោភ័ណភាពធ្មេញ',
       disciplineEn: 'Dental & Orthodontics',

@@ -13,8 +13,6 @@ import {
   Send,
   ArrowRight,
   Sparkles,
-  Zap,
-  TrendingUp,
 } from 'lucide-react';
 
 export const BeforeAfterSection: React.FC = () => {
@@ -49,7 +47,7 @@ export const BeforeAfterSection: React.FC = () => {
         'Instant 2-second dynamic Tag 01=12 KHQR locks the exact invoice amount; funds deposit straight into your clinic ABA account with zero fee and instant audit trail.',
     },
     {
-      titleKh: 'ការកត់ត្រាពិគ្រោះជំងឺ និងប្រវត្តិព្យាបាល (EMR)',
+      titleKh: 'ការកត់ត្រាពិគ្រោះជំងឺ និងប្រវត្តិព្យាបាល - EMR',
       titleEn: 'Clinical Consultation Notes & EMR Records',
       icon: FileText,
       beforeKh:
@@ -150,7 +148,7 @@ export const BeforeAfterSection: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <XCircle className="w-4 h-4 text-rose-600 shrink-0" />
                       <span className="text-xs font-black uppercase tracking-wider text-rose-800 font-mono">
-                        {isKm ? 'មុនពេលប្រើ (គ្លីនិកបែបបុរាណ)' : 'Before: Traditional Manual Clinic'}
+                        {isKm ? 'មុនពេលប្រើ - គ្លីនិកបែបបុរាណ' : 'Before: Traditional Manual Clinic'}
                       </span>
                     </div>
                     <p className="text-xs text-stone-600 leading-relaxed font-sans pl-6">
@@ -163,7 +161,7 @@ export const BeforeAfterSection: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                       <span className="text-xs font-black uppercase tracking-wider text-teal-900 font-mono">
-                        {isKm ? 'ក្រោយពេលប្រើ X-Clinic (គ្លីនិកទំនើប)' : 'After: Powered by X-Clinic PaaS'}
+                        {isKm ? 'ក្រោយពេលប្រើ X-Clinic - គ្លីនិកទំនើប' : 'After: Powered by X-Clinic PaaS'}
                       </span>
                     </div>
                     <p className="text-xs text-stone-800 font-medium leading-relaxed font-sans pl-6">

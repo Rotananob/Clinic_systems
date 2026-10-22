@@ -250,3 +250,18 @@ html, body {
   animation: tabSlideFadeIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+
+
+/* Lightweight CSS Progress Strip for Zero-Lag Tab Showcase */
+@keyframes progressStrip {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+.animate-progress-strip {
+  animation: progressStrip 6s linear forwards;
+}

@@ -212,7 +212,7 @@ export const RoiCalculatorSection: React.FC = () => {
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                   <span>
                     {isKm
-                      ? 'ផលចំណេញត្រឡប់មកវិញ (ROI) លើសពី ៨០០% នៃតម្លៃសេវាប្រចាំខែ'
+                      ? 'ផលចំណេញត្រឡប់មកវិញ - ROI លើសពី ៨០០% នៃតម្លៃសេវាប្រចាំខែ'
                       : 'Estimated Return on Investment Exceeds 800% of Plan Cost'}
                   </span>
                 </div>

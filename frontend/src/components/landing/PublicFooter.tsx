@@ -72,22 +72,22 @@ export const PublicFooter: React.FC = () => {
             <ul className="space-y-2">
               <li>
                 <Link href="/pricing" className="hover:text-stone-900 transition-colors">
-                  {isKm ? 'Free Starter ($0/ខែ)' : 'Free Starter ($0/mo)'}
+                  {isKm ? 'Free Starter - $0/ខែ' : 'Free Starter ($0/mo)'}
                 </Link>
               </li>
               <li>
                 <Link href="/pricing" className="hover:text-stone-900 transition-colors">
-                  {isKm ? 'Clinic Starter ($5/ខែ - 250 KHQR/ថ្ងៃ)' : 'Clinic Starter ($5/mo - 250 KHQR/day)'}
+                  {isKm ? 'Clinic Starter - $5/ខែ - 250 KHQR/ថ្ងៃ' : 'Clinic Starter ($5/mo - 250 KHQR/day)'}
                 </Link>
               </li>
               <li>
                 <Link href="/pricing" className="hover:text-stone-900 transition-colors">
-                  {isKm ? 'Polyclinic Pro ($8/ខែ - 1,500 KHQR/ថ្ងៃ)' : 'Polyclinic Pro ($8/mo - 1,500 KHQR/day)'}
+                  {isKm ? 'Polyclinic Pro - $8/ខែ - 1,500 KHQR/ថ្ងៃ' : 'Polyclinic Pro ($8/mo - 1,500 KHQR/day)'}
                 </Link>
               </li>
               <li>
                 <Link href="/pricing" className="hover:text-stone-900 transition-colors">
-                  {isKm ? 'Hospital Enterprise ($12/ខែ - Unlimited)' : 'Hospital Enterprise ($12/mo - Unlimited)'}
+                  {isKm ? 'Hospital Enterprise - $12/ខែ - Unlimited' : 'Hospital Enterprise ($12/mo - Unlimited)'}
                 </Link>
               </li>
             </ul>
@@ -101,17 +101,17 @@ export const PublicFooter: React.FC = () => {
             <ul className="space-y-2">
               <li>
                 <Link href="/login" className="hover:text-teal-800 font-semibold transition-colors">
-                  {isKm ? 'ចូលគណនីគ្លីនិក (Sign In)' : 'Clinic Staff Login Portal'}
+                  {isKm ? 'ចូលគណនីគ្លីនិក - Sign In' : 'Clinic Staff Login Portal'}
                 </Link>
               </li>
               <li>
                 <Link href="/pricing" className="hover:text-stone-900 transition-colors">
-                  {isKm ? 'សាកល្បងឥតគិតថ្លៃ (Free Trial)' : 'Start 14-Day Free Trial'}
+                  {isKm ? 'សាកល្បងឥតគិតថ្លៃ - Free Trial' : 'Start 14-Day Free Trial'}
                 </Link>
               </li>
               <li>
                 <Link href="/help" className="hover:text-teal-800 transition-colors">
-                  {isKm ? 'មជ្ឈមណ្ឌលជំនួយ & ឯកសារ (Help & Docs)' : 'Documentation & Help Center'}
+                  {isKm ? 'មជ្ឈមណ្ឌលជំនួយ & ឯកសារ - Help & Docs' : 'Documentation & Help Center'}
                 </Link>
               </li>
               <li>

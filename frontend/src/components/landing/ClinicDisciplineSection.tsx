@@ -58,9 +58,9 @@ const CATEGORIES: ClinicCategory[] = [
     descriptionEn:
       'Engineered specifically for polyclinics with multiple specialist rooms, triage, and inpatient beds. Synchronize queue calling across consulting rooms and consolidate hospital billing.',
     featuresKh: [
-      'ហៅអ្នកជំងឺតាមបន្ទប់ពិគ្រោះជាក់លាក់ជាសំឡេងខ្មែរ (បន្ទប់ ១, បន្ទប់ ២, បន្ទប់សង្គ្រោះ)',
-      'គ្រប់គ្រងគ្រែសម្រាកព្យាបាល (IPD Beds) តាមដានអ្នកជំងឺស្នាក់នៅ និងកត់ត្រាការថែទាំ',
-      'ចេញបញ្ជាមន្ទីរពិសោធន៍ (Lab Orders) និងថតកាំរស្មីអ៊ិច រួមក្នុងប្រវត្តិអ្នកជំងឺ',
+      'ហៅអ្នកជំងឺតាមបន្ទប់ពិគ្រោះជាក់លាក់ជាសំឡេងខ្មែរ - បន្ទប់ ១, បន្ទប់ ២, បន្ទប់សង្គ្រោះ',
+      'គ្រប់គ្រងគ្រែសម្រាកព្យាបាល - IPD Beds តាមដានអ្នកជំងឺស្នាក់នៅ និងកត់ត្រាការថែទាំ',
+      'ចេញបញ្ជាមន្ទីរពិសោធន៍ - Lab Orders និងថតកាំរស្មីអ៊ិច រួមក្នុងប្រវត្តិអ្នកជំងឺ',
       'បូកសរុបថ្លៃសេវាពិគ្រោះ ថ្នាំពេទ្យ និងថ្លៃបន្ទប់ចូលវិក្កយបត្ររួមមួយជាមួយ Dynamic KHQR',
     ],
     featuresEn: [
@@ -82,13 +82,13 @@ const CATEGORIES: ClinicCategory[] = [
     taglineKh: 'កត់ត្រាប្រវត្តិជំងឺរហ័សក្នុង ១០ វិនាទី និងចេញវេជ្ជបញ្ជា MoH ស្តង់ដារ',
     taglineEn: '10-second rapid consultation SOAP notes and MoH standard e-prescriptions',
     descriptionKh:
-      'បង្កើនល្បឿនពិគ្រោះជំងឺ និងកត់ត្រា SOAP (Subjective, Objective, Assessment, Plan) ដោយរលូន។ បង្កើត Dynamic KHQR ភ្លាមៗពេលចេញវេជ្ជបញ្ជា លុយចូលកុងគ្លីនិក ១០០% គ្មានកាត់កម្រៃជើងសារ។',
+      'បង្កើនល្បឿនពិគ្រោះជំងឺ និងកត់ត្រា SOAP - Subjective, Objective, Assessment, Plan ដោយរលូន។ បង្កើត Dynamic KHQR ភ្លាមៗពេលចេញវេជ្ជបញ្ជា លុយចូលកុងគ្លីនិក ១០០% គ្មានកាត់កម្រៃជើងសារ។',
     descriptionEn:
       'Accelerate patient throughput with streamlined SOAP consultation workflows. Generate dynamic Tag 01=12 KHQR codes automatically as prescriptions are saved.',
     featuresKh: [
-      'កត់ត្រារោគសញ្ញា និងសញ្ញាជីវិត (សម្ពាធឈាម, កម្ដៅ, ជីពចរ, SpO2) ក្នុងទម្រង់តែមួយ',
-      'ប្រព័ន្ធដាស់តឿនប្រតិកម្មឱសថ (Drug Allergy Alerts) ការពារសុវត្ថិភាពអ្នកជំងឺ',
-      'ចេញវេជ្ជបញ្ជាអេឡិចត្រូនិក និងបោះពុម្ពស្លាកថ្នាំ (Dosage Label) ជាភាសាខ្មែរ',
+      'កត់ត្រារោគសញ្ញា និងសញ្ញាជីវិត - សម្ពាធឈាម, កម្ដៅ, ជីពចរ, SpO2 ក្នុងទម្រង់តែមួយ',
+      'ប្រព័ន្ធដាស់តឿនប្រតិកម្មឱសថ - Drug Allergy Alerts ការពារសុវត្ថិភាពអ្នកជំងឺ',
+      'ចេញវេជ្ជបញ្ជាអេឡិចត្រូនិក និងបោះពុម្ពស្លាកថ្នាំ - Dosage Label ជាភាសាខ្មែរ',
       'ស្កេនបង់ប្រាក់ KHQR Bakong និង ABA PayWay ដោយផ្ទាល់ត្រឹម ២ វិនាទី',
     ],
     featuresEn: [
@@ -110,14 +110,14 @@ const CATEGORIES: ClinicCategory[] = [
     taglineKh: 'គំនូសតាងធ្មេញ Odontogram និងផែនការព្យាបាលតាមដំណាក់កាល',
     taglineEn: 'Interactive 32-tooth odontogram mapping and multi-stage treatment roadmaps',
     descriptionKh:
-      'រៀបចំឡើងយ៉ាងពិសេសសម្រាប់ទន្តបណ្ឌិត ជាមួយនឹងតារាងគំនូសធ្មេញ ៣២ គ្រាប់ (Universal / Palmer / FDI)។ កត់ត្រាធ្មេញដង្កូវ សម្អាតកំបោរ ប៉ះធ្មេញ ពត់ធ្មេញ ដាំបង្គោល និងបង់ប្រាក់រំលោះតាមដំណាក់កាល។',
+      'រៀបចំឡើងយ៉ាងពិសេសសម្រាប់ទន្តបណ្ឌិត ជាមួយនឹងតារាងគំនូសធ្មេញ ៣២ គ្រាប់ - Universal / Palmer / FDI។ កត់ត្រាធ្មេញដង្កូវ សម្អាតកំបោរ ប៉ះធ្មេញ ពត់ធ្មេញ ដាំបង្គោល និងបង់ប្រាក់រំលោះតាមដំណាក់កាល។',
     descriptionEn:
       'Purpose-built for modern dental practices with interactive 32-tooth odontogram charting. Track multi-session treatments, root canal stages, implants, and installment billing.',
     featuresKh: [
-      'ផ្ទាំងគំនូសធ្មេញ Odontogram ចុចជ្រើសរើសលេខធ្មេញ និងស្ថានភាព (Carie, Filling, Crown, Missing)',
-      'គ្រប់គ្រងកាលវិភាគណាត់ជួប និងការព្យាបាលបន្ត (Follow-up multi-visit stages)',
+      'ផ្ទាំងគំនូសធ្មេញ Odontogram ចុចជ្រើសរើសលេខធ្មេញ និងស្ថានភាព - Carie, Filling, Crown, Missing',
+      'គ្រប់គ្រងកាលវិភាគណាត់ជួប និងការព្យាបាលបន្ត - Follow-up multi-visit stages',
       'បោះពុម្ពវិក្កយបត្រទន្តសាស្ត្រលម្អិតតាមមុខធ្មេញ និងសេវាកម្មព្រីន 80mm',
-      'ភ្ជាប់រូបថតមុន និងក្រោយព្យាបាល (Before/After Dental Photos) ក្នុងប្រវត្តិអ្នកជំងឺ',
+      'ភ្ជាប់រូបថតមុន និងក្រោយព្យាបាល - Before/After Dental Photos ក្នុងប្រវត្តិអ្នកជំងឺ',
     ],
     featuresEn: [
       'Interactive visual odontogram: click tooth number to record caries, restorations, crowns, implants',
@@ -138,13 +138,13 @@ const CATEGORIES: ClinicCategory[] = [
     taglineKh: 'តាមដានសុខភាពមាតានិងទារក គណនាថ្ងៃសម្រាល និងរូបភាពអេកូសាស្ត្រ',
     taglineEn: 'Antenatal care tracking, automated due date calculation, and ultrasound records',
     descriptionKh:
-      'គ្រប់គ្រងការពិនិត្យផ្ទៃពោះ (ANC) តាមត្រីមាសនីមួយៗ គណនាអាយុគភ៌ និងថ្ងៃសម្រាលស្វ័យប្រវត្ត (LMP/EDD)។ រក្សាទុករូបភាពអេកូសាស្ត្រ និងតាមដានសុខភាពក្រោយសម្រាល។',
+      'គ្រប់គ្រងការពិនិត្យផ្ទៃពោះ - ANC តាមត្រីមាសនីមួយៗ គណនាអាយុគភ៌ និងថ្ងៃសម្រាលស្វ័យប្រវត្ត - LMP/EDD។ រក្សាទុករូបភាពអេកូសាស្ត្រ និងតាមដានសុខភាពក្រោយសម្រាល។',
     descriptionEn:
       'Complete obstetric and gynecological record keeping. Automatic gestational age and EDD calculation from LMP, ultrasound attachments, and postpartum wellness tracking.',
     featuresKh: [
-      'គណនាថ្ងៃសម្រាល និងអាយុគភ៌ស្វ័យប្រវត្ត (LMP, Gestational Age, Estimated Due Date)',
+      'គណនាថ្ងៃសម្រាល និងអាយុគភ៌ស្វ័យប្រវត្ត - LMP, Gestational Age, Estimated Due Date',
       'តារាងតាមដានការលូតលាស់ទារកក្នុងផ្ទៃ ទម្ងន់ម្ដាយ និងសម្ពាធឈាមតាមត្រីមាស',
-      'ភ្ជាប់រូបភាពអេកូសាស្ត្រ (Ultrasound Scans) ផ្ទាល់ក្នុងសឺមីវេជ្ជសាស្ត្រ',
+      'ភ្ជាប់រូបភាពអេកូសាស្ត្រ - Ultrasound Scans ផ្ទាល់ក្នុងសឺមីវេជ្ជសាស្ត្រ',
       'ប្រព័ន្ធផ្ញើសាររំលឹកកាលបរិច្ឆេទពិនិត្យផ្ទៃពោះ និងចាក់ថ្នាំការពារស្វ័យប្រវត្ត',
     ],
     featuresEn: [
@@ -153,7 +153,7 @@ const CATEGORIES: ClinicCategory[] = [
       'High-resolution ultrasound imaging attachments linked to patient profile',
       'Automated check-up and tetanus toxoid appointment reminders',
     ],
-    mockupTitleKh: 'សៀវភៅតាមដានសុខភាពមាតា និងទារកក្នុងផ្ទៃ (ANC Profile)',
+    mockupTitleKh: 'សៀវភៅតាមដានសុខភាពមាតា និងទារកក្នុងផ្ទៃ - ANC Profile',
     mockupTitleEn: 'Antenatal Care Profile & Gestational Tracker',
   },
   {
@@ -166,13 +166,13 @@ const CATEGORIES: ClinicCategory[] = [
     taglineKh: 'កាលវិភាគវ៉ាក់សាំងកម្ពុជា បន្ទាត់លូតលាស់ WHO និងគណនាកម្រិតថ្នាំតាមគីឡូ',
     taglineEn: 'Cambodian immunization schedule, WHO growth percentiles, and weight dosage calculator',
     descriptionKh:
-      'រៀបចំឡើងសម្រាប់វេជ្ជបណ្ឌិតកុមារ ដោយមានកាលវិភាគចាក់វ៉ាក់សាំងជាតិកម្ពុជា បន្ទាត់លូតលាស់កុមារស្តង់ដារ WHO និងប្រព័ន្ធគណនាកម្រិតថ្នាំកុមារយ៉ាងសុក្រឹតតាមទម្ងន់ (mg/kg)។',
+      'រៀបចំឡើងសម្រាប់វេជ្ជបណ្ឌិតកុមារ ដោយមានកាលវិភាគចាក់វ៉ាក់សាំងជាតិកម្ពុជា បន្ទាត់លូតលាស់កុមារស្តង់ដារ WHO និងប្រព័ន្ធគណនាកម្រិតថ្នាំកុមារយ៉ាងសុក្រឹតតាមទម្ងន់ - mg/kg។',
     descriptionEn:
       'Tailored for pediatricians with the official Cambodian National Immunization Schedule, WHO growth percentiles (weight/height/age), and precise weight-based dosing calculations.',
     featuresKh: [
-      'កាលវិភាគចាក់វ៉ាក់សាំងជាតិកម្ពុជា (BCG, Pentavalent, Polio, Measles/Rubella)',
-      'បន្ទាត់លូតលាស់កុមារស្តង់ដារ WHO (ទម្ងន់-អាយុ, កម្ពស់-អាយុ, BMI) បង្ហាញជាក្រាហ្វិក',
-      'ម៉ាស៊ីនគណនាកម្រិតថ្នាំកុមារស្វ័យប្រវត្តតាមទម្ងន់ (mg/kg/day) ជៀសវាងការច្រឡំ',
+      'កាលវិភាគចាក់វ៉ាក់សាំងជាតិកម្ពុជា - BCG, Pentavalent, Polio, Measles/Rubella',
+      'បន្ទាត់លូតលាស់កុមារស្តង់ដារ WHO - ទម្ងន់-អាយុ, កម្ពស់-អាយុ, BMI បង្ហាញជាក្រាហ្វិក',
+      'ម៉ាស៊ីនគណនាកម្រិតថ្នាំកុមារស្វ័យប្រវត្តតាមទម្ងន់ - mg/kg/day ជៀសវាងការច្រឡំ',
       'កត់ត្រាព័ត៌មានអាណាព្យាបាល និងប្រវត្តិប្រតិកម្មអាហារ/ថ្នាំតាំងពីកំណើត',
     ],
     featuresEn: [
@@ -194,14 +194,14 @@ const CATEGORIES: ClinicCategory[] = [
     taglineKh: 'គ្រប់គ្រងស្តុកថ្នាំតាមកាលបរិច្ឆេទផុតកំណត់ FEFO និងស្កេនបាកូដលឿនរហ័ស',
     taglineEn: 'FEFO expiration date tracking, barcode scanner speed, and low-stock alerts',
     descriptionKh:
-      'ការពារការខូចខាតថ្នាំជាមួយប្រព័ន្ធ First-Expired-First-Out (FEFO)។ ស្កេនបាកូដលក់ថ្នាំភ្លាមៗ ដាស់តឿនថ្នាំជិតផុតកំណត់ និងបាញ់ដំណឹង Telegram ពេលស្តុកធ្លាក់ចុះទាប។',
+      'ការពារការខូចខាតថ្នាំជាមួយប្រព័ន្ធ First-Expired-First-Out - FEFO។ ស្កេនបាកូដលក់ថ្នាំភ្លាមៗ ដាស់តឿនថ្នាំជិតផុតកំណត់ និងបាញ់ដំណឹង Telegram ពេលស្តុកធ្លាក់ចុះទាប។',
     descriptionEn:
       'Eliminate expired medication losses with strict FEFO batch controls. Supports USB/Bluetooth barcode scanners, automated low-stock warnings, and Telegram restocking alerts.',
     featuresKh: [
-      'ប្រព័ន្ធ FEFO (First-Expired-First-Out) បញ្ចេញថ្នាំជិតផុតកំណត់មុនស្វ័យប្រវត្ត',
-      'ស្កេនបាកូដថ្នាំតាម Barcode Scanner (1D / 2D) លឿនត្រឹម ១ វិនាទី',
+      'ប្រព័ន្ធ FEFO - First-Expired-First-Out បញ្ចេញថ្នាំជិតផុតកំណត់មុនស្វ័យប្រវត្ត',
+      'ស្កេនបាកូដថ្នាំតាម Barcode Scanner - 1D / 2D លឿនត្រឹម ១ វិនាទី',
       'ប្រព័ន្ធដាស់តឿនថ្នាំជិតផុតកំណត់មុន ៩០ ថ្ងៃ និងថ្នាំជិតអស់ពីស្តុក',
-      'បោះពុម្ពស្លាករបៀបប្រើថ្នាំជាភាសាខ្មែរ (ព្រឹក, ថ្ងៃ, ល្ងាច, យប់, មុន/ក្រោយបាយ)',
+      'បោះពុម្ពស្លាករបៀបប្រើថ្នាំជាភាសាខ្មែរ - ព្រឹក, ថ្ងៃ, ល្ងាច, យប់, មុន ឬក្រោយបាយ',
     ],
     featuresEn: [
       'FEFO batch tracking prioritizes dispensing medicines nearing expiration date first',
@@ -370,7 +370,7 @@ export const ClinicDisciplineSection: React.FC = () => {
 
                     <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 space-y-1.5 text-xs">
                       <div className="flex justify-between font-semibold text-stone-700">
-                        <span>គ្រែសម្រាកព្យាបាល (IPD Beds)</span>
+                        <span>គ្រែសម្រាកព្យាបាល - IPD Beds</span>
                         <span className="font-mono text-teal-800 font-bold">8 / 10 គ្រែ</span>
                       </div>
                       <div className="w-full bg-stone-200 h-2 rounded-full overflow-hidden">
@@ -607,7 +607,7 @@ export const ClinicDisciplineSection: React.FC = () => {
           <div className="text-center max-w-2xl mx-auto space-y-2">
             <h3 className="text-lg sm:text-2xl font-bold text-stone-900 tracking-tight">
               {isKm
-                ? 'ប្រៀបធៀប Cloud PaaS របស់យើង ជាមួយប្រព័ន្ធចាស់ៗ (Legacy Systems)'
+                ? 'ប្រៀបធៀប Cloud PaaS របស់យើង ជាមួយប្រព័ន្ធចាស់ៗ - Legacy Systems'
                 : 'Why Leading Clinics Migrate from Legacy Software to Our Cloud PaaS'}
             </h3>
             <p className="text-xs text-stone-500">

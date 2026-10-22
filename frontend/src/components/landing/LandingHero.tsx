@@ -16,7 +16,6 @@ import {
   ArrowRight,
   CheckCircle2,
   Check,
-  Clock,
   Sparkles,
   ExternalLink,
   Building2,
@@ -49,14 +48,14 @@ export const LandingHero: React.FC = () => {
   const [clinicInput, setClinicInput] = useState('');
   const [activeTab, setActiveTab] = useState<ConsoleTab>('khqr');
 
-  // Auto-Showcase Carousel state
+  // Auto-Showcase State: switches tabs every 6 seconds with ZERO 100ms re-render loops
   const [isAutoPlay, setIsAutoPlay] = useState(true);
-  const [autoProgress, setAutoProgress] = useState(0);
   const [isUserInteracting, setIsUserInteracting] = useState(false);
   const pauseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // 3D Parallax Tilt container ref (Uses GPU CSS variables for 120 FPS zero-lag tracking)
+  // 3D Tilt container ref (Desktop pointer only with requestAnimationFrame throttle)
   const cardRef = useRef<HTMLDivElement>(null);
+  const rafIdRef = useRef<number | null>(null);
 
   // Mode 1: KHQR Real Live Scannable Cockpit
   const [customMerchantName, setCustomMerchantName] = useState('NOB ROTANA');
@@ -70,7 +69,7 @@ export const LandingHero: React.FC = () => {
 
   // Mode 2: Voice & Gemini SOAP Interactive State
   const [isRecording, setIsRecording] = useState(false);
-  const [soapStep, setSoapStep] = useState(2); // 0=idle, 1=listening, 2=parsed
+  const [soapStep, setSoapStep] = useState(2);
   const [selectedDoctor, setSelectedDoctor] = useState('Dr. Visoth Ratha, MD');
 
   // Mode 3: Smart Khmer Queue Interactive State
@@ -113,57 +112,55 @@ export const LandingHero: React.FC = () => {
   // Handle Tab Switch with manual interaction pause
   const handleSelectTab = useCallback((tab: ConsoleTab) => {
     setActiveTab(tab);
-    setAutoProgress(0);
     setIsUserInteracting(true);
     if (pauseTimeoutRef.current) clearTimeout(pauseTimeoutRef.current);
     pauseTimeoutRef.current = setTimeout(() => {
       setIsUserInteracting(false);
-    }, 10000); // Resume auto-cycle after 10 seconds of inactivity
+    }, 12000);
   }, []);
 
-  // Auto-Showcase Timer
+  // Clean, high-efficiency 6-second auto-cycle: ZERO 100ms state update loop
   useEffect(() => {
     if (!isAutoPlay || isUserInteracting) return;
 
-    const intervalTime = 100; // Update progress every 100ms
-    const totalDuration = 6000; // 6 seconds per tab
-    const step = (intervalTime / totalDuration) * 100;
-
     const timer = setInterval(() => {
-      setAutoProgress((prev) => {
-        if (prev >= 100) {
-          // Switch to next tab
-          setActiveTab((currentTab) => {
-            const currentIndex = tabsList.indexOf(currentTab);
-            const nextIndex = (currentIndex + 1) % tabsList.length;
-            return tabsList[nextIndex];
-          });
-          return 0;
-        }
-        return prev + step;
+      setActiveTab((currentTab) => {
+        const currentIndex = tabsList.indexOf(currentTab);
+        const nextIndex = (currentIndex + 1) % tabsList.length;
+        return tabsList[nextIndex];
       });
-    }, intervalTime);
+    }, 6000);
 
     return () => clearInterval(timer);
   }, [isAutoPlay, isUserInteracting, tabsList]);
 
-  // 3D Parallax Mouse Movement Handler (Direct DOM CSS properties - zero React re-renders)
+  // Ultra-Lightweight Mouse Movement Handler (Throttled via requestAnimationFrame, active only on desktop pointer)
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (typeof window === 'undefined') return;
+    if (window.innerWidth < 768) return;
     if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
 
-    const rotateX = ((y - centerY) / centerY) * -5.5;
-    const rotateY = ((x - centerX) / centerX) * 5.5;
+    if (rafIdRef.current) return;
 
-    cardRef.current.style.setProperty('--rx', `${rotateX.toFixed(2)}deg`);
-    cardRef.current.style.setProperty('--ry', `${rotateY.toFixed(2)}deg`);
-    cardRef.current.style.setProperty('--gx', `${((x / rect.width) * 100).toFixed(1)}%`);
-    cardRef.current.style.setProperty('--gy', `${((y / rect.height) * 100).toFixed(1)}%`);
-    cardRef.current.style.setProperty('--go', '0.22');
+    const clientX = e.clientX;
+    const clientY = e.clientY;
+
+    rafIdRef.current = requestAnimationFrame(() => {
+      rafIdRef.current = null;
+      if (!cardRef.current) return;
+      const rect = cardRef.current.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+
+      // Gentle, refined 3D tilt max 3.5 degrees - smooth and calm
+      const rotateX = ((y - centerY) / centerY) * -3.5;
+      const rotateY = ((x - centerX) / centerX) * 3.5;
+
+      cardRef.current.style.setProperty('--rx', `${rotateX.toFixed(2)}deg`);
+      cardRef.current.style.setProperty('--ry', `${rotateY.toFixed(2)}deg`);
+    });
   }, []);
 
   const handleMouseEnter = useCallback(() => {
@@ -172,13 +169,16 @@ export const LandingHero: React.FC = () => {
 
   const handleMouseLeave = useCallback(() => {
     setIsUserInteracting(false);
+    if (rafIdRef.current) {
+      cancelAnimationFrame(rafIdRef.current);
+      rafIdRef.current = null;
+    }
     if (!cardRef.current) return;
     cardRef.current.style.setProperty('--rx', '0deg');
     cardRef.current.style.setProperty('--ry', '0deg');
-    cardRef.current.style.setProperty('--go', '0');
   }, []);
 
-  // Web Audio Chime & Khmer Speech Synthesis
+  // Web Audio Chime
   const playPaymentSuccessChime = useCallback(() => {
     try {
       const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
@@ -196,10 +196,11 @@ export const LandingHero: React.FC = () => {
       osc.start();
       osc.stop(ctx.currentTime + 0.38);
     } catch {
-      // Audio not allowed or unavailable
+      // Audio not available
     }
   }, []);
 
+  // Khmer Speech Synthesis
   const playQueueSpeech = useCallback((ticketNum: number, roomStr: string) => {
     try {
       if ('speechSynthesis' in window) {
@@ -224,7 +225,7 @@ export const LandingHero: React.FC = () => {
         setTimeout(() => setCopiedPayload(false), 2000);
       }
     } catch {
-      // Clipboard write fallback
+      // Clipboard fallback
     }
   };
 
@@ -279,19 +280,18 @@ export const LandingHero: React.FC = () => {
   };
 
   return (
-    <section className="relative overflow-hidden pt-10 pb-20 md:pt-14 md:pb-28">
-      {/* 3D Atmospheric Cyber Lighting Canvas */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[760px] h-[760px] bg-gradient-to-tr from-teal-500/20 via-emerald-500/15 to-cyan-500/15 rounded-full blur-3xl pointer-events-none -z-10" />
-      <div className="absolute top-1/3 left-1/4 w-[460px] h-[460px] bg-teal-400/10 rounded-full blur-2xl pointer-events-none -z-10 animate-ambient-drift" />
+    <section className="relative overflow-hidden pt-8 pb-16 md:pt-14 md:pb-24">
+      {/* Static Lightweight Ambient Lighting: Zero CPU & GPU Battery Heat */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-tr from-teal-500/10 via-emerald-500/5 to-transparent rounded-full blur-3xl pointer-events-none -z-10" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* ============================================================== */}
-        {/* Header Hero Branding with Interactive 3D Emblem */}
+        {/* Header Hero Branding - Clean Human Crafted Architecture */}
         {/* ============================================================== */}
-        <div className="text-center max-w-4xl mx-auto space-y-5">
+        <div className="text-center max-w-4xl mx-auto space-y-4">
           {/* Top Promotion Ribbon */}
-          <div className="max-w-2xl mx-auto mb-2">
-            <div className="p-2 sm:p-2.5 bg-gradient-to-r from-amber-500/15 via-emerald-500/15 to-teal-500/15 border border-amber-300/60 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-2 text-xs shadow-2xs">
+          <div className="max-w-2xl mx-auto mb-1">
+            <div className="p-2 sm:p-2.5 bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-teal-500/10 border border-amber-300/50 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-2 text-xs shadow-2xs">
               <div className="flex items-center gap-2 text-stone-800 font-medium">
                 <span className="px-2 py-0.5 rounded-full bg-amber-600 text-white font-black text-[10px] tracking-wider uppercase shrink-0">
                   {isKm ? 'ប្រូម៉ូសិនពិសេស' : 'Special Offer'}
@@ -308,15 +308,15 @@ export const LandingHero: React.FC = () => {
             </div>
           </div>
 
-          {/* 3D Brand Logo Showcase */}
-          <div className="inline-flex justify-center mb-1">
-            <ClinicLogo variant="hero3d" size="hero" showSubtitle={false} interactive={true} />
+          {/* Clean Brand Logo */}
+          <div className="inline-flex justify-center">
+            <ClinicLogo variant="hero3d" size="hero" showSubtitle={false} interactive={false} />
           </div>
 
           {/* Announcement Pill */}
           <div>
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/90 border border-[#DCD5C5] text-stone-800 text-xs font-semibold shadow-xs backdrop-blur-md">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/95 border border-[#DCD5C5] text-stone-800 text-xs font-semibold shadow-xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
               <span className="font-sans">
                 {isKm
                   ? 'X-Clinic 2.0 • PaaS វេជ្ជសាស្ត្រជំនាន់ថ្មី • Bakong Tag 01=12 & Gemini 3.8 AI'
@@ -326,7 +326,7 @@ export const LandingHero: React.FC = () => {
           </div>
 
           {/* Main Headline */}
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-stone-900 tracking-tight leading-tight md:leading-tight font-sans">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-black text-stone-900 tracking-tight leading-tight md:leading-tight font-sans">
             {isKm
               ? 'ប្រព័ន្ធគ្រប់គ្រងគ្លីនិក និងទូទាត់ប្រាក់ KHQR ទំនើបឈានមុខគេនៅកម្ពុជា'
               : 'Next-Generation Clinical Operating System & Dynamic KHQR Platform'}
@@ -339,7 +339,7 @@ export const LandingHero: React.FC = () => {
               : 'Complete all-in-one PaaS workspace for private clinics in Cambodia: 2-second dynamic Tag 01=12 KHQR generation, Gemini 3.8 Flash voice dictation to structured SOAP, native Khmer queue calling, and automated Telegram operations.'}
           </p>
 
-          {/* Interactive Fast Clinic Registration Bar */}
+          {/* Clean Single Action Form: Input Bar with Single Primary Button */}
           <div className="max-w-xl mx-auto pt-2">
             <form
               onSubmit={(e) => {
@@ -352,7 +352,7 @@ export const LandingHero: React.FC = () => {
                   }`
                 );
               }}
-              className="p-2 bg-white border border-[#D5CDBD] rounded-2xl shadow-md focus-within:ring-2 focus-within:ring-teal-700 transition-all space-y-2"
+              className="p-2 bg-white border border-[#D5CDBD] rounded-2xl shadow-sm focus-within:ring-2 focus-within:ring-teal-700 focus-within:border-teal-700 transition-all space-y-2"
             >
               <div className="flex items-center gap-2">
                 <div className="pl-2.5 text-teal-800">
@@ -373,60 +373,44 @@ export const LandingHero: React.FC = () => {
                   type="submit"
                   className="px-4 py-2.5 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center gap-1.5 shrink-0 active:scale-95 cursor-pointer"
                 >
-                  <span>{isKm ? 'ចុះឈ្មោះភ្លាមៗ' : 'Get Started'}</span>
+                  <span>{isKm ? 'ចាប់ផ្តើម Free' : 'Get Started Free'}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
 
-              {/* Subdomain slug preview indicator */}
+              {/* Subdomain slug preview & clean single sign-in link */}
               <div className="px-3 pb-0.5 text-left flex items-center justify-between text-[11px] text-stone-500 font-mono border-t border-stone-100 pt-1.5">
                 <div className="flex items-center gap-1 truncate">
-                  <span className="text-teal-800 font-semibold">Workspace URL:</span>
+                  <span className="text-teal-800 font-semibold">Workspace:</span>
                   <span className="text-stone-700 font-bold bg-[#FAF7F2] px-1.5 py-0.5 rounded border border-[#E5DEC1]">
                     https://{slugPreview}.clinic.com
                   </span>
                 </div>
-                <span className="text-[10px] text-emerald-700 font-bold hidden sm:inline">
-                  Free 5 KHQR/day
-                </span>
+                <div className="text-[11px] text-stone-500 font-sans">
+                  <span>{isKm ? 'មានគណនីរួចហើយ?' : 'Have account?'}</span>{' '}
+                  <Link href="/login" className="font-bold text-teal-800 hover:text-teal-950 underline">
+                    {isKm ? 'ចូលប្រើប្រាស់' : 'Sign In'}
+                  </Link>
+                </div>
               </div>
             </form>
           </div>
 
-          {/* Action CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-1">
-            <Link
-              href="/register"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs sm:text-sm font-bold shadow-md transition-all active:scale-95 hover-wobble"
-            >
-              <span>{isKm ? 'ចាប់ផ្តើមគម្រោង Free សាកល្បង' : 'Start 14-Day Free Evaluation'}</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-
-            <Link
-              href="/login"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#FAF7F2] hover:bg-[#F2ECE1] text-stone-800 border border-[#DFD6C6] rounded-xl text-xs sm:text-sm font-semibold shadow-xs transition-colors active:scale-95"
-            >
-              <Users className="w-4 h-4 text-stone-600" />
-              <span>{isKm ? 'ចូលប្រើប្រាស់គណនី' : 'Sign In to Portal'}</span>
-            </Link>
-          </div>
-
-          {/* Hardware & Standard Compliance Points */}
+          {/* Key Value Metrics */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 pt-4 text-left font-sans">
-            <div className="bg-white/80 p-3 rounded-2xl border border-[#E7DFCF] shadow-2xs hover-wobble transition-transform">
+            <div className="bg-white/90 p-3 rounded-2xl border border-[#E7DFCF] shadow-2xs hover:border-teal-700/40 transition-colors">
               <div className="text-sm sm:text-base font-extrabold text-teal-800">2-Second Speed</div>
               <div className="text-[11px] text-stone-500 font-medium">Tag 01=12 Dynamic KHQR</div>
             </div>
-            <div className="bg-white/80 p-3 rounded-2xl border border-[#E7DFCF] shadow-2xs hover-wobble transition-transform">
+            <div className="bg-white/90 p-3 rounded-2xl border border-[#E7DFCF] shadow-2xs hover:border-teal-700/40 transition-colors">
               <div className="text-sm sm:text-base font-extrabold text-teal-800">100% Direct ABA</div>
               <div className="text-[11px] text-stone-500 font-medium">Direct Settlement to Merchant</div>
             </div>
-            <div className="bg-white/80 p-3 rounded-2xl border border-[#E7DFCF] shadow-2xs hover-wobble transition-transform">
+            <div className="bg-white/90 p-3 rounded-2xl border border-[#E7DFCF] shadow-2xs hover:border-teal-700/40 transition-colors">
               <div className="text-sm sm:text-base font-extrabold text-teal-800">Gemini 3.8 AI</div>
               <div className="text-[11px] text-stone-500 font-medium">Khmer Voice to SOAP Note</div>
             </div>
-            <div className="bg-white/80 p-3 rounded-2xl border border-[#E7DFCF] shadow-2xs hover-wobble transition-transform">
+            <div className="bg-white/90 p-3 rounded-2xl border border-[#E7DFCF] shadow-2xs hover:border-teal-700/40 transition-colors">
               <div className="text-sm sm:text-base font-extrabold text-teal-800">MoH Compliant</div>
               <div className="text-[11px] text-stone-500 font-medium">ICD-11 & Strict Tenant Isolation</div>
             </div>
@@ -434,47 +418,37 @@ export const LandingHero: React.FC = () => {
         </div>
 
         {/* ============================================================== */}
-        {/* Next-Gen Cyber-Luxury 3D Spatial Medical Cockpit Console */}
+        {/* Human Design 3D Medical Workstation Console - Ultra-Lightweight */}
         {/* ============================================================== */}
-        <div className="mt-12 max-w-5xl mx-auto perspective-1200 relative">
-          {/* Luminous Cyber Neon Aura behind the console */}
-          <div className="absolute inset-0 bg-gradient-to-r from-teal-500/20 via-emerald-500/25 to-cyan-500/20 rounded-3xl blur-3xl -z-10 animate-neon-aura" />
+        <div className="mt-10 max-w-5xl mx-auto md:perspective-1000 relative">
+          {/* Subtle Ambient Shadow */}
+          <div className="absolute inset-0 bg-teal-900/10 rounded-3xl blur-2xl -z-10" />
 
-          {/* The High-Performance 3D Tilt Container */}
+          {/* The High-Performance Console: Flat 2D on mobile, gentle 3D tilt on desktop */}
           <div
             ref={cardRef}
             onMouseMove={handleMouseMove}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             style={{
-              transform: 'perspective(1200px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateZ(0)',
-              transition: 'transform 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
+              transform: 'perspective(1000px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateZ(0)',
+              transition: 'transform 0.24s cubic-bezier(0.16, 1, 0.3, 1)',
             }}
-            className="relative bg-gradient-to-b from-[#111A1D] via-[#0B1315] to-[#070C0E] rounded-3xl border border-teal-500/35 shadow-[0_25px_80px_-15px_rgba(13,148,136,0.3)] overflow-hidden transform-gpu preserve-3d will-change-transform"
+            className="relative bg-gradient-to-b from-[#111A1D] via-[#0B1315] to-[#070C0E] rounded-3xl border border-teal-500/30 shadow-xl overflow-hidden will-change-transform"
           >
-            {/* Specular Interactive Reflection Sheen (GPU updated via CSS variables) */}
-            <div
-              className="absolute inset-0 pointer-events-none z-30 transition-opacity duration-300"
-              style={{
-                background:
-                  'radial-gradient(circle at var(--gx, 50%) var(--gy, 50%), rgba(255, 255, 255, 0.32) 0%, rgba(20, 184, 166, 0.12) 30%, transparent 65%)',
-                opacity: 'var(--go, 0)',
-              }}
-            />
-
             {/* Cockpit Top Navigation & Real Medical Instrument Tabs */}
-            <div className="bg-gradient-to-r from-[#1A2528] via-[#101C1E] to-[#0A1416] text-white px-4 sm:px-6 py-3.5 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 border-b border-teal-500/20">
+            <div className="bg-[#141F22] text-white px-4 sm:px-6 py-3 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 border-b border-teal-500/20">
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-full bg-rose-500 inline-block shadow-xs" />
-                  <span className="w-3 h-3 rounded-full bg-amber-400 inline-block shadow-xs" />
-                  <span className="w-3 h-3 rounded-full bg-emerald-400 inline-block shadow-xs" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block opacity-80" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block opacity-80" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block opacity-80" />
                 </div>
                 <div className="h-4 w-[1px] bg-white/20 hidden sm:block" />
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="text-xs font-black tracking-wider text-teal-300 font-mono uppercase">
-                    X-Clinic 3D Spatial Live Console
+                  <div className="w-2 h-2 rounded-full bg-emerald-400" />
+                  <span className="text-xs font-bold tracking-wider text-teal-300 font-mono uppercase">
+                    X-Clinic Live Medical Console
                   </span>
                 </div>
 
@@ -482,12 +456,12 @@ export const LandingHero: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsAutoPlay(!isAutoPlay)}
-                  className={`ml-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold flex items-center gap-1 border transition-all cursor-pointer ${
+                  className={`ml-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold flex items-center gap-1 border transition-colors cursor-pointer ${
                     isAutoPlay
                       ? 'bg-emerald-950/60 text-emerald-300 border-emerald-500/40 shadow-xs'
                       : 'bg-stone-800/80 text-stone-400 border-stone-700'
                   }`}
-                  title={isAutoPlay ? 'Auto-Tour: ON (Click to Pause)' : 'Auto-Tour: PAUSED (Click to Play)'}
+                  title={isAutoPlay ? 'Auto Tour: ON - Click to Pause' : 'Auto Tour: PAUSED - Click to Play'}
                 >
                   {isAutoPlay ? (
                     <>
@@ -503,14 +477,14 @@ export const LandingHero: React.FC = () => {
                 </button>
               </div>
 
-              {/* Console Tactile Mode Switcher with Interactive Spring Pills */}
-              <div className="flex items-center gap-1 bg-black/60 p-1.5 rounded-2xl border border-teal-500/30 text-xs overflow-x-auto max-w-full">
+              {/* Console Tactile Mode Switcher */}
+              <div className="flex items-center gap-1 bg-black/50 p-1 rounded-2xl border border-teal-500/25 text-xs overflow-x-auto max-w-full">
                 <button
                   type="button"
                   onClick={() => handleSelectTab('khqr')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer hover-wobble ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer ${
                     activeTab === 'khqr'
-                      ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-[0_0_15px_rgba(20,184,166,0.4)] scale-102'
+                      ? 'bg-teal-700 text-white shadow-xs'
                       : 'text-stone-300 hover:text-white hover:bg-white/5'
                   }`}
                 >
@@ -521,9 +495,9 @@ export const LandingHero: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => handleSelectTab('voice')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer hover-wobble ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer ${
                     activeTab === 'voice'
-                      ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-[0_0_15px_rgba(20,184,166,0.4)] scale-102'
+                      ? 'bg-teal-700 text-white shadow-xs'
                       : 'text-stone-300 hover:text-white hover:bg-white/5'
                   }`}
                 >
@@ -534,9 +508,9 @@ export const LandingHero: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => handleSelectTab('queue')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer hover-wobble ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer ${
                     activeTab === 'queue'
-                      ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-[0_0_15px_rgba(20,184,166,0.4)] scale-102'
+                      ? 'bg-teal-700 text-white shadow-xs'
                       : 'text-stone-300 hover:text-white hover:bg-white/5'
                   }`}
                 >
@@ -547,9 +521,9 @@ export const LandingHero: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => handleSelectTab('hardware')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer hover-wobble ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer ${
                     activeTab === 'hardware'
-                      ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-[0_0_15px_rgba(20,184,166,0.4)] scale-102'
+                      ? 'bg-teal-700 text-white shadow-xs'
                       : 'text-stone-300 hover:text-white hover:bg-white/5'
                   }`}
                 >
@@ -559,12 +533,12 @@ export const LandingHero: React.FC = () => {
               </div>
             </div>
 
-            {/* Animated Auto-Progress Bar Indicator */}
+            {/* CSS-Only Progress Bar Indicator: 0% React re-render overhead */}
             {isAutoPlay && (
-              <div className="w-full h-0.5 bg-stone-900/80 overflow-hidden">
+              <div className="w-full h-0.5 bg-stone-900 overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-400 transition-all duration-100 ease-linear"
-                  style={{ width: `${autoProgress}%` }}
+                  key={activeTab}
+                  className="h-full bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-400 animate-progress-strip"
                 />
               </div>
             )}
@@ -573,8 +547,8 @@ export const LandingHero: React.FC = () => {
             {/* TAB 1: DYNAMIC KHQR COCKPIT */}
             {/* ========================================================== */}
             {activeTab === 'khqr' && (
-              <div className="p-6 sm:p-8 bg-gradient-to-b from-[#0F171A] to-[#0A1214] grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-tab-enter">
-                {/* Left Side: Interactive Customizer & EMVCo Inspector (7 Cols) */}
+              <div className="p-5 sm:p-7 bg-[#0C1417] grid grid-cols-1 lg:grid-cols-12 gap-7 items-start animate-tab-enter">
+                {/* Left Side: Interactive Customizer (7 Cols) */}
                 <div className="lg:col-span-7 space-y-4">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold bg-teal-950/80 text-teal-300 border border-teal-500/40 shadow-xs">
@@ -587,7 +561,7 @@ export const LandingHero: React.FC = () => {
                   </div>
 
                   <div>
-                    <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight font-sans">
+                    <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight font-sans">
                       {isKm ? 'សាកល្បង KHQR ពិតប្រាកដ និងកែប្រែឈ្មោះគ្លីនិកផ្ទាល់' : 'Interactive KHQR Live Generator & Custom Clinic Demo'}
                     </h3>
                     <p className="text-xs text-stone-300 mt-1 leading-relaxed font-sans">
@@ -598,7 +572,7 @@ export const LandingHero: React.FC = () => {
                   </div>
 
                   {/* 1. Custom Clinic / Merchant Name Input */}
-                  <div className="p-3.5 bg-stone-900/70 backdrop-blur-md rounded-2xl border border-teal-500/20 shadow-inner space-y-2">
+                  <div className="p-3 bg-stone-900/80 rounded-2xl border border-teal-500/20 space-y-2">
                     <div className="flex items-center justify-between text-xs">
                       <label htmlFor="clinic-tag59" className="font-bold text-teal-200 flex items-center gap-1.5">
                         <Building2 className="w-3.5 h-3.5 text-teal-400" />
@@ -617,7 +591,7 @@ export const LandingHero: React.FC = () => {
                         value={customMerchantName}
                         onChange={(e) => setCustomMerchantName(e.target.value.toUpperCase())}
                         placeholder="ENTER CLINIC NAME - MAX 25 CHARS"
-                        className="w-full px-3.5 py-2.5 bg-black/50 border border-teal-500/30 rounded-xl text-xs font-bold font-mono text-white placeholder:text-stone-500 focus:outline-hidden focus:ring-2 focus:ring-teal-400 uppercase tracking-wide transition-all shadow-inner"
+                        className="w-full px-3.5 py-2 bg-black/60 border border-teal-500/30 rounded-xl text-xs font-bold font-mono text-white placeholder:text-stone-500 focus:outline-hidden focus:ring-2 focus:ring-teal-400 uppercase tracking-wide transition-all"
                       />
                     </div>
 
@@ -636,10 +610,10 @@ export const LandingHero: React.FC = () => {
                           key={item.val}
                           type="button"
                           onClick={() => setCustomMerchantName(item.val)}
-                          className={`px-2.5 py-1 rounded-lg text-[10px] font-bold font-mono transition-all cursor-pointer hover-wobble ${
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-bold font-mono transition-colors cursor-pointer ${
                             customMerchantName === item.val
-                              ? 'bg-teal-500 text-stone-950 shadow-xs font-black'
-                              : 'bg-stone-800/80 hover:bg-stone-700 text-stone-300 border border-stone-700/60'
+                              ? 'bg-teal-500 text-stone-950 font-black'
+                              : 'bg-stone-800 text-stone-300 border border-stone-700/60 hover:bg-stone-700 hover:text-white'
                           }`}
                         >
                           {item.label}
@@ -649,7 +623,7 @@ export const LandingHero: React.FC = () => {
                   </div>
 
                   {/* 2. Amount & Currency Selector */}
-                  <div className="p-3.5 bg-stone-900/70 backdrop-blur-md rounded-2xl border border-teal-500/20 shadow-inner space-y-2.5">
+                  <div className="p-3 bg-stone-900/80 rounded-2xl border border-teal-500/20 space-y-2.5">
                     <div className="flex items-center justify-between">
                       <div className="text-xs font-bold text-teal-200 flex items-center gap-1.5">
                         <Lock className="w-3.5 h-3.5 text-teal-400" />
@@ -668,9 +642,9 @@ export const LandingHero: React.FC = () => {
                               setSelectedPresetAmount('0.01');
                             }
                           }}
-                          className={`px-2.5 py-0.5 rounded-md transition-all cursor-pointer ${
+                          className={`px-2.5 py-0.5 rounded-md transition-colors cursor-pointer ${
                             khqrCurrency === 'USD'
-                              ? 'bg-teal-500 text-stone-950 font-black shadow-xs'
+                              ? 'bg-teal-500 text-stone-950 font-black'
                               : 'text-stone-400 hover:text-white'
                           }`}
                         >
@@ -686,9 +660,9 @@ export const LandingHero: React.FC = () => {
                               setSelectedPresetAmount('400');
                             }
                           }}
-                          className={`px-2.5 py-0.5 rounded-md transition-all cursor-pointer ${
+                          className={`px-2.5 py-0.5 rounded-md transition-colors cursor-pointer ${
                             khqrCurrency === 'KHR'
-                              ? 'bg-teal-500 text-stone-950 font-black shadow-xs'
+                              ? 'bg-teal-500 text-stone-950 font-black'
                               : 'text-stone-400 hover:text-white'
                           }`}
                         >
@@ -697,7 +671,7 @@ export const LandingHero: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Amount Preset Buttons with 3D tactile micro-wobble */}
+                    {/* Amount Preset Buttons */}
                     <div className="flex items-center gap-1.5 flex-wrap">
                       {(khqrCurrency === 'USD'
                         ? [
@@ -708,7 +682,7 @@ export const LandingHero: React.FC = () => {
                             { val: '15.00', label: '$15.00' },
                           ]
                         : [
-                            { val: '400', label: isKm ? '400 ៛ - សាកល្បងពិតប្រាកដ' : '400 ៛ (Safe Real Test)' },
+                            { val: '400', label: isKm ? '400 ៛ - សាកល្បងពិតប្រាកដ' : '400 ៛ - Safe Real Test' },
                             { val: '2000', label: '2,000 ៛' },
                             { val: '4000', label: '4,000 ៛' },
                             { val: '20000', label: '20,000 ៛' },
@@ -722,10 +696,10 @@ export const LandingHero: React.FC = () => {
                             setIsCustomAmount(false);
                             setSelectedPresetAmount(preset.val);
                           }}
-                          className={`px-2.5 py-1.5 rounded-xl text-xs font-bold font-mono transition-all cursor-pointer flex items-center gap-1 hover-wobble active-wobble ${
+                          className={`px-2.5 py-1 rounded-xl text-xs font-bold font-mono transition-colors cursor-pointer flex items-center gap-1 ${
                             !isCustomAmount && selectedPresetAmount === preset.val
-                              ? 'bg-gradient-to-r from-teal-500 to-emerald-500 text-stone-950 font-black shadow-[0_0_15px_rgba(20,184,166,0.35)] scale-102'
-                              : 'bg-stone-800/80 text-stone-300 border border-stone-700/60 hover:bg-stone-700 hover:text-white'
+                              ? 'bg-teal-500 text-stone-950 font-black'
+                              : 'bg-stone-800 text-stone-300 border border-stone-700/60 hover:bg-stone-700 hover:text-white'
                           }`}
                         >
                           {!isCustomAmount && selectedPresetAmount === preset.val && (
@@ -744,10 +718,10 @@ export const LandingHero: React.FC = () => {
                             setCustomAmountInput(khqrCurrency === 'KHR' ? '4000' : '2.50');
                           }
                         }}
-                        className={`px-2.5 py-1.5 rounded-xl text-xs font-bold font-mono transition-all cursor-pointer flex items-center gap-1 hover-wobble active-wobble ${
+                        className={`px-2.5 py-1 rounded-xl text-xs font-bold font-mono transition-colors cursor-pointer flex items-center gap-1 ${
                           isCustomAmount
-                            ? 'bg-gradient-to-r from-teal-500 to-emerald-500 text-stone-950 font-black shadow-[0_0_15px_rgba(20,184,166,0.35)] scale-102'
-                            : 'bg-stone-800/80 text-stone-300 border border-stone-700/60 hover:bg-stone-700 hover:text-white'
+                            ? 'bg-teal-500 text-stone-950 font-black'
+                            : 'bg-stone-800 text-stone-300 border border-stone-700/60 hover:bg-stone-700 hover:text-white'
                         }`}
                       >
                         {isCustomAmount && <Check className="w-3 h-3 text-stone-950 stroke-[3]" />}
@@ -769,7 +743,7 @@ export const LandingHero: React.FC = () => {
                             value={customAmountInput}
                             onChange={(e) => setCustomAmountInput(e.target.value)}
                             placeholder={khqrCurrency === 'USD' ? '0.01' : '400'}
-                            className="w-full pl-8 pr-3 py-2 bg-black/60 border border-teal-500/40 rounded-xl text-xs font-bold font-mono text-white focus:outline-hidden focus:ring-2 focus:ring-teal-400 shadow-inner"
+                            className="w-full pl-8 pr-3 py-1.5 bg-black/60 border border-teal-500/40 rounded-xl text-xs font-bold font-mono text-white focus:outline-hidden focus:ring-2 focus:ring-teal-400 shadow-inner"
                           />
                         </div>
                         <span className="text-[11px] text-stone-400 font-sans">
@@ -780,7 +754,7 @@ export const LandingHero: React.FC = () => {
                   </div>
 
                   {/* 3. Live Invoice Summary Card */}
-                  <div className="p-4 rounded-2xl bg-stone-900/60 backdrop-blur-md border border-white/10 shadow-inner space-y-2 text-xs font-sans">
+                  <div className="p-3.5 rounded-2xl bg-stone-900/70 border border-white/10 space-y-1.5 text-xs font-sans">
                     <div className="flex justify-between items-center text-stone-400">
                       <span>{isKm ? 'លេខវិក្កយបត្រ - Tag 62:' : 'Invoice Reference (Tag 62):'}</span>
                       <span className="font-mono font-bold text-white">#INV-2026-0881</span>
@@ -808,7 +782,7 @@ export const LandingHero: React.FC = () => {
                   </div>
 
                   {/* 4. Live EMVCo Tag Inspector & Copy Button */}
-                  <div className="p-3 bg-stone-900/60 backdrop-blur-md rounded-2xl border border-white/10 shadow-inner space-y-2">
+                  <div className="p-3 bg-stone-900/70 rounded-2xl border border-white/10 space-y-2">
                     <div className="flex items-center justify-between">
                       <button
                         type="button"
@@ -845,7 +819,7 @@ export const LandingHero: React.FC = () => {
 
                     {showTagBreakdown && (
                       <div className="pt-1 space-y-1.5 text-[11px] font-mono border-t border-white/10 mt-2">
-                        <div className="max-h-48 overflow-y-auto space-y-1 pr-1">
+                        <div className="max-h-44 overflow-y-auto space-y-1 pr-1">
                           {activeLiveKhqr.tagBreakdown.map((item) => (
                             <div
                               key={item.tag}
@@ -860,114 +834,82 @@ export const LandingHero: React.FC = () => {
                             </div>
                           ))}
                         </div>
-                        <div className="p-2.5 bg-black/80 text-teal-300 rounded-xl text-[10px] break-all leading-relaxed font-mono border border-teal-500/20">
+                        <div className="p-2 bg-black/80 text-teal-300 rounded-xl text-[10px] break-all leading-relaxed font-mono border border-teal-500/20">
                           {activeLiveKhqr.qrString}
                         </div>
                       </div>
                     )}
                   </div>
-
-                  {/* Supported Banks Row */}
-                  <div className="flex items-center gap-2 pt-1 flex-wrap">
-                    <span className="text-xs font-semibold text-stone-400">
-                      {isKm ? 'គាំទ្រកម្មវិធីធនាគារ:' : 'Supported Mobile Apps:'}
-                    </span>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-950/60 text-teal-300 border border-teal-500/30">
-                      ABA Mobile
-                    </span>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-950/60 text-rose-300 border border-rose-500/30">
-                      Bakong App
-                    </span>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-950/60 text-blue-300 border border-blue-500/30">
-                      Acleda
-                    </span>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-lime-950/60 text-lime-300 border border-lime-500/30">
-                      Wing Bank
-                    </span>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-stone-800 text-stone-300 border border-stone-700">
-                      Canadia / Sathapana
-                    </span>
-                  </div>
                 </div>
 
-                {/* Right Side: QR Preview Graphic with Cyber-Scanning Laser Beam */}
-                <div className="lg:col-span-5 flex flex-col items-center justify-center p-6 bg-gradient-to-b from-[#141F22] to-[#0D1618] rounded-2xl border border-teal-500/30 shadow-2xl relative space-y-4">
-                  {/* Top Badge: Scannable 24/7 */}
+                {/* Right Side: Clean Scannable QR Surface */}
+                <div className="lg:col-span-5 flex flex-col items-center justify-center p-6 bg-[#131D20] rounded-2xl border border-teal-500/25 shadow-lg space-y-4">
+                  {/* Status Badge */}
                   <div className="w-full flex items-center justify-between text-[11px] font-bold border-b border-white/10 pb-2">
                     <span className="text-stone-400 font-sans">{isKm ? 'ស្ថានភាព QR:' : 'QR Status:'}</span>
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-950/90 text-emerald-300 border border-emerald-500/40 font-mono text-[10px]">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-500/40 font-mono text-[10px]">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400" />
                       <span>{isKm ? 'ដំណើរការអចិន្ត្រៃយ៍' : 'Permanent Live Active'}</span>
                     </span>
                   </div>
 
-                  {/* Scannable QR Frame with High-Tech Viewfinder Target Corners & Cyber Laser */}
-                  <div className="w-60 h-60 bg-black/90 rounded-2xl p-4 flex flex-col items-center justify-center relative shadow-[0_0_30px_rgba(20,184,166,0.15)] border border-teal-500/40 overflow-hidden group">
-                    {/* Corner Targeting Crosshairs */}
-                    <span className="absolute top-2 left-2 w-3.5 h-3.5 border-t-2 border-l-2 border-teal-400" />
-                    <span className="absolute top-2 right-2 w-3.5 h-3.5 border-t-2 border-r-2 border-teal-400" />
-                    <span className="absolute bottom-2 left-2 w-3.5 h-3.5 border-b-2 border-l-2 border-teal-400" />
-                    <span className="absolute bottom-2 right-2 w-3.5 h-3.5 border-b-2 border-r-2 border-teal-400" />
-
-                    {/* Cyber Laser Scan Line sweeping vertically */}
-                    <div className="absolute left-3 right-3 h-[2px] bg-gradient-to-r from-transparent via-emerald-400 to-transparent pointer-events-none z-20 animate-cyber-scan shadow-[0_0_12px_#34d399]" />
-
-                    {/* High-Contrast Crisp White QR Surface */}
-                    <div className="p-3 bg-white rounded-xl shadow-lg relative z-10 transition-transform duration-300 group-hover:scale-102">
+                  {/* Scannable High-Contrast QR Frame: Zero lag laser scan line */}
+                  <div className="w-56 h-56 bg-black/90 rounded-2xl p-3.5 flex flex-col items-center justify-center relative border border-teal-500/30">
+                    <div className="p-3 bg-white rounded-xl shadow-md">
                       <QRCodeSVG
                         value={activeLiveKhqr.qrString}
-                        size={180}
+                        size={172}
                         level="M"
                         includeMargin={false}
                       />
                     </div>
                   </div>
 
-                  {/* Clean Status & Instruction without blocking overlay */}
-                  <div className="text-center space-y-1">
+                  {/* Merchant & Amount Labels */}
+                  <div className="text-center space-y-0.5">
                     <div className="text-xs font-bold text-white font-sans tracking-wide">
                       {activeLiveKhqr.merchantName}
                     </div>
                     <div className="text-teal-400 font-mono text-base font-black tracking-wider">
                       {activeLiveKhqr.amountFormatted}
                     </div>
-                    <div className="text-[11px] text-stone-300 font-sans">
+                    <div className="text-[11px] text-stone-400 font-sans">
                       {isKm
-                        ? 'បើក App ធនាគាររបស់អ្នក ABA ឬ Bakong រួចស្កេនដើម្បីសាកល្បង'
+                        ? 'បើក App ធនាគារ ABA ឬ Bakong រួចស្កេនដើម្បីសាកល្បង'
                         : 'Open ABA Mobile or Bakong and scan to test live'}
                     </div>
                   </div>
 
-                  {/* 1-Click Mobile App Deep Link Buttons */}
+                  {/* Deep Link Buttons */}
                   <div className="grid grid-cols-2 gap-2 w-full">
                     <a
                       href={activeLiveKhqr.abaDeeplink}
-                      className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-[#005777] hover:bg-[#004761] text-white text-xs font-bold transition-all shadow-md active:scale-95 text-center cursor-pointer hover-wobble"
+                      className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-[#005777] hover:bg-[#004761] text-white text-xs font-bold transition-colors shadow-xs active:scale-95 text-center cursor-pointer"
                     >
                       <span>ABA Mobile</span>
                       <ExternalLink className="w-3.5 h-3.5" />
                     </a>
                     <a
                       href={activeLiveKhqr.bakongDeeplink}
-                      className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-[#D61B22] hover:bg-[#B3141A] text-white text-xs font-bold transition-all shadow-md active:scale-95 text-center cursor-pointer hover-wobble"
+                      className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-[#D61B22] hover:bg-[#B3141A] text-white text-xs font-bold transition-colors shadow-xs active:scale-95 text-center cursor-pointer"
                     >
                       <span>Bakong App</span>
                       <ExternalLink className="w-3.5 h-3.5" />
                     </a>
                   </div>
 
-                  {/* Secondary Actions: Test Chime & ABA Web Checkout */}
+                  {/* Audio Chime & Checkout Link */}
                   <div className="flex items-center justify-between w-full gap-2 pt-1 border-t border-white/10">
                     <button
                       type="button"
                       onClick={handleTestChime}
-                      className={`flex-1 py-2 px-2 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer hover-wobble active:scale-95 ${
+                      className={`flex-1 py-1.5 px-2 rounded-xl text-[11px] font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 ${
                         isPlayingChime
-                          ? 'bg-emerald-500 text-stone-950 font-black shadow-md'
+                          ? 'bg-emerald-500 text-stone-950 font-black'
                           : 'bg-stone-800 hover:bg-stone-700 text-stone-200 border border-stone-700'
                       }`}
                     >
-                      <Volume2 className={`w-3.5 h-3.5 ${isPlayingChime ? 'text-stone-950 animate-pulse' : 'text-teal-400'}`} />
+                      <Volume2 className={`w-3.5 h-3.5 ${isPlayingChime ? 'text-stone-950' : 'text-teal-400'}`} />
                       <span>{isPlayingChime ? (isKm ? 'កំពុងបន្លឺសំឡេង...' : 'Playing Chime...') : (isKm ? 'សាកល្បងសម្លេងទូទាត់' : 'Test Audio Chime')}</span>
                     </button>
 
@@ -975,18 +917,11 @@ export const LandingHero: React.FC = () => {
                       href={activeLiveKhqr.paywayWebLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="py-2 px-3 rounded-xl text-[11px] font-bold bg-stone-800 hover:bg-stone-700 text-stone-200 border border-stone-700 transition-colors flex items-center gap-1 cursor-pointer hover-wobble active:scale-95"
+                      className="py-1.5 px-3 rounded-xl text-[11px] font-bold bg-stone-800 hover:bg-stone-700 text-stone-200 border border-stone-700 transition-colors flex items-center gap-1 cursor-pointer active:scale-95"
                     >
                       <span>PayWay Link</span>
                       <ExternalLink className="w-3 h-3 text-stone-400" />
                     </a>
-                  </div>
-
-                  {/* Trust note */}
-                  <div className="text-[10px] text-stone-400 text-center font-sans leading-tight">
-                    {isKm
-                      ? 'QR Code នេះទាញចេញពី ABA Merchant Link ផ្ទាល់ PayWay ID 126092913522024 អាចស្កេនបានគ្រប់ពេល គ្មាន Polling និងគ្មានផុតកំណត់ 3 នាទីឡើយ។'
-                      : 'Generated directly from verified ABA Merchant Link (PayWay ID: 126092913522024). Permanent validity with zero polling overhead.'}
                   </div>
                 </div>
               </div>
@@ -996,7 +931,7 @@ export const LandingHero: React.FC = () => {
             {/* TAB 2: GEMINI 3.8 FLASH VOICE & AI SOAP STUDIO */}
             {/* ========================================================== */}
             {activeTab === 'voice' && (
-              <div className="p-6 sm:p-8 bg-gradient-to-b from-[#0F171A] to-[#0A1214] grid grid-cols-1 lg:grid-cols-12 gap-8 items-center animate-tab-enter">
+              <div className="p-5 sm:p-7 bg-[#0C1417] grid grid-cols-1 lg:grid-cols-12 gap-7 items-center animate-tab-enter">
                 <div className="lg:col-span-6 space-y-4">
                   <div className="flex items-center gap-2">
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold bg-teal-950/80 text-teal-300 border border-teal-500/40 shadow-xs">
@@ -1009,7 +944,7 @@ export const LandingHero: React.FC = () => {
                   </div>
 
                   <div>
-                    <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight font-sans">
+                    <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight font-sans">
                       {isKm
                         ? 'កត់ត្រាសំឡេងវេជ្ជសាស្ត្រ & បំប្លែងទៅជាទម្រង់ SOAP'
                         : 'Bilingual Clinical Voice Dictation to SOAP Notes'}
@@ -1032,10 +967,10 @@ export const LandingHero: React.FC = () => {
                           key={doc}
                           type="button"
                           onClick={() => setSelectedDoctor(doc)}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer hover-wobble ${
+                          className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
                             selectedDoctor === doc
-                              ? 'bg-teal-500 text-stone-950 font-black shadow-xs'
-                              : 'bg-stone-800/80 text-stone-300 border border-stone-700 hover:bg-stone-700 hover:text-white'
+                              ? 'bg-teal-500 text-stone-950 font-black'
+                              : 'bg-stone-800 text-stone-300 border border-stone-700 hover:bg-stone-700 hover:text-white'
                           }`}
                         >
                           {doc}
@@ -1045,21 +980,21 @@ export const LandingHero: React.FC = () => {
                   </div>
 
                   {/* Dictation Box */}
-                  <div className="p-4 rounded-2xl bg-stone-900/70 backdrop-blur-md border border-teal-500/20 shadow-inner space-y-3">
+                  <div className="p-3.5 rounded-2xl bg-stone-900/80 border border-teal-500/20 space-y-2.5">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-teal-200 flex items-center gap-1.5">
                         <Mic className="w-3.5 h-3.5 text-teal-400" />
                         <span>{isKm ? 'សំឡេងវេជ្ជសាស្ត្រខ្មែរ' : 'Live Clinical Transcript'}</span>
                       </span>
                       {isRecording && (
-                        <span className="text-[11px] font-bold text-rose-400 animate-pulse flex items-center gap-1">
-                          <span className="w-2 h-2 rounded-full bg-rose-500" />
+                        <span className="text-[11px] font-bold text-rose-400 flex items-center gap-1">
+                          <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
                           <span>Listening...</span>
                         </span>
                       )}
                     </div>
 
-                    <div className="p-3 rounded-xl bg-black/50 border border-white/10 text-xs text-stone-200 leading-relaxed font-sans shadow-inner">
+                    <div className="p-3 rounded-xl bg-black/60 border border-white/10 text-xs text-stone-200 leading-relaxed font-sans shadow-inner">
                       {isRecording ? (
                         <div className="flex items-center gap-2 text-stone-400 italic">
                           <RefreshCw className="w-3.5 h-3.5 animate-spin text-teal-400" />
@@ -1071,14 +1006,14 @@ export const LandingHero: React.FC = () => {
                     </div>
 
                     {/* Interactive Recording Button */}
-                    <div className="flex items-center justify-between pt-1">
+                    <div className="flex items-center justify-between pt-0.5">
                       <button
                         type="button"
                         onClick={handleToggleRecord}
-                        className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer hover-wobble active-wobble ${
+                        className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer active:scale-95 ${
                           isRecording
-                            ? 'bg-rose-600 hover:bg-rose-700 text-white animate-pulse shadow-md'
-                            : 'bg-gradient-to-r from-teal-500 to-emerald-500 text-stone-950 font-black shadow-[0_0_15px_rgba(20,184,166,0.35)]'
+                            ? 'bg-rose-600 text-white'
+                            : 'bg-teal-500 text-stone-950 font-black'
                         }`}
                       >
                         <Mic className="w-3.5 h-3.5" />
@@ -1089,28 +1024,16 @@ export const LandingHero: React.FC = () => {
                         </span>
                       </button>
 
-                      {/* Equalizer Visualizer */}
-                      <div className="flex items-center gap-1 h-5">
-                        {[12, 20, 24, 16, 28, 14, 22, 10].map((h, i) => (
-                          <span
-                            key={i}
-                            className={`w-1 rounded-full transition-all duration-150 ${
-                              isRecording ? 'bg-rose-400 animate-pulse' : 'bg-teal-400'
-                            }`}
-                            style={{
-                              height: `${h}px`,
-                              animationDelay: `${i * 0.1}s`,
-                            }}
-                          />
-                        ))}
-                      </div>
+                      <span className="text-[10px] text-stone-400 font-mono">
+                        {isRecording ? 'Capturing Audio...' : 'Audio Ready'}
+                      </span>
                     </div>
                   </div>
                 </div>
 
                 {/* Right Structured SOAP Output (6 Cols) */}
-                <div className="lg:col-span-6 bg-gradient-to-b from-[#141F22] to-[#0D1618] p-5 rounded-2xl border border-teal-500/30 shadow-2xl space-y-3.5 font-sans">
-                  <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
+                <div className="lg:col-span-6 bg-[#131D20] p-4.5 rounded-2xl border border-teal-500/25 shadow-lg space-y-3 font-sans">
+                  <div className="flex items-center justify-between border-b border-white/10 pb-2">
                     <div className="flex items-center gap-2">
                       <FileText className="w-4 h-4 text-teal-400" />
                       <span className="text-xs font-bold text-white uppercase tracking-wider">
@@ -1122,7 +1045,7 @@ export const LandingHero: React.FC = () => {
                     </span>
                   </div>
 
-                  <div className="space-y-2.5 text-xs">
+                  <div className="space-y-2 text-xs">
                     {/* S: Subjective */}
                     <div className="p-2.5 rounded-xl bg-black/40 border border-white/5">
                       <div className="font-bold text-teal-300 text-[11px] uppercase tracking-wide">
@@ -1178,7 +1101,7 @@ export const LandingHero: React.FC = () => {
                       <div className="font-bold text-teal-300 text-[11px] uppercase tracking-wide">
                         {isKm ? 'P - Plan: វេជ្ជបញ្ជា និងផែនការព្យាបាល' : 'P - Plan (Prescriptions & Orders)'}
                       </div>
-                      <ul className="mt-1 space-y-1 text-[11px] text-stone-300">
+                      <ul className="mt-1 space-y-0.5 text-[11px] text-stone-300">
                         <li>• Azithromycin 500mg - 1x PO Daily x 3 days</li>
                         <li>• Paracetamol 500mg - 1-2x PO Q6H PRN for fever</li>
                       </ul>
@@ -1192,7 +1115,7 @@ export const LandingHero: React.FC = () => {
             {/* TAB 3: SMART KHMER VOICE QUEUE STATION */}
             {/* ========================================================== */}
             {activeTab === 'queue' && (
-              <div className="p-6 sm:p-8 bg-gradient-to-b from-[#0F171A] to-[#0A1214] grid grid-cols-1 lg:grid-cols-12 gap-8 items-center animate-tab-enter">
+              <div className="p-5 sm:p-7 bg-[#0C1417] grid grid-cols-1 lg:grid-cols-12 gap-7 items-center animate-tab-enter">
                 <div className="lg:col-span-6 space-y-4">
                   <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md text-[11px] font-bold bg-amber-950/80 text-amber-300 border border-amber-500/40">
                     <Volume2 className="w-3.5 h-3.5 text-amber-400" />
@@ -1200,7 +1123,7 @@ export const LandingHero: React.FC = () => {
                   </div>
 
                   <div>
-                    <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight font-sans">
+                    <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight font-sans">
                       {isKm
                         ? 'ប្រព័ន្ធហៅអ្នកជំងឺជាសំឡេងខ្មែរស្វ័យប្រវត្តិ'
                         : 'Automated Khmer Audio Queue Station'}
@@ -1213,7 +1136,7 @@ export const LandingHero: React.FC = () => {
                   </div>
 
                   {/* Active Queue Details */}
-                  <div className="p-4 rounded-2xl bg-stone-900/70 backdrop-blur-md border border-teal-500/20 shadow-inner space-y-2 text-xs">
+                  <div className="p-3.5 rounded-2xl bg-stone-900/80 border border-teal-500/20 space-y-2 text-xs">
                     <div className="flex items-center justify-between">
                       <span className="text-stone-400">{isKm ? 'បន្ទប់ពិគ្រោះ:' : 'Consulting Room:'}</span>
                       <span className="font-bold text-white">{currentRoom}</span>
@@ -1235,9 +1158,9 @@ export const LandingHero: React.FC = () => {
                     <button
                       type="button"
                       onClick={handleNextPatient}
-                      className="w-full py-3 bg-gradient-to-r from-teal-500 to-emerald-500 text-stone-950 rounded-xl text-xs sm:text-sm font-black shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer hover-wobble active-wobble active:scale-98"
+                      className="w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs sm:text-sm font-bold shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer active:scale-98"
                     >
-                      <Volume2 className="w-4 h-4 text-stone-950" />
+                      <Volume2 className="w-4 h-4" />
                       <span>
                         {isKm ? 'ចុចទីនេះដើម្បីហៅអ្នកជំងឺបន្ទាប់' : 'Call Next Patient in Khmer'}
                       </span>
@@ -1246,10 +1169,10 @@ export const LandingHero: React.FC = () => {
                 </div>
 
                 {/* Right Hospital Waiting Screen (6 Cols) */}
-                <div className="lg:col-span-6 bg-gradient-to-b from-[#141F22] to-[#0D1618] p-6 rounded-2xl text-white shadow-2xl border border-teal-500/30 space-y-4 text-center">
+                <div className="lg:col-span-6 bg-[#131D20] p-5 rounded-2xl text-white shadow-lg border border-teal-500/25 space-y-3.5 text-center">
                   <div className="flex items-center justify-between border-b border-white/10 pb-2">
                     <div className="flex items-center gap-1.5 text-xs text-teal-400 font-mono font-bold">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                      <span className="w-2 h-2 rounded-full bg-emerald-400" />
                       <span>SMART WAITING DISPLAY</span>
                     </div>
                     <span className="text-[10px] font-mono text-stone-400">
@@ -1258,13 +1181,13 @@ export const LandingHero: React.FC = () => {
                   </div>
 
                   <div>
-                    <div className="text-[11px] font-black text-amber-400 uppercase tracking-widest">
+                    <div className="text-[11px] font-bold text-amber-400 uppercase tracking-widest">
                       NOW CALLING / កំពុងហៅ
                     </div>
-                    <div className="text-4xl sm:text-5xl font-black font-mono text-white mt-1 tracking-tight">
+                    <div className="text-3xl sm:text-4xl font-black font-mono text-white mt-1 tracking-tight">
                       # A - {currentTicket.toString().padStart(3, '0')}
                     </div>
-                    <div className="text-base sm:text-lg font-bold text-stone-100 mt-2">
+                    <div className="text-base sm:text-lg font-bold text-stone-100 mt-1.5">
                       {currentPatient}
                     </div>
                     <div className="text-xs text-emerald-400 font-semibold mt-1">
@@ -1272,24 +1195,10 @@ export const LandingHero: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Audio Frequency Rings */}
-                  <div className="p-3 bg-black/50 rounded-xl border border-white/10 flex items-center justify-center gap-1.5 h-10">
-                    {[14, 26, 32, 20, 28, 16, 36, 12, 24, 18].map((h, i) => (
-                      <span
-                        key={i}
-                        className={`w-1 rounded-full transition-all duration-100 ${
-                          isCallingAudio ? 'bg-amber-400 animate-pulse' : 'bg-teal-400'
-                        }`}
-                        style={{
-                          height: `${h}px`,
-                          animationDelay: `${i * 0.08}s`,
-                        }}
-                      />
-                    ))}
-                  </div>
-
-                  <div className="text-[10px] text-stone-400 font-mono">
-                    High-Definition Natural Khmer Voice Broadcast
+                  <div className="p-2.5 bg-black/40 rounded-xl border border-white/10 text-xs text-stone-300 font-sans">
+                    {isCallingAudio
+                      ? (isKm ? 'កំពុងបន្លឺសំឡេងហៅអ្នកជំងឺតាម Speaker...' : 'Broadcasting audio to waiting speakers...')
+                      : (isKm ? 'Speaker បន្ទប់រង់ចាំបានភ្ជាប់រួចរាល់' : 'Waiting room speaker connected')}
                   </div>
                 </div>
               </div>
@@ -1299,7 +1208,7 @@ export const LandingHero: React.FC = () => {
             {/* TAB 4: 80MM POS SLIP & CASH DRAWER HARDWARE */}
             {/* ========================================================== */}
             {activeTab === 'hardware' && (
-              <div className="p-6 sm:p-8 bg-gradient-to-b from-[#0F171A] to-[#0A1214] grid grid-cols-1 lg:grid-cols-12 gap-8 items-center animate-tab-enter">
+              <div className="p-5 sm:p-7 bg-[#0C1417] grid grid-cols-1 lg:grid-cols-12 gap-7 items-center animate-tab-enter">
                 <div className="lg:col-span-7 space-y-4">
                   <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md text-[11px] font-bold bg-blue-950/80 text-blue-300 border border-blue-500/40">
                     <Printer className="w-3.5 h-3.5 text-blue-400" />
@@ -1307,7 +1216,7 @@ export const LandingHero: React.FC = () => {
                   </span>
 
                   <div>
-                    <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight font-sans">
+                    <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight font-sans">
                       {isKm
                         ? 'បោះពុម្ពវិក្កយបត្រ 80mm រហ័ស និងបើកថតប្រាក់'
                         : '80mm POS Thermal Slip & Cash Drawer Integration'}
@@ -1319,7 +1228,7 @@ export const LandingHero: React.FC = () => {
                     </p>
                   </div>
 
-                  <div className="p-4 bg-stone-900/70 backdrop-blur-md rounded-2xl border border-teal-500/20 text-xs space-y-2.5 text-stone-200">
+                  <div className="p-3.5 bg-stone-900/80 rounded-2xl border border-teal-500/20 text-xs space-y-2 text-stone-200">
                     <div className="flex items-center gap-2">
                       <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                       <span>{isKm ? 'គាំទ្រអក្សរខ្មែរ Unicode ស្រះលើក្រោមមិនបាត់' : '100% Khmer Unicode without vowel clipping'}</span>
@@ -1336,7 +1245,7 @@ export const LandingHero: React.FC = () => {
                 </div>
 
                 <div className="lg:col-span-5 flex justify-center">
-                  <div className="w-68 bg-white p-5 rounded-2xl border border-stone-300 shadow-2xl font-mono text-[11px] text-stone-800 space-y-3 transform-gpu hover-wobble">
+                  <div className="w-64 bg-white p-4.5 rounded-2xl border border-stone-300 shadow-xl font-mono text-[11px] text-stone-800 space-y-2.5">
                     <div className="text-center border-b border-dashed border-stone-300 pb-2">
                       <div className="font-bold text-xs uppercase text-stone-900">X-CLINIC MEDICAL CENTER</div>
                       <div className="text-[10px] text-stone-500">Tel: +855 12 888 999</div>
@@ -1381,9 +1290,9 @@ export const LandingHero: React.FC = () => {
             )}
           </div>
 
-          {/* 3 Irresistible Value Guarantees for Clinic Owners */}
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 bg-white/90 rounded-2xl border border-[#DFD6C6] shadow-xs flex items-start gap-3 hover-wobble transition-transform">
+          {/* 3 Core Value Guarantees for Clinic Owners */}
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-3.5">
+            <div className="p-3.5 bg-white/95 rounded-2xl border border-[#DFD6C6] shadow-xs flex items-start gap-3">
               <div className="w-8 h-8 rounded-xl bg-teal-100 text-teal-800 flex items-center justify-center shrink-0">
                 <Zap className="w-4 h-4" />
               </div>
@@ -1399,7 +1308,7 @@ export const LandingHero: React.FC = () => {
               </div>
             </div>
 
-            <div className="p-4 bg-white/90 rounded-2xl border border-[#DFD6C6] shadow-xs flex items-start gap-3 hover-wobble transition-transform">
+            <div className="p-3.5 bg-white/95 rounded-2xl border border-[#DFD6C6] shadow-xs flex items-start gap-3">
               <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
                 <ShieldCheck className="w-4 h-4" />
               </div>
@@ -1415,7 +1324,7 @@ export const LandingHero: React.FC = () => {
               </div>
             </div>
 
-            <div className="p-4 bg-white/90 rounded-2xl border border-[#DFD6C6] shadow-xs flex items-start gap-3 hover-wobble transition-transform">
+            <div className="p-3.5 bg-white/95 rounded-2xl border border-[#DFD6C6] shadow-xs flex items-start gap-3">
               <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
                 <HardDrive className="w-4 h-4" />
               </div>

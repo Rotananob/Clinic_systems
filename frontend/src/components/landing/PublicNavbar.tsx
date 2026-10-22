@@ -7,7 +7,7 @@ import { useTranslation } from '../../context/I18nContext';
 import { useAuth } from '../../context/AuthContext';
 import { LanguageSwitcher } from '../common/LanguageSwitcher';
 import { ClinicLogo } from '../common/ClinicLogo';
-import { Activity, ArrowRight, Shield, CheckCircle2, ChevronRight, Menu, X, LayoutDashboard } from 'lucide-react';
+import { ArrowRight, Menu, X, LayoutDashboard } from 'lucide-react';
 
 export const PublicNavbar: React.FC = () => {
   const { locale } = useTranslation();
@@ -17,7 +17,7 @@ export const PublicNavbar: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-[#FAF7F2]/90 backdrop-blur-md border-b border-[#E7E1D4] shadow-xs">
+    <header className="sticky top-0 z-50 w-full bg-[#FAF7F2]/95 backdrop-blur-md border-b border-[#E7E1D4] shadow-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand Logo */}
         <Link href="/" className="flex items-center group">
@@ -25,7 +25,7 @@ export const PublicNavbar: React.FC = () => {
         </Link>
 
         {/* Desktop Navigation Links */}
-        <nav className="hidden md:flex items-center gap-8 text-xs font-semibold text-stone-600">
+        <nav className="hidden md:flex items-center gap-7 text-xs font-semibold text-stone-600">
           <Link
             href="/#features"
             className="hover:text-stone-900 transition-colors"
@@ -68,47 +68,50 @@ export const PublicNavbar: React.FC = () => {
           </Link>
         </nav>
 
-        {/* Right CTA Actions */}
+        {/* Right CTA Actions: Separated Desktop vs Clean Mobile Menu Only */}
         <div className="flex items-center gap-3">
-          <div className="hidden sm:block">
+          {/* Desktop Only Actions */}
+          <div className="hidden md:flex items-center gap-3">
             <LanguageSwitcher />
+
+            {user ? (
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs font-bold shadow-xs transition-colors active:scale-95"
+              >
+                <LayoutDashboard className="w-3.5 h-3.5" />
+                <span>{isKm ? 'ផ្ទាំងគ្រប់គ្រង - Dashboard' : 'Clinic Dashboard'}</span>
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="px-3.5 py-2 text-xs font-semibold text-stone-700 hover:text-stone-900 transition-colors rounded-xl hover:bg-stone-100"
+                >
+                  {isKm ? 'ចូលប្រើប្រាស់' : 'Sign In'}
+                </Link>
+
+                <Link
+                  href="/register"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors active:scale-95"
+                >
+                  <span>{isKm ? 'សាកល្បងឥតគិតថ្លៃ' : 'Start Free Trial'}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </>
+            )}
           </div>
 
-          {user ? (
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-1.5 px-4 py-2 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs font-bold shadow-xs transition-colors active:scale-95"
+          {/* Mobile Site Header Bar: Clean Menu Icon ONLY */}
+          <div className="flex md:hidden items-center">
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-2 text-stone-700 hover:text-stone-900 rounded-xl hover:bg-stone-100 border border-stone-200"
+              aria-label="Toggle menu"
             >
-              <LayoutDashboard className="w-3.5 h-3.5" />
-              <span>{isKm ? 'ផ្ទាំងគ្រប់គ្រង (Dashboard)' : 'Clinic Dashboard'}</span>
-            </Link>
-          ) : (
-            <>
-              <Link
-                href="/login"
-                className="px-3.5 py-2 text-xs font-semibold text-stone-700 hover:text-stone-900 transition-colors rounded-xl hover:bg-stone-100"
-              >
-                {isKm ? 'ចូលប្រើប្រាស់' : 'Sign In'}
-              </Link>
-
-              <Link
-                href="/register"
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors active:scale-95"
-              >
-                <span>{isKm ? 'សាកល្បងឥតគិតថ្លៃ' : 'Start Free Trial'}</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </>
-          )}
-
-          {/* Mobile Hamburger Button */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 text-stone-600 hover:text-stone-900 rounded-lg hover:bg-stone-100"
-            aria-label="Toggle menu"
-          >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -158,12 +161,17 @@ export const PublicNavbar: React.FC = () => {
             {isKm ? 'មជ្ឈមណ្ឌលជំនួយ' : 'Help Center'}
           </Link>
 
-          <div className="pt-3 border-t border-[#E7E1D4] space-y-2">
+          <div className="pt-2 flex items-center justify-between border-t border-[#E7E1D4]">
+            <span className="text-xs text-stone-500 font-medium">{isKm ? 'ភាសា:' : 'Language:'}</span>
+            <LanguageSwitcher />
+          </div>
+
+          <div className="pt-2 border-t border-[#E7E1D4] space-y-2">
             {user ? (
               <Link
                 href="/dashboard"
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full py-2.5 bg-teal-800 text-white text-xs font-bold rounded-xl text-center block"
+                className="w-full py-2.5 bg-teal-800 text-white text-xs font-bold rounded-xl text-center block shadow-xs"
               >
                 {isKm ? 'ចូលទៅកាន់ Dashboard គ្លីនិក' : 'Open Clinic Dashboard'}
               </Link>
@@ -179,7 +187,7 @@ export const PublicNavbar: React.FC = () => {
                 <Link
                   href="/register"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="w-full py-2.5 bg-teal-800 text-white text-xs font-bold rounded-xl text-center block"
+                  className="w-full py-2.5 bg-teal-800 text-white text-xs font-bold rounded-xl text-center block shadow-xs"
                 >
                   {isKm ? 'សាកល្បងឥតគិតថ្លៃ' : 'Start Free Trial'}
                 </Link>

@@ -586,7 +586,7 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
         <div id="faq" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-6">
           <div className="text-center space-y-2">
             <h3 className="text-xl sm:text-2xl font-bold text-stone-900 tracking-tight">
-              {isKm ? 'សំណួរដែលសួរញឹកញាប់ (FAQ)' : 'Frequently Asked Questions'}
+              {isKm ? 'សំណួរដែលសួរញឹកញាប់ - FAQ' : 'Frequently Asked Questions'}
             </h3>
             <p className="text-xs text-stone-600">
               {isKm
