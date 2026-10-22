@@ -10,6 +10,8 @@ import {
   CheckCircle2,
   Sparkles,
   Stethoscope,
+  Zap,
+  CreditCard,
 } from 'lucide-react';
 
 export const DoctorTestimonialsSection: React.FC = () => {
@@ -128,45 +130,126 @@ export const DoctorTestimonialsSection: React.FC = () => {
           ))}
         </div>
 
-        {/* Platform Trust Stats Counter */}
-        <div className="mt-12 bg-white rounded-3xl border border-[#DFD6C6] p-6 sm:p-8 shadow-xs grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-          <div className="space-y-1">
-            <div className="text-3xl sm:text-4xl font-black text-teal-900 font-mono">120+</div>
-            <div className="text-xs font-bold text-stone-700 font-sans">
-              {isKm ? 'គ្លីនិកកំពុងដំណើរការ' : 'Clinics Onboarded'}
+        {/* Cambodia Nationwide Deployment & System Capabilities */}
+        <div className="mt-14 bg-gradient-to-b from-white via-[#FCFAF7] to-[#F7F3EB] rounded-3xl border border-[#D8CEBE] p-6 sm:p-8 shadow-sm">
+          {/* Top Live Status Indicator */}
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-6 border-b border-[#EAE2D5]">
+            <div className="flex items-center gap-2.5">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-600"></span>
+              </span>
+              <span className="text-xs font-bold text-stone-800 tracking-tight font-sans">
+                {isKm
+                  ? 'ដំណើរការទូទាំងប្រទេស • ត្រៀមរួចរាល់សម្រាប់គ្លីនិកគ្រប់ ២៥ រាជធានី-ខេត្ត'
+                  : 'Nationwide Clinical Deployment • Ready Across All 25 Cambodian Provinces'}
+              </span>
             </div>
-            <div className="text-[10px] text-stone-400 font-sans">
-              {isKm ? 'ទូទាំង ២៥ រាជធានី-ខេត្ត' : 'Across 25 provinces'}
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <div className="text-3xl sm:text-4xl font-black text-teal-900 font-mono">99.98%</div>
-            <div className="text-xs font-bold text-stone-700 font-sans">
-              {isKm ? 'ស្ថិរភាពប្រព័ន្ធ Uptime' : 'System Uptime SLA'}
-            </div>
-            <div className="text-[10px] text-stone-400 font-sans">
-              {isKm ? 'ដំណើរការ ២៤/៧ ឥតរអាក់រអួល' : 'Continuous 24/7 reliability'}
+            <div className="text-[11px] font-semibold text-teal-800 font-mono bg-teal-50/80 px-2.5 py-1 rounded-full border border-teal-200/60">
+              {isKm ? 'ប្រព័ន្ធ Cloud PaaS ក្នុងស្រុក ១០០%' : '100% Cloud-Native Clinical OS'}
             </div>
           </div>
 
-          <div className="space-y-1">
-            <div className="text-3xl sm:text-4xl font-black text-teal-900 font-mono">2-Sec</div>
-            <div className="text-xs font-bold text-stone-700 font-sans">
-              {isKm ? 'ល្បឿន Dynamic KHQR' : 'Dynamic KHQR Speed'}
+          {/* 4 Sleek Interactive Cards */}
+          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+            {/* 1. 25 Provinces */}
+            <div className="group bg-white rounded-2xl border border-[#E3DCCE] hover:border-teal-700/60 p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-md flex flex-col justify-between text-left">
+              <div>
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-xl bg-teal-50 border border-teal-100 text-teal-800 flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <MapPin className="w-5 h-5" />
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 group-hover:bg-teal-50 group-hover:text-teal-800 transition-colors">
+                    {isKm ? 'ទូទាំងប្រទេស' : 'Nationwide'}
+                  </span>
+                </div>
+                <div className="mt-4 text-3xl sm:text-4xl font-black text-stone-900 group-hover:text-teal-900 font-mono tracking-tight">
+                  25
+                </div>
+                <div className="mt-1 text-xs sm:text-sm font-bold text-stone-800 font-sans">
+                  {isKm ? 'ដំណើរការ ២៥ រាជធានី-ខេត្ត' : '25 Provinces & Capital'}
+                </div>
+                <p className="mt-1.5 text-xs text-stone-500 font-sans leading-relaxed">
+                  {isKm
+                    ? 'គ្លីនិកឯកជន និងមន្ទីរសម្រាកព្យាបាលទូទាំងកម្ពុជា អាចចុះឈ្មោះប្រើប្រាស់បានភ្លាមៗ'
+                    : 'Open for immediate self-service onboarding for medical clinics across Cambodia.'}
+                </p>
+              </div>
             </div>
-            <div className="text-[10px] text-stone-400 font-sans">
-              {isKm ? 'Dynamic KHQR ចាក់សោទឹកប្រាក់ស្តង់ដារ Bakong' : 'Bakong Certified Dynamic KHQR'}
-            </div>
-          </div>
 
-          <div className="space-y-1">
-            <div className="text-3xl sm:text-4xl font-black text-emerald-700 font-mono">0%</div>
-            <div className="text-xs font-bold text-stone-700 font-sans">
-              {isKm ? 'កម្រៃជើងសារប្រតិបត្តិការ' : 'Platform Fee / Commission'}
+            {/* 2. 1-Minute Rapid Deploy */}
+            <div className="group bg-white rounded-2xl border border-[#E3DCCE] hover:border-teal-700/60 p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-md flex flex-col justify-between text-left">
+              <div>
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-100 text-amber-800 flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <Zap className="w-5 h-5" />
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 group-hover:bg-amber-50 group-hover:text-amber-800 transition-colors">
+                    {isKm ? 'គ្មានការដំឡើង' : 'Zero Setup'}
+                  </span>
+                </div>
+                <div className="mt-4 text-3xl sm:text-4xl font-black text-stone-900 group-hover:text-teal-900 font-mono tracking-tight">
+                  1-Min
+                </div>
+                <div className="mt-1 text-xs sm:text-sm font-bold text-stone-800 font-sans">
+                  {isKm ? 'រៀបចំរួចរាល់ក្នុង ១ នាទី' : 'Instant 1-Minute Setup'}
+                </div>
+                <p className="mt-1.5 text-xs text-stone-500 font-sans leading-relaxed">
+                  {isKm
+                    ? 'ចុះឈ្មោះ និងបង្កើត Workspace គ្លីនិកភ្លាមៗ ដំណើរការស្រួលលើ Browser និង iPad'
+                    : 'Provision independent multi-tenant clinical workspace in under 60 seconds.'}
+                </p>
+              </div>
             </div>
-            <div className="text-[10px] text-stone-400 font-sans">
-              {isKm ? 'លុយចូលកុង ABA ផ្ទាល់ ១០០%' : '100% direct merchant settlement'}
+
+            {/* 3. 2-Second Dynamic KHQR */}
+            <div className="group bg-white rounded-2xl border border-[#E3DCCE] hover:border-teal-700/60 p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-md flex flex-col justify-between text-left">
+              <div>
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-xl bg-teal-50 border border-teal-100 text-teal-800 flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <CreditCard className="w-5 h-5" />
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 group-hover:bg-teal-50 group-hover:text-teal-800 transition-colors">
+                    {isKm ? 'បាគង & ABA' : 'Bakong KHQR'}
+                  </span>
+                </div>
+                <div className="mt-4 text-3xl sm:text-4xl font-black text-teal-900 font-mono tracking-tight">
+                  2-Sec
+                </div>
+                <div className="mt-1 text-xs sm:text-sm font-bold text-stone-800 font-sans">
+                  {isKm ? 'ល្បឿន Dynamic KHQR' : 'Dynamic KHQR Speed'}
+                </div>
+                <p className="mt-1.5 text-xs text-stone-500 font-sans leading-relaxed">
+                  {isKm
+                    ? 'បង្កើត QR ចាក់សោទឹកប្រាក់ស្វ័យប្រវត្តិ ធានាគ្មានការភ័ន្តច្រឡំ ឬបាញ់លុយខ្វះ'
+                    : 'Automated amount-locking QR generated in 2 seconds with zero cashier errors.'}
+                </p>
+              </div>
+            </div>
+
+            {/* 4. 0% Commission */}
+            <div className="group bg-white rounded-2xl border border-[#E3DCCE] hover:border-emerald-700/60 p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-md flex flex-col justify-between text-left">
+              <div>
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-800 flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <CheckCircle2 className="w-5 h-5" />
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 group-hover:bg-emerald-50 group-hover:text-emerald-800 transition-colors">
+                    {isKm ? 'លុយចូលកុងផ្ទាល់' : '100% Direct'}
+                  </span>
+                </div>
+                <div className="mt-4 text-3xl sm:text-4xl font-black text-emerald-700 font-mono tracking-tight">
+                  0%
+                </div>
+                <div className="mt-1 text-xs sm:text-sm font-bold text-stone-800 font-sans">
+                  {isKm ? 'កម្រៃជើងសារ ០%' : 'Zero Platform Commission'}
+                </div>
+                <p className="mt-1.5 text-xs text-stone-500 font-sans leading-relaxed">
+                  {isKm
+                    ? 'ទឹកប្រាក់អ្នកជំងឺបាញ់ ចូលគណនីធនាគាររបស់គ្លីនិកលោកអ្នកផ្ទាល់ ១០០%'
+                    : '100% patient payments settle directly into your clinic bank account instantly.'}
+                </p>
+              </div>
             </div>
           </div>
         </div>
