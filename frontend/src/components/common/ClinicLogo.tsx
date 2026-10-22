@@ -74,9 +74,9 @@ export const ClinicLogo: React.FC<ClinicLogoProps> = ({
     }
   }, [clinicNameKh, clinicNameEn, planTier]);
 
-  const displayNameKh = resolvedNames.kh || 'X-Clinic មន្ទីរសម្រាកព្យាបាល';
-  const displayNameEn = resolvedNames.en || 'X-Clinic Medical Center';
-  const displayTier = resolvedNames.tier ? resolvedNames.tier.replace('_', ' ') : 'X-CLINIC';
+  const displayNameKh = resolvedNames.kh || 'Krupet មន្ទីរសម្រាកព្យាបាល';
+  const displayNameEn = resolvedNames.en || 'Krupet Medical Center';
+  const displayTier = resolvedNames.tier ? resolvedNames.tier.replace('_', ' ') : 'KRUPET';
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!interactive) return;
@@ -359,7 +359,7 @@ export const ClinicLogo: React.FC<ClinicLogoProps> = ({
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             <span className="text-xs font-extrabold text-stone-900 truncate tracking-tight font-sans">
-              X-CLINIC
+              KRUPET
             </span>
             <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-teal-100 text-teal-800 border border-teal-200">
               PaaS
@@ -397,10 +397,10 @@ export const ClinicLogo: React.FC<ClinicLogoProps> = ({
 
         <div className="flex items-center gap-2">
           <span className="text-lg sm:text-2xl font-black text-stone-900 tracking-tight font-sans">
-            <span className="text-teal-800">X-</span>CLINIC
+            <span className="text-teal-800">Kru</span>pet<span className="text-teal-600 text-xs font-bold">.com</span>
           </span>
           <span className="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono bg-teal-900 text-teal-100 border border-teal-700 shadow-xs">
-            OS 2.0
+            PaaS 2.0
           </span>
         </div>
 
@@ -440,7 +440,7 @@ export const ClinicLogo: React.FC<ClinicLogoProps> = ({
       <div className="min-w-0">
         <div className="flex items-center gap-1.5">
           <span className="font-black text-stone-900 leading-tight text-sm sm:text-base tracking-tight font-sans">
-            <span className="text-teal-800">X-</span>CLINIC
+            <span className="text-teal-800">Kru</span>pet<span className="text-teal-600 text-sm sm:text-base font-bold">.com</span>
           </span>
           <span className="px-1.5 py-0.2 rounded bg-teal-50 border border-teal-200 text-[9px] font-mono font-bold text-teal-800 uppercase">
             {displayTier}

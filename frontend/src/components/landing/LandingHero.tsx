@@ -319,8 +319,8 @@ export const LandingHero: React.FC = () => {
               <span className="w-2 h-2 rounded-full bg-emerald-500" />
               <span className="font-sans">
                 {isKm
-                  ? 'X-Clinic 2.0 • PaaS វេជ្ជសាស្ត្រជំនាន់ថ្មី • Bakong Tag 01=12 & Gemini 3.8 AI'
-                  : 'X-Clinic 2.0 • Next-Gen Medical PaaS • Bakong Tag 01=12 & Gemini 3.8 AI'}
+                  ? 'Krupet 2.0 • PaaS វេជ្ជសាស្ត្រជំនាន់ថ្មី • Bakong Tag 01=12 & Gemini 3.8 AI'
+                  : 'Krupet 2.0 • Next-Gen Medical PaaS • Bakong Tag 01=12 & Gemini 3.8 AI'}
               </span>
             </div>
           </div>
@@ -383,7 +383,7 @@ export const LandingHero: React.FC = () => {
                 <div className="flex items-center gap-1 truncate">
                   <span className="text-teal-800 font-semibold">Workspace:</span>
                   <span className="text-stone-700 font-bold bg-[#FAF7F2] px-1.5 py-0.5 rounded border border-[#E5DEC1]">
-                    https://{slugPreview}.clinic.com
+                    https://{slugPreview}.krupet.com
                   </span>
                 </div>
                 <div className="text-[11px] text-stone-500 font-sans">
@@ -448,7 +448,7 @@ export const LandingHero: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-emerald-400" />
                   <span className="text-xs font-bold tracking-wider text-teal-300 font-mono uppercase">
-                    X-Clinic Live Medical Console
+                    Krupet.com Live Medical Console
                   </span>
                 </div>
 
@@ -1247,7 +1247,7 @@ export const LandingHero: React.FC = () => {
                 <div className="lg:col-span-5 flex justify-center">
                   <div className="w-64 bg-white p-4.5 rounded-2xl border border-stone-300 shadow-xl font-mono text-[11px] text-stone-800 space-y-2.5">
                     <div className="text-center border-b border-dashed border-stone-300 pb-2">
-                      <div className="font-bold text-xs uppercase text-stone-900">X-CLINIC MEDICAL CENTER</div>
+                      <div className="font-bold text-xs uppercase text-stone-900">KRUPET MEDICAL CENTER</div>
                       <div className="text-[10px] text-stone-500">Tel: +855 12 888 999</div>
                       <div className="text-[10px] text-stone-500">MoH License: 2026/0881</div>
                     </div>
@@ -1318,7 +1318,7 @@ export const LandingHero: React.FC = () => {
                 </div>
                 <div className="text-[11px] text-stone-500 font-sans leading-relaxed">
                   {isKm
-                    ? 'X-Clinic មិនប៉ះពាល់ ឬកាត់កម្រៃជើងសារពីលុយរបស់អ្នកឡើយ កម្រៃជើងសារ ០%'
+                    ? 'Krupet មិនប៉ះពាល់ ឬកាត់កម្រៃជើងសារពីលុយរបស់អ្នកឡើយ កម្រៃជើងសារ ០%'
                     : 'Zero middleman escrow; 100% of patient payments deposit directly into your bank'}
                 </div>
               </div>

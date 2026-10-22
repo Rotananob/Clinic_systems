@@ -22,7 +22,7 @@ const RESERVED_SUBDOMAINS = new Set([
 ]);
 
 export const DEFAULT_APEX_DOMAIN =
-  (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_APP_DOMAIN) || 'clinic.com';
+  (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_APP_DOMAIN) || 'krupet.com';
 
 export function sanitizeHostname(rawHost: string | null | undefined): string {
   if (!rawHost) return '';
@@ -43,6 +43,8 @@ export function extractTenantSubdomain(
     host === '0.0.0.0' ||
     host === apexDomain ||
     host === `www.${apexDomain}` ||
+    host === 'krupet.com' ||
+    host === 'www.krupet.com' ||
     host === 'clinic.com' ||
     host === 'www.clinic.com' ||
     host === 'clinicos.app' ||
@@ -72,7 +74,7 @@ export function extractTenantSubdomain(
   }
 
   // Handle production or staging wildcard: e.g. rotana.clinic.com or vannda.clinic.com
-  const candidateDomains = Array.from(new Set([apexDomain, 'clinic.com', 'clinicos.app']));
+  const candidateDomains = Array.from(new Set([apexDomain, 'krupet.com', 'clinic.com', 'clinicos.app']));
   for (const domain of candidateDomains) {
     if (host.endsWith(`.${domain}`)) {
       const prefix = host.slice(0, host.length - domain.length - 1);

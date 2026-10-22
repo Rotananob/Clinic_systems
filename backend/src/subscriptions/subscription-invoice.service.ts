@@ -139,7 +139,7 @@ export class SubscriptionInvoiceService {
         clinicNameKh: tenant.clinicNameKh,
         clinicNameEn: tenant.clinicNameEn,
         slug: tenant.slug,
-        subdomain: `${tenant.slug}.${process.env.APP_DOMAIN || 'clinic.com'}`,
+        subdomain: `${tenant.slug}.${process.env.APP_DOMAIN || 'krupet.com'}`,
         mohLicenseNumber: tenant.mohLicenseNumber || 'MoH Official Registered',
         phone: tenant.phonePrimary || 'N/A',
         email: tenant.email || 'N/A',

@@ -230,14 +230,14 @@ export const FirstTimeClinicSetupModal: React.FC<FirstTimeClinicSetupModalProps>
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-extrabold text-stone-900 text-lg">X-Clinic</span>
+                <span className="font-extrabold text-stone-900 text-lg">Krupet.com</span>
                 <span className="px-2 py-0.5 rounded-full bg-teal-100 text-teal-800 text-[10px] font-bold border border-teal-200 font-mono">
                   Initial Setup
                 </span>
               </div>
               <p className="text-xs text-stone-500 mt-0.5">
                 {isKm
-                  ? 'រៀបចំ និងដំណើរការគ្លីនិករបស់អ្នកលើ X-Clinic ត្រឹមតែ ១ នាទី'
+                  ? 'រៀបចំ និងដំណើរការគ្លីនិករបស់អ្នកលើ Krupet.com ត្រឹមតែ ១ នាទី'
                   : 'Configure clinic identity and paste your free ABA Merchant link in 1 minute'}
               </p>
             </div>
@@ -293,7 +293,7 @@ export const FirstTimeClinicSetupModal: React.FC<FirstTimeClinicSetupModalProps>
                 />
                 <div className="mt-1 text-[11px] text-stone-500 font-mono flex items-center gap-1">
                   <span>Subdomain:</span>
-                  <span className="font-semibold text-teal-800">{liveSlug}.clinic.com</span>
+                  <span className="font-semibold text-teal-800">{liveSlug}.krupet.com</span>
                 </div>
               </div>
             </div>
@@ -372,8 +372,8 @@ export const FirstTimeClinicSetupModal: React.FC<FirstTimeClinicSetupModalProps>
               </ol>
               <div className="pt-1 text-[11px] text-emerald-800 font-medium">
                 {isKm
-                  ? 'គ្រាន់តែ Paste Link នេះ ប្រព័ន្ធ X-Clinic នឹង generate Dynamic KHQR ជូនគ្លីនិកភ្លាមៗស្របតាម Plan Limit របស់លោកអ្នក។'
-                  : 'With just this link, X-Clinic automatically generates dynamic KHQR codes according to your plan limit.'}
+                  ? 'គ្រាន់តែ Paste Link នេះ ប្រព័ន្ធ Krupet.com នឹង generate Dynamic KHQR ជូនគ្លីនិកភ្លាមៗស្របតាម Plan Limit របស់លោកអ្នក។'
+                  : 'With just this link, Krupet.com automatically generates dynamic KHQR codes according to your plan limit.'}
               </div>
             </div>
 
@@ -465,7 +465,7 @@ export const FirstTimeClinicSetupModal: React.FC<FirstTimeClinicSetupModalProps>
               disabled={loading}
               className="inline-flex items-center gap-2 px-6 py-3 bg-teal-800 hover:bg-teal-900 disabled:opacity-50 text-white rounded-xl text-xs sm:text-sm font-bold transition-all shadow-md active:scale-95 cursor-pointer"
             >
-              <span>{loading ? (isKm ? 'កំពុងរក្សាទុក...' : 'Saving...') : (isKm ? 'រក្សាទុក & ចាប់ផ្តើមប្រើប្រាស់ X-Clinic' : 'Save & Launch X-Clinic')}</span>
+              <span>{loading ? (isKm ? 'កំពុងរក្សាទុក...' : 'Saving...') : (isKm ? 'រក្សាទុក & ចាប់ផ្តើមប្រើប្រាស់ Krupet.com' : 'Save & Launch Krupet.com')}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>

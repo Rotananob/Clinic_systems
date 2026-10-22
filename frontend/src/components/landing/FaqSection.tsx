@@ -21,27 +21,27 @@ export const FaqSection: React.FC = () => {
   const faqs = [
     {
       qKh: 'តើខ្ញុំត្រូវមានកុំព្យូទ័រថ្លៃៗ ឬដំឡើងកម្មវិធីស្មុគស្មាញទើបប្រើបានមែនទេ?',
-      qEn: 'Do I need expensive computers or complex installation to use X-Clinic?',
+      qEn: 'Do I need expensive computers or complex installation to use Krupet.com?',
       aKh:
-        'មិនបាច់ទាល់តែសោះ! X-Clinic ជាប្រព័ន្ធ Cloud-Native PaaS ទំនើបដែលដំណើរការរលូនលើ Web Browser គ្រប់ប្រភេទ មិនថាលើកុំព្យូទ័រយួរដៃ - Laptop, កុំព្យូទ័រលើតុ - Desktop, iPad, Tablet ឬទូរស័ព្ទដៃស្មាតហ្វូនឡើយ។ លោកអ្នកគ្រាន់តែមាន Browser ដូចជា Chrome ឬ Safari គឺអាចចូលប្រើប្រាស់បានភ្លាមៗ មិនបាច់ជួលជាង IT មកដំឡើងឡើយ។',
+        'មិនបាច់ទាល់តែសោះ! Krupet.com ជាប្រព័ន្ធ Cloud-Native PaaS ទំនើបដែលដំណើរការរលូនលើ Web Browser គ្រប់ប្រភេទ មិនថាលើកុំព្យូទ័រយួរដៃ - Laptop, កុំព្យូទ័រលើតុ - Desktop, iPad, Tablet ឬទូរស័ព្ទដៃស្មាតហ្វូនឡើយ។ លោកអ្នកគ្រាន់តែមាន Browser ដូចជា Chrome ឬ Safari គឺអាចចូលប្រើប្រាស់បានភ្លាមៗ មិនបាច់ជួលជាង IT មកដំឡើងឡើយ។',
       aEn:
-        'Not at all! X-Clinic is a modern cloud PaaS accessible directly from any web browser on laptops, desktops, iPads, tablets, or smartphones. No local software installation or IT technician is ever required.',
+        'Not at all! Krupet.com is a modern cloud PaaS accessible directly from any web browser on laptops, desktops, iPads, tablets, or smartphones. No local software installation or IT technician is ever required.',
     },
     {
-      qKh: 'តើប្រាក់ដែលអ្នកជំងឺស្កេនបង់ ចូលទៅណា? ហើយ X-Clinic មានកាត់កម្រៃជើងសារដែរឬទេ?',
-      qEn: 'Where does patient scan money go? Does X-Clinic take any transaction commission?',
+      qKh: 'តើប្រាក់ដែលអ្នកជំងឺស្កេនបង់ ចូលទៅណា? ហើយ Krupet.com មានកាត់កម្រៃជើងសារដែរឬទេ?',
+      qEn: 'Where does patient scan money go? Does Krupet.com take any transaction commission?',
       aKh:
-        'ប្រាក់ដែលអ្នកជំងឺស្កេនបង់ គឺរត់ចូលគណនីធនាគារ ABA Bank ឬ Bakong របស់គ្លីនិកលោកអ្នកផ្ទាល់ ១០០% ភ្លាមៗក្នុងរយៈពេលប៉ុន្មានវិនាទី! X-Clinic មិនមែនជាស្ថាប័នកាត់ប្រាក់កម្រៃជើងសារពីការទូទាត់ប្រាក់របស់អ្នកឡើយ - 0% Transaction Fee គ្មានកាត់កម្រៃជើងសារឡើយ។ គ្លីនិករបស់លោកអ្នកទទួលបានប្រាក់ពេញលេញគ្រប់ចំនួន។',
+        'ប្រាក់ដែលអ្នកជំងឺស្កេនបង់ គឺរត់ចូលគណនីធនាគារ ABA Bank ឬ Bakong របស់គ្លីនិកលោកអ្នកផ្ទាល់ ១០០% ភ្លាមៗក្នុងរយៈពេលប៉ុន្មានវិនាទី! Krupet.com មិនមែនជាស្ថាប័នកាត់ប្រាក់កម្រៃជើងសារពីការទូទាត់ប្រាក់របស់អ្នកឡើយ - 0% Transaction Fee គ្មានកាត់កម្រៃជើងសារឡើយ។ គ្លីនិករបស់លោកអ្នកទទួលបានប្រាក់ពេញលេញគ្រប់ចំនួន។',
       aEn:
-        '100% of patient scan payments deposit directly into your clinic ABA Bank or Bakong account instantly. X-Clinic charges zero transaction commission (0% fee). Every single riel and cent belongs directly to your clinic.',
+        '100% of patient scan payments deposit directly into your clinic ABA Bank or Bakong account instantly. Krupet.com charges zero transaction commission (0% fee). Every single riel and cent belongs directly to your clinic.',
     },
     {
       qKh: 'តើការដំឡើង ABA Merchant Link ពិបាកដែរឬទេ?',
       qEn: 'How difficult is it to configure the ABA Merchant Link?',
       aKh:
-        'ងាយស្រួលបំផុត! លោកអ្នកគ្រាន់តែចូលទៅកាន់ ABA Mobile App របស់គ្លីនិកអ្នក រួចបង្កើត ABA Merchant Link ដោយឥតគិតថ្លៃ - ចំណាយពេលត្រឹមតែ ១ នាទីប៉ុណ្ណោះ ហើយយក Link នោះមក Paste ចូលទៅក្នុងប្រអប់ Settings របស់ X-Clinic ជាការស្រេច។ ប្រព័ន្ធនឹងចាប់ផ្តើមបង្កើត Dynamic KHQR ដោយស្វ័យប្រវត្តភ្លាមៗ។',
+        'ងាយស្រួលបំផុត! លោកអ្នកគ្រាន់តែចូលទៅកាន់ ABA Mobile App របស់គ្លីនិកអ្នក រួចបង្កើត ABA Merchant Link ដោយឥតគិតថ្លៃ - ចំណាយពេលត្រឹមតែ ១ នាទីប៉ុណ្ណោះ ហើយយក Link នោះមក Paste ចូលទៅក្នុងប្រអប់ Settings របស់ Krupet.com ជាការស្រេច។ ប្រព័ន្ធនឹងចាប់ផ្តើមបង្កើត Dynamic KHQR ដោយស្វ័យប្រវត្តភ្លាមៗ។',
       aEn:
-        'Extremely easy! Simply open your clinic ABA Mobile app, generate a free merchant link in under 1 minute, and paste that link into your X-Clinic settings. Dynamic Tag 01=12 KHQR activates instantly.',
+        'Extremely easy! Simply open your clinic ABA Mobile app, generate a free merchant link in under 1 minute, and paste that link into your Krupet.com settings. Dynamic Tag 01=12 KHQR activates instantly.',
     },
     {
       qKh: 'តើទិន្នន័យអ្នកជំងឺ និងគ្លីនិករបស់ខ្ញុំមានសុវត្ថិភាពកម្រិតណា?',
@@ -55,7 +55,7 @@ export const FaqSection: React.FC = () => {
       qKh: 'ចុះបើដាច់អ៊ីនធឺណិត តើគ្លីនិកខ្ញុំនៅតែអាចដំណើរការបានទេ?',
       qEn: 'Can my clinic continue operating if the internet goes down?',
       aKh:
-        'ដំណើរការបានជាប្រក្រតី! ប្រព័ន្ធ X-Clinic ត្រូវបានបង្កើតឡើងជាមួយស្ថាបត្យកម្ម Local-First Cache រក្សាទុកទិន្នន័យលើឧបករណ៍កុំព្យូទ័ររបស់អ្នកជាបណ្តោះអាសន្ន ដូច្នេះគ្រូពេទ្យនៅតែអាចកត់ត្រា និងពិនិត្យអ្នកជំងឺបាន។ នៅពេលអ៊ីនធឺណិតមានដំណើរការឡើងវិញ ប្រព័ន្ធនឹងធ្វើសមកាលកម្ម - Auto-Sync ឡើងទៅកាន់ Cloud ដោយស្វ័យប្រវត្តិ។',
+        'ដំណើរការបានជាប្រក្រតី! ប្រព័ន្ធ Krupet.com ត្រូវបានបង្កើតឡើងជាមួយស្ថាបត្យកម្ម Local-First Cache រក្សាទុកទិន្នន័យលើឧបករណ៍កុំព្យូទ័ររបស់អ្នកជាបណ្តោះអាសន្ន ដូច្នេះគ្រូពេទ្យនៅតែអាចកត់ត្រា និងពិនិត្យអ្នកជំងឺបាន។ នៅពេលអ៊ីនធឺណិតមានដំណើរការឡើងវិញ ប្រព័ន្ធនឹងធ្វើសមកាលកម្ម - Auto-Sync ឡើងទៅកាន់ Cloud ដោយស្វ័យប្រវត្តិ។',
       aEn:
         'Yes! With local-first offline caching, your clinic can continue patient check-in and consultations during connection outages. Data automatically synchronizes back to the cloud as soon as internet restores.',
     },

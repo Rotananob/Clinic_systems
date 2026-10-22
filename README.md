@@ -1,4 +1,4 @@
-# X-Clinic Platform
+# Krupet.com Platform
 ## Enterprise Multi-Tenant Clinical PaaS, Hospital Information System & KHQR FinTech Engine
 ### Version 2.0.0 Production Ready
 
@@ -10,11 +10,11 @@ A hospital-grade, multi-tenant Clinical Platform as a Service - PaaS engineered 
 
 ## 1. Executive Summary & PaaS Architecture
 
-X-Clinic Platform transforms traditional clinic software into an enterprise Multi-Tenant Platform as a Service (PaaS). Clinics and polyclinics can onboard in 15 seconds, provision independent secure workspaces, configure their own ABA PayWay merchant accounts, and operate end-to-end clinical workflows with guaranteed zero cross-tenant data leakage.
+Krupet.com Platform transforms traditional clinic software into an enterprise Multi-Tenant Platform as a Service (PaaS). Clinics and polyclinics can onboard in 15 seconds, provision independent secure workspaces, configure their own ABA PayWay merchant accounts, and operate end-to-end clinical workflows with guaranteed zero cross-tenant data leakage.
 
 ### Core Architectural Pillars
 - **Multi-Tenant Automatic Isolation**: Native request-scoped tenant isolation powered by Node.js `AsyncLocalStorage` and Prisma query extensions. Every SQL query is automatically scoped by `tenantId`, preventing cross-clinic data leakage at the database engine level.
-- **Dynamic Wildcard Subdomain Routing**: Dynamic routing supporting white-label clinic subdomains such as `rotana.clinic.com` and `vannda.clinic.com` with automatic tenant slug resolution and apex domain fallbacks.
+- **Dynamic Wildcard Subdomain Routing**: Dynamic routing supporting white-label clinic subdomains such as `rotana.krupet.com` and `vannda.krupet.com` with automatic tenant slug resolution and apex domain fallbacks.
 - **15-Second Instant Signup & Gmail SMTP Verification**: Frictionless onboarding requiring only Gmail and password. Verification codes are dispatched via verified Google Gmail SMTP directly to the user inbox. Zero client-side preview leakage, fully protecting against automated registration spam.
 - **SaaS Subscription & Anti-Bypass Guard**:
   - Four transparent subscription tiers: Free Starter ($0), Clinic Starter ($5/mo), Polyclinic Pro ($8/mo), and Hospital Enterprise ($12/mo), with 20% annual billing discounts.
@@ -56,7 +56,7 @@ X-Clinic Platform transforms traditional clinic software into an enterprise Mult
   Desktop / Tablet / Mobile Browsers / PWA (Next.js 14 App Router, Tailwind CSS, Lucide Icons)
                             |
 [ Edge & Routing Layer ]
-  Wildcard Subdomain Resolver (*.clinic.com) + Nginx Reverse Proxy / SSL Termination
+  Wildcard Subdomain Resolver (*.krupet.com) + Nginx Reverse Proxy / SSL Termination
                             |
 [ Backend Application Layer ]
   NestJS 10 REST API (TypeScript)
@@ -206,7 +206,7 @@ GEMINI_RATE_LIMIT_PER_MINUTE="2"
 Configure `frontend/.env`:
 ```env
 NEXT_PUBLIC_API_URL="http://localhost:4000/api"
-NEXT_PUBLIC_APP_DOMAIN="clinic.com"
+NEXT_PUBLIC_APP_DOMAIN="krupet.com"
 ```
 
 ### Running Locally

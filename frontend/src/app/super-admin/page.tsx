@@ -1106,7 +1106,7 @@ export default function SuperAdminFleetPage() {
                                   {isKm ? u.tenant.clinicNameKh : u.tenant.clinicNameEn}
                                 </div>
                                 <div className="text-[10px] text-stone-400 font-mono">
-                                  {u.tenant.slug}.clinic.com
+                                  {u.tenant.slug}.krupet.com
                                 </div>
                               </div>
                             ) : (

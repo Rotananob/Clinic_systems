@@ -167,7 +167,7 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
       featuresKh: [
         'មិនកំណត់រាល់ប្រតិបត្តិការ KHQR Unlimited',
         'មិនកំណត់ចំនួនអ្នកជំងឺ និងបុគ្គលិក / គណនី',
-        'ទទួលបាន Subdomain ផ្លូវការ ឧទាហរណ៍ yourclinic.clinic.com',
+        'ទទួលបាន Subdomain ផ្លូវការ ឧទាហរណ៍ yourclinic.krupet.com',
         'គ្រប់គ្រងសាខាច្រើន និងគ្រូពេទ្យឯកទេសច្រើនផ្នែក',
         'Dedicated Database Performance & Cloud Backup',
         'ជំនួយពិសេសផ្ទាល់តាមទូរស័ព្ទ និង Telegram 24/7 VIP SLA',
@@ -175,7 +175,7 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
       featuresEn: [
         'Unlimited dynamic KHQR transactions',
         'Unlimited patients and staff accounts',
-        'Dedicated custom subdomain (e.g. yourclinic.clinic.com)',
+        'Dedicated custom subdomain (e.g. yourclinic.krupet.com)',
         'Multi-branch & multi-department routing',
         'Dedicated high-performance database instance',
         '24/7 VIP Phone and Telegram SLA support',

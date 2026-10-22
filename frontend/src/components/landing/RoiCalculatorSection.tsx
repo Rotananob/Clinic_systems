@@ -52,7 +52,7 @@ export const RoiCalculatorSection: React.FC = () => {
           <p className="text-xs sm:text-sm text-stone-600 leading-relaxed font-sans">
             {isKm
               ? 'ជ្រើសរើសចំនួនអ្នកជំងឺដែលមកពិគ្រោះនៅគ្លីនិករបស់អ្នកជារៀងរាល់ថ្ងៃ ដើម្បីមើលឃើញពេលវេលា និងថវិកាដែលលោកអ្នកនឹងសន្សំបានជាក់ស្តែង។'
-              : 'Adjust the slider below to project how many hours of administrative strain and financial leakage X-Clinic will recover each month.'}
+              : 'Adjust the slider below to project how many hours of administrative strain and financial leakage Krupet.com will recover each month.'}
           </p>
         </div>
 

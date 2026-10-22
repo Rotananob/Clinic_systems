@@ -17,6 +17,7 @@ describe('Step 25: Wildcard Subdomain and Multi-Tenant Routing Suite', () => {
   });
 
   it('should extract tenant slug from production wildcard subdomains (rotana.clinic.com & vannda.clinic.com)', () => {
+    assert.strictEqual(extractTenantSubdomain('rotana.krupet.com'), 'rotana');
     assert.strictEqual(extractTenantSubdomain('rotana.clinic.com'), 'rotana');
     assert.strictEqual(extractTenantSubdomain('vannda.clinic.com'), 'vannda');
     assert.strictEqual(extractTenantSubdomain('angkor-medical.clinic.com:443'), 'angkor-medical');
@@ -31,6 +32,8 @@ describe('Step 25: Wildcard Subdomain and Multi-Tenant Routing Suite', () => {
   });
 
   it('should reject apex domain and loopback addresses as tenants', () => {
+    assert.strictEqual(extractTenantSubdomain('krupet.com'), null);
+    assert.strictEqual(extractTenantSubdomain('www.krupet.com'), null);
     assert.strictEqual(extractTenantSubdomain('clinic.com'), null);
     assert.strictEqual(extractTenantSubdomain('www.clinic.com'), null);
     assert.strictEqual(extractTenantSubdomain('clinicos.app'), null);

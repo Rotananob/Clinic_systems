@@ -445,7 +445,7 @@ export const AbaPaywayTesterCard: React.FC = () => {
                 <div className="flex items-center justify-between text-xs">
                   <div className="flex flex-col">
                     <span className="font-bold text-stone-900">
-                      {qrResult.merchantName || 'X-Clinic'}
+                      {qrResult.merchantName || 'Krupet.com'}
                     </span>
                     <span className="text-[10px] text-emerald-700 font-semibold flex items-center gap-1">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />

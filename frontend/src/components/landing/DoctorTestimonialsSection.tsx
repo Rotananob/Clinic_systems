@@ -25,9 +25,9 @@ export const DoctorTestimonialsSection: React.FC = () => {
       disciplineKh: 'គ្លីនិកពិគ្រោះជំងឺទូទៅ & OPD',
       disciplineEn: 'General Outpatient Practice',
       feedbackKh:
-        'ពីមុនគ្លីនិកខ្ញុំមានអ្នកជំងឺច្រើន តែតុទទួលភ្ញៀវរញ៉េរញ៉ៃណាស់ ស្រែកហៅអ្នកជំងឺឡើងស្អកក ហើយពេលភ្ញៀវស្កេនបង់លុយតាម QR ក្រដាស ជួនកាលវាយលុយខ្វះ ពិបាកផ្ទៀងផ្ទាត់។ តាំងពីប្តូរមកប្រើ X-Clinic មក ការហៅអ្នកជំងឺបន្លឺតាម Speaker យ៉ាងស្រួល ហើយ Dynamic KHQR ចេញលឿនត្រឹម ២ វិនាទី លុយចូលកុង ABA របស់ខ្ញុំផ្ទាល់ ១០០% គ្មានខុសសូម្បីតែ ១ រៀល!',
+        'ពីមុនគ្លីនិកខ្ញុំមានអ្នកជំងឺច្រើន តែតុទទួលភ្ញៀវរញ៉េរញ៉ៃណាស់ ស្រែកហៅអ្នកជំងឺឡើងស្អកក ហើយពេលភ្ញៀវស្កេនបង់លុយតាម QR ក្រដាស ជួនកាលវាយលុយខ្វះ ពិបាកផ្ទៀងផ្ទាត់។ តាំងពីប្តូរមកប្រើ Krupet.com មក ការហៅអ្នកជំងឺបន្លឺតាម Speaker យ៉ាងស្រួល ហើយ Dynamic KHQR ចេញលឿនត្រឹម ២ វិនាទី លុយចូលកុង ABA របស់ខ្ញុំផ្ទាល់ ១០០% គ្មានខុសសូម្បីតែ ១ រៀល!',
       feedbackEn:
-        'Before X-Clinic, our front desk was chaotic with nurses shouting names and paper QR stickers causing payment discrepancies. Now, 1-click Khmer voice queue announcements and 2-second dynamic KHQR settle funds straight to my ABA bank account with zero errors.',
+        'Before Krupet.com, our front desk was chaotic with nurses shouting names and paper QR stickers causing payment discrepancies. Now, 1-click Khmer voice queue announcements and 2-second dynamic KHQR settle funds straight to my ABA bank account with zero errors.',
       badgeKh: 'ប្រើប្រាស់ជាង ៨ ខែ',
       badgeEn: 'Active for 8+ months',
     },
@@ -83,7 +83,7 @@ export const DoctorTestimonialsSection: React.FC = () => {
 
           <p className="text-xs sm:text-sm text-stone-600 leading-relaxed font-sans">
             {isKm
-              ? 'ស្តាប់ការចែករំលែកបទពិសោធន៍ផ្ទាល់ពីអ្នកប្រើប្រាស់ជាក់ស្តែងដែលបានធ្វើទំនើបកម្មគ្លីនិករបស់ពួកគេជាមួយ X-Clinic។'
+              ? 'ស្តាប់ការចែករំលែកបទពិសោធន៍ផ្ទាល់ពីអ្នកប្រើប្រាស់ជាក់ស្តែងដែលបានធ្វើទំនើបកម្មគ្លីនិករបស់ពួកគេជាមួយ Krupet.com។'
               : 'Discover how healthcare clinics elevate patient care and eliminate cashier friction with our PaaS workspace.'}
           </p>
         </div>

@@ -172,7 +172,7 @@ function ReceiptPreview({
           <p className="text-center text-[10px] opacity-70">Tel: 023 999 888 / 012 345 678</p>
         )}
         {config.showClinicEmail && (
-          <p className="text-center text-[10px] opacity-70">info@rotanaclinic.com.kh</p>
+          <p className="text-center text-[10px] opacity-70">info@krupet.com</p>
         )}
         {config.showSlogan && (
           <p className="text-center text-[10px] italic opacity-60">Excellence in Clinical Care</p>
