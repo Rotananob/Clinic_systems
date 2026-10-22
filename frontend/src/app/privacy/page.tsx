@@ -55,8 +55,8 @@ export default function PrivacyPolicyPage() {
             </h1>
             <p className="text-xs sm:text-sm text-stone-600 max-w-2xl leading-relaxed">
               {isKm
-                ? 'Krupet.com ប្តេជ្ញាចិត្តយ៉ាងម៉ឺងម៉ាត់ក្នុងការការពារទិន្នន័យអ្នកជំងឺ កំណត់ត្រាវេជ្ជសាស្ត្រ និងព័ត៌មានហិរញ្ញវត្ថុរបស់គ្លីនិកស្របតាមស្តង់ដារវេជ្ជសាស្ត្រ និងសេចក្តីណែនាំរបស់ក្រសួងសុខាភិបាលនៃព្រះរាជាណាចក្រកម្ពុជា។'
-                : 'Krupet.com is strictly committed to protecting clinical patient health records and financial data in full compliance with Cambodian medical governance and Ministry of Health standards.'}
+                ? 'KruPet ប្តេជ្ញាចិត្តយ៉ាងម៉ឺងម៉ាត់ក្នុងការការពារទិន្នន័យអ្នកជំងឺ កំណត់ត្រាវេជ្ជសាស្ត្រ និងព័ត៌មានហិរញ្ញវត្ថុរបស់គ្លីនិកស្របតាមស្តង់ដារវេជ្ជសាស្ត្រ និងសេចក្តីណែនាំរបស់ក្រសួងសុខាភិបាលនៃព្រះរាជាណាចក្រកម្ពុជា។'
+                : 'KruPet is strictly committed to protecting clinical patient health records and financial data in full compliance with Cambodian medical governance and Ministry of Health standards.'}
             </p>
           </div>
 
@@ -119,8 +119,8 @@ export default function PrivacyPolicyPage() {
               </div>
               <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
                 {isKm
-                  ? 'រាល់កំណត់ត្រាសុខភាព ប្រវត្តិជំងឺ វេជ្ជបញ្ជា និងលទ្ធផលតេស្តឈាមដែលបានបញ្ចូលក្នុង Krupet.com គឺជាកម្មសិទ្ធិផ្តាច់មុខរបស់គ្លីនិក និងអ្នកជំងឺ។ បុគ្គលិកបច្ចេកទេសរបស់ Krupet.com មិនមានសិទ្ធិចូលមើលទិន្នន័យវេជ្ជសាស្ត្ររបស់អ្នកជំងឺដោយគ្មានការអនុញ្ញាតជាលាយលក្ខណ៍អក្សរពីម្ចាស់គ្លីនិកឡើយ។'
-                  : 'All electronic health records, consultation SOAP notes, prescriptions, and diagnostic results stored within Krupet.com are the exclusive confidential property of the clinic and patient.'}
+                  ? 'រាល់កំណត់ត្រាសុខភាព ប្រវត្តិជំងឺ វេជ្ជបញ្ជា និងលទ្ធផលតេស្តឈាមដែលបានបញ្ចូលក្នុង KruPet គឺជាកម្មសិទ្ធិផ្តាច់មុខរបស់គ្លីនិក និងអ្នកជំងឺ។ បុគ្គលិកបច្ចេកទេសរបស់ KruPet មិនមានសិទ្ធិចូលមើលទិន្នន័យវេជ្ជសាស្ត្ររបស់អ្នកជំងឺដោយគ្មានការអនុញ្ញាតជាលាយលក្ខណ៍អក្សរពីម្ចាស់គ្លីនិកឡើយ។'
+                  : 'All electronic health records, consultation SOAP notes, prescriptions, and diagnostic results stored within KruPet are the exclusive confidential property of the clinic and patient.'}
               </p>
             </section>
 
@@ -136,8 +136,8 @@ export default function PrivacyPolicyPage() {
               </div>
               <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
                 {isKm
-                  ? 'គ្លីនិកនីមួយៗដែលចុះឈ្មោះនៅលើ Krupet.com ត្រូវបានដាក់ឱ្យដំណើរការលើបរិយាកាសទិន្នន័យដាច់ដោយឡែកពីគ្នា។ គ្មានគ្លីនិកណាមួយអាចចូលមើល ឬទាញយកទិន្នន័យរបស់អ្នកជំងឺពីគ្លីនិកមួយផ្សេងទៀតបានឡើយ។ ការអនុវត្តនេះធានាសុវត្ថិភាព ១០០% ដល់ភាពសម្ងាត់នៃអាជីវកម្មគ្លីនិករបស់លោកអ្នក។'
-                  : 'Each clinic operating on Krupet.com is partitioned via cryptographically enforced multi-tenant isolation. No clinic can access, view, or query patient records belonging to another facility.'}
+                  ? 'គ្លីនិកនីមួយៗដែលចុះឈ្មោះនៅលើ KruPet ត្រូវបានដាក់ឱ្យដំណើរការលើបរិយាកាសទិន្នន័យដាច់ដោយឡែកពីគ្នា។ គ្មានគ្លីនិកណាមួយអាចចូលមើល ឬទាញយកទិន្នន័យរបស់អ្នកជំងឺពីគ្លីនិកមួយផ្សេងទៀតបានឡើយ។ ការអនុវត្តនេះធានាសុវត្ថិភាព ១០០% ដល់ភាពសម្ងាត់នៃអាជីវកម្មគ្លីនិករបស់លោកអ្នក។'
+                  : 'Each clinic operating on KruPet is partitioned via cryptographically enforced multi-tenant isolation. No clinic can access, view, or query patient records belonging to another facility.'}
               </p>
             </section>
 
@@ -153,8 +153,8 @@ export default function PrivacyPolicyPage() {
               </div>
               <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
                 {isKm
-                  ? 'ប្រព័ន្ធទូទាត់ប្រាក់ Dynamic KHQR ដំណើរការដោយផ្ទាល់ជាមួយប្រព័ន្ធធនាគារបាគង Bakong និង ABA PayWay។ Krupet.com មិនរក្សាទុកលេខកាតឥណទាន ឬពាក្យសម្ងាត់គណនីធនាគាររបស់លោកអ្នកឡើយ។ ទឹកប្រាក់ដែលអ្នកជំងឺបានទូទាត់ គឺផ្ទេរចូលគណនីធនាគាររបស់គ្លីនិកដោយផ្ទាល់ និងភ្លាមៗ។'
-                  : 'Dynamic KHQR transactions route directly to the National Bank of Cambodia Bakong network and ABA PayWay merchant infrastructure. Krupet.com does not store banking credentials or card numbers.'}
+                  ? 'ប្រព័ន្ធទូទាត់ប្រាក់ Dynamic KHQR ដំណើរការដោយផ្ទាល់ជាមួយប្រព័ន្ធធនាគារបាគង Bakong និង ABA PayWay។ KruPet មិនរក្សាទុកលេខកាតឥណទាន ឬពាក្យសម្ងាត់គណនីធនាគាររបស់លោកអ្នកឡើយ។ ទឹកប្រាក់ដែលអ្នកជំងឺបានទូទាត់ គឺផ្ទេរចូលគណនីធនាគាររបស់គ្លីនិកដោយផ្ទាល់ និងភ្លាមៗ។'
+                  : 'Dynamic KHQR transactions route directly to the National Bank of Cambodia Bakong network and ABA PayWay merchant infrastructure. KruPet does not store banking credentials or card numbers.'}
               </p>
             </section>
 
@@ -187,8 +187,8 @@ export default function PrivacyPolicyPage() {
               </div>
               <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
                 {isKm
-                  ? 'ប្រសិនបើលោកអ្នកមានចម្ងល់ ឬសំណូមពរទាក់ទងនឹងគោលការណ៍ឯកជនភាព និងសុវត្ថិភាពទិន្នន័យ សូមទំនាក់ទំនងមកកាន់ក្រុមការងារបច្ចេកទេស Krupet.com តាមរយៈទំព័រ Settings នៃគណនីរបស់អ្នក ឬផ្ញើសារមកកាន់ rotananob@gmail.com។'
-                  : 'For privacy inquiries or technical data governance requests, please contact the Krupet.com engineering team via your account Settings console or via rotananob@gmail.com.'}
+                  ? 'ប្រសិនបើលោកអ្នកមានចម្ងល់ ឬសំណូមពរទាក់ទងនឹងគោលការណ៍ឯកជនភាព និងសុវត្ថិភាពទិន្នន័យ សូមទំនាក់ទំនងមកកាន់ក្រុមការងារបច្ចេកទេស KruPet តាមរយៈទំព័រ Settings នៃគណនីរបស់អ្នក ឬផ្ញើសារមកកាន់ rotananob@gmail.com។'
+                  : 'For privacy inquiries or technical data governance requests, please contact the KruPet engineering team via your account Settings console or via rotananob@gmail.com.'}
               </p>
             </section>
           </div>

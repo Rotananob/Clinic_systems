@@ -56,7 +56,7 @@ export const SystemUpdateSettingsPanel: React.FC = () => {
 
       setUpdateStatus(
         isKm
-          ? 'ប្រព័ន្ធ Krupet.com កំពុងដំណើរការកំណែចុងក្រោយបំផុត ១០០% គ្មានកំណែអាប់ដេតដែលត្រូវរង់ចាំឡើយ។'
+          ? 'ប្រព័ន្ធ KruPet កំពុងដំណើរការកំណែចុងក្រោយបំផុត ១០០% គ្មានកំណែអាប់ដេតដែលត្រូវរង់ចាំឡើយ។'
           : 'Your system is running the latest verified production build. All modules are up to date.'
       );
     } catch {
@@ -113,7 +113,7 @@ export const SystemUpdateSettingsPanel: React.FC = () => {
           <div>
             <div className="flex items-center gap-2">
               <span className="font-extrabold text-stone-900 text-sm sm:text-base font-sans">
-                Krupet.com Clinical Operating System
+                KruPet Clinical Operating System
               </span>
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
                 Production v2.4.0

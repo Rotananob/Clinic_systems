@@ -433,7 +433,7 @@ export default function SettingsPage() {
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-0.5 font-mono">
-                Subdomain: <span className="text-teal-800 font-semibold">{tenantProfile?.tenant?.slug || 'rotana'}.krupet.com</span>
+                Workspace Slug: <span className="text-teal-800 font-semibold">{tenantProfile?.tenant?.slug || 'rotana'}</span>
               </p>
             </div>
           </div>

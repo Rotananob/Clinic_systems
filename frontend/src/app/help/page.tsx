@@ -238,7 +238,7 @@ const GUIDES: GuideItem[] = [
       {
         step: '03',
         title: 'Generate Dynamic KHQR Test QR',
-        desc: 'Click "Test Dynamic KHQR". Krupet generates an official Bakong Dynamic KHQR with locked amount and 16-bit CRC checksum. Scan with any Cambodian banking app to verify name and amount accuracy.',
+        desc: 'Click "Test Dynamic KHQR". KruPet generates an official Bakong Dynamic KHQR with locked amount and 16-bit CRC checksum. Scan with any Cambodian banking app to verify name and amount accuracy.',
         tip: 'Dynamic KHQR embeds exact invoice totals and currency, preventing accidental cashier mischarges.',
       },
       {

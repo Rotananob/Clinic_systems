@@ -131,7 +131,7 @@ export const PublicFooter: React.FC = () => {
         {/* Bottom copyright & disclaimer */}
         <div className="pt-8 border-t border-[#EAE3D5] flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-stone-500">
           <div>
-            &copy; {new Date().getFullYear()} Krupet.com PaaS - Cambodia. All rights reserved.
+            &copy; {new Date().getFullYear()} KruPet PaaS - Cambodia. All rights reserved.
           </div>
           <div className="flex items-center gap-4">
             <Link href="/help" className="hover:text-stone-800 transition-colors">

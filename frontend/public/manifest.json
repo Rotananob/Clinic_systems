@@ -1,7 +1,7 @@
 {
-  "name": "Krupet.com - Clinical OS",
-  "short_name": "Krupet.com",
-  "description": "Krupet.com - Next-Generation Clinical Operating System & Dynamic KHQR Platform",
+  "name": "KruPet - Clinical OS",
+  "short_name": "KruPet",
+  "description": "KruPet - Next-Generation Clinical Operating System & Dynamic KHQR Platform",
   "start_url": "/",
   "id": "/",
   "display": "standalone",

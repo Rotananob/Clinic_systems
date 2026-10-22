@@ -100,14 +100,14 @@ export const BeforeAfterSection: React.FC = () => {
             <span>
               {isKm
                 ? 'ការប្រៀបធៀបជាក់ស្តែង • Before & After Transformation'
-                : 'Direct Comparison • Before vs After Krupet.com'}
+                : 'Direct Comparison • Before vs After KruPet'}
             </span>
           </div>
 
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-stone-900 tracking-tight font-sans">
             {isKm
-              ? 'ហេតុអ្វីបានជាគ្លីនិកឈានមុខគេប្តូរមកប្រើ Krupet.com?'
-              : 'Why Leading Clinics Across Cambodia Choose Krupet.com'}
+              ? 'ហេតុអ្វីបានជាគ្លីនិកឈានមុខគេប្តូរមកប្រើ KruPet?'
+              : 'Why Leading Clinics Across Cambodia Choose KruPet'}
           </h2>
 
           <p className="text-xs sm:text-sm text-stone-600 leading-relaxed font-sans">
@@ -156,12 +156,12 @@ export const BeforeAfterSection: React.FC = () => {
                     </p>
                   </div>
 
-                  {/* AFTER (With Krupet.com) */}
+                  {/* AFTER (With KruPet) */}
                   <div className="p-6 bg-teal-50/30 space-y-3">
                     <div className="flex items-center gap-2">
                       <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                       <span className="text-xs font-black uppercase tracking-wider text-teal-900 font-mono">
-                        {isKm ? 'ក្រោយពេលប្រើ Krupet.com - គ្លីនិកទំនើប' : 'After: Powered by Krupet PaaS'}
+                        {isKm ? 'ក្រោយពេលប្រើ KruPet - គ្លីនិកទំនើប' : 'After: Powered by KruPet PaaS'}
                       </span>
                     </div>
                     <p className="text-xs text-stone-800 font-medium leading-relaxed font-sans pl-6">

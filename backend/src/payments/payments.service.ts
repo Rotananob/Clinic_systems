@@ -936,7 +936,7 @@ export class PaymentsService {
       tenant?.paywayPaymentUrl ||
       this.configService.get<string>('PAYWAY_PAYMENT_URL') ||
       'https://link.payway.com.kh/ABAPAYCK539089j';
-    const merchantName = tenant?.merchantName || tenant?.clinicNameEn || 'Krupet';
+    const merchantName = tenant?.merchantName || tenant?.clinicNameEn || 'KruPet';
     const merchantCity = tenant?.merchantCity || 'Phnom Penh';
     const bakongId = tenant?.bakongAccountId;
 

@@ -3,8 +3,8 @@ import './globals.css';
 import { AppShell } from '../components/layout/AppShell';
 
 export const metadata: Metadata = {
-  title: 'Krupet.com - ប្រព័ន្ធគ្រប់គ្រងគ្លីនិក និងវេជ្ជសាស្ត្រឌីជីថល',
-  description: 'Krupet.com - Next-Generation Clinical Operating System & Dynamic KHQR Platform',
+  title: 'KruPet - ប្រព័ន្ធគ្រប់គ្រងគ្លីនិក និងវេជ្ជសាស្ត្រឌីជីថល',
+  description: 'KruPet - Next-Generation Clinical Operating System & Dynamic KHQR Platform',
   manifest: '/manifest.json',
   icons: {
     icon: [
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Krupet.com',
+    title: 'KruPet',
   },
 };
 

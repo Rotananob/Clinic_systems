@@ -275,8 +275,8 @@ function RegisterContent() {
 
             <h1 className="text-2xl sm:text-3xl font-extrabold text-stone-900 font-sans tracking-tight">
               {isKm
-                ? 'បង្កើតគណនី Krupet.com របស់លោកអ្នក'
-                : 'Create Your Krupet.com Account'}
+                ? 'បង្កើតគណនី KruPet របស់លោកអ្នក'
+                : 'Create Your KruPet Account'}
             </h1>
             <p className="text-xs sm:text-sm text-stone-600 max-w-lg mx-auto">
               {isKm

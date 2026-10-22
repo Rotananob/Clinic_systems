@@ -81,7 +81,7 @@ describe('EmailVerificationService Test Suite', () => {
     assert.ok(res.message);
     assert.ok(capturedMail);
     assert.equal(capturedMail.to, 'doctor.cheasok@krupet.health');
-    assert.match(capturedMail.subject, /\[Krupet\.com\]/);
-    assert.match(capturedMail.html, /Krupet\.com/);
+    assert.match(capturedMail.subject, /\[KruPet\]/);
+    assert.match(capturedMail.html, /KruPet/);
   });
 });

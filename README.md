@@ -1,4 +1,4 @@
-# Krupet.com Platform
+# KruPet Platform
 ## Enterprise Multi-Tenant Clinical PaaS, Hospital Information System & KHQR FinTech Engine
 ### Version 2.0.0 Production Ready
 
@@ -10,7 +10,7 @@ A hospital-grade, multi-tenant Clinical Platform as a Service - PaaS engineered 
 
 ## 1. Executive Summary & PaaS Architecture
 
-Krupet.com Platform transforms traditional clinic software into an enterprise Multi-Tenant Platform as a Service (PaaS). Clinics and polyclinics can onboard in 15 seconds, provision independent secure workspaces, configure their own ABA PayWay merchant accounts, and operate end-to-end clinical workflows with guaranteed zero cross-tenant data leakage.
+KruPet Platform transforms traditional clinic software into an enterprise Multi-Tenant Platform as a Service (PaaS). Clinics and polyclinics can onboard in 15 seconds, provision independent secure workspaces, configure their own ABA PayWay merchant accounts, and operate end-to-end clinical workflows with guaranteed zero cross-tenant data leakage.
 
 ### Core Architectural Pillars
 - **Multi-Tenant Automatic Isolation**: Native request-scoped tenant isolation powered by Node.js `AsyncLocalStorage` and Prisma query extensions. Every SQL query is automatically scoped by `tenantId`, preventing cross-clinic data leakage at the database engine level.

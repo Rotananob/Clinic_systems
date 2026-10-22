@@ -84,8 +84,8 @@ export const PwaUpdatePrompt: React.FC = () => {
           </div>
           <p className="text-xs text-stone-600 leading-relaxed">
             {isKm
-              ? 'Krupet.com មានមុខងារថ្មីៗ និងដំណោះស្រាយសុវត្ថិភាព។ សូមចុចប៊ូតុងខាងក្រោមដើម្បីធ្វើបច្ចុប្បន្នភាពឥឡូវនេះ។'
-              : 'A new version of Krupet.com is available with enhancements. Click below to apply update.'}
+              ? 'KruPet មានមុខងារថ្មីៗ និងដំណោះស្រាយសុវត្ថិភាព។ សូមចុចប៊ូតុងខាងក្រោមដើម្បីធ្វើបច្ចុប្បន្នភាពឥឡូវនេះ។'
+              : 'A new version of KruPet is available with enhancements. Click below to apply update.'}
           </p>
 
           <div className="flex items-center gap-2 pt-2">

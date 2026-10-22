@@ -319,8 +319,8 @@ export const LandingHero: React.FC = () => {
               <span className="w-2 h-2 rounded-full bg-emerald-500" />
               <span className="font-sans">
                 {isKm
-                  ? 'Krupet 2.0 • PaaS វេជ្ជសាស្ត្រជំនាន់ថ្មី • Dynamic KHQR ចាក់សោទឹកប្រាក់ និង AI ជំនាន់ក្រោយល្បីនិងវ័យឆ្លាត'
-                  : 'Krupet 2.0 • Next-Gen Medical PaaS • Dynamic KHQR ចាក់សោទឹកប្រាក់ និង AI ជំនាន់ក្រោយល្បីនិងវ័យឆ្លាត'}
+                  ? 'KruPet 2.0 • PaaS វេជ្ជសាស្ត្រជំនាន់ថ្មី • Dynamic KHQR ចាក់សោទឹកប្រាក់ និង AI ជំនាន់ក្រោយល្បីនិងវ័យឆ្លាត'
+                  : 'KruPet 2.0 • Next-Gen Medical PaaS • Dynamic KHQR ចាក់សោទឹកប្រាក់ និង AI ជំនាន់ក្រោយល្បីនិងវ័យឆ្លាត'}
               </span>
             </div>
           </div>
@@ -383,7 +383,7 @@ export const LandingHero: React.FC = () => {
                 <div className="flex items-center gap-1 truncate">
                   <span className="text-teal-800 font-semibold">Workspace:</span>
                   <span className="text-stone-700 font-bold bg-[#FAF7F2] px-1.5 py-0.5 rounded border border-[#E5DEC1]">
-                    https://{slugPreview}.krupet.com
+                    {slugPreview}
                   </span>
                 </div>
                 <div className="text-[11px] text-stone-500 font-sans">
@@ -448,7 +448,7 @@ export const LandingHero: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-emerald-400" />
                   <span className="text-xs font-bold tracking-wider text-teal-300 font-mono uppercase">
-                    Krupet.com Live Medical Console
+                    KruPet Live Medical Console
                   </span>
                 </div>
 
@@ -1318,7 +1318,7 @@ export const LandingHero: React.FC = () => {
                 </div>
                 <div className="text-[11px] text-stone-500 font-sans leading-relaxed">
                   {isKm
-                    ? 'Krupet មិនប៉ះពាល់ ឬកាត់កម្រៃជើងសារពីលុយរបស់អ្នកឡើយ កម្រៃជើងសារ ០%'
+                    ? 'KruPet មិនប៉ះពាល់ ឬកាត់កម្រៃជើងសារពីលុយរបស់អ្នកឡើយ កម្រៃជើងសារ ០%'
                     : 'Zero middleman escrow; 100% of patient payments deposit directly into your bank'}
                 </div>
               </div>

@@ -1,11 +1,11 @@
-# Krupet.com Platform Architecture & Evolution Roadmap
+# KruPet Platform Architecture & Evolution Roadmap
 ## Enterprise Multi-Tenant Clinical PaaS & Hospital Information System
 
 ---
 
 ## 1. Architectural Philosophy
 
-Krupet.com Platform is engineered as a zero-trust, multi-tenant healthcare operating system tailored for the Cambodian clinical ecosystem. The system unifies outpatient clinical care, pharmacy supply chains, medical imaging, government health compliance, and digital banking into a resilient, local-first web architecture.
+KruPet Platform is engineered as a zero-trust, multi-tenant healthcare operating system tailored for the Cambodian clinical ecosystem. The system unifies outpatient clinical care, pharmacy supply chains, medical imaging, government health compliance, and digital banking into a resilient, local-first web architecture.
 
 ### Key Architectural Tenets
 1. **Multi-Tenant Isolation**: Native database scoping via `AsyncLocalStorage` and Prisma query middleware guarantees strict logical tenant separation without the operational cost of individual database instances.

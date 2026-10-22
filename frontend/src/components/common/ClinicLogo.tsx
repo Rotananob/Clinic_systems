@@ -74,8 +74,8 @@ export const ClinicLogo: React.FC<ClinicLogoProps> = ({
     }
   }, [clinicNameKh, clinicNameEn, planTier]);
 
-  const displayNameKh = resolvedNames.kh || 'Krupet មន្ទីរសម្រាកព្យាបាល';
-  const displayNameEn = resolvedNames.en || 'Krupet Medical Center';
+  const displayNameKh = resolvedNames.kh || 'KruPet មន្ទីរសម្រាកព្យាបាល';
+  const displayNameEn = resolvedNames.en || 'KruPet Medical Center';
   const displayTier = resolvedNames.tier ? resolvedNames.tier.replace('_', ' ') : 'KRUPET';
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {

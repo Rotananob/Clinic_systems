@@ -103,7 +103,7 @@ export class EmailVerificationService {
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Krupet.com Verification Code</title>
+        <title>KruPet Verification Code</title>
       </head>
       <body style="margin: 0; padding: 0; background-color: #f7f4ee; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1c1917;">
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f7f4ee; padding: 32px 16px;">
@@ -116,7 +116,7 @@ export class EmailVerificationService {
                     <div style="display: inline-block; background-color: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 12px; width: 44px; height: 44px; line-height: 44px; font-size: 24px; font-weight: 900; color: #ffffff; font-family: 'Arial Black', Impact, sans-serif; margin-bottom: 8px;">
                       K
                     </div>
-                    <h1 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.5px;">Krupet.com</h1>
+                    <h1 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.5px;">KruPet</h1>
                     <p style="color: #ccfbf1; margin: 4px 0 0 0; font-size: 13px; font-weight: 500;">ប្រព័ន្ធគ្រប់គ្រងគ្លីនិកវេជ្ជសាស្ត្រឆ្លាតវៃ</p>
                   </td>
                 </tr>
@@ -125,7 +125,7 @@ export class EmailVerificationService {
                 <tr>
                   <td style="padding: 32px 28px;">
                     <p style="font-size: 15px; line-height: 1.6; color: #292524; margin: 0 0 18px 0;">
-                      សូមស្វាគមន៍មកកាន់ <strong>Krupet.com</strong>។ នេះជាលេខកូដបញ្ជាក់ ៦ ខ្ទង់របស់អ្នកដើម្បីបង្កើត និងផ្ទៀងផ្ទាត់គណនី Workspace គ្លីនិក៖
+                      សូមស្វាគមន៍មកកាន់ <strong>KruPet</strong>។ នេះជាលេខកូដបញ្ជាក់ ៦ ខ្ទង់របស់អ្នកដើម្បីបង្កើត និងផ្ទៀងផ្ទាត់គណនី Workspace គ្លីនិក៖
                     </p>
 
                     <!-- Code Box -->
@@ -151,7 +151,7 @@ export class EmailVerificationService {
                 <tr>
                   <td style="background-color: #faf7f2; border-top: 1px solid #e7e1d4; padding: 16px 24px; text-align: center;">
                     <p style="font-size: 11px; color: #a8a29e; margin: 0;">
-                      រក្សាសិទ្ធិគ្រប់យ៉ាងដោយ Krupet.com - Clinical Operating System
+                      រក្សាសិទ្ធិគ្រប់យ៉ាងដោយ KruPet - Clinical Operating System
                     </p>
                   </td>
                 </tr>
@@ -173,10 +173,10 @@ export class EmailVerificationService {
       }
 
       await this.transporter.sendMail({
-        from: `"Krupet.com - Clinical OS" <${user}>`,
+        from: `"KruPet - Clinical OS" <${user}>`,
         to: normalizedEmail,
-        subject: `[Krupet.com] លេខកូដបញ្ជាក់ការចុះឈ្មោះគ្លីនិក - Verification Code: ${code}`,
-        text: `Krupet.com - លេខកូដបញ្ជាក់ការចុះឈ្មោះគ្លីនិករបស់អ្នកគឺ: ${code} - មានសុពលភាព ១០ នាទី។`,
+        subject: `[KruPet] លេខកូដបញ្ជាក់ការចុះឈ្មោះគ្លីនិក - Verification Code: ${code}`,
+        text: `KruPet - លេខកូដបញ្ជាក់ការចុះឈ្មោះគ្លីនិករបស់អ្នកគឺ: ${code} - មានសុពលភាព ១០ នាទី។`,
         html: htmlContent,
       });
 
