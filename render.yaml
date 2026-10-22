@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: houn-vannak-clinic-backend
+    name: clinic-systems-backend
     runtime: node
     rootDir: backend
     region: singapore
@@ -19,6 +19,16 @@ services:
         generateValue: true
       - key: JWT_EXPIRES_IN
         value: 7d
+      - key: GMAIL_USER
+        value: xflowstudio5@gmail.com
+      - key: GMAIL_APP_PASSWORD
+        value: lmzagtdkmojpfsfu
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_SECURE
+        value: "false"
       - key: BAKONG_ACCOUNT_ID
         value: rotana_clinic@aba
       - key: BAKONG_MERCHANT_NAME
@@ -38,4 +48,4 @@ services:
       - key: TELEGRAM_BOT_TOKEN
         value: 8822219627:AAHjLV4FeVD5XS55BpUil24UgLdR3WsiUsg
       - key: FRONTEND_URL
-        sync: false
+        value: https://clinic-systems.vercel.app

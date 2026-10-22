@@ -60,7 +60,7 @@
 2. ចូលទៅកាន់គេហទំព័រ [https://render.com](https://render.com)។
 3. ចុច **New +** -> ជ្រើសរើស **Web Service**:
    - ភ្ជាប់ជាមួយ GitHub Repository នៃគម្រោងនេះ
-   - Name: `houn-vannak-clinic-backend`
+   - Name: `clinic-systems-backend`
    - Region: ជ្រើសរើស **Singapore (Southeast Asia)**
    - Branch: `main` (ឬ `master`)
    - Root Directory: `backend`
@@ -92,7 +92,7 @@
    - `TELEGRAM_TOPIC_SECURITY`: `60`
    - `FRONTEND_URL`: `https://houn-vannak-clinic.vercel.app` *(ឬ URL Vercel របស់អ្នក)*
 6. ចុច **Create Web Service** ហើយរង់ចាំ Render Build រហូតចេញស្ថានភាព `Live`។
-7. ចម្លងអាសយដ្ឋាន URL របស់ Render Backend (ឧទាហរណ៍: `https://houn-vannak-clinic-backend.onrender.com`)។
+7. ចម្លងអាសយដ្ឋាន URL របស់ Render Backend ឧទាហរណ៍: `https://clinic-systems.onrender.com`។
 
 ---
 
@@ -102,11 +102,11 @@
 2. ចុច **Add New...** -> ជ្រើសរើស **Project**។
 3. Import GitHub Repository នៃគម្រោងនេះ។
 4. នៅទំព័រ Configure Project:
-   - Project Name: `houn-vannak-clinic`
+   - Project Name: `clinic-systems`
    - Framework Preset: `Next.js`
    - Root Directory: ចុច Edit ហើយជ្រើសរើសថត `frontend`
 5. នៅផ្នែក **Environment Variables**:
-   - `NEXT_PUBLIC_API_URL`: `https://houn-vannak-clinic-backend.onrender.com/api`
+   - `NEXT_PUBLIC_API_URL`: `https://clinic-systems.onrender.com/api`
      *(ដាក់ Backend Render URL របស់អ្នកដោយមានកន្ទុយ `/api`)*
 6. ចុច **Deploy**:
    - Vercel នឹងធ្វើការ Build Next.js ស្វ័យប្រវត្តក្នុងរយៈពេលប្រហែល ១ ទៅ ២ នាទី។
@@ -149,7 +149,7 @@ Cloudflare ដើរតួជាខែលការពារសុវត្ថិ
    - ក្នុង Cloudflare DNS Records បន្ថែម:
      - Type: `CNAME`
      - Name: `api`
-     - Target: `houn-vannak-clinic-backend.onrender.com` *(ឈ្មោះ Render backend របស់អ្នក)*
+     - Target: `clinic-systems.onrender.com` - ឈ្មោះ Render backend របស់អ្នក
      - Proxy status: `Proxied` (បើកពពកពណ៌ទឹកក្រូច)
    - ក្នុង Render Dashboard: ចូលទៅកាន់ Settings -> Custom Domains -> បន្ថែម `api.hounvannak-clinic.com`។
    - ធ្វើបច្ចុប្បន្នភាព Environment Variable ក្នុង Vercel:

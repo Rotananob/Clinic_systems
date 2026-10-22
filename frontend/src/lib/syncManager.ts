@@ -155,7 +155,7 @@ function getApiBaseUrl(): string {
   if (typeof window !== 'undefined') {
     const host = window.location.hostname;
     if (host.includes('vercel.app')) {
-      return 'https://houn-vannak-clinic-backend.onrender.com/api';
+      return '/api';
     }
     if (host && host !== 'localhost' && host !== '127.0.0.1') {
       return `http://${host}:4000/api`;

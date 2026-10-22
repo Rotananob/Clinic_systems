@@ -23,6 +23,19 @@ const nextConfig = {
       },
     ];
   },
+  async rewrites() {
+    const rawBackend =
+      process.env.BACKEND_API_URL ||
+      process.env.NEXT_PUBLIC_API_URL ||
+      'https://clinic-systems.onrender.com/api';
+    const cleanBackend = rawBackend.replace(/\/+$/, '');
+    return [
+      {
+        source: '/api/:path*',
+        destination: `${cleanBackend}/:path*`,
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;

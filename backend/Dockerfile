@@ -38,4 +38,4 @@ EXPOSE 4000
 # Run as non-privileged user for clinical data safety
 USER node
 
-CMD ["node", "dist/src/main.js"]
+CMD ["node", "dist/main.js"]
