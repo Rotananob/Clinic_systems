@@ -21,6 +21,8 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Confirmation code dispatched' })
   @Post('send-verification-code')
   async sendVerificationCode(@Body() dto: SendVerificationCodeDto) {
+    // Guard against duplicate registered email before dispatching confirmation code
+    await this.authService.checkEmailAvailability(dto.email);
     return this.emailVerificationService.sendVerificationCode(dto.email);
   }
 

@@ -256,17 +256,8 @@ function RegisterContent() {
   const handleResendCode = async () => {
     setErrorMessage(null);
     setLoading(true);
-    const timer = setTimeout(() => {
-      setLoading(false);
-      setErrorMessage(
-        isKm
-          ? 'ដំណើរការផ្ញើមានភាពយឺតយ៉ាវដោយសារបណ្ដាញអ៊ីនធឺណិត។ សូមពិនិត្យប្រអប់សំបុត្រ Gmail របស់អ្នក ឬចុចព្យាយាមម្ដងទៀត។'
-          : 'Dispatch is taking longer than usual due to network connectivity. Please check your Gmail inbox or try again.'
-      );
-    }, 8500);
     try {
       const res = await api.auth.sendVerificationCode(email.trim().toLowerCase());
-      clearTimeout(timer);
       if (res?.success) {
         setCountdown(600);
         setVerificationCode('');
@@ -275,10 +266,14 @@ function RegisterContent() {
         setErrorMessage(res?.message || (isKm ? 'មិនអាចផ្ញើលេខកូដបានទេ។ សូមព្យាយាមម្ដងទៀត។' : 'Failed to resend code.'));
       }
     } catch (err: any) {
-      clearTimeout(timer);
-      setErrorMessage(err.message || 'Failed to resend code.');
+      console.error('resendVerificationCode error:', err);
+      setErrorMessage(
+        err.message ||
+          (isKm
+            ? 'មិនអាចផ្ញើលេខកូដទៅកាន់ Gmail បានទេ។ សូមពិនិត្យមើលអាសយដ្ឋាន Gmail របស់អ្នកឡើងវិញ។'
+            : 'Failed to resend code. Please check your Gmail address.')
+      );
     } finally {
-      clearTimeout(timer);
       setLoading(false);
     }
   };
@@ -336,9 +331,19 @@ function RegisterContent() {
               )}
 
               {errorMessage && (
-                <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-                  <span>{errorMessage}</span>
+                <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 flex items-start justify-between gap-3 animate-shake">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                    <span className="font-medium leading-relaxed">{errorMessage}</span>
+                  </div>
+                  {(errorMessage.includes('Login') || errorMessage.includes('exists') || errorMessage.includes('ចុះឈ្មោះរួចរាល់')) && (
+                    <Link
+                      href="/login"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-teal-800 hover:bg-teal-900 text-white rounded-lg text-xs font-bold shrink-0 transition-colors shadow-xs"
+                    >
+                      <span>{isKm ? 'ចូលប្រើប្រាស់ - Sign In' : 'Sign In'}</span>
+                    </Link>
+                  )}
                 </div>
               )}
 
@@ -413,9 +418,19 @@ function RegisterContent() {
             /* Step 1: Ultra-Fast Registration Form Card */
             <div className="bg-white rounded-3xl border border-stone-200 p-6 sm:p-8 shadow-xl space-y-6 card-3d animate-spring-pop">
               {errorMessage && (
-                <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-                  <span>{errorMessage}</span>
+                <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 flex items-start justify-between gap-3 animate-shake">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                    <span className="font-medium leading-relaxed">{errorMessage}</span>
+                  </div>
+                  {(errorMessage.includes('Login') || errorMessage.includes('exists') || errorMessage.includes('ចុះឈ្មោះរួចរាល់')) && (
+                    <Link
+                      href="/login"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-teal-800 hover:bg-teal-900 text-white rounded-lg text-xs font-bold shrink-0 transition-colors shadow-xs"
+                    >
+                      <span>{isKm ? 'ចូលប្រើប្រាស់ - Sign In' : 'Sign In'}</span>
+                    </Link>
+                  )}
                 </div>
               )}
 

@@ -269,16 +269,28 @@ export class AuthService {
     };
   }
 
+  async checkEmailAvailability(email: string) {
+    const normalizedEmail = (email || '').trim().toLowerCase();
+    if (!normalizedEmail) {
+      throw new BadRequestException('សូមបញ្ចូលអាសយដ្ឋាន Gmail របស់អ្នក។');
+    }
+
+    const existingUser = await this.prisma.user.findFirst({
+      where: { email: { equals: normalizedEmail, mode: 'insensitive' } },
+    });
+
+    if (existingUser) {
+      throw new BadRequestException(
+        'អាសយដ្ឋាន Gmail នេះត្រូវបានចុះឈ្មោះរួចរាល់ហើយក្នុងប្រព័ន្ធ។ សូមចូលប្រើប្រាស់ - Login ឬប្រើប្រាស់ Gmail ផ្សេងទៀត។'
+      );
+    }
+  }
+
   async registerClinic(dto: RegisterClinicDto) {
     const normalizedEmail = dto.email.trim().toLowerCase();
 
     // 1. Check if email already registered
-    const existingUser = await this.prisma.user.findFirst({
-      where: { email: { equals: normalizedEmail, mode: 'insensitive' } },
-    });
-    if (existingUser) {
-      throw new BadRequestException('An account with this email address already exists.');
-    }
+    await this.checkEmailAvailability(normalizedEmail);
 
     // 2. Resolve clinic names with optional defaults
     const clinicNameEn = (dto.clinicNameEn || '').trim() || (dto.adminName?.trim() ? `${dto.adminName.trim()} Clinic` : 'New Clinic');
