@@ -26,9 +26,13 @@ export class DashboardService {
       pendingPrescriptionsCount,
       dispensedPrescriptionsCount,
       todayPaidInvoices,
+      allUnpaidInvoices,
       todayFollowUpsCount,
       upcoming7DaysFollowUpsCount,
       totalDocumentsCount,
+      activeQueue,
+      pendingInvoices,
+      todayFollowUpsList,
       recentVisits,
       recentInvoices,
     ] = await Promise.all([
@@ -64,6 +68,16 @@ export class DashboardService {
         select: {
           payableAmount: true,
           currency: true,
+          paymentMethod: true,
+        },
+      }),
+      this.prisma.invoice.findMany({
+        where: {
+          status: InvoiceStatus.UNPAID,
+        },
+        select: {
+          payableAmount: true,
+          currency: true,
         },
       }),
       this.prisma.followUp.count({
@@ -79,19 +93,103 @@ export class DashboardService {
         },
       }),
       this.prisma.document.count(),
+      // 1. Live Active Queue for the Waiting Room
       this.prisma.visit.findMany({
-        take: 5,
-        orderBy: { createdAt: 'desc' },
+        where: {
+          status: { in: [VisitStatus.WAITING, VisitStatus.IN_CONSULTATION] },
+        },
+        orderBy: { createdAt: 'asc' },
+        take: 12,
         include: {
-          patient: { select: { nameEn: true, patientCode: true } },
-          doctor: { select: { fullNameEn: true } },
+          patient: {
+            select: {
+              id: true,
+              patientCode: true,
+              nameEn: true,
+              nameKh: true,
+              gender: true,
+              phone: true,
+              dob: true,
+              bloodType: true,
+            },
+          },
+          doctor: {
+            select: {
+              id: true,
+              fullNameEn: true,
+              fullNameKh: true,
+            },
+          },
         },
       }),
+      // 2. Real Pending Invoices Needing Cashier Settlement
       this.prisma.invoice.findMany({
-        take: 5,
+        where: {
+          status: InvoiceStatus.UNPAID,
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 8,
+        include: {
+          patient: {
+            select: {
+              id: true,
+              patientCode: true,
+              nameEn: true,
+              nameKh: true,
+              phone: true,
+            },
+          },
+          visit: {
+            select: {
+              id: true,
+              visitCode: true,
+              reason: true,
+            },
+          },
+        },
+      }),
+      // 3. Real Today Follow-up Appointments
+      this.prisma.followUp.findMany({
+        where: {
+          status: FollowUpStatus.SCHEDULED,
+          scheduledDate: { gte: startOfToday, lte: endOfToday },
+        },
+        orderBy: { scheduledDate: 'asc' },
+        take: 8,
+        include: {
+          patient: {
+            select: {
+              id: true,
+              patientCode: true,
+              nameEn: true,
+              nameKh: true,
+              phone: true,
+            },
+          },
+          doctor: {
+            select: {
+              id: true,
+              fullNameEn: true,
+              fullNameKh: true,
+            },
+          },
+        },
+      }),
+      // 4. Recent Visits with complete bilingual names
+      this.prisma.visit.findMany({
+        take: 6,
         orderBy: { createdAt: 'desc' },
         include: {
-          patient: { select: { nameEn: true } },
+          patient: { select: { id: true, nameEn: true, nameKh: true, patientCode: true } },
+          doctor: { select: { id: true, fullNameEn: true, fullNameKh: true } },
+        },
+      }),
+      // 5. Recent Invoices with complete bilingual names
+      this.prisma.invoice.findMany({
+        take: 6,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          patient: { select: { id: true, nameEn: true, nameKh: true, patientCode: true } },
         },
       }),
     ]);
@@ -101,6 +199,22 @@ export class DashboardService {
       .reduce((sum, inv) => sum + Number(inv.payableAmount), 0);
 
     const revenueKhr = todayPaidInvoices
+      .filter((inv) => inv.currency === 'KHR')
+      .reduce((sum, inv) => sum + Number(inv.payableAmount), 0);
+
+    const cashRevenueUsd = todayPaidInvoices
+      .filter((inv) => inv.currency === 'USD' && inv.paymentMethod === 'CASH')
+      .reduce((sum, inv) => sum + Number(inv.payableAmount), 0);
+
+    const khqrRevenueUsd = todayPaidInvoices
+      .filter((inv) => inv.currency === 'USD' && inv.paymentMethod === 'KHQR')
+      .reduce((sum, inv) => sum + Number(inv.payableAmount), 0);
+
+    const unpaidTotalUsd = allUnpaidInvoices
+      .filter((inv) => inv.currency === 'USD')
+      .reduce((sum, inv) => sum + Number(inv.payableAmount), 0);
+
+    const unpaidTotalKhr = allUnpaidInvoices
       .filter((inv) => inv.currency === 'KHR')
       .reduce((sum, inv) => sum + Number(inv.payableAmount), 0);
 
@@ -127,7 +241,15 @@ export class DashboardService {
         usd: revenueUsd,
         khr: revenueKhr,
         paidInvoicesCount: todayPaidInvoices.length,
+        cashUsd: cashRevenueUsd,
+        khqrUsd: khqrRevenueUsd,
+        unpaidCount: allUnpaidInvoices.length,
+        unpaidUsd: unpaidTotalUsd,
+        unpaidKhr: unpaidTotalKhr,
       },
+      activeQueue,
+      pendingInvoices,
+      todayFollowUpsList,
       recentActivity: {
         visits: recentVisits,
         invoices: recentInvoices,
