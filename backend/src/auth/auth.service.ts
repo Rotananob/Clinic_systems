@@ -46,14 +46,33 @@ export class AuthService {
     }
 
     // 2. Fetch User from Database safely
-    let user = await this.prisma.user.findFirst({
-      where: {
-        email: {
-          equals: normalizedEmail,
-          mode: 'insensitive',
+    let user: any = null;
+    try {
+      user = await this.prisma.user.findFirst({
+        where: {
+          email: {
+            equals: normalizedEmail,
+            mode: 'insensitive',
+          },
         },
-      },
-    });
+      });
+    } catch (dbErr: any) {
+      console.error(`[AUTH] Database query error during login: ${dbErr.message}`);
+      if (
+        dbErr.message?.includes('does not exist') ||
+        dbErr.code === 'P2021' ||
+        dbErr.code === 'P2022'
+      ) {
+        await this.prisma.autoSyncSchemaAndSeed();
+        try {
+          user = await this.prisma.user.findFirst({
+            where: { email: { equals: normalizedEmail, mode: 'insensitive' } },
+          });
+        } catch {
+          user = null;
+        }
+      }
+    }
 
     // 3. Isolated Test Account Handler (ដាច់ដោយឡែកពី Acc Zin របស់ Admin / Owner)
     if (isTestAccount) {
@@ -146,7 +165,9 @@ export class AuthService {
     }
 
     if (!user) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new UnauthorizedException(
+        'អ៊ីមែល ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវឡើយ - Invalid email or password - ប្រសិនបើអ្នកមិនទាន់មានគណនី សូមចុះឈ្មោះគណនីថ្មី - Please register a new account.'
+      );
     }
 
     if (!user.isActive) {

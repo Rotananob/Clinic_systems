@@ -43,6 +43,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
     } else if (prismaCode === 'P2003') {
       status = HttpStatus.BAD_REQUEST;
       message = 'Cannot complete operation due to dependent clinical records.';
+    } else if (prismaCode === 'P2021' || prismaCode === 'P2022') {
+      status = HttpStatus.SERVICE_UNAVAILABLE;
+      message = 'ប្រព័ន្ធមូលដ្ឋានទិន្នន័យកំពុងធ្វើបច្ចុប្បន្នភាព សូមរង់ចាំមួយភ្លែត រួចសាកល្បងម្ដងទៀត: Database schema is synchronizing, please retry.';
     } else if (typeof exceptionResponse === 'object' && exceptionResponse !== null) {
       const respObj = exceptionResponse as Record<string, unknown>;
       if (Array.isArray(respObj.message)) {

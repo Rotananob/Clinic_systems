@@ -5,7 +5,7 @@ services:
     rootDir: backend
     region: singapore
     plan: starter
-    buildCommand: npm install --include=dev && npm run prisma:generate && npm run build
+    buildCommand: npm install --include=dev && npx prisma generate && npx prisma db push --accept-data-loss && npm run build
     startCommand: npm run start:prod
     healthCheckPath: /api/health
     envVars:
