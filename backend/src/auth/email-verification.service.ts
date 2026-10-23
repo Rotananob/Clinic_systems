@@ -9,6 +9,11 @@ interface VerificationEntry {
   attempts: number;
 }
 
+interface RateLimitEntry {
+  lastRequestedAt: number;
+  count: number;
+}
+
 const DUMMY_EMAILS = new Set([
   'test.user@gmail.com',
   'test@gmail.com',
@@ -28,6 +33,7 @@ const DUMMY_DOMAINS = ['example.com', 'test.com', 'dummy.com', 'fake.com', 'samp
 
 export class EmailVerificationService {
   private readonly verificationCodes = new Map<string, VerificationEntry>();
+  private readonly rateLimits = new Map<string, RateLimitEntry>();
   private transporter: nodemailer.Transporter | null = null;
   public createTransportFn: (options: any) => nodemailer.Transporter = nodemailer.createTransport;
 
@@ -41,7 +47,6 @@ export class EmailVerificationService {
     const pass = rawPass.replace(/\s+/g, '');
     const host = process.env.SMTP_HOST || 'smtp.gmail.com';
     const isGmail = host.includes('gmail.com');
-    // Port 465 with direct SSL/TLS ensures ultra-fast 2-3s delivery and avoids STARTTLS ISP handshake throttling
     const port = isGmail ? 465 : (Number(process.env.SMTP_PORT) || 587);
     const isSecure = isGmail ? true : (String(process.env.SMTP_SECURE ?? 'false') === 'true');
 
@@ -71,6 +76,30 @@ export class EmailVerificationService {
 
   setTransporter(transporter: nodemailer.Transporter | null) {
     this.transporter = transporter;
+  }
+
+  private checkRateLimit(email: string) {
+    const now = Date.now();
+    const rate = this.rateLimits.get(email);
+    if (rate) {
+      // 60-second cooldown between consecutive requests
+      if (now - rate.lastRequestedAt < 60 * 1000) {
+        const remainingSeconds = Math.ceil((60 * 1000 - (now - rate.lastRequestedAt)) / 1000);
+        throw new BadRequestException(
+          `សូមរង់ចាំ ${remainingSeconds} វិនាទី មុននឹងស្នើសុំលេខកូដថ្មីម្តងទៀត។`
+        );
+      }
+      // Maximum 5 requests per 10 minutes to stop spam scripts
+      if (rate.count >= 5 && now - rate.lastRequestedAt < 10 * 60 * 1000) {
+        throw new BadRequestException(
+          'លោកអ្នកបានស្នើសុំលេខកូដលើសចំនួនកំណត់។ សូមរង់ចាំ ១០ នាទី មុននឹងព្យាយាមម្តងទៀត។'
+        );
+      }
+      rate.count = rate.count + 1;
+      rate.lastRequestedAt = now;
+    } else {
+      this.rateLimits.set(email, { lastRequestedAt: now, count: 1 });
+    }
   }
 
   generateCode(email: string): string {
@@ -239,16 +268,15 @@ export class EmailVerificationService {
     `;
   }
 
-  private async dispatchEmailWithFallbacks(params: {
+  private async dispatchEmail(params: {
     to: string;
     subject: string;
     text: string;
     htmlContent: string;
     logoBuffer: Buffer | null;
-    code: string;
     successMessage: string;
-  }): Promise<{ success: boolean; message: string; code?: string; fallback?: boolean }> {
-    const { to, subject, text, htmlContent, logoBuffer, code, successMessage } = params;
+  }): Promise<{ success: boolean; message: string }> {
+    const { to, subject, text, htmlContent, logoBuffer, successMessage } = params;
     const user = process.env.GMAIL_USER || 'xflowstudio5@gmail.com';
     const rawPass = process.env.GMAIL_APP_PASSWORD || 'lmzagtdkmojpfsfu';
     const pass = rawPass.replace(/\s+/g, '');
@@ -258,7 +286,6 @@ export class EmailVerificationService {
       return {
         success: true,
         message: successMessage,
-        code,
       };
     }
 
@@ -280,70 +307,58 @@ export class EmailVerificationService {
       ];
     }
 
-    // Attempt 1: Primary Transporter (Port 465 direct SSL) with 2500ms timeout
+    // Attempt 1: Fast direct send with active pool connection on Port 465 SSL
     try {
       if (!this.transporter) {
         this.initTransporter();
       }
       if (this.transporter) {
-        await Promise.race([
-          this.transporter.sendMail(mailOptions),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('SMTP direct timeout')), 2500)),
-        ]);
+        await this.transporter.sendMail(mailOptions);
         return {
           success: true,
           message: successMessage,
         };
       }
     } catch (err1: any) {
-      console.warn(`[EMAIL_VERIFICATION] Transport 1 (Pool 465) failed: ${err1.message}`);
+      console.warn(`[EMAIL_VERIFICATION] Pool send error (${err1.message}), trying dedicated transport...`);
     }
 
-    // Attempt 2: Nodemailer well-known service 'gmail' with 2500ms timeout
+    // Attempt 2: Dedicated transport on port 465 SSL
     try {
-      const serviceTransport = this.createTransportFn({
-        service: 'gmail',
+      const dedicatedTransport = this.createTransportFn({
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
         auth: { user, pass },
-        connectionTimeout: 2500,
-        greetingTimeout: 2500,
-        socketTimeout: 3000,
+        tls: { rejectUnauthorized: false },
+        connectionTimeout: 8000,
       });
-      await Promise.race([
-        serviceTransport.sendMail(mailOptions),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('SMTP service timeout')), 2500)),
-      ]);
+      await dedicatedTransport.sendMail(mailOptions);
       return {
         success: true,
         message: successMessage,
       };
     } catch (err2: any) {
-      console.warn(`[EMAIL_VERIFICATION] Transport 2 (Service Gmail) failed: ${err2.message}`);
+      console.warn(`[EMAIL_VERIFICATION] Dedicated transport error (${err2.message}), trying service gmail...`);
     }
 
-    // Attempt 3: Direct Port 587 STARTTLS with 2500ms timeout
+    // Attempt 3: Well-known service 'gmail'
     try {
-      const port587Transport = this.createTransportFn({
-        host: 'smtp.gmail.com',
-        port: 587,
-        secure: false,
-        requireTLS: true,
+      const serviceTransport = this.createTransportFn({
+        service: 'gmail',
         auth: { user, pass },
-        tls: { rejectUnauthorized: false },
-        connectionTimeout: 2500,
+        connectionTimeout: 8000,
       });
-      await Promise.race([
-        port587Transport.sendMail(mailOptions),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('SMTP port 587 timeout')), 2500)),
-      ]);
+      await serviceTransport.sendMail(mailOptions);
       return {
         success: true,
         message: successMessage,
       };
     } catch (err3: any) {
-      console.warn(`[EMAIL_VERIFICATION] Transport 3 (Port 587 STARTTLS) failed: ${err3.message}`);
+      console.warn(`[EMAIL_VERIFICATION] Service gmail error: ${err3.message}`);
     }
 
-    // Attempt 4: Resend HTTPS REST API (Port 443) if RESEND_API_KEY is available
+    // Attempt 4: Resend HTTPS API (Port 443) if RESEND_API_KEY is configured
     if (process.env.RESEND_API_KEY) {
       try {
         const response = await fetch('https://api.resend.com/emails', {
@@ -366,23 +381,18 @@ export class EmailVerificationService {
           };
         }
       } catch (err4: any) {
-        console.warn(`[EMAIL_VERIFICATION] Transport 4 (Resend HTTPS) failed: ${err4.message}`);
+        console.warn(`[EMAIL_VERIFICATION] Resend API error: ${err4.message}`);
       }
     }
 
-    // Attempt 5: Cloud Hosting Firewall Resilient Fallback
-    // When cloud hosting providers like Render Free Tier block all outbound SMTP ports (25, 465, 587)
-    // we return the valid, active verification code gracefully so user onboarding is never deadlocked.
-    console.error(`[EMAIL_VERIFICATION] Outbound SMTP ports blocked by cloud hosting firewall. Cloud resilient fallback active for ${to}: CODE = ${code}`);
-    return {
-      success: true,
-      message: `លេខកូដបញ្ជាក់ ៦ ខ្ទង់របស់អ្នកគឺ: ${code} - មានសុពលភាព ១០ នាទី។`,
-      code,
-      fallback: true,
-    };
+    // If all delivery transports fail, throw security-compliant error - NEVER expose code to client!
+    console.error(`[EMAIL_VERIFICATION] All delivery attempts failed for recipient: ${to}`);
+    throw new BadRequestException(
+      'មិនអាចផ្ញើលេខកូដទៅកាន់ Gmail បានទេ។ សូមពិនិត្យមើលអាសយដ្ឋាន Gmail របស់អ្នកឡើងវិញ ឬព្យាយាមម្ដងទៀត។'
+    );
   }
 
-  async sendVerificationCode(email: string): Promise<{ success: boolean; message: string; code?: string; fallback?: boolean }> {
+  async sendVerificationCode(email: string): Promise<{ success: boolean; message: string }> {
     const normalizedEmail = email.trim().toLowerCase();
 
     // Guard against dummy or placeholder test emails that cause SMTP bounces
@@ -393,6 +403,9 @@ export class EmailVerificationService {
       );
     }
 
+    // Anti-Spam / Anti-Hacker rate limiting enforcement
+    this.checkRateLimit(normalizedEmail);
+
     const code = this.generateCode(normalizedEmail);
     const logoBuffer = this.resolveLogoBuffer();
     const htmlContent = this.renderEmailHtml({
@@ -402,18 +415,17 @@ export class EmailVerificationService {
       logoBuffer,
     });
 
-    return this.dispatchEmailWithFallbacks({
+    return this.dispatchEmail({
       to: normalizedEmail,
       subject: `[KruPet] លេខកូដបញ្ជាក់ការចុះឈ្មោះគ្លីនិក - Verification Code: ${code}`,
       text: `KruPet - លេខកូដបញ្ជាក់ការចុះឈ្មោះគ្លីនិករបស់អ្នកគឺ: ${code} - មានសុពលភាព ១០ នាទី។`,
       htmlContent,
       logoBuffer,
-      code,
       successMessage: 'លេខកូដបញ្ជាក់ ៦ ខ្ទង់ត្រូវបានផ្ញើទៅកាន់ Gmail របស់អ្នករួចរាល់ហើយ។ សូមពិនិត្យមើលប្រអប់សំបុត្រ Gmail របស់អ្នក។',
     });
   }
 
-  async sendPasswordResetCode(email: string): Promise<{ success: boolean; message: string; code?: string; fallback?: boolean }> {
+  async sendPasswordResetCode(email: string): Promise<{ success: boolean; message: string }> {
     const normalizedEmail = email.trim().toLowerCase();
 
     const domain = normalizedEmail.split('@')[1];
@@ -422,6 +434,9 @@ export class EmailVerificationService {
         'សូមបញ្ចូលអាសយដ្ឋាន Email ពិតប្រាកដរបស់អ្នកដែលមានដំណើរការធម្មតា។'
       );
     }
+
+    // Anti-Spam / Anti-Hacker rate limiting enforcement
+    this.checkRateLimit(normalizedEmail);
 
     const code = this.generateCode(normalizedEmail);
     const logoBuffer = this.resolveLogoBuffer();
@@ -432,13 +447,12 @@ export class EmailVerificationService {
       logoBuffer,
     });
 
-    return this.dispatchEmailWithFallbacks({
+    return this.dispatchEmail({
       to: normalizedEmail,
       subject: `[KruPet] លេខកូដកំណត់ពាក្យសម្ងាត់ឡើងវិញ - Reset Code: ${code}`,
       text: `KruPet - លេខកូដកំណត់ពាក្យសម្ងាត់គណនីឡើងវិញរបស់អ្នកគឺ: ${code} - មានសុពលភាព ១០ នាទី។`,
       htmlContent,
       logoBuffer,
-      code,
       successMessage: 'លេខកូដបញ្ជាក់ ៦ ខ្ទង់សម្រាប់កំណត់ពាក្យសម្ងាត់ឡើងវិញ ត្រូវបានផ្ញើទៅកាន់ Gmail របស់អ្នករួចរាល់ហើយ។',
     });
   }

@@ -140,9 +140,7 @@ export default function LoginPage() {
     try {
       const res = await api.auth.forgotPassword(cleanEmail);
       if (res?.success) {
-        if (res.code) {
-          setResetCode(res.code);
-        }
+        setResetCode('');
         setResetSuccessMessage(res.message);
         setResetStep('CODE_AND_NEW_PASSWORD');
       } else {

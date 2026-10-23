@@ -427,12 +427,12 @@ class ApiClient {
         body: JSON.stringify(credentials),
       }),
     sendVerificationCode: (email: string) =>
-      this.request<{ success: boolean; message: string; code?: string; fallback?: boolean }>('/auth/send-verification-code', {
+      this.request<{ success: boolean; message: string }>('/auth/send-verification-code', {
         method: 'POST',
         body: JSON.stringify({ email }),
       }),
     forgotPassword: (email: string) =>
-      this.request<{ success: boolean; message: string; code?: string; fallback?: boolean }>('/auth/forgot-password', {
+      this.request<{ success: boolean; message: string }>('/auth/forgot-password', {
         method: 'POST',
         body: JSON.stringify({ email }),
       }),

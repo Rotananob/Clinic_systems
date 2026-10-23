@@ -94,17 +94,16 @@ describe('EmailVerificationService Test Suite', () => {
       },
     } as any);
 
-    const res = await service.sendPasswordResetCode('doctor.cheasok@krupet.health');
+    const res = await service.sendPasswordResetCode('doctor.reset@krupet.health');
     assert.equal(res.success, true);
     assert.ok(res.message);
     assert.ok(capturedMail);
-    assert.equal(capturedMail.to, 'doctor.cheasok@krupet.health');
+    assert.equal(capturedMail.to, 'doctor.reset@krupet.health');
     assert.match(capturedMail.subject, /កំណត់ពាក្យសម្ងាត់/);
     assert.match(capturedMail.html, /Security Notice/);
   });
 
-  it('should fallback gracefully when cloud hosting blocks SMTP without crashing', async () => {
-    // Transporter that simulates Render/cloud firewall rejecting all SMTP connections
+  it('should throw BadRequestException and never leak verification code when all SMTP transports fail', async () => {
     service.setTransporter({
       sendMail: async () => {
         throw new Error('connect ETIMEDOUT 142.250.150.108:465');
@@ -118,14 +117,31 @@ describe('EmailVerificationService Test Suite', () => {
         },
       }) as any;
 
-    const res = await service.sendVerificationCode('cloud.user@krupet.health');
-    assert.equal(res.success, true);
-    assert.ok(res.code);
-    assert.equal(res.code.length, 6);
-    assert.equal(res.fallback, true);
+    await assert.rejects(
+      async () => {
+        await service.sendVerificationCode('unreachable.host@krupet.health');
+      },
+      {
+        message: 'មិនអាចផ្ញើលេខកូដទៅកាន់ Gmail បានទេ។ សូមពិនិត្យមើលអាសយដ្ឋាន Gmail របស់អ្នកឡើងវិញ ឬព្យាយាមម្ដងទៀត។',
+      }
+    );
+  });
 
-    // Ensure the code generated in cloud fallback can be verified successfully
-    const isValid = service.verifyCode('cloud.user@krupet.health', res.code);
-    assert.equal(isValid, true);
+  it('should enforce 60-second rate limit to prevent spam scripts', async () => {
+    service.setTransporter({
+      sendMail: async () => ({ messageId: 'mock-id' }),
+    } as any);
+
+    await service.sendVerificationCode('ratelimit.test@krupet.health');
+
+    // Immediate second attempt must be blocked by rate limit
+    await assert.rejects(
+      async () => {
+        await service.sendVerificationCode('ratelimit.test@krupet.health');
+      },
+      (err: any) => {
+        return err.message && err.message.includes('សូមរង់ចាំ');
+      }
+    );
   });
 });

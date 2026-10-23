@@ -189,11 +189,7 @@ function RegisterContent() {
       if (res?.success) {
         setStep('VERIFY_CODE');
         setCountdown(600);
-        if (res.code) {
-          setVerificationCode(res.code);
-        } else {
-          setVerificationCode('');
-        }
+        setVerificationCode('');
         setInfoMessage(res.message);
       } else {
         setErrorMessage(
@@ -201,27 +197,13 @@ function RegisterContent() {
         );
       }
     } catch (err: any) {
-      console.warn('sendVerificationCode error:', err);
-      const msg = err?.message || '';
-      if (
-        msg.includes('ចុះឈ្មោះរួចរាល់') ||
-        msg.includes('already exists') ||
-        msg.includes('Login') ||
-        msg.includes('ពិតប្រាកដ')
-      ) {
-        setErrorMessage(msg);
-      } else {
-        // Cloud resilient fallback: prevent cloud server timeout from blocking user onboarding
-        const emergencyCode = Math.floor(100000 + Math.random() * 900000).toString();
-        setStep('VERIFY_CODE');
-        setCountdown(600);
-        setVerificationCode(emergencyCode);
-        setInfoMessage(
-          isKm
-            ? `លេខកូដបញ្ជាក់ផ្ទៀងផ្ទាត់របស់អ្នកគឺ: ${emergencyCode}`
-            : `Your confirmation code is: ${emergencyCode}`
-        );
-      }
+      console.error('sendVerificationCode error:', err);
+      setErrorMessage(
+        err?.message ||
+          (isKm
+            ? 'មិនអាចផ្ញើលេខកូដទៅកាន់ Gmail បានទេ។ សូមពិនិត្យមើលអាសយដ្ឋាន Gmail របស់អ្នកឡើងវិញ ឬព្យាយាមម្តងទៀត។'
+            : 'Failed to dispatch verification code. Please check your Gmail address.')
+      );
     } finally {
       setLoading(false);
     }

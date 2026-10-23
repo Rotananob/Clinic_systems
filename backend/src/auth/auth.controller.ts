@@ -33,18 +33,7 @@ export class AuthController {
       console.warn(`[AUTH] checkEmailAvailability warning: ${err.message}`);
     }
 
-    try {
-      return await this.emailVerificationService.sendVerificationCode(dto.email);
-    } catch (err: any) {
-      console.error(`[AUTH] Error in sendVerificationCode:`, err);
-      const code = this.emailVerificationService.generateCode(dto.email);
-      return {
-        success: true,
-        message: 'លេខកូដបញ្ជាក់ ៦ ខ្ទង់របស់អ្នកគឺ: ' + code,
-        code,
-        fallback: true,
-      };
-    }
+    return this.emailVerificationService.sendVerificationCode(dto.email);
   }
 
   @ApiOperation({ summary: 'Send 6-digit password reset code to registered Gmail' })
