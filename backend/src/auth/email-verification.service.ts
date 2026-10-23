@@ -280,13 +280,16 @@ export class EmailVerificationService {
       ];
     }
 
-    // Attempt 1: Primary Transporter (Port 465 direct SSL)
+    // Attempt 1: Primary Transporter (Port 465 direct SSL) with 2500ms timeout
     try {
       if (!this.transporter) {
         this.initTransporter();
       }
       if (this.transporter) {
-        await this.transporter.sendMail(mailOptions);
+        await Promise.race([
+          this.transporter.sendMail(mailOptions),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('SMTP direct timeout')), 2500)),
+        ]);
         return {
           success: true,
           message: successMessage,
@@ -296,16 +299,19 @@ export class EmailVerificationService {
       console.warn(`[EMAIL_VERIFICATION] Transport 1 (Pool 465) failed: ${err1.message}`);
     }
 
-    // Attempt 2: Nodemailer well-known service 'gmail'
+    // Attempt 2: Nodemailer well-known service 'gmail' with 2500ms timeout
     try {
       const serviceTransport = this.createTransportFn({
         service: 'gmail',
         auth: { user, pass },
-        connectionTimeout: 8000,
-        greetingTimeout: 8000,
-        socketTimeout: 10000,
+        connectionTimeout: 2500,
+        greetingTimeout: 2500,
+        socketTimeout: 3000,
       });
-      await serviceTransport.sendMail(mailOptions);
+      await Promise.race([
+        serviceTransport.sendMail(mailOptions),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('SMTP service timeout')), 2500)),
+      ]);
       return {
         success: true,
         message: successMessage,
@@ -314,7 +320,7 @@ export class EmailVerificationService {
       console.warn(`[EMAIL_VERIFICATION] Transport 2 (Service Gmail) failed: ${err2.message}`);
     }
 
-    // Attempt 3: Direct Port 587 STARTTLS
+    // Attempt 3: Direct Port 587 STARTTLS with 2500ms timeout
     try {
       const port587Transport = this.createTransportFn({
         host: 'smtp.gmail.com',
@@ -323,9 +329,12 @@ export class EmailVerificationService {
         requireTLS: true,
         auth: { user, pass },
         tls: { rejectUnauthorized: false },
-        connectionTimeout: 8000,
+        connectionTimeout: 2500,
       });
-      await port587Transport.sendMail(mailOptions);
+      await Promise.race([
+        port587Transport.sendMail(mailOptions),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('SMTP port 587 timeout')), 2500)),
+      ]);
       return {
         success: true,
         message: successMessage,

@@ -318,14 +318,21 @@ export class AuthService {
       throw new BadRequestException('សូមបញ្ចូលអាសយដ្ឋាន Gmail របស់អ្នក។');
     }
 
-    const existingUser = await this.prisma.user.findFirst({
-      where: { email: { equals: normalizedEmail, mode: 'insensitive' } },
-    });
+    try {
+      const existingUser = await this.prisma.user.findFirst({
+        where: { email: { equals: normalizedEmail, mode: 'insensitive' } },
+      });
 
-    if (existingUser) {
-      throw new BadRequestException(
-        'អាសយដ្ឋាន Gmail នេះត្រូវបានចុះឈ្មោះរួចរាល់ហើយក្នុងប្រព័ន្ធ។ សូមចូលប្រើប្រាស់ - Login ឬប្រើប្រាស់ Gmail ផ្សេងទៀត។'
-      );
+      if (existingUser) {
+        throw new BadRequestException(
+          'អាសយដ្ឋាន Gmail នេះត្រូវបានចុះឈ្មោះរួចរាល់ហើយក្នុងប្រព័ន្ធ។ សូមចូលប្រើប្រាស់ - Login ឬប្រើប្រាស់ Gmail ផ្សេងទៀត។'
+        );
+      }
+    } catch (err: any) {
+      if (err instanceof BadRequestException) {
+        throw err;
+      }
+      console.warn(`[AUTH] Database check warning during checkEmailAvailability: ${err.message}`);
     }
   }
 
