@@ -7,6 +7,7 @@ import { useTranslation } from '../../context/I18nContext';
 import { api } from '../../lib/api';
 import { PublicNavbar } from '../../components/landing/PublicNavbar';
 import { PublicFooter } from '../../components/landing/PublicFooter';
+import { VerificationCodeInput } from '../../components/common/VerificationCodeInput';
 import {
   Clock,
   ShieldCheck,
@@ -210,11 +211,12 @@ function RegisterContent() {
   };
 
   // Step 2: Verify code and immediately register account
-  const handleVerifyAndRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleVerifyAndRegister = async (e?: React.FormEvent, directCode?: string) => {
+    if (e) e.preventDefault();
     setErrorMessage(null);
 
-    if (!verificationCode.trim() || verificationCode.trim().length !== 6) {
+    const targetCode = (directCode || verificationCode).trim();
+    if (!targetCode || targetCode.length !== 6) {
       setErrorMessage(
         isKm
           ? 'សូមបញ្ចូលលេខកូដបញ្ជាក់ ៦ ខ្ទង់ឱ្យបានត្រឹមត្រូវ។'
@@ -231,7 +233,7 @@ function RegisterContent() {
         password,
         adminName: adminName.trim() || undefined,
         planTier: selectedPlan,
-        verificationCode: verificationCode.trim(),
+        verificationCode: targetCode,
       });
 
       if (res.success && res.accessToken) {
@@ -363,19 +365,18 @@ function RegisterContent() {
                 </p>
               </div>
 
-              <form onSubmit={handleVerifyAndRegister} className="space-y-6 max-w-md mx-auto">
+              <form onSubmit={(e) => handleVerifyAndRegister(e)} className="space-y-6 max-w-md mx-auto">
                 <div className="space-y-2">
-                  <input
-                    type="text"
-                    required
-                    maxLength={6}
+                  <VerificationCodeInput
                     value={verificationCode}
-                    onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ''))}
-                    placeholder="______"
-                    className="w-full text-center text-3xl font-mono tracking-[0.5em] font-extrabold px-4 py-3 bg-[#FAF7F2] border-2 border-teal-700/60 rounded-2xl text-teal-950 focus:outline-hidden focus:ring-4 focus:ring-teal-700/20 transition-all placeholder:text-stone-300 shadow-inner"
+                    onChange={(val) => setVerificationCode(val)}
+                    onComplete={(code) => handleVerifyAndRegister(undefined, code)}
+                    disabled={loading}
+                    isKm={isKm}
+                    autoFocus
                   />
-                  <p className="text-[11px] text-center text-stone-500">
-                    {isKm ? 'បញ្ចូលលេខ ៦ ខ្ទង់ដែលបានទទួលតាម Gmail' : 'Enter the 6 digits received via Gmail'}
+                  <p className="text-[11px] text-center text-stone-500 pt-1">
+                    {isKm ? 'លេខកូដសម្ងាត់ ៦ ខ្ទង់ដែលបានផ្ញើទៅ Gmail' : '6-digit security code dispatched to Gmail'}
                   </p>
                 </div>
 

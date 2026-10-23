@@ -149,18 +149,39 @@ export class EmailVerificationService {
     description: string;
     logoBuffer: Buffer | null;
   }): string {
-    const { code, badgeText, description, logoBuffer } = params;
+    const { code, badgeText, description } = params;
+    const digits = code.split('');
+    const logoUrl = 'https://clinic-systems.vercel.app/icons/icon-192.png';
+
+    const digitCells = digits
+      .map(
+        (d) => `
+        <td align="center" valign="middle" style="padding: 0 4px;">
+          <div style="width: 44px; height: 56px; line-height: 56px; background-color: #042f2e !important; background: #042f2e !important; border: 2px solid #14b8a6; border-radius: 12px; text-align: center; font-size: 32px; font-weight: 900; color: #ffffff !important; font-family: 'JetBrains Mono', Consolas, Monaco, monospace; box-shadow: 0 4px 12px rgba(2, 44, 39, 0.3);">
+            ${d}
+          </div>
+        </td>
+      `
+      )
+      .join('');
+
     return `
       <!DOCTYPE html>
       <html lang="km">
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>KruPet Verification Code</title>
+        <meta name="color-scheme" content="light dark">
+        <meta name="supported-color-schemes" content="light dark">
+        <title>KruPet Verification Code: ${code}</title>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
         <style>
+          :root {
+            color-scheme: light dark;
+            supported-color-schemes: light dark;
+          }
           body, table, td, p, a, li, blockquote {
             -webkit-text-size-adjust: 100%;
             -ms-text-size-adjust: 100%;
@@ -187,24 +208,25 @@ export class EmailVerificationService {
         </style>
       </head>
       <body style="margin: 0; padding: 0; background-color: #f7f4ee; font-family: 'Kantumruy Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Khmer OS Siemreap', sans-serif; color: #1c1917;">
-        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f7f4ee; padding: 40px 16px;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f7f4ee; padding: 32px 12px;">
           <tr>
             <td align="center">
-              <table role="presentation" width="100%" style="max-width: 520px; background-color: #ffffff; border-radius: 24px; border: 1px solid #e7dfd0; box-shadow: 0 10px 25px -5px rgba(2, 44, 39, 0.08), 0 8px 10px -6px rgba(2, 44, 39, 0.04); overflow: hidden;" cellspacing="0" cellpadding="0" border="0">
+              <table role="presentation" width="100%" style="max-width: 520px; background-color: #ffffff; border-radius: 24px; border: 1px solid #e7dfd0; box-shadow: 0 12px 30px -5px rgba(2, 44, 39, 0.12), 0 8px 10px -6px rgba(2, 44, 39, 0.05); overflow: hidden;" cellspacing="0" cellpadding="0" border="0">
                 
+                <!-- Header Banner with Official KruPet Branding -->
                 <tr>
-                  <td style="background: linear-gradient(135deg, #022c27 0%, #043d35 35%, #064e3b 70%, #0d5f58 100%); padding: 36px 28px 30px; text-align: center;">
-                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin: 0 auto 14px;">
+                  <td style="background: linear-gradient(135deg, #022c27 0%, #043d35 35%, #064e3b 70%, #0d5f58 100%); padding: 36px 24px 28px; text-align: center;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin: 0 auto 12px;">
                       <tr>
-                        <td align="center" style="width: 72px; height: 72px; background: rgba(255, 255, 255, 0.08); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);">
-                          ${logoBuffer ? '<img src="cid:krupet-logo" alt="KruPet Official Logo" width="60" height="60" style="display: block; border-radius: 16px; margin: 0 auto;" />' : '<div style="display: inline-block; width: 60px; height: 60px; line-height: 60px; font-size: 30px; font-weight: 900; color: #ffffff; font-family: \'Arial Black\', Impact, sans-serif;">K</div>'}
+                        <td align="center" style="width: 76px; height: 76px; background: rgba(255, 255, 255, 0.12); border-radius: 22px; border: 1.5px solid rgba(255, 255, 255, 0.25); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);">
+                          <img src="${logoUrl}" alt="KruPet Official Logo" width="64" height="64" style="display: block; border-radius: 18px; margin: 0 auto;" />
                         </td>
                       </tr>
                     </table>
 
                     <div style="margin: 0 0 6px 0;">
-                      <span style="color: #ffffff; font-size: 26px; font-weight: 800; font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; letter-spacing: -0.5px;">KruPet</span>
-                      <span style="display: inline-block; background-color: rgba(94, 234, 212, 0.2); color: #5eead4; border: 1px solid rgba(94, 234, 212, 0.4); border-radius: 12px; font-size: 10px; font-weight: 700; font-family: 'Plus Jakarta Sans', monospace; padding: 2px 8px; margin-left: 6px; vertical-align: middle; text-transform: uppercase;">${badgeText}</span>
+                      <span style="color: #ffffff; font-size: 26px; font-weight: 900; font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; letter-spacing: -0.5px;">KruPet</span>
+                      <span style="display: inline-block; background-color: rgba(94, 234, 212, 0.25); color: #5eead4; border: 1px solid rgba(94, 234, 212, 0.5); border-radius: 12px; font-size: 10px; font-weight: 800; font-family: 'Plus Jakarta Sans', monospace; padding: 2px 10px; margin-left: 6px; vertical-align: middle; text-transform: uppercase;">${badgeText}</span>
                     </div>
 
                     <p style="color: #ccfbf1; margin: 0; font-size: 13px; font-weight: 500; font-family: 'Kantumruy Pro', sans-serif; line-height: 1.5;">
@@ -213,32 +235,37 @@ export class EmailVerificationService {
                   </td>
                 </tr>
 
+                <!-- Content Area -->
                 <tr>
-                  <td style="padding: 36px 32px 28px; background-color: #ffffff;">
-                    <p style="font-size: 15px; line-height: 1.7; color: #292524; margin: 0 0 20px 0; font-family: 'Kantumruy Pro', sans-serif;">
+                  <td style="padding: 32px 28px 24px; background-color: #ffffff;">
+                    <p style="font-size: 15px; line-height: 1.7; color: #1c1917; margin: 0 0 20px 0; font-family: 'Kantumruy Pro', sans-serif; font-weight: 500;">
                       ${description}
                     </p>
 
-                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin: 24px 0 28px;">
-                      <tr>
-                        <td align="center">
-                          <div style="display: inline-block; background: linear-gradient(180deg, #f0fdf4 0%, #ecfdf5 100%); border: 2px solid #0d9488; border-radius: 16px; padding: 18px 36px; box-shadow: 0 4px 12px rgba(13, 148, 136, 0.12);">
-                            <div style="font-size: 38px; font-weight: 800; letter-spacing: 12px; color: #042f2e; font-family: 'JetBrains Mono', 'Consolas', 'Plus Jakarta Sans', monospace; line-height: 1; padding-left: 12px;">
-                              ${code}
-                            </div>
-                          </div>
-                          <div style="color: #0d9488; font-size: 11px; font-weight: 600; font-family: 'Kantumruy Pro', sans-serif; margin-top: 8px;">
-                            លេខកូដសម្ងាត់សម្រាប់ផ្ទៀងផ្ទាត់
-                          </div>
-                        </td>
-                      </tr>
-                    </table>
+                    <!-- High-Contrast Dark-Mode-Proof Code Card -->
+                    <div style="background-color: #022c22 !important; background: #022c22 !important; border: 2px solid #0d9488; border-radius: 18px; padding: 22px 16px; margin: 24px 0; text-align: center; box-shadow: 0 6px 16px rgba(2, 44, 39, 0.15);">
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin: 0 auto 12px;">
+                        <tr>
+                          ${digitCells}
+                        </tr>
+                      </table>
 
-                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #fafaf9; border-left: 4px solid #0d9488; border-radius: 8px; margin: 0 0 20px 0;">
+                      <div style="color: #5eead4 !important; font-size: 12px; font-weight: 700; font-family: 'Kantumruy Pro', sans-serif; margin-bottom: 8px;">
+                        លេខកូដសម្ងាត់សម្រាប់ផ្ទៀងផ្ទាត់ ៦ ខ្ទង់
+                      </div>
+
+                      <div style="display: inline-block; background: rgba(255, 255, 255, 0.1); border: 1px dashed rgba(94, 234, 212, 0.4); border-radius: 8px; padding: 4px 14px;">
+                        <span style="color: #99f6e4; font-size: 11px; font-family: monospace;">One-Time Code:</span>
+                        <strong style="color: #ffffff !important; font-size: 15px; font-family: 'JetBrains Mono', monospace; letter-spacing: 2px; margin-left: 6px;">${code}</strong>
+                      </div>
+                    </div>
+
+                    <!-- Expiration Notice -->
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f0fdf4; border-left: 4px solid #0d9488; border-radius: 8px; margin: 0 0 20px 0;">
                       <tr>
-                        <td style="padding: 14px 16px;">
-                          <p style="font-size: 13px; color: #44403c; line-height: 1.6; margin: 0; font-family: 'Kantumruy Pro', sans-serif;">
-                            <strong style="color: #0f766e;">សុពលភាព៖</strong> លេខកូដនេះមានសុពលភាពត្រឹមតែ <strong>១០ នាទី</strong> ប៉ុណ្ណោះ។ សូមកុំចែករំលែកលេខកូដនេះទៅកាន់អ្នកដទៃជាដាច់ខាត ដើម្បីការពារសុវត្ថិភាពទិន្នន័យគ្លីនិករបស់អ្នក។
+                        <td style="padding: 12px 16px;">
+                          <p style="font-size: 12.5px; color: #064e3b; line-height: 1.6; margin: 0; font-family: 'Kantumruy Pro', sans-serif;">
+                            <strong style="color: #042f2e;">សុពលភាព៖</strong> លេខកូដនេះមានសុពលភាពត្រឹមតែ <strong>១០ នាទី</strong> ប៉ុណ្ណោះ។ សូមកុំចែករំលែកលេខកូដនេះទៅកាន់អ្នកដទៃជាដាច់ខាត ដើម្បីការពារសុវត្ថិភាពទិន្នន័យគ្លីនិករបស់អ្នក។
                           </p>
                         </td>
                       </tr>
@@ -250,8 +277,9 @@ export class EmailVerificationService {
                   </td>
                 </tr>
 
+                <!-- Footer -->
                 <tr>
-                  <td style="background-color: #faf7f2; border-top: 1px solid #e7dfd0; padding: 22px 28px; text-align: center;">
+                  <td style="background-color: #faf7f2; border-top: 1px solid #e7dfd0; padding: 20px 24px; text-align: center;">
                     <p style="font-size: 12px; font-weight: 700; color: #042f2e; margin: 0 0 4px 0; font-family: 'Plus Jakarta Sans', sans-serif;">
                       KruPet - Clinical Operating System
                     </p>

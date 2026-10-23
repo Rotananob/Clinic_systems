@@ -7,6 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from '../../context/I18nContext';
 import { ClinicLogo } from '../../components/common/ClinicLogo';
 import { LanguageSwitcher } from '../../components/common/LanguageSwitcher';
+import { VerificationCodeInput } from '../../components/common/VerificationCodeInput';
 import { getHumanErrorMessage } from '../../lib/errorHandler';
 import { getClinicTargetRoute } from '../../lib/rbac';
 import { api } from '../../lib/api';
@@ -315,19 +316,16 @@ export default function LoginPage() {
             {/* Sub-step 2: Enter Code & New Password */}
             {resetStep === 'CODE_AND_NEW_PASSWORD' && (
               <form onSubmit={handleConfirmResetPassword} className="space-y-3.5 pt-1">
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1.5">
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-semibold text-stone-700">
                     {isKm ? 'លេខកូដបញ្ជាក់ ៦ ខ្ទង់' : '6-digit Confirmation Code'}
                   </label>
-                  <input
-                    type="text"
-                    required
-                    maxLength={6}
+                  <VerificationCodeInput
                     value={resetCode}
-                    onChange={(e) => setResetCode(e.target.value.replace(/\D/g, ''))}
-                    placeholder="123456"
+                    onChange={(val) => setResetCode(val)}
                     disabled={resetLoading}
-                    className="w-full text-center tracking-[8px] py-2.5 text-lg font-bold font-mono border border-[#E7E1D4] bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-700 focus:border-teal-700 text-stone-900 placeholder:text-stone-300"
+                    isKm={isKm}
+                    autoFocus
                   />
                 </div>
 
