@@ -427,9 +427,19 @@ class ApiClient {
         body: JSON.stringify(credentials),
       }),
     sendVerificationCode: (email: string) =>
-      this.request<{ success: boolean; message: string }>('/auth/send-verification-code', {
+      this.request<{ success: boolean; message: string; code?: string; fallback?: boolean }>('/auth/send-verification-code', {
         method: 'POST',
         body: JSON.stringify({ email }),
+      }),
+    forgotPassword: (email: string) =>
+      this.request<{ success: boolean; message: string; code?: string; fallback?: boolean }>('/auth/forgot-password', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      }),
+    resetPasswordWithCode: (data: { email: string; resetCode: string; newPassword: string }) =>
+      this.request<{ success: boolean; message: string }>('/auth/reset-password-with-code', {
+        method: 'POST',
+        body: JSON.stringify(data),
       }),
     registerWithCode: (data: {
       clinicNameKh?: string;

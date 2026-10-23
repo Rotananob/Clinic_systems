@@ -7,6 +7,8 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { RegisterClinicDto } from './dto/register-clinic.dto';
 import { SendVerificationCodeDto } from './dto/send-code.dto';
 import { RegisterWithCodeDto } from './dto/register-with-code.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordWithCodeDto } from './dto/reset-password-with-code.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 
 @ApiTags('Authentication')
@@ -24,6 +26,22 @@ export class AuthController {
     // Guard against duplicate registered email before dispatching confirmation code
     await this.authService.checkEmailAvailability(dto.email);
     return this.emailVerificationService.sendVerificationCode(dto.email);
+  }
+
+  @ApiOperation({ summary: 'Send 6-digit password reset code to registered Gmail' })
+  @ApiResponse({ status: 200, description: 'Reset code dispatched' })
+  @Post('forgot-password')
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    await this.authService.validateUserExistsForPasswordReset(dto.email);
+    return this.emailVerificationService.sendPasswordResetCode(dto.email);
+  }
+
+  @ApiOperation({ summary: 'Verify code and reset password' })
+  @ApiResponse({ status: 200, description: 'Password reset successfully' })
+  @Post('reset-password-with-code')
+  async resetPasswordWithCode(@Body() dto: ResetPasswordWithCodeDto) {
+    this.emailVerificationService.verifyCode(dto.email, dto.resetCode);
+    return this.authService.resetPasswordWithVerifiedCode(dto.email, dto.newPassword);
   }
 
   @ApiOperation({ summary: 'Verify 6-digit code and create clinic workspace' })

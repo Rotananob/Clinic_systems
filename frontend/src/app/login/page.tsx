@@ -9,18 +9,21 @@ import { ClinicLogo } from '../../components/common/ClinicLogo';
 import { LanguageSwitcher } from '../../components/common/LanguageSwitcher';
 import { getHumanErrorMessage } from '../../lib/errorHandler';
 import { getClinicTargetRoute } from '../../lib/rbac';
+import { api } from '../../lib/api';
 import {
   Lock,
   Mail,
   AlertCircle,
+  CheckCircle2,
   Loader2,
   Eye,
   EyeOff,
   Clock,
-  Sparkles,
   ArrowRight,
+  ArrowLeft,
   Home,
   CreditCard,
+  KeyRound,
 } from 'lucide-react';
 
 export default function LoginPage() {
@@ -50,6 +53,7 @@ export default function LoginPage() {
     }
   }, [user, token, router]);
 
+  // Login form state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -59,6 +63,18 @@ export default function LoginPage() {
   // Anti-Brute-Force Lockout Defense
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [lockoutSeconds, setLockoutSeconds] = useState(0);
+
+  // Forgot password flow state
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [resetStep, setResetStep] = useState<'EMAIL' | 'CODE_AND_NEW_PASSWORD' | 'SUCCESS'>('EMAIL');
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetCode, setResetCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetError, setResetError] = useState<string | null>(null);
+  const [resetSuccessMessage, setResetSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (lockoutSeconds <= 0) return;
@@ -106,6 +122,96 @@ export default function LoginPage() {
     }
   };
 
+  // Forgot password: Step 1 - Send 6-digit reset code
+  const handleRequestResetCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setResetError(null);
+    setResetSuccessMessage(null);
+
+    const cleanEmail = resetEmail.trim().toLowerCase();
+    if (!cleanEmail) {
+      setResetError(
+        isKm ? 'សូមបញ្ចូលអាសយដ្ឋាន Email របស់អ្នក' : 'Please enter your email address'
+      );
+      return;
+    }
+
+    setResetLoading(true);
+    try {
+      const res = await api.auth.forgotPassword(cleanEmail);
+      if (res?.success) {
+        if (res.code) {
+          setResetCode(res.code);
+        }
+        setResetSuccessMessage(res.message);
+        setResetStep('CODE_AND_NEW_PASSWORD');
+      } else {
+        setResetError(res?.message || (isKm ? 'មិនអាចផ្ញើលេខកូដបានទេ' : 'Failed to send reset code'));
+      }
+    } catch (err: any) {
+      setResetError(
+        err.message ||
+          (isKm ? 'មិនមានគណនីដែលបានចុះឈ្មោះជាមួយ Email នេះទេ' : 'No account found with this email')
+      );
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  // Forgot password: Step 2 - Verify code and save new password
+  const handleConfirmResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setResetError(null);
+
+    if (!resetCode.trim() || resetCode.trim().length !== 6) {
+      setResetError(
+        isKm
+          ? 'សូមបញ្ចូលលេខកូដបញ្ជាក់ ៦ ខ្ទង់ឱ្យបានត្រឹមត្រូវ'
+          : 'Please enter a valid 6-digit confirmation code'
+      );
+      return;
+    }
+
+    if (!newPassword || newPassword.length < 6) {
+      setResetError(
+        isKm
+          ? 'ពាក្យសម្ងាត់ថ្មីត្រូវមានយ៉ាងតិច ៦ តួអក្សរ'
+          : 'New password must be at least 6 characters'
+      );
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setResetError(
+        isKm
+          ? 'ពាក្យសម្ងាត់ទាំងពីរមិនត្រូវគ្នាទេ'
+          : 'Passwords do not match'
+      );
+      return;
+    }
+
+    setResetLoading(true);
+    try {
+      const res = await api.auth.resetPasswordWithCode({
+        email: resetEmail.trim().toLowerCase(),
+        resetCode: resetCode.trim(),
+        newPassword,
+      });
+
+      if (res?.success) {
+        setResetStep('SUCCESS');
+        setEmail(resetEmail.trim().toLowerCase());
+        setPassword(newPassword);
+      } else {
+        setResetError(res?.message || (isKm ? 'ការផ្លាស់ប្តូរពាក្យសម្ងាត់មិនជោគជ័យ' : 'Failed to reset password'));
+      }
+    } catch (err: any) {
+      setResetError(err.message || (isKm ? 'លេខកូដបញ្ជាក់មិនត្រឹមត្រូវ ឬផុតកំណត់' : 'Invalid or expired code'));
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-[#FDFBF7] rounded-3xl border border-[#E7E1D4] p-6 sm:p-8 shadow-xl relative overflow-hidden animate-in fade-in duration-200">
@@ -119,129 +225,332 @@ export default function LoginPage() {
           <ClinicLogo variant="full" size="lg" showSubtitle={true} />
         </div>
 
-        {error && (
-          <div className="p-3 mb-5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-            <span className="leading-relaxed">{error}</span>
-          </div>
-        )}
+        {/* VIEW 1: FORGOT PASSWORD FLOW */}
+        {isForgotPassword ? (
+          <div className="space-y-4">
+            <button
+              type="button"
+              onClick={() => {
+                setIsForgotPassword(false);
+                setResetError(null);
+                setResetSuccessMessage(null);
+              }}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-500 hover:text-stone-800 transition-colors cursor-pointer mb-1"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>{isKm ? 'ត្រឡប់ទៅការចូលប្រើប្រាស់' : 'Back to sign in'}</span>
+            </button>
 
-        {lockoutSeconds > 0 && (
-          <div className="p-3 mb-5 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs flex items-center gap-2 font-medium">
-            <Clock className="w-4 h-4 text-amber-700 shrink-0 animate-pulse" />
-            <span>
-              {isKm
-                ? `សូមរង់ចាំ ${lockoutSeconds} វិនាទី មុននឹងព្យាយាមម្តងទៀត`
-                : `Please wait ${lockoutSeconds} seconds before next attempt.`}
-            </span>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-xs font-semibold text-stone-700 mb-1.5">
-              {t.auth.emailLabel}
-            </label>
-            <div className="relative">
-              <Mail className="w-4 h-4 text-stone-400 absolute left-3.5 top-3" />
-              <input
-                type="email"
-                required
-                autoComplete="username"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="staff@rotanaclinic.com.kh"
-                disabled={isLoading || lockoutSeconds > 0}
-                className="w-full pl-10 pr-3.5 py-2.5 text-xs sm:text-sm border border-[#E7E1D4] bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-700 focus:border-teal-700 transition-all font-sans text-stone-900 placeholder:text-stone-400 disabled:opacity-60"
-              />
+            <div>
+              <h2 className="text-base sm:text-lg font-bold text-stone-900 font-sans flex items-center gap-2">
+                <KeyRound className="w-5 h-5 text-teal-800" />
+                <span>{isKm ? 'កំណត់ពាក្យសម្ងាត់ឡើងវិញ' : 'Reset Account Password'}</span>
+              </h2>
+              <p className="text-xs text-stone-500 mt-1 leading-relaxed">
+                {resetStep === 'EMAIL' &&
+                  (isKm
+                    ? 'បញ្ចូល Email របស់អ្នកដើម្បីទទួលបានលេខកូដបញ្ជាក់ ៦ ខ្ទង់'
+                    : 'Enter your registered email to receive a 6-digit confirmation code')}
+                {resetStep === 'CODE_AND_NEW_PASSWORD' &&
+                  (isKm
+                    ? `លេខកូដត្រូវបានផ្ញើទៅកាន់ ${resetEmail}`
+                    : `Confirmation code sent to ${resetEmail}`)}
+                {resetStep === 'SUCCESS' &&
+                  (isKm
+                    ? 'ពាក្យសម្ងាត់របស់អ្នកត្រូវបានផ្លាស់ប្តូរដោយជោគជ័យ'
+                    : 'Your password has been reset successfully')}
+              </p>
             </div>
-          </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-stone-700 mb-1.5">
-              {t.auth.passwordLabel}
-            </label>
-            <div className="relative">
-              <Lock className="w-4 h-4 text-stone-400 absolute left-3.5 top-3" />
-              <input
-                type={showPassword ? 'text' : 'password'}
-                required
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••••••••••"
-                disabled={isLoading || lockoutSeconds > 0}
-                className="w-full pl-10 pr-10 py-2.5 text-xs sm:text-sm border border-[#E7E1D4] bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-700 focus:border-teal-700 transition-all font-mono text-stone-900 placeholder:text-stone-400 disabled:opacity-60"
-              />
+            {resetError && (
+              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                <span className="leading-relaxed">{resetError}</span>
+              </div>
+            )}
+
+            {resetSuccessMessage && (
+              <div className="p-3 rounded-xl bg-teal-50 border border-teal-200 text-teal-900 text-xs flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-teal-700 shrink-0" />
+                <span className="leading-relaxed">{resetSuccessMessage}</span>
+              </div>
+            )}
+
+            {/* Sub-step 1: Request Email */}
+            {resetStep === 'EMAIL' && (
+              <form onSubmit={handleRequestResetCode} className="space-y-4 pt-1">
+                <div>
+                  <label className="block text-xs font-semibold text-stone-700 mb-1.5">
+                    {t.auth.emailLabel}
+                  </label>
+                  <div className="relative">
+                    <Mail className="w-4 h-4 text-stone-400 absolute left-3.5 top-3" />
+                    <input
+                      type="email"
+                      required
+                      value={resetEmail}
+                      onChange={(e) => setResetEmail(e.target.value)}
+                      placeholder="staff@rotanaclinic.com.kh"
+                      disabled={resetLoading}
+                      className="w-full pl-10 pr-3.5 py-2.5 text-xs sm:text-sm border border-[#E7E1D4] bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-700 focus:border-teal-700 transition-all font-sans text-stone-900 placeholder:text-stone-400"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={resetLoading || !resetEmail.trim()}
+                  className="w-full py-2.5 sm:py-3 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs sm:text-sm font-semibold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  {resetLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>{isKm ? 'កំពុងផ្ញើ...' : 'Sending...'}</span>
+                    </>
+                  ) : (
+                    <span>{isKm ? 'ផ្ញើលេខកូដបញ្ជាក់' : 'Send Reset Code'}</span>
+                  )}
+                </button>
+              </form>
+            )}
+
+            {/* Sub-step 2: Enter Code & New Password */}
+            {resetStep === 'CODE_AND_NEW_PASSWORD' && (
+              <form onSubmit={handleConfirmResetPassword} className="space-y-3.5 pt-1">
+                <div>
+                  <label className="block text-xs font-semibold text-stone-700 mb-1.5">
+                    {isKm ? 'លេខកូដបញ្ជាក់ ៦ ខ្ទង់' : '6-digit Confirmation Code'}
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    maxLength={6}
+                    value={resetCode}
+                    onChange={(e) => setResetCode(e.target.value.replace(/\D/g, ''))}
+                    placeholder="123456"
+                    disabled={resetLoading}
+                    className="w-full text-center tracking-[8px] py-2.5 text-lg font-bold font-mono border border-[#E7E1D4] bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-700 focus:border-teal-700 text-stone-900 placeholder:text-stone-300"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-stone-700 mb-1.5">
+                    {isKm ? 'ពាក្យសម្ងាត់ថ្មី' : 'New Password'}
+                  </label>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-stone-400 absolute left-3.5 top-3" />
+                    <input
+                      type={showNewPassword ? 'text' : 'password'}
+                      required
+                      minLength={6}
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="••••••••••••••••"
+                      disabled={resetLoading}
+                      className="w-full pl-10 pr-10 py-2.5 text-xs sm:text-sm border border-[#E7E1D4] bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-700 focus:border-teal-700 transition-all font-mono text-stone-900 placeholder:text-stone-400"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPassword((prev) => !prev)}
+                      className="absolute right-3 top-2.5 text-stone-400 hover:text-stone-700 p-0.5 rounded transition-colors"
+                    >
+                      {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-stone-700 mb-1.5">
+                    {isKm ? 'ផ្ទៀងផ្ទាត់ពាក្យសម្ងាត់ថ្មី' : 'Confirm New Password'}
+                  </label>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-stone-400 absolute left-3.5 top-3" />
+                    <input
+                      type={showNewPassword ? 'text' : 'password'}
+                      required
+                      minLength={6}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="••••••••••••••••"
+                      disabled={resetLoading}
+                      className="w-full pl-10 pr-3.5 py-2.5 text-xs sm:text-sm border border-[#E7E1D4] bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-700 focus:border-teal-700 transition-all font-mono text-stone-900 placeholder:text-stone-400"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={resetLoading || resetCode.length !== 6 || newPassword.length < 6}
+                  className="w-full py-2.5 sm:py-3 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs sm:text-sm font-semibold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer mt-2"
+                >
+                  {resetLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>{isKm ? 'កំពុងផ្លាស់ប្តូរ...' : 'Updating...'}</span>
+                    </>
+                  ) : (
+                    <span>{isKm ? 'ផ្លាស់ប្តូរពាក្យសម្ងាត់' : 'Confirm & Reset Password'}</span>
+                  )}
+                </button>
+              </form>
+            )}
+
+            {/* Sub-step 3: Success Screen */}
+            {resetStep === 'SUCCESS' && (
+              <div className="text-center py-4 space-y-4">
+                <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center mx-auto">
+                  <CheckCircle2 className="w-6 h-6" />
+                </div>
+                <p className="text-xs text-stone-600 leading-relaxed">
+                  {isKm
+                    ? 'ពាក្យសម្ងាត់ត្រូវបានផ្លាស់ប្តូរដោយជោគជ័យ។ លោកអ្នកអាចចូលប្រើប្រាស់គណនីបានឥឡូវនេះ។'
+                    : 'Your password has been changed successfully. You can now sign in.'}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsForgotPassword(false);
+                    setResetStep('EMAIL');
+                    setResetError(null);
+                    setResetSuccessMessage(null);
+                  }}
+                  className="w-full py-2.5 sm:py-3 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs sm:text-sm font-semibold transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <span>{isKm ? 'ចូលប្រើប្រាស់ឥឡូវនេះ' : 'Sign In Now'}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
+          /* VIEW 2: CLEAN MINIMALIST LOGIN FORM */
+          <>
+            {error && (
+              <div className="p-3 mb-5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                <span className="leading-relaxed">{error}</span>
+              </div>
+            )}
+
+            {lockoutSeconds > 0 && (
+              <div className="p-3 mb-5 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs flex items-center gap-2 font-medium">
+                <Clock className="w-4 h-4 text-amber-700 shrink-0 animate-pulse" />
+                <span>
+                  {isKm
+                    ? `សូមរង់ចាំ ${lockoutSeconds} វិនាទី មុននឹងព្យាយាមម្តងទៀត`
+                    : `Please wait ${lockoutSeconds} seconds before next attempt.`}
+                </span>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 mb-1.5">
+                  {t.auth.emailLabel}
+                </label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-stone-400 absolute left-3.5 top-3" />
+                  <input
+                    type="email"
+                    required
+                    autoComplete="username"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="staff@rotanaclinic.com.kh"
+                    disabled={isLoading || lockoutSeconds > 0}
+                    className="w-full pl-10 pr-3.5 py-2.5 text-xs sm:text-sm border border-[#E7E1D4] bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-700 focus:border-teal-700 transition-all font-sans text-stone-900 placeholder:text-stone-400 disabled:opacity-60"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-semibold text-stone-700">
+                    {t.auth.passwordLabel}
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setResetEmail(email.trim());
+                      setIsForgotPassword(true);
+                      setResetStep('EMAIL');
+                      setResetError(null);
+                      setResetSuccessMessage(null);
+                    }}
+                    className="text-xs font-semibold text-teal-800 hover:text-teal-950 transition-colors cursor-pointer"
+                  >
+                    {isKm ? 'ភ្លេចពាក្យសម្ងាត់?' : 'Forgot password?'}
+                  </button>
+                </div>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-stone-400 absolute left-3.5 top-3" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••••••••••"
+                    disabled={isLoading || lockoutSeconds > 0}
+                    className="w-full pl-10 pr-10 py-2.5 text-xs sm:text-sm border border-[#E7E1D4] bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-700 focus:border-teal-700 transition-all font-mono text-stone-900 placeholder:text-stone-400 disabled:opacity-60"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-3 top-2.5 text-stone-400 hover:text-stone-700 p-0.5 rounded transition-colors"
+                    title={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
               <button
-                type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute right-3 top-2.5 text-stone-400 hover:text-stone-700 p-0.5 rounded transition-colors"
-                title={showPassword ? 'Hide password' : 'Show password'}
+                type="submit"
+                disabled={isLoading || lockoutSeconds > 0 || !email || !password}
+                className="w-full py-2.5 sm:py-3 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs sm:text-sm font-semibold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer mt-2"
               >
-                {showPassword ? (
-                  <EyeOff className="w-4 h-4" />
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>{t.auth.signingIn}</span>
+                  </>
                 ) : (
-                  <Eye className="w-4 h-4" />
+                  <span>{t.auth.signInBtn}</span>
                 )}
               </button>
+            </form>
+
+            {/* Clean, Elegant Divider */}
+            <div className="relative my-5">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-stone-200" />
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="bg-[#FDFBF7] px-3 text-stone-400 font-sans">
+                  {isKm ? 'ឬ' : 'or'}
+                </span>
+              </div>
             </div>
-          </div>
 
-          <button
-            type="submit"
-            disabled={isLoading || lockoutSeconds > 0 || !email || !password}
-            className="w-full py-2.5 sm:py-3 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs sm:text-sm font-semibold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer mt-2"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>{t.auth.signingIn}</span>
-              </>
-            ) : (
-              <span>{t.auth.signInBtn}</span>
-            )}
-          </button>
-        </form>
-
-        {/* Real Free Account Registration Callout - Ultra Cool & Modern Card */}
-        <div className="mt-6 p-4 rounded-2xl bg-gradient-to-b from-white via-[#FAF7F2] to-[#F5EFE4] border border-[#DDD5C5] shadow-sm hover:border-teal-700/40 transition-all duration-300 space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-stone-800 flex items-center gap-1.5 font-sans">
-              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-              <span>{isKm ? 'មិនទាន់មាន Workspace គ្លីនិកផ្ទាល់ខ្លួន?' : "Don't have a workspace yet?"}</span>
-            </span>
-            <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold font-mono tracking-wide uppercase">
-              Free 0$
-            </span>
-          </div>
-
-          <Link
-            href="/register"
-            className="group w-full py-2.5 px-4 bg-teal-800 hover:bg-teal-900 active:scale-98 text-white rounded-xl text-xs font-bold transition-all shadow-sm hover:shadow-md flex items-center justify-between"
-          >
-            <span className="font-sans">
-              {isKm ? 'ចុះឈ្មោះបង្កើតគ្លីនិក Free Starter' : 'Register Free Starter Account'}
-            </span>
-            <div className="flex items-center gap-1 text-teal-200 group-hover:text-white transition-colors">
-              <span className="text-[10px] font-mono tracking-wider uppercase font-semibold">
-                {isKm ? 'ចាប់ផ្តើម' : 'Start'}
-              </span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+            {/* Clean, Modern Register Callout */}
+            <div className="text-center space-y-2">
+              <p className="text-xs text-stone-600 font-sans">
+                {isKm ? 'មិនទាន់មាន Workspace គ្លីនិកផ្ទាល់ខ្លួន?' : "Don't have a workspace yet?"}
+              </p>
+              <Link
+                href="/register"
+                className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl border border-teal-800/30 bg-teal-50/50 hover:bg-teal-50 text-teal-900 text-xs sm:text-sm font-semibold transition-all hover:border-teal-800"
+              >
+                <span>{isKm ? 'ចុះឈ្មោះបង្កើតគ្លីនិក Free Starter' : 'Register Free Starter Account'}</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
             </div>
-          </Link>
+          </>
+        )}
 
-          <div className="flex items-center justify-between text-[11px] text-stone-500 font-sans px-1">
-            <span>{isKm ? 'ដំឡើងត្រឹម 60 វិនាទី' : '60-second setup'}</span>
-            <span className="text-stone-300">•</span>
-            <span>{isKm ? '5 KHQR ក្នុងមួយថ្ងៃ' : '5 KHQR daily'}</span>
-            <span className="text-stone-300">•</span>
-            <span>{isKm ? 'គ្មានកាតធនាគារ' : 'No credit card'}</span>
-          </div>
-        </div>
-
-        {/* Public SaaS Navigation Links - Clean Tactile Pills without parentheses */}
-        <div className="mt-4 flex items-center justify-center gap-2 text-xs font-semibold text-stone-600">
+        {/* Public SaaS Navigation Links */}
+        <div className="mt-6 flex items-center justify-center gap-2 text-xs font-semibold text-stone-600">
           <Link
             href="/landing"
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-stone-200/60 hover:text-teal-900 transition-colors"

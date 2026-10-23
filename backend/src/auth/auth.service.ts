@@ -269,6 +269,49 @@ export class AuthService {
     };
   }
 
+  async validateUserExistsForPasswordReset(email: string) {
+    const normalizedEmail = (email || '').trim().toLowerCase();
+    if (!normalizedEmail) {
+      throw new BadRequestException('សូមបញ្ចូលអាសយដ្ឋាន Email របស់អ្នក។');
+    }
+
+    const user = await this.prisma.user.findFirst({
+      where: { email: { equals: normalizedEmail, mode: 'insensitive' } },
+    });
+
+    if (!user) {
+      throw new BadRequestException('មិនមានគណនីដែលបានចុះឈ្មោះជាមួយអាសយដ្ឋាន Email នេះក្នុងប្រព័ន្ធទេ។');
+    }
+
+    return user;
+  }
+
+  async resetPasswordWithVerifiedCode(email: string, newPassword: string) {
+    const normalizedEmail = (email || '').trim().toLowerCase();
+    if (!newPassword || newPassword.length < 6) {
+      throw new BadRequestException('ពាក្យសម្ងាត់ថ្មីត្រូវមានយ៉ាងតិច ៦ តួអក្សរ។');
+    }
+
+    const user = await this.prisma.user.findFirst({
+      where: { email: { equals: normalizedEmail, mode: 'insensitive' } },
+    });
+
+    if (!user) {
+      throw new BadRequestException('មិនមានគណនីដែលបានចុះឈ្មោះជាមួយអាសយដ្ឋាន Email នេះក្នុងប្រព័ន្ធទេ។');
+    }
+
+    const newHash = await bcrypt.hash(newPassword, 10);
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { passwordHash: newHash },
+    });
+
+    return {
+      success: true,
+      message: 'ពាក្យសម្ងាត់ត្រូវបានផ្លាស់ប្តូរដោយជោគជ័យ។ សូមចូលប្រើប្រាស់។',
+    };
+  }
+
   async checkEmailAvailability(email: string) {
     const normalizedEmail = (email || '').trim().toLowerCase();
     if (!normalizedEmail) {

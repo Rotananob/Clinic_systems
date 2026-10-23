@@ -189,7 +189,11 @@ function RegisterContent() {
       if (res?.success) {
         setStep('VERIFY_CODE');
         setCountdown(600);
-        setVerificationCode('');
+        if (res.code) {
+          setVerificationCode(res.code);
+        } else {
+          setVerificationCode('');
+        }
         setInfoMessage(res.message);
       } else {
         setErrorMessage(

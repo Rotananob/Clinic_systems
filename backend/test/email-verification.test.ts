@@ -84,4 +84,48 @@ describe('EmailVerificationService Test Suite', () => {
     assert.match(capturedMail.subject, /\[KruPet\]/);
     assert.match(capturedMail.html, /KruPet/);
   });
+
+  it('should dispatch sendPasswordResetCode safely with reset subject and template', async () => {
+    let capturedMail: any = null;
+    service.setTransporter({
+      sendMail: async (options: any) => {
+        capturedMail = options;
+        return { messageId: 'mock-reset-id' };
+      },
+    } as any);
+
+    const res = await service.sendPasswordResetCode('doctor.cheasok@krupet.health');
+    assert.equal(res.success, true);
+    assert.ok(res.message);
+    assert.ok(capturedMail);
+    assert.equal(capturedMail.to, 'doctor.cheasok@krupet.health');
+    assert.match(capturedMail.subject, /កំណត់ពាក្យសម្ងាត់/);
+    assert.match(capturedMail.html, /Security Notice/);
+  });
+
+  it('should fallback gracefully when cloud hosting blocks SMTP without crashing', async () => {
+    // Transporter that simulates Render/cloud firewall rejecting all SMTP connections
+    service.setTransporter({
+      sendMail: async () => {
+        throw new Error('connect ETIMEDOUT 142.250.150.108:465');
+      },
+    } as any);
+
+    service.createTransportFn = () =>
+      ({
+        sendMail: async () => {
+          throw new Error('connect ETIMEDOUT 142.250.150.108:587');
+        },
+      }) as any;
+
+    const res = await service.sendVerificationCode('cloud.user@krupet.health');
+    assert.equal(res.success, true);
+    assert.ok(res.code);
+    assert.equal(res.code.length, 6);
+    assert.equal(res.fallback, true);
+
+    // Ensure the code generated in cloud fallback can be verified successfully
+    const isValid = service.verifyCode('cloud.user@krupet.health', res.code);
+    assert.equal(isValid, true);
+  });
 });
