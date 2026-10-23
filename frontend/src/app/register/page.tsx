@@ -184,31 +184,27 @@ function RegisterContent() {
 
     setLoading(true);
 
-    const timer = setTimeout(() => {
-      setLoading(false);
-      setErrorMessage(
-        isKm
-          ? 'ដំណើរការផ្ញើមានភាពយឺតយ៉ាវដោយសារបណ្ដាញអ៊ីនធឺណិត។ សូមពិនិត្យប្រអប់សំបុត្រ Gmail របស់អ្នក ឬចុចព្យាយាមម្ដងទៀត។'
-          : 'Dispatch is taking longer than usual due to network connectivity. Please check your Gmail inbox or try again.'
-      );
-    }, 8500);
-
     try {
       const res = await api.auth.sendVerificationCode(cleanEmail);
-      clearTimeout(timer);
       if (res?.success) {
         setStep('VERIFY_CODE');
         setCountdown(600);
         setVerificationCode('');
         setInfoMessage(res.message);
       } else {
-        setErrorMessage(res?.message || (isKm ? 'មិនអាចផ្ញើលេខកូដបានទេ។ សូមព្យាយាមម្ដងទៀត។' : 'Failed to send code.'));
+        setErrorMessage(
+          res?.message || (isKm ? 'មិនអាចផ្ញើលេខកូដបានទេ។ សូមព្យាយាមម្ដងទៀត។' : 'Failed to send code.')
+        );
       }
     } catch (err: any) {
-      clearTimeout(timer);
-      setErrorMessage(err.message || 'Failed to dispatch verification code. Please try again.');
+      console.error('sendVerificationCode error:', err);
+      setErrorMessage(
+        err.message ||
+          (isKm
+            ? 'មិនអាចផ្ញើលេខកូដទៅកាន់ Gmail បានទេ។ សូមពិនិត្យមើលអាសយដ្ឋាន Gmail របស់អ្នកឡើងវិញ។'
+            : 'Failed to dispatch verification code. Please check your Gmail address.')
+      );
     } finally {
-      clearTimeout(timer);
       setLoading(false);
     }
   };

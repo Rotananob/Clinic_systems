@@ -198,7 +198,6 @@ export class PatientsService {
       const invIds = invList.map((inv) => inv.id);
       if (invIds.length > 0) {
         await tx.paymentTransaction.deleteMany({ where: { invoiceId: { in: invIds } } });
-        await tx.invoiceItem.deleteMany({ where: { invoiceId: { in: invIds } } });
         await tx.invoice.deleteMany({ where: { id: { in: invIds } } });
       }
 

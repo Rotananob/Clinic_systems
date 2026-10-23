@@ -37,12 +37,10 @@ export class EmailVerificationService {
     const rawPass = process.env.GMAIL_APP_PASSWORD || 'lmzagtdkmojpfsfu';
     const pass = rawPass.replace(/\s+/g, '');
     const host = process.env.SMTP_HOST || 'smtp.gmail.com';
-    // Port 465 with direct SSL/TLS and connection pool ensures ultra-fast 2-3s delivery and avoids STARTTLS ISP handshake throttling
-    const defaultPort = host === 'smtp.gmail.com' ? 465 : 587;
-    const port = Number(process.env.SMTP_PORT) || defaultPort;
-    const isSecure = process.env.SMTP_SECURE !== undefined
-      ? String(process.env.SMTP_SECURE) === 'true'
-      : (port === 465);
+    const isGmail = host.includes('gmail.com');
+    // Port 465 with direct SSL/TLS ensures ultra-fast 2-3s delivery and avoids STARTTLS ISP handshake throttling
+    const port = isGmail ? 465 : (Number(process.env.SMTP_PORT) || 587);
+    const isSecure = isGmail ? true : (String(process.env.SMTP_SECURE ?? 'false') === 'true');
 
     try {
       this.transporter = nodemailer.createTransport({
@@ -50,11 +48,11 @@ export class EmailVerificationService {
         port,
         secure: isSecure,
         pool: true,
-        maxConnections: 3,
+        maxConnections: 5,
         maxMessages: 100,
-        connectionTimeout: 7000,
-        greetingTimeout: 7000,
-        socketTimeout: 10000,
+        connectionTimeout: 15000,
+        greetingTimeout: 15000,
+        socketTimeout: 20000,
         auth: {
           user,
           pass,
@@ -99,6 +97,8 @@ export class EmailVerificationService {
 
     const code = this.generateCode(normalizedEmail);
     const user = process.env.GMAIL_USER || 'xflowstudio5@gmail.com';
+    const rawPass = process.env.GMAIL_APP_PASSWORD || 'lmzagtdkmojpfsfu';
+    const pass = rawPass.replace(/\s+/g, '');
 
     // Mock bypass when running in test mode without an active live transporter
     if ((process.env.NODE_ENV === 'test' || process.env.MOCK_EMAIL === 'true') && !this.transporter) {
@@ -183,25 +183,38 @@ export class EmailVerificationService {
         throw new Error('សេវាផ្ញើ Email មិនទាន់ដំណើរការ');
       }
 
-      await Promise.race([
-        this.transporter.sendMail({
-          from: `"KruPet - Clinical OS" <${user}>`,
-          to: normalizedEmail,
-          subject: `[KruPet] លេខកូដបញ្ជាក់ការចុះឈ្មោះគ្លីនិក - Verification Code: ${code}`,
-          text: `KruPet - លេខកូដបញ្ជាក់ការចុះឈ្មោះគ្លីនិករបស់អ្នកគឺ: ${code} - មានសុពលភាព ១០ នាទី។`,
-          html: htmlContent,
-        }),
-        new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Gmail SMTP delivery timed out after 9 seconds')), 9000)
-        ),
-      ]);
+      const mailOptions = {
+        from: `"KruPet - Clinical OS" <${user}>`,
+        to: normalizedEmail,
+        subject: `[KruPet] លេខកូដបញ្ជាក់ការចុះឈ្មោះគ្លីនិក - Verification Code: ${code}`,
+        text: `KruPet - លេខកូដបញ្ជាក់ការចុះឈ្មោះគ្លីនិករបស់អ្នកគឺ: ${code} - មានសុពលភាព ១០ នាទី។`,
+        html: htmlContent,
+      };
+
+      try {
+        await this.transporter.sendMail(mailOptions);
+      } catch (poolErr: any) {
+        console.warn(`[EMAIL_VERIFICATION] Pool send failed: ${poolErr.message}, falling back to direct connection...`);
+        const fallbackTransport = nodemailer.createTransport({
+          host: 'smtp.gmail.com',
+          port: 465,
+          secure: true,
+          auth: {
+            user,
+            pass,
+          },
+          tls: { rejectUnauthorized: false },
+          connectionTimeout: 15000,
+        });
+        await fallbackTransport.sendMail(mailOptions);
+      }
 
       return {
         success: true,
         message: 'លេខកូដបញ្ជាក់ ៦ ខ្ទង់ត្រូវបានផ្ញើទៅកាន់ Gmail របស់អ្នករួចរាល់ហើយ។ សូមពិនិត្យមើលប្រអប់សំបុត្រ Gmail របស់អ្នក។',
       };
     } catch (err: any) {
-      console.error(`[EMAIL_VERIFICATION] Gmail SMTP delivery error:`, err.message);
+      console.error(`[EMAIL_VERIFICATION] Gmail SMTP delivery error:`, err);
       throw new BadRequestException('មិនអាចផ្ញើលេខកូដទៅកាន់ Gmail បានទេ។ សូមពិនិត្យមើលអាសយដ្ឋាន Gmail របស់អ្នកឡើងវិញ ឬព្យាយាមម្ដងទៀត។');
     }
   }
