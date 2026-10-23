@@ -27,6 +27,28 @@ import {
   KeyRound,
 } from 'lucide-react';
 
+const FORGOT_PASSWORD_SESSION_KEY = 'krupet_forgot_password_session_v1';
+
+function saveForgotPasswordSession(data: {
+  resetEmail: string;
+  expiresAt: number;
+}) {
+  if (typeof window === 'undefined') return;
+  try {
+    const raw = JSON.stringify(data);
+    sessionStorage.setItem(FORGOT_PASSWORD_SESSION_KEY, raw);
+    localStorage.setItem(FORGOT_PASSWORD_SESSION_KEY, raw);
+  } catch {}
+}
+
+function clearForgotPasswordSession() {
+  if (typeof window === 'undefined') return;
+  try {
+    sessionStorage.removeItem(FORGOT_PASSWORD_SESSION_KEY);
+    localStorage.removeItem(FORGOT_PASSWORD_SESSION_KEY);
+  } catch {}
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const { login, user, token } = useAuth();
@@ -76,6 +98,52 @@ export default function LoginPage() {
   const [resetLoading, setResetLoading] = useState(false);
   const [resetError, setResetError] = useState<string | null>(null);
   const [resetSuccessMessage, setResetSuccessMessage] = useState<string | null>(null);
+
+  // Restore forgot-password verification state on reload or app return
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const raw =
+        sessionStorage.getItem(FORGOT_PASSWORD_SESSION_KEY) ||
+        localStorage.getItem(FORGOT_PASSWORD_SESSION_KEY);
+      if (!raw) return;
+
+      const data = JSON.parse(raw);
+      const now = Date.now();
+      if (data && data.expiresAt && data.expiresAt > now && data.resetEmail) {
+        setResetEmail(data.resetEmail);
+        setIsForgotPassword(true);
+        setResetStep('CODE_AND_NEW_PASSWORD');
+        setResetSuccessMessage(
+          isKm
+            ? 'បានរក្សាផ្ទាំងផ្ទៀងផ្ទាត់លេខកូដកែប្រែពាក្យសម្ងាត់ - មិនបាត់បង់ទិន្នន័យពេលប្តូរ Tab ឡើយ'
+            : 'Password reset verification session preserved across tabs'
+        );
+      } else {
+        clearForgotPasswordSession();
+      }
+    } catch {
+      clearForgotPasswordSession();
+    }
+  }, [isKm]);
+
+  // Block accidental reload or leaving during password reset verification
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isForgotPassword && resetStep === 'CODE_AND_NEW_PASSWORD') {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [isForgotPassword, resetStep]);
 
   useEffect(() => {
     if (lockoutSeconds <= 0) return;
@@ -141,6 +209,11 @@ export default function LoginPage() {
     try {
       const res = await api.auth.forgotPassword(cleanEmail);
       if (res?.success) {
+        const expiresAt = Date.now() + 600 * 1000;
+        saveForgotPasswordSession({
+          resetEmail: cleanEmail,
+          expiresAt,
+        });
         setResetCode('');
         setResetSuccessMessage(res.message);
         setResetStep('CODE_AND_NEW_PASSWORD');
@@ -198,6 +271,7 @@ export default function LoginPage() {
       });
 
       if (res?.success) {
+        clearForgotPasswordSession();
         setResetStep('SUCCESS');
         setEmail(resetEmail.trim().toLowerCase());
         setPassword(newPassword);
@@ -212,7 +286,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4 overscroll-y-contain">
       <div className="w-full max-w-md bg-[#FDFBF7] rounded-3xl border border-[#E7E1D4] p-6 sm:p-8 shadow-xl relative overflow-hidden animate-in fade-in duration-200">
         {/* Language Switcher at Top Right */}
         <div className="absolute top-4 right-4 z-10">
@@ -230,6 +304,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => {
+                clearForgotPasswordSession();
                 setIsForgotPassword(false);
                 setResetError(null);
                 setResetSuccessMessage(null);
@@ -405,6 +480,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => {
+                    clearForgotPasswordSession();
                     setIsForgotPassword(false);
                     setResetStep('EMAIL');
                     setResetError(null);

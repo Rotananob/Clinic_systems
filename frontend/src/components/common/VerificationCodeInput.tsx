@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Mail, Clipboard, Check, Sparkles, Bell } from 'lucide-react';
+import { Mail, Clipboard, Check, Sparkles, AlertCircle } from 'lucide-react';
 
 interface VerificationCodeInputProps {
   value: string;
@@ -30,6 +30,7 @@ export function VerificationCodeInput({
   const [clipboardCode, setClipboardCode] = useState<string | null>(null);
   const [showClipboardPill, setShowClipboardPill] = useState(false);
   const [isCopiedSuccess, setIsCopiedSuccess] = useState(false);
+  const [pasteFeedback, setPasteFeedback] = useState<string | null>(null);
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -91,22 +92,24 @@ export function VerificationCodeInput({
         setShowClipboardPill(true);
       }
     } catch {
-      // Browsers may block clipboard read if permission not granted
+      // Browsers may block background clipboard reading if permission not granted
     }
   }, [value]);
 
   useEffect(() => {
     const handleVisibilityOrFocus = () => {
-      if (document.visibilityState === 'visible') {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
         checkClipboardForCode();
       }
     };
 
     window.addEventListener('focus', handleVisibilityOrFocus);
+    window.addEventListener('pageshow', handleVisibilityOrFocus);
     document.addEventListener('visibilitychange', handleVisibilityOrFocus);
 
     return () => {
       window.removeEventListener('focus', handleVisibilityOrFocus);
+      window.removeEventListener('pageshow', handleVisibilityOrFocus);
       document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
     };
   }, [checkClipboardForCode]);
@@ -130,7 +133,7 @@ export function VerificationCodeInput({
     const rawVal = e.target.value;
     const cleanDigits = rawVal.replace(/\D/g, '');
 
-    // Case 1: User pasted or OS auto-filled multiple digits (e.g. QuickType 1-click)
+    // Case 1: User pasted or OS auto-filled multiple digits via QuickType 1-click
     if (cleanDigits.length > 1) {
       handleFullCodeEntered(cleanDigits);
       return;
@@ -195,53 +198,117 @@ export function VerificationCodeInput({
   };
 
   const handlePasteManualClick = async () => {
+    setPasteFeedback(null);
     try {
+      if (typeof navigator === 'undefined' || !navigator.clipboard?.readText) {
+        setPasteFeedback(
+          isKm
+            ? 'សូមវាយបញ្ចូលលេខកូដដោយផ្ទាល់ ឬប្រើប្រាស់ Keyboard Autofill'
+            : 'Please enter the code manually or use keyboard autofill'
+        );
+        setTimeout(() => setPasteFeedback(null), 4000);
+        return;
+      }
+
       const text = await navigator.clipboard.readText();
       const match = text.trim().match(/\b\d{6}\b/) || text.replace(/\D/g, '').slice(0, 6);
       const code = typeof match === 'string' ? match : match ? match[0] : '';
+
       if (code && code.length === 6) {
         handleFullCodeEntered(code);
         setShowClipboardPill(false);
         setIsCopiedSuccess(true);
         setTimeout(() => setIsCopiedSuccess(false), 2000);
+      } else if (text.replace(/\D/g, '').length > 0) {
+        const partial = text.replace(/\D/g, '').slice(0, 6);
+        handleFullCodeEntered(partial);
+      } else {
+        setPasteFeedback(
+          isKm
+            ? 'មិនទាន់មានលេខកូដក្នុង Clipboard ទេ - សូមចូលទៅ Gmail ចម្លងលេខកូដ ៦ ខ្ទង់ជាមុនសិន'
+            : 'No code in clipboard - please copy the 6-digit code from Gmail first'
+        );
+        setTimeout(() => setPasteFeedback(null), 4000);
       }
     } catch {
-      // Permission denied or clipboard empty
+      setPasteFeedback(
+        isKm
+          ? 'សូមអនុញ្ញាតសិទ្ធិ Paste ក្នុង Browser ឬវាយលេខកូដ ៦ ខ្ទង់ដោយផ្ទាល់'
+          : 'Please allow clipboard permissions or type the 6 digits directly'
+      );
+      setTimeout(() => setPasteFeedback(null), 4000);
     }
   };
 
   return (
-    <div ref={containerRef} className="w-full space-y-4">
-      {/* 1-Click Clipboard Auto-Detection Banner */}
-      {showClipboardPill && clipboardCode && (
-        <div className="bg-emerald-500/10 border-2 border-emerald-500/60 rounded-2xl p-3 shadow-md animate-spring-pop flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-              <Sparkles className="w-4 h-4" />
+    <div ref={containerRef} className="w-full space-y-3.5">
+      {/* High-Visibility Quick-Paste & Auto-Detection Card */}
+      <div className="bg-gradient-to-r from-teal-50/90 via-emerald-50/80 to-teal-50/90 border border-teal-200/90 rounded-2xl p-3 shadow-xs">
+        {showClipboardPill && clipboardCode ? (
+          <div className="flex items-center justify-between gap-3 animate-spring-pop">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                <Sparkles className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[11px] font-bold text-emerald-950 truncate">
+                  {isKm ? 'រកឃើញលេខកូដបញ្ជាក់ពី Gmail' : 'Detected Code from Gmail'}
+                </p>
+                <p className="text-sm font-mono font-black text-emerald-800 tracking-wider">
+                  {clipboardCode}
+                </p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="text-[11px] font-bold text-emerald-950 truncate">
-                {isKm ? 'រកឃើញលេខកូដបញ្ជាក់ពី Gmail' : 'Detected Code from Gmail'}
-              </p>
-              <p className="text-xs font-mono font-black text-emerald-800 tracking-wider">
-                {clipboardCode}
-              </p>
-            </div>
-          </div>
 
-          <button
-            type="button"
-            onClick={() => {
-              handleFullCodeEntered(clipboardCode);
-              setShowClipboardPill(false);
-            }}
-            className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 active:scale-95 text-white rounded-xl text-xs font-bold transition-all shadow-xs shrink-0 cursor-pointer flex items-center gap-1.5"
-          >
-            <Check className="w-3.5 h-3.5" />
-            <span>{isKm ? 'ចុចបំពេញភ្លាមៗ' : '1-Click Fill'}</span>
-          </button>
-        </div>
-      )}
+            <button
+              type="button"
+              onClick={() => {
+                handleFullCodeEntered(clipboardCode);
+                setShowClipboardPill(false);
+              }}
+              className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 active:scale-95 text-white rounded-xl text-xs font-bold transition-all shadow-xs shrink-0 cursor-pointer flex items-center gap-1.5"
+            >
+              <Check className="w-3.5 h-3.5" />
+              <span>{isKm ? 'ចុចបំពេញភ្លាមៗ' : '1-Click Fill'}</span>
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 text-stone-700 text-xs min-w-0">
+              <Mail className="w-4 h-4 text-teal-700 shrink-0" />
+              <span className="text-[11px] sm:text-xs font-medium truncate">
+                {isKm ? 'ចម្លងលេខកូដពី Gmail រួចចុចបិទភ្ជាប់' : 'Copy code from Gmail & tap Paste'}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={handlePasteManualClick}
+              className="px-3 py-1.5 bg-white hover:bg-teal-50 border border-teal-300 active:scale-95 text-teal-900 rounded-xl text-xs font-bold transition-all shadow-2xs shrink-0 cursor-pointer flex items-center gap-1.5"
+            >
+              {isCopiedSuccess ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-emerald-600" />
+                  <span className="text-emerald-700 font-bold">{isKm ? 'បានបិទភ្ជាប់' : 'Pasted!'}</span>
+                </>
+              ) : (
+                <>
+                  <Clipboard className="w-3.5 h-3.5 text-teal-700" />
+                  <span>{isKm ? 'បិទភ្ជាប់លេខកូដ' : 'Paste Code'}</span>
+                </>
+              )}
+            </button>
+          </div>
+        )}
+
+        {/* Temporary Feedback on Paste Action */}
+        {pasteFeedback && (
+          <div className="mt-2 pt-2 border-t border-teal-100 flex items-start gap-1.5 text-[11px] text-amber-800">
+            <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+            <span className="leading-tight">{pasteFeedback}</span>
+          </div>
+        )}
+      </div>
 
       {/* 6 Individual Digit PIN Boxes */}
       <div className="relative">
@@ -309,30 +376,16 @@ export function VerificationCodeInput({
         </div>
       </div>
 
-      {/* Auxiliary Actions: Quick Paste from Clipboard */}
-      <div className="flex items-center justify-between text-xs pt-1 px-1">
+      {/* Auxiliary Note: QuickType & Gboard Info */}
+      <div className="flex items-center justify-between text-xs pt-0.5 px-1">
         <div className="flex items-center gap-1.5 text-stone-500 text-[11px]">
           <span className="w-1.5 h-1.5 rounded-full bg-teal-600 inline-block animate-ping" />
           <span>{isKm ? 'ប្រព័ន្ធទទួលស្គាល់លេខកូដស្វ័យប្រវត្តិតាមទូរសព្ទ' : 'Smart auto-fill enabled'}</span>
         </div>
 
-        <button
-          type="button"
-          onClick={handlePasteManualClick}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-teal-800 hover:text-teal-950 hover:bg-teal-50 transition-colors font-medium cursor-pointer"
-        >
-          {isCopiedSuccess ? (
-            <>
-              <Check className="w-3.5 h-3.5 text-emerald-600" />
-              <span className="text-emerald-700 font-bold">{isKm ? 'បានបិទភ្ជាប់' : 'Pasted!'}</span>
-            </>
-          ) : (
-            <>
-              <Clipboard className="w-3.5 h-3.5" />
-              <span>{isKm ? 'បិទភ្ជាប់លេខកូដ' : 'Paste Code'}</span>
-            </>
-          )}
-        </button>
+        <span className="text-[11px] text-stone-400 font-mono">
+          {value.length}/6
+        </span>
       </div>
     </div>
   );

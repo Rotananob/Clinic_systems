@@ -87,6 +87,31 @@ function normalizePlanTier(raw?: string | null): string {
   return 'FREE';
 }
 
+const REGISTRATION_SESSION_KEY = 'krupet_verification_session_v1';
+
+function saveVerificationSession(data: {
+  email: string;
+  password: string;
+  adminName: string;
+  selectedPlan: string;
+  expiresAt: number;
+}) {
+  if (typeof window === 'undefined') return;
+  try {
+    const raw = JSON.stringify(data);
+    sessionStorage.setItem(REGISTRATION_SESSION_KEY, raw);
+    localStorage.setItem(REGISTRATION_SESSION_KEY, raw);
+  } catch {}
+}
+
+function clearVerificationSession() {
+  if (typeof window === 'undefined') return;
+  try {
+    sessionStorage.removeItem(REGISTRATION_SESSION_KEY);
+    localStorage.removeItem(REGISTRATION_SESSION_KEY);
+  } catch {}
+}
+
 function RegisterContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -116,6 +141,56 @@ function RegisterContent() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
+
+  // Restore active verification session on page reload or app return
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const raw =
+        sessionStorage.getItem(REGISTRATION_SESSION_KEY) ||
+        localStorage.getItem(REGISTRATION_SESSION_KEY);
+      if (!raw) return;
+
+      const data = JSON.parse(raw);
+      const now = Date.now();
+      if (data && data.expiresAt && data.expiresAt > now) {
+        if (data.email) setEmail(data.email);
+        if (data.password) setPassword(data.password);
+        if (data.adminName) setAdminName(data.adminName);
+        if (data.selectedPlan) setSelectedPlan(data.selectedPlan);
+        setStep('VERIFY_CODE');
+        const remaining = Math.max(1, Math.round((data.expiresAt - now) / 1000));
+        setCountdown(remaining);
+        setInfoMessage(
+          isKm
+            ? 'បានរក្សាផ្ទាំងផ្ទៀងផ្ទាត់លេខកូដ - មិនបាត់បង់ទិន្នន័យពេលប្តូរ Tab ឬ Reload ឡើយ'
+            : 'Active verification session preserved across tabs and reloads'
+        );
+      } else {
+        clearVerificationSession();
+      }
+    } catch {
+      clearVerificationSession();
+    }
+  }, [isKm]);
+
+  // Block accidental page reload or tab navigation while verification is in progress
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (step === 'VERIFY_CODE') {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [step]);
 
   // Countdown timer for verification code
   useEffect(() => {
@@ -188,6 +263,14 @@ function RegisterContent() {
     try {
       const res = await api.auth.sendVerificationCode(cleanEmail);
       if (res?.success) {
+        const expiresAt = Date.now() + 600 * 1000;
+        saveVerificationSession({
+          email: cleanEmail,
+          password,
+          adminName,
+          selectedPlan,
+          expiresAt,
+        });
         setStep('VERIFY_CODE');
         setCountdown(600);
         setVerificationCode('');
@@ -237,6 +320,7 @@ function RegisterContent() {
       });
 
       if (res.success && res.accessToken) {
+        clearVerificationSession();
         const fullUser = {
           ...res.user,
           tenant: res.tenant,
@@ -261,6 +345,14 @@ function RegisterContent() {
     try {
       const res = await api.auth.sendVerificationCode(email.trim().toLowerCase());
       if (res?.success) {
+        const expiresAt = Date.now() + 600 * 1000;
+        saveVerificationSession({
+          email: email.trim().toLowerCase(),
+          password,
+          adminName,
+          selectedPlan,
+          expiresAt,
+        });
         setCountdown(600);
         setVerificationCode('');
         setInfoMessage(res.message);
@@ -281,7 +373,7 @@ function RegisterContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] flex flex-col font-sans text-stone-900">
+    <div className="min-h-screen bg-[#FAF7F2] flex flex-col font-sans text-stone-900 overscroll-y-contain">
       <PublicNavbar />
 
       <main className="flex-1 py-12 px-4 sm:px-6 lg:px-8">
@@ -312,6 +404,7 @@ function RegisterContent() {
                 <button
                   type="button"
                   onClick={() => {
+                    clearVerificationSession();
                     setStep('FORM');
                     setErrorMessage(null);
                   }}
