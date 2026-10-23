@@ -329,7 +329,7 @@ export const ClinicLogo: React.FC<ClinicLogoProps> = ({
 
         <div className="flex items-center gap-2">
           <span className="text-lg sm:text-2xl font-black text-stone-900 tracking-tight font-sans">
-            <span className="text-teal-800">Kru</span>pet<span className="text-teal-600 text-xs font-bold">.com</span>
+            <span className="text-teal-800">Kru</span>Pet
           </span>
           <span className="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono bg-teal-900 text-teal-100 border border-teal-700 shadow-xs">
             PaaS 2.0
@@ -372,7 +372,7 @@ export const ClinicLogo: React.FC<ClinicLogoProps> = ({
       <div className="min-w-0">
         <div className="flex items-center gap-1.5">
           <span className="font-black text-stone-900 leading-tight text-sm sm:text-base tracking-tight font-sans">
-            <span className="text-teal-800">Kru</span>pet<span className="text-teal-600 text-sm sm:text-base font-bold">.com</span>
+            <span className="text-teal-800">Kru</span>Pet
           </span>
           <span className="px-1.5 py-0.2 rounded bg-teal-50 border border-teal-200 text-[9px] font-mono font-bold text-teal-800 uppercase">
             {displayTier}
