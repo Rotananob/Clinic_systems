@@ -6,9 +6,12 @@ import { Modal } from '../ui/Modal';
 import { api } from '../../lib/api';
 import { trackUserAction } from '../../lib/tracker';
 import { useTranslation } from '../../context/I18nContext';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '../../context/AuthContext';
 import {
   CheckCircle2,
   AlertCircle,
+  ArrowRight,
   RefreshCw,
   Clock,
   Copy,
@@ -67,6 +70,9 @@ export function KhqrCheckoutModal({
 }: KhqrCheckoutModalProps) {
   const { locale } = useTranslation();
   const isKm = locale === 'km';
+  const router = useRouter();
+  const { user } = useAuth();
+  const isMissingMerchant = Boolean(!user?.tenant?.paywayPaymentUrl);
 
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethodType>('aba');
   const [loading, setLoading] = useState(false);
@@ -256,6 +262,15 @@ export function KhqrCheckoutModal({
           }
         }
       } catch {}
+    }
+
+    if (!user?.tenant?.paywayPaymentUrl) {
+      setError(
+        isKm
+          ? 'MISSING_MERCHANT_LINK: លោកអ្នកមិនទាន់បានភ្ជាប់ ABA Merchant Link នៅឡើយទេ។'
+          : 'MISSING_MERCHANT_LINK: Clinic tenant has not connected an ABA Merchant Link yet.'
+      );
+      return;
     }
 
     setLoading(true);

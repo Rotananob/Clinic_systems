@@ -107,6 +107,8 @@ export const FirstTimeClinicSetupModal: React.FC<FirstTimeClinicSetupModalProps>
   const [testingKhqr, setTestingKhqr] = useState(false);
   const [testKhqrResult, setTestKhqrResult] = useState<any | null>(null);
   const [testKhqrError, setTestKhqrError] = useState<string | null>(null);
+  const [skipPaywayForNow, setSkipPaywayForNow] = useState(false);
+  const [showPostSetupGuide, setShowPostSetupGuide] = useState(false);
 
   const handleTestKhqr = async () => {
     if (!paywayPaymentUrl.trim()) {
@@ -134,6 +136,85 @@ export const FirstTimeClinicSetupModal: React.FC<FirstTimeClinicSetupModalProps>
       setTestingKhqr(false);
     }
   };
+
+  if (showPostSetupGuide) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+        <div className="w-full max-w-lg bg-[#FAF8F5] border border-[#DDD5C5] rounded-3xl shadow-2xl p-6 sm:p-7 space-y-5 text-stone-900 animate-in zoom-in-95 duration-200">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-100 border border-emerald-200 flex items-center justify-center shrink-0 shadow-2xs">
+              <CheckCircle2 className="w-6 h-6 text-emerald-800" />
+            </div>
+            <div>
+              <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-300 uppercase tracking-wider mb-1">
+                {isKm ? 'ការរៀបចំគ្លីនិកបានជោគជ័យ' : 'Clinic Setup Completed'}
+              </span>
+              <h2 className="text-base sm:text-lg font-black text-stone-900 leading-tight">
+                {isKm ? 'របៀបភ្ជាប់ ABA Merchant Link ពេលក្រោយក្នុង Dashboard' : 'How to Connect ABA Merchant Link Later'}
+              </h2>
+            </div>
+          </div>
+
+          <div className="space-y-3 text-xs text-stone-700 leading-relaxed">
+            <p>
+              {isKm
+                ? 'គ្លីនិករបស់លោកអ្នកបានរួចរាល់សម្រាប់ដំណើរការហើយ! ដោយសារលោកអ្នកមិនទាន់បានភ្ជាប់ ABA Merchant Link សម្រាប់ទទួលការទូទាត់ Dynamic KHQR លោកអ្នកអាចភ្ជាប់នៅពេលក្រោយបានគ្រប់ពេលវេលាដោយអនុវត្តតាម ៣ ជំហានងាយៗ:'
+                : 'Your clinic workspace is ready to use! Since you chose to connect your ABA Merchant Link later, you can configure it anytime following these 3 easy steps:'}
+            </p>
+
+            <div className="bg-[#EFE9DF] border border-[#D9D0C0] p-4 rounded-2xl space-y-2.5 text-[11px] text-stone-700">
+              <ol className="list-decimal list-inside space-y-2 text-stone-700">
+                <li className="leading-relaxed">
+                  <strong className="text-stone-900">{isKm ? 'ចូលទៅកាន់ទំព័រ Settings - ការកំណត់: ' : 'Go to Settings page: '}</strong>
+                  <span>{isKm ? 'តាមរយៈ Sidebar ខាងឆ្វេង ឬចុចលើកាត ABA Merchant លើ Dashboard ផ្ទាល់' : 'Via left Sidebar or by clicking the ABA Merchant card directly on Dashboard'}</span>
+                </li>
+                <li className="leading-relaxed">
+                  <strong className="text-stone-900">{isKm ? 'ជ្រើសរើសផ្ទាំង KHQR Integration: ' : 'Select KHQR Integration tab: '}</strong>
+                  <span>{isKm ? 'ចុចលើផ្ទាំង KHQR & PayWay Integration' : 'Click on the KHQR & PayWay Integration tab'}</span>
+                </li>
+                <li className="leading-relaxed">
+                  <strong className="text-stone-900">{isKm ? 'Paste Link និងចុច Save: ' : 'Paste Link and Save: '}</strong>
+                  <span>{isKm ? 'ដាក់តំណភ្ជាប់ ABA PayWay Link របស់លោកអ្នក រួចចុច Save Changes ដើម្បីដំណើរការ KHQR ភ្លាមៗ' : 'Paste your ABA PayWay link and click Save Changes to activate KHQR instantly'}</span>
+                </li>
+              </ol>
+            </div>
+          </div>
+
+          <div className="pt-2 border-t border-[#EAE3D4] flex flex-col sm:flex-row items-center justify-end gap-2.5">
+            <button
+              type="button"
+              onClick={() => {
+                onComplete();
+                const typeLower = clinicType.toLowerCase();
+                if (typeLower.includes('dental') || typeLower.includes('ធ្មេញ')) {
+                  router.push('/dental');
+                } else if (typeLower.includes('pharmacy') || typeLower.includes('ឱសថ')) {
+                  router.push('/prescriptions');
+                } else {
+                  router.push('/dashboard');
+                }
+              }}
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-stone-300 hover:bg-stone-100 text-stone-700 text-xs font-bold transition-colors cursor-pointer text-center"
+            >
+              {isKm ? 'យល់ព្រម ចូលទៅកាន់ Dashboard' : 'Got it, Go to Dashboard'}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                onComplete();
+                router.push('/settings?tab=khqr');
+              }}
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-teal-800 hover:bg-teal-900 text-white text-xs font-bold transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <span>{isKm ? 'ទៅកាន់ Settings ឥឡូវនេះ' : 'Go to Settings Now'}</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!isOpen) return null;
 
@@ -164,11 +245,11 @@ export const FirstTimeClinicSetupModal: React.FC<FirstTimeClinicSetupModalProps>
       return;
     }
 
-    if (!paywayPaymentUrl.trim()) {
+    if (!skipPaywayForNow && !paywayPaymentUrl.trim()) {
       setErrorMsg(
         isKm
-          ? 'សូម Paste តំណភ្ជាប់ ABA Merchant Link ដើម្បីដំណើរការប្រព័ន្ធបង់ប្រាក់ KHQR។'
-          : 'Please paste your ABA Merchant Link to activate dynamic KHQR payments.'
+          ? 'សូម Paste តំណភ្ជាប់ ABA Merchant Link ឬជ្រើសរើស ភ្ជាប់នៅពេលក្រោយ ដើម្បីបន្ត។'
+          : 'Please paste your ABA Merchant Link or select Connect later to proceed.'
       );
       return;
     }
@@ -180,7 +261,7 @@ export const FirstTimeClinicSetupModal: React.FC<FirstTimeClinicSetupModalProps>
         clinicNameKh: clinicNameKh.trim(),
         clinicNameEn: clinicNameEn.trim(),
         clinicType,
-        paywayPaymentUrl: paywayPaymentUrl.trim(),
+        paywayPaymentUrl: skipPaywayForNow ? undefined : (paywayPaymentUrl.trim() || undefined),
         merchantName: clinicNameEn.trim(),
       });
 
@@ -200,16 +281,19 @@ export const FirstTimeClinicSetupModal: React.FC<FirstTimeClinicSetupModalProps>
         } catch {}
 
         await refreshProfile();
-        onComplete();
 
-        // Redirect based on specialty
-        const typeLower = clinicType.toLowerCase();
-        if (typeLower.includes('dental') || typeLower.includes('ធ្មេញ')) {
-          router.push('/dental');
-        } else if (typeLower.includes('pharmacy') || typeLower.includes('ឱសថ')) {
-          router.push('/prescriptions');
+        if (skipPaywayForNow || !paywayPaymentUrl.trim()) {
+          setShowPostSetupGuide(true);
         } else {
-          router.push('/dashboard');
+          onComplete();
+          const typeLower = clinicType.toLowerCase();
+          if (typeLower.includes('dental') || typeLower.includes('ធ្មេញ')) {
+            router.push('/dental');
+          } else if (typeLower.includes('pharmacy') || typeLower.includes('ឱសថ')) {
+            router.push('/prescriptions');
+          } else {
+            router.push('/dashboard');
+          }
         }
       }
     } catch (err: any) {
@@ -377,10 +461,48 @@ export const FirstTimeClinicSetupModal: React.FC<FirstTimeClinicSetupModalProps>
               </div>
             </div>
 
+            {/* Skip for now option */}
+            <div className="pt-0.5">
+              <label className="flex items-center gap-2 cursor-pointer select-none text-xs text-stone-700 hover:text-stone-900 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={skipPaywayForNow}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setSkipPaywayForNow(checked);
+                    if (checked) {
+                      setTestKhqrError(null);
+                      setTestKhqrResult(null);
+                    }
+                  }}
+                  className="w-4 h-4 rounded text-teal-800 border-stone-300 focus:ring-teal-700 cursor-pointer"
+                />
+                <span className="font-semibold text-stone-700">
+                  {isKm
+                    ? 'ភ្ជាប់ ABA Merchant Link នៅពេលក្រោយ - ដំណើរការគ្លីនិកភ្លាមៗ'
+                    : 'Connect ABA Merchant Link later - Launch clinic now'}
+                </span>
+              </label>
+            </div>
+
+            {skipPaywayForNow && (
+              <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs space-y-1">
+                <div className="font-bold flex items-center gap-1.5">
+                  <AlertCircle className="w-4 h-4 text-amber-700 shrink-0" />
+                  <span>{isKm ? 'បានជ្រើសរើសភ្ជាប់ Link នៅពេលក្រោយ' : 'You chose to connect link later'}</span>
+                </div>
+                <p className="text-[11px] text-amber-800 leading-relaxed">
+                  {isKm
+                    ? 'លោកអ្នកអាចចុច Save & Launch KruPet បានភ្លាមៗ។ ប្រព័ន្ធនឹងណែនាំទីតាំងក្នុង Dashboard ដើម្បីលោកអ្នកអាចមក Paste Link តាមក្រោយនៅពេលណាដែលចង់ទទួលការទូទាត់ KHQR។'
+                    : 'You can save and launch KruPet now. The system will guide you on where to paste your link in the dashboard later when you are ready to accept KHQR.'}
+                </p>
+              </div>
+            )}
+
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="block text-xs font-bold text-stone-700">
-                  {isKm ? 'តំណភ្ជាប់ ABA Merchant Link: PayWay URL' : 'ABA Merchant Link (PayWay URL)'} *
+                  {isKm ? 'តំណភ្ជាប់ ABA Merchant Link: PayWay URL' : 'ABA Merchant Link (PayWay URL)'} {skipPaywayForNow ? '' : '*'}
                 </label>
                 <button
                   type="button"
@@ -401,14 +523,15 @@ export const FirstTimeClinicSetupModal: React.FC<FirstTimeClinicSetupModalProps>
                 <LinkIcon className="w-4 h-4 text-stone-400 absolute left-3.5 top-3 pointer-events-none" />
                 <input
                   type="url"
-                  required
+                  required={!skipPaywayForNow}
+                  disabled={skipPaywayForNow}
                   value={paywayPaymentUrl}
                   onChange={(e) => {
                     setPaywayPaymentUrl(e.target.value);
                     if (testKhqrResult) setTestKhqrResult(null);
                   }}
-                  placeholder="https://link.payway.com.kh/ABAPAY..."
-                  className="w-full pl-10 pr-3.5 py-2.5 text-xs sm:text-sm bg-white border border-[#DDD5C5] rounded-xl text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-teal-700 font-mono shadow-2xs"
+                  placeholder={skipPaywayForNow ? (isKm ? 'ភ្ជាប់នៅពេលក្រោយក្នុង Settings...' : 'Will connect later in Settings...') : "https://link.payway.com.kh/ABAPAY..."}
+                  className={`w-full pl-10 pr-3.5 py-2.5 text-xs sm:text-sm bg-white border border-[#DDD5C5] rounded-xl text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-teal-700 font-mono shadow-2xs ${skipPaywayForNow ? 'opacity-50 cursor-not-allowed bg-stone-100' : ''}`}
                 />
               </div>
 

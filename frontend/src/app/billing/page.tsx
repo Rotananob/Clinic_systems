@@ -4,6 +4,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { api } from '../../lib/api';
 import Link from 'next/link';
 import { KhqrCheckoutModal } from '../../components/payments/KhqrCheckoutModal';
+import { MissingMerchantLinkModal } from '../../components/payments/MissingMerchantLinkModal';
 import { ClinicReceiptModal } from '../../components/payments/ClinicReceiptModal';
 import { CashPaymentModal } from '../../components/payments/CashPaymentModal';
 import { HardwareSettingsModal } from '../../components/hardware/HardwareSettingsModal';
@@ -75,6 +76,7 @@ export default function BillingPage() {
   // KHQR modal
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [isMissingLinkModalOpen, setIsMissingLinkModalOpen] = useState(false);
 
   // Cash payment modal
   const [cashInvoice, setCashInvoice] = useState<any>(null);
@@ -263,8 +265,12 @@ export default function BillingPage() {
 
       // If requested, open KHQR on screen immediately for patient to scan
       if (showQrImmediately) {
-        setSelectedInvoice(createdInvoice);
-        setIsCheckoutOpen(true);
+        if (!user?.tenant?.paywayPaymentUrl) {
+          setIsMissingLinkModalOpen(true);
+        } else {
+          setSelectedInvoice(createdInvoice);
+          setIsCheckoutOpen(true);
+        }
       }
     } catch (err: unknown) {
       toast.error(getHumanErrorMessage(err, locale));
@@ -670,6 +676,10 @@ export default function BillingPage() {
                       >
                         <button
                           onClick={() => {
+                            if (!user?.tenant?.paywayPaymentUrl) {
+                              setIsMissingLinkModalOpen(true);
+                              return;
+                            }
                             setSelectedInvoice(inv);
                             setIsCheckoutOpen(true);
                           }}
@@ -1134,15 +1144,15 @@ export default function BillingPage() {
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-teal-700 focus:bg-white"
                 >
                   <option value="KHQR">KHQR - Dynamic Locked Amount</option>
-                  <option value="CASH">CASH (ប្រាក់សុទ្ធ)</option>
-                  <option value="BANK_TRANSFER">BANK TRANSFER (ផ្ទេរផ្ទាល់)</option>
+                  <option value="CASH">CASH - ប្រាក់សុទ្ធ</option>
+                  <option value="BANK_TRANSFER">BANK TRANSFER - ផ្ទេរផ្ទាល់</option>
                   <option value="CARD">POS / CARD</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {isKm ? 'មូលហេតុ ឬចំណាំបុគ្គលិក (Staff Notes / Audit)' : 'Staff Notes / Audit Log'}
+                  {isKm ? 'មូលហេតុ ឬចំណាំបុគ្គលិក - Staff Notes / Audit' : 'Staff Notes / Audit Log'}
                 </label>
                 <input
                   type="text"

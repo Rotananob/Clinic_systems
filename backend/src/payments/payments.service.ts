@@ -167,12 +167,16 @@ export class PaymentsService {
     const tenant = (invoice as any)?.tenant;
     const paywayLink =
       tenant?.paywayPaymentUrl ||
-      this.configService.get<string>('PAYWAY_PAYMENT_URL') ||
-      'https://link.payway.com.kh/ABAPAYCK539089j';
+      (!tenant ? (this.configService.get<string>('PAYWAY_PAYMENT_URL') || 'https://link.payway.com.kh/ABAPAYCK539089j') : undefined);
     const bakongId =
       tenant?.bakongAccountId ||
-      this.configService.get<string>('BAKONG_ACCOUNT_ID') ||
-      'houn_vannak_clinic@aba';
+      (!tenant ? (this.configService.get<string>('BAKONG_ACCOUNT_ID') || 'houn_vannak_clinic@aba') : undefined);
+
+    if (!paywayLink && !bakongId) {
+      throw new BadRequestException(
+        'MISSING_MERCHANT_LINK: Clinic tenant has not connected an ABA Merchant Link yet. Please configure it in Settings -> KHQR Integration.'
+      );
+    }
     const merchantName =
       tenant?.merchantName ||
       tenant?.clinicNameEn ||
