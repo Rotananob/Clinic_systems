@@ -82,7 +82,7 @@ export const ClinicalDecisionSupportBanner: React.FC<ClinicalDecisionSupportBann
     if (!overrideReason.trim()) {
       setOverrideError(
         isKm
-          ? 'សូមបញ្ជាក់មូលហេតុវេជ្ជសាស្ត្រមុនពេលអនុញ្ញាត (Override)។'
+          ? 'សូមបញ្ជាក់មូលហេតុវេជ្ជសាស្ត្រមុនពេលអនុញ្ញាត - Override៖'
           : 'Clinical justification is required to override severe safety warnings.'
       );
       return;
@@ -170,7 +170,7 @@ export const ClinicalDecisionSupportBanner: React.FC<ClinicalDecisionSupportBann
             >
               <div className="flex items-center justify-between">
                 <span className="font-bold text-rose-700 dark:text-rose-400">
-                  {isKm ? 'ការប៉ះទង្គិចអាលែកហ្ស៊ីអ្នកជំងឺ (Allergy Conflict)' : 'Documented Allergy Conflict'}
+                  {isKm ? 'ការប៉ះទង្គិចអាលែកហ្ស៊ីអ្នកជំងឺ - Allergy Conflict' : 'Documented Allergy Conflict'}
                 </span>
                 <span className="px-2 py-0.5 bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 text-[10px] font-bold rounded">
                   {al.severity}
@@ -197,7 +197,7 @@ export const ClinicalDecisionSupportBanner: React.FC<ClinicalDecisionSupportBann
                       : 'text-amber-700 dark:text-amber-400'
                   }`}
                 >
-                  {isKm ? 'ប្រតិកម្មរវាងថ្នាំ និងថ្នាំ (Drug-Drug Interaction)' : 'Drug-Drug Interaction'}
+                  {isKm ? 'ប្រតិកម្មរវាងថ្នាំ និងថ្នាំ - Drug-Drug Interaction' : 'Drug-Drug Interaction'}
                 </span>
                 <span
                   className={`px-2 py-0.5 text-[10px] font-bold rounded ${
@@ -234,7 +234,7 @@ export const ClinicalDecisionSupportBanner: React.FC<ClinicalDecisionSupportBann
             <div className="p-3 bg-white/80 dark:bg-slate-900/80 rounded-lg border border-inherit/60 space-y-1">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-amber-700 dark:text-amber-400">
-                  {isKm ? 'ពិធីការសង្គ្រោះបឋម NEWS2 (Triage Protocol)' : 'NEWS2 Triage Recommendation'}
+                  {isKm ? 'ពិធីការសង្គ្រោះបឋម NEWS2 - Triage Protocol' : 'NEWS2 Triage Recommendation'}
                 </span>
                 <span className="font-bold">{triageResult.riskLevel} RISK</span>
               </div>

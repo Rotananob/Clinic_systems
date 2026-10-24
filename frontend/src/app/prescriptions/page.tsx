@@ -319,7 +319,7 @@ export default function PrescriptionsPage() {
                           <div className="mb-3 p-2.5 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900 flex items-start gap-2">
                             <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                             <div>
-                              <span className="font-semibold">{isKm ? 'ការព្រមានអន្តរកម្មថ្នាំ (CDSS):' : 'Potential Drug Interaction Detected:'}</span>{' '}
+                              <span className="font-semibold">{isKm ? 'ការព្រមានអន្តរកម្មថ្នាំ - CDSS:' : 'Potential Drug Interaction Detected:'}</span>{' '}
                               {rxDdis.map((d: any) => d.drugA + ' + ' + d.drugB + ' (' + (isKm ? d.descriptionKh : d.descriptionEn) + ')').join('; ')}
                             </div>
                           </div>
@@ -328,7 +328,7 @@ export default function PrescriptionsPage() {
                       return (
                         <div className="mb-3 p-2 bg-emerald-50/70 border border-emerald-100 rounded-lg text-xs text-emerald-800 flex items-center gap-2">
                           <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                          <span>{isKm ? 'សុវត្ថិភាពវេជ្ជសាស្ត្រ CDSS: គ្មានអន្តរកម្មថ្នាំគ្រោះថ្នាក់ឡើយ' : 'CDSS Safety Guard: 100% verified safe (No adverse drug-drug interactions)'}</span>
+                          <span>{isKm ? 'សុវត្ថិភាពវេជ្ជសាស្ត្រ CDSS: គ្មានអន្តរកម្មថ្នាំគ្រោះថ្នាក់ឡើយ' : 'CDSS Safety Guard: 100% verified safe - No adverse drug-drug interactions'}</span>
                         </div>
                       );
                     })()}
@@ -563,7 +563,7 @@ function CreatePrescriptionDrawer({
     if (hasBlockingAlert && !isOverridden) {
       setError(
         locale === 'km'
-          ? 'មានការព្រមានកម្រិតគ្រោះថ្នាក់ធ្ងន់ធ្ងរ (Severe Danger)។ សូមកែប្រែបញ្ជីថ្នាំ ឬចុចផ្ដល់ការអនុញ្ញាត (Override) ជាមួយមូលហេតុវេជ្ជសាស្ត្រ។'
+          ? 'មានការព្រមានកម្រិតគ្រោះថ្នាក់ធ្ងន់ធ្ងរ - Severe Danger។ សូមកែប្រែបញ្ជីថ្នាំ ឬចុចផ្ដល់ការអនុញ្ញាត Override ជាមួយមូលហេតុវេជ្ជសាស្ត្រ។'
           : 'Severe drug interaction or allergy conflict detected. Please modify medications or provide clinical justification override.'
       );
       return;

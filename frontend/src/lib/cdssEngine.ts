@@ -88,7 +88,7 @@ const CLIENT_DDI_RULES = [
     drug2: ['clarithromycin', 'erythromycin', 'ketoconazole'],
     severity: 'SEVERE' as DdiSeverity,
     action: 'BLOCK' as DdiAction,
-    riskKh: 'ការរលាយសាច់ដុំស្រួចស្រាវ (Rhabdomyolysis) និងខ្សោយតម្រងនោមធ្ងន់ធ្ងរ។',
+    riskKh: 'ការរលាយសាច់ដុំស្រួចស្រាវ - Rhabdomyolysis និងខ្សោយតម្រងនោមធ្ងន់ធ្ងរ។',
     riskEn: 'Severe rhabdomyolysis, muscle breakdown, and acute renal failure.',
     recKh: 'ផ្អាកថ្នាំ Statin បណ្ដោះអាសន្នអំឡុងពេលលេបថ្នាំផ្សះ ឬប្តូរមកប្រើ Azithromycin។',
     recEn: 'Temporarily suspend Statin during antibiotic course, or substitute Azithromycin.',
@@ -114,7 +114,7 @@ const CLIENT_DDI_RULES = [
     drug2: ['verapamil', 'diltiazem'],
     severity: 'SEVERE' as DdiSeverity,
     action: 'BLOCK' as DdiAction,
-    riskKh: 'ចង្វាក់បេះដូងដើរយឺតខ្លាំង ខូចចរន្តអគ្គិសនីបេះដូង (AV Block) និងខ្សោយបេះដូង។',
+    riskKh: 'ចង្វាក់បេះដូងដើរយឺតខ្លាំង ខូចចរន្តអគ្គិសនីបេះដូង - AV Block និងខ្សោយបេះដូង។',
     riskEn: 'Profound bradycardia, high-grade AV block, and acute heart failure.',
     recKh: 'ហាមប្រើថ្នាំ Verapamil/Diltiazem ជាមួយថ្នាំ Beta-blocker ដាច់ខាត។ ប្រើ Amlodipine ជំនួស។',
     recEn: 'Do not combine non-dihydropyridine CCBs with beta-blockers. Use Amlodipine instead.',
@@ -129,7 +129,7 @@ const CLIENT_DDI_RULES = [
     action: 'BLOCK' as DdiAction,
     riskKh: 'ការធ្លាក់ចុះសម្ពាធឈាមធ្ងន់ធ្ងរមិនអាចស្រោចស្រង់បាន និងដាច់សរសៃឈាមបេះដូង។',
     riskEn: 'Catastrophic refractory hypotension, myocardial infarction, and shock.',
-    recKh: 'ជាការហាមឃាត់ដាច់ខាត (Absolute Contraindication)។ មិនត្រូវប្រើថ្នាំ Nitrate ឡើយ។',
+    recKh: 'ជាការហាមឃាត់ដាច់ខាត - Absolute Contraindication។ មិនត្រូវប្រើថ្នាំ Nitrate ឡើយ។',
     recEn: 'Absolute Contraindication. Do not administer nitrates concurrently.',
     altKh: 'ប្រើថ្នាំបេះដូងជម្រើសផ្សេងដែលមិនមែនជា Nitrate',
     altEn: 'Alternative non-nitrate anti-anginal therapy',
@@ -141,21 +141,21 @@ const CLIENT_ALLERGY_RULES = [
     allergyKeywords: ['penicillin', 'amoxicillin', 'ampicillin', 'augmentin', 'ប៉េនីស៊ីលីន'],
     offendingKeywords: ['amoxicillin', 'ampicillin', 'augmentin', 'penicillin', 'piperacillin', 'cloxacillin'],
     severity: 'SEVERE' as const,
-    nameKh: 'អាលែកហ្ស៊ីពពួកប៉េនីស៊ីលីន (Penicillin Allergy)',
+    nameKh: 'អាលែកហ្ស៊ីពពួកប៉េនីស៊ីលីន - Penicillin Allergy',
     isCross: false,
   },
   {
     allergyKeywords: ['penicillin', 'ប៉េនីស៊ីលីន'],
     offendingKeywords: ['cefixime', 'ceftriaxone', 'cephalexin', 'cefuroxime'],
     severity: 'MODERATE' as const,
-    nameKh: 'ប្រតិកម្មឆ្លង Cephalosporin (Cross-Reactivity ~2-5%)',
+    nameKh: 'ប្រតិកម្មឆ្លង Cephalosporin - Cross-Reactivity ២ ទៅ ៥ ភាគរយ',
     isCross: true,
   },
   {
     allergyKeywords: ['sulfa', 'sulfonamide', 'bactrim', 'ស៊ុលហ្វា'],
     offendingKeywords: ['cotrimoxazole', 'bactrim', 'sulfamethoxazole'],
     severity: 'SEVERE' as const,
-    nameKh: 'អាលែកហ្ស៊ីពពួកស៊ុលហ្វា (Sulfa Allergy)',
+    nameKh: 'អាលែកហ្ស៊ីពពួកស៊ុលហ្វា - Sulfa Allergy',
     isCross: false,
   },
   {
@@ -246,7 +246,7 @@ export function checkClientAllergyConflicts(
             severity: rule.severity,
             mechanism: rule.nameKh,
             recommendation: rule.isCross
-              ? 'មានហានិភ័យប្រតិកម្មឆ្លង (Cross-reactivity)។ គួរជ្រើសរើសថ្នាំក្រុមផ្សេង។'
+              ? 'មានហានិភ័យប្រតិកម្មឆ្លង - Cross-reactivity។ គួរជ្រើសរើសថ្នាំក្រុមផ្សេង។'
               : 'ហាមប្រើថ្នាំនេះដាច់ខាតដោយសារអ្នកជំងឺមានប្រវត្តិប្រតិកម្មអាលែកហ្ស៊ីធ្ងន់ធ្ងរ។',
             isCrossReactivity: rule.isCross,
           });
@@ -323,7 +323,7 @@ export function calculateClientNews2(vitals: ClientNews2Input): ClientNews2Resul
 
   let riskLevel: TriageRiskLevel = 'LOW';
   let colorCode: 'GREEN' | 'YELLOW' | 'RED' = 'GREEN';
-  let recKh = 'ហានិភ័យកម្រិតស្រាល (ធម្មតា)។ តាមដានសញ្ញាជីវិតជាប្រចាំ និងពិគ្រោះជំងឺតាមវេនធម្មតា។';
+  let recKh = 'ហានិភ័យកម្រិតស្រាល: ធម្មតា។ តាមដានសញ្ញាជីវិតជាប្រចាំ និងពិគ្រោះជំងឺតាមវេនធម្មតា។';
   let recEn = 'Low clinical risk. Routine vital signs monitoring and standard outpatient consultation.';
 
   if (totalScore >= 7) {
@@ -352,7 +352,7 @@ export function calculateClientNews2(vitals: ClientNews2Input): ClientNews2Resul
  * Fast search client ICD-11 entities
  */
 export function searchClientIcd11(query: string): ClientIcd11Item[] {
-  const q = (query || '').toLowerCase().trim();
+  const q = (typeof query === 'string' ? query : String(query || '')).toLowerCase().trim();
   if (!q) return CLIENT_ICD11_DB.slice(0, 8);
 
   return CLIENT_ICD11_DB.filter(

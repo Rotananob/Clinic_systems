@@ -134,11 +134,11 @@ export const DDI_KNOWLEDGE_BASE: DrugInteractionRule[] = [
     mechanismEn: 'Inhibition of CYP3A4 hepatic clearance increases serum statin concentrations up to 10-fold.',
     mechanismKh: 'ការរារាំងអង់ស៊ីម CYP3A4 ធ្វើឱ្យកម្រិតថ្នាំ Statin ក្នុងឈាមកើនឡើងខ្ពស់ហួសប្រមាណរហូតដល់ ១០ ដង។',
     clinicalRiskEn: 'Severe rhabdomyolysis, profound muscle breakdown, myoglobinuria, and acute renal failure.',
-    clinicalRiskKh: 'ការរលាយសាច់ដុំស្រួចស្រាវ (Rhabdomyolysis) និងខ្សោយតម្រងនោមធ្ងន់ធ្ងរ។',
+    clinicalRiskKh: 'ការរលាយសាច់ដុំស្រួចស្រាវ - Rhabdomyolysis និងខ្សោយតម្រងនោមធ្ងន់ធ្ងរ។',
     recommendationEn: 'Temporarily suspend Statin during the antibiotic course, or substitute Azithromycin.',
     recommendationKh: 'ផ្អាកថ្នាំ Statin បណ្ដោះអាសន្នអំឡុងពេលលេបថ្នាំផ្សះ ឬប្តូរមកប្រើ Azithromycin ជំនួសវិញ។',
     safeAlternativeEn: 'Azithromycin 500mg daily (does not significantly inhibit CYP3A4) or Rosuvastatin.',
-    safeAlternativeKh: 'Azithromycin 500mg ក្នុងមួយថ្ងៃ (គ្មានប្រតិកម្ម CYP3A4) ឬ Rosuvastatin។',
+    safeAlternativeKh: 'Azithromycin 500mg ក្នុងមួយថ្ងៃ - គ្មានប្រតិកម្ម CYP3A4 ឬ Rosuvastatin។',
   },
   {
     id: 'DDI-004',
@@ -185,7 +185,7 @@ export const DDI_KNOWLEDGE_BASE: DrugInteractionRule[] = [
     mechanismEn: 'Synergistic elevation of synaptic serotonin levels through reuptake inhibition and stimulated release.',
     mechanismKh: 'ការកើនឡើងជាតិសេរ៉ូតូនីនក្នុងប្រព័ន្ធប្រសាទខ្លាំងហួសកម្រិត។',
     clinicalRiskEn: 'Life-threatening Serotonin Syndrome (hyperthermia, autonomic instability, neuromuscular rigidity, seizures).',
-    clinicalRiskKh: 'រោគសញ្ញាសេរ៉ូតូនីនធ្ងន់ធ្ងរ (គ្រុនក្ដៅខ្លាំង រមួលសាច់ដុំ និងប្រកាច់)។',
+    clinicalRiskKh: 'រោគសញ្ញាសេរ៉ូតូនីនធ្ងន់ធ្ងរ: គ្រុនក្ដៅខ្លាំង រមួលសាច់ដុំ និងប្រកាច់។',
     recommendationEn: 'Avoid combination where possible. Monitor for agitation, tremor, clonus, and diaphoresis.',
     recommendationKh: 'ចៀសវាងការប្រើរួមគ្នា។ តាមដានអាការៈញ័រដៃជើង បែកញើស និងរមួលសាច់ដុំ។',
     safeAlternativeEn: 'Paracetamol or Codeine-based alternative for analgesia without strong serotonergic activity.',
@@ -202,11 +202,11 @@ export const DDI_KNOWLEDGE_BASE: DrugInteractionRule[] = [
     mechanismEn: 'Additive negative inotropic, chronotropic, and dromotropic cardiac effects.',
     mechanismKh: 'ការទប់ស្កាត់ចង្វាក់បេះដូង និងកម្លាំងកន្ត្រាក់នៃសាច់ដុំបេះដូងដំណាលគ្នា។',
     clinicalRiskEn: 'Profound bradycardia, high-grade atrioventricular (AV) block, and acute cardiogenic shock.',
-    clinicalRiskKh: 'ចង្វាក់បេះដូងដើរយឺតខ្លាំង ខូចចរន្តអគ្គិសនីបេះដូង (AV Block) និងខ្សោយបេះដូងស្រួចស្រាវ។',
+    clinicalRiskKh: 'ចង្វាក់បេះដូងដើរយឺតខ្លាំង ខូចចរន្តអគ្គិសនីបេះដូង - AV Block និងខ្សោយបេះដូងស្រួចស្រាវ។',
     recommendationEn: 'Do not combine non-dihydropyridine CCBs with beta-blockers. Use Dihydropyridine (Amlodipine) instead.',
     recommendationKh: 'ហាមប្រើថ្នាំ Verapamil/Diltiazem ជាមួយថ្នាំ Beta-blocker ដាច់ខាត។ ប្រើ Amlodipine ជំនួសវិញ។',
     safeAlternativeEn: 'Amlodipine 5mg daily (dihydropyridine CCB does not depress cardiac conduction).',
-    safeAlternativeKh: 'Amlodipine 5mg ក្នុងមួយថ្ងៃ (មិនប៉ះពាល់ចរន្តអគ្គិសនីបេះដូង)។',
+    safeAlternativeKh: 'Amlodipine 5mg ក្នុងមួយថ្ងៃ - មិនប៉ះពាល់ចរន្តអគ្គិសនីបេះដូង។',
   },
   {
     id: 'DDI-008',
@@ -221,7 +221,7 @@ export const DDI_KNOWLEDGE_BASE: DrugInteractionRule[] = [
     clinicalRiskEn: 'Catastrophic refractory hypotension, myocardial infarction, and cardiovascular collapse.',
     clinicalRiskKh: 'ការធ្លាក់ចុះសម្ពាធឈាមធ្ងន់ធ្ងរមិនអាចស្រោចស្រង់បាន និងដាច់សរសៃឈាមបេះដូង។',
     recommendationEn: 'Absolute Contraindication. Do not administer nitrates within 24 hours of Sildenafil or 48 hours of Tadalafil.',
-    recommendationKh: 'ជាការហាមឃាត់ដាច់ខាត (Absolute Contraindication)។ មិនត្រូវប្រើថ្នាំ Nitrate ក្នុងរយៈពេល ២៤ ទៅ ៤៨ ម៉ោងឡើយ។',
+    recommendationKh: 'ជាការហាមឃាត់ដាច់ខាត - Absolute Contraindication។ មិនត្រូវប្រើថ្នាំ Nitrate ក្នុងរយៈពេល ២៤ ទៅ ៤៨ ម៉ោងឡើយ។',
     safeAlternativeEn: 'Alternative angina management with beta-blockers, CCBs, or Ranolazine.',
     safeAlternativeKh: 'ប្រើថ្នាំបេះដូងជម្រើសផ្សេងដែលមិនមែនជាពពួក Nitrate។',
   },
@@ -278,7 +278,7 @@ export const ALLERGY_CROSS_REFERENCE: Array<{
     allergyNameEn: 'Penicillin / Beta-Lactam Allergy',
     allergyNameKh: 'អាលែកហ្ស៊ីពពួកថ្នាំផ្សះប៉េនីស៊ីលីន',
     mechanismEn: 'Direct IgE-mediated anaphylaxis / Type I hypersensitivity to beta-lactam core.',
-    mechanismKh: 'ប្រតិកម្មអាលែកហ្ស៊ីធ្ងន់ធ្ងរ (Anaphylaxis) ប្រឆាំងនឹងរចនាសម្ព័ន្ធ Beta-lactam។',
+    mechanismKh: 'ប្រតិកម្មអាលែកហ្ស៊ីធ្ងន់ធ្ងរ - Anaphylaxis ប្រឆាំងនឹងរចនាសម្ព័ន្ធ Beta-lactam។',
     isCrossReactivity: false,
   },
   {
@@ -286,7 +286,7 @@ export const ALLERGY_CROSS_REFERENCE: Array<{
     contraindicatedKeywords: ['cefixime', 'ceftriaxone', 'cephalexin', 'cefuroxime', 'cefazolin'],
     severity: 'MODERATE',
     allergyNameEn: 'Penicillin Allergy (Cephalosporin Cross-Reactivity)',
-    allergyNameKh: 'អាលែកហ្ស៊ីប៉េនីស៊ីលីន (ប្រតិកម្មឆ្លងជាមួយ Cephalosporin)',
+    allergyNameKh: 'អាលែកហ្ស៊ីប៉េនីស៊ីលីន - ប្រតិកម្មឆ្លងជាមួយ Cephalosporin',
     mechanismEn: 'Potential cross-reactivity (~2-5%) between beta-lactam ring structures.',
     mechanismKh: 'មានហានិភ័យប្រតិកម្មឆ្លងរវាង ២ ទៅ ៥% ដោយសាររចនាសម្ព័ន្ធស្រដៀងគ្នា។',
     isCrossReactivity: true,
@@ -466,7 +466,7 @@ export const ICD11_DATABASE: Icd11SearchResult[] = [
     icd11Code: '8A80',
     icd10Code: 'G43.9',
     titleEn: 'Migraine',
-    titleKh: 'ជំងឺឈឺក្បាលមួយចំហៀង (មីក្រែន)',
+    titleKh: 'ជំងឺឈឺក្បាលមួយចំហៀង - មីក្រែន',
     category: 'Neurology',
     keywords: ['migraine', 'throbbing headache', 'photophobia', 'មីក្រែន', 'ឈឺក្បាលមួយចំហៀង'],
   },
@@ -490,7 +490,7 @@ export class ClinicalDecisionSupportService {
     const alerts: DdiAlert[] = [];
     if (!medications || medications.length < 2) return alerts;
 
-    const normalizedMeds = medications.map((m) => m.toLowerCase().trim());
+    const normalizedMeds = (medications || []).map((m) => (typeof m === 'string' ? m : String(m || '')).toLowerCase().trim()).filter(Boolean);
 
     for (let i = 0; i < normalizedMeds.length; i++) {
       for (let j = i + 1; j < normalizedMeds.length; j++) {
@@ -559,7 +559,7 @@ export class ClinicalDecisionSupportService {
                 severity: ref.severity,
                 mechanism: ref.mechanismKh,
                 recommendation: ref.isCrossReactivity
-                  ? 'មានហានិភ័យប្រតិកម្មឆ្លង (Cross-reactivity)។ គួរពិចារណាប្រើប្រាស់ថ្នាំក្រុមផ្សេងជំនួសវិញ។'
+                  ? 'មានហានិភ័យប្រតិកម្មឆ្លង - Cross-reactivity។ គួរពិចារណាប្រើប្រាស់ថ្នាំក្រុមផ្សេងជំនួសវិញ។'
                   : 'ហាមប្រើថ្នាំនេះដាច់ខាតដោយសារអ្នកជំងឺមានប្រវត្តិប្រតិកម្មអាលែកហ្ស៊ីធ្ងន់ធ្ងរ។',
                 isCrossReactivity: ref.isCrossReactivity,
               });
@@ -692,7 +692,7 @@ export class ClinicalDecisionSupportService {
     let riskLevel: TriageRiskLevel = 'LOW';
     let colorCode: 'GREEN' | 'YELLOW' | 'RED' = 'GREEN';
     let recEn = 'Low clinical risk. Routine vital signs monitoring and standard outpatient consultation.';
-    let recKh = 'ហានិភ័យកម្រិតស្រាល (ធម្មតា)។ តាមដានសញ្ញាជីវិតជាប្រចាំ និងពិគ្រោះជំងឺតាមវេនធម្មតា។';
+    let recKh = 'ហានិភ័យកម្រិតស្រាល: ធម្មតា។ តាមដានសញ្ញាជីវិតជាប្រចាំ និងពិគ្រោះជំងឺតាមវេនធម្មតា។';
 
     if (totalScore >= 7) {
       riskLevel = 'HIGH';
