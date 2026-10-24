@@ -31,6 +31,8 @@ import {
   Globe,
   Video,
   FileSpreadsheet,
+  Compass,
+  ArrowRight,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from '../../context/I18nContext';
@@ -143,6 +145,67 @@ export const Sidebar: React.FC = () => {
             RBAC
           </span>
         )}
+      </div>
+
+      {/* Eye-catching Explore All Tools & Features Button */}
+      <div className="mb-4">
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new CustomEvent('open-explore-modules'))}
+          className="group relative w-full p-3 rounded-2xl bg-gradient-to-br from-teal-900 via-teal-800 to-emerald-900 text-white shadow-md hover:shadow-xl hover:from-teal-800 hover:to-emerald-800 border border-teal-700/60 transition-all duration-200 text-left overflow-hidden active:scale-98"
+        >
+          {/* Subtle decorative glow orb */}
+          <div className="absolute -right-4 -top-4 w-16 h-16 bg-emerald-400/20 rounded-full blur-xl pointer-events-none group-hover:scale-125 transition-transform" />
+
+          {/* Top Row: Badge with Pulse & Count */}
+          <div className="flex items-center justify-between gap-1 mb-1.5 relative z-10">
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-400/20 border border-amber-300/40 text-amber-300 text-[10px] font-black uppercase tracking-wider font-mono">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-400"></span>
+              </span>
+              <span>{isKh ? '២៦ ម៉ូឌុលពេញលេញ' : 'All 26 Modules'}</span>
+            </span>
+
+            <span className="text-[10px] font-mono text-teal-200/90 font-bold group-hover:text-white transition-colors flex items-center gap-0.5">
+              <span>{isKh ? 'ពិនិត្យសិទ្ធិ' : 'Access Hub'}</span>
+              <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+            </span>
+          </div>
+
+          {/* Main Title */}
+          <div className="relative z-10 flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-white/15 border border-white/20 flex items-center justify-center shrink-0 group-hover:rotate-6 group-hover:scale-110 transition-transform">
+              <Compass className="w-4 h-4 text-amber-300" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-xs font-black tracking-tight leading-snug text-white group-hover:text-amber-100 transition-colors">
+                {isKh ? 'រុករកឧបករណ៍ & មុខងារទាំងអស់' : 'Explore All Tools & Features'}
+              </div>
+              <div className="text-[10px] text-teal-100/80 truncate mt-0.5">
+                {isKh ? 'ដឹងភ្លាមថាគ្លីនិកប្រើបានឬអត់' : 'Check which tools are unlocked'}
+              </div>
+            </div>
+          </div>
+
+          {/* Plan Status Pill at Bottom */}
+          <div className="mt-2.5 pt-2 border-t border-white/10 flex items-center justify-between text-[10px] relative z-10">
+            <span className="text-teal-200/90 font-medium">
+              {isKh ? 'ស្ថានភាពគម្រោង៖' : 'Plan Status:'}
+            </span>
+            <span className="px-1.5 py-0.5 rounded bg-black/25 text-amber-300 font-mono font-bold text-[9px] border border-amber-300/30">
+              {isSuperAdmin
+                ? (isKh ? 'ម្ចាស់ប្រព័ន្ធ - All Active' : 'Owner - All Unlocked')
+                : tenantPlanTier === 'FREE'
+                ? (isKh ? 'Free - ដំឡើងប្រើ Pro' : 'Free - Upgrade to Pro')
+                : tenantPlanTier === 'STARTER_5'
+                ? (isKh ? '$5 - ១២ មុខងារសកម្ម' : '$5 - 12 Active')
+                : tenantPlanTier === 'PRO_8'
+                ? (isKh ? '$8 - ២៤ មុខងារសកម្ម' : '$8 - 24 Active')
+                : (isKh ? '$12 - ២៦ មុខងារពេញលេញ' : '$12 - 26 Active')}
+            </span>
+          </div>
+        </button>
       </div>
 
       <div className="text-[11px] font-bold text-stone-400 uppercase tracking-wider px-3 mb-1.5 font-mono">

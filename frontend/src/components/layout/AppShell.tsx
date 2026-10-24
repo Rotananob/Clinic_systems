@@ -13,6 +13,7 @@ import { OfflineSyncBanner } from '../common/OfflineSyncBanner';
 import { PwaRegister } from '../common/PwaRegister';
 import { PwaUpdatePrompt } from '../common/PwaUpdatePrompt';
 import { CommandPalette } from '../common/CommandPalette';
+import { ExploreModulesModal } from '../dashboard/ExploreModulesModal';
 import { ClinicLogo } from '../common/ClinicLogo';
 import { FirstTimeClinicSetupModal } from '../onboarding/FirstTimeClinicSetupModal';
 import { ShieldCheck, Loader2, Sparkles, ArrowRight } from 'lucide-react';
@@ -31,6 +32,13 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
 
   const [hasToken, setHasToken] = React.useState<boolean>(false);
   const [mounted, setMounted] = React.useState(false);
+  const [isExploreOpen, setIsExploreOpen] = React.useState<boolean>(false);
+
+  useEffect(() => {
+    const handleOpenExplore = () => setIsExploreOpen(true);
+    window.addEventListener('open-explore-modules', handleOpenExplore);
+    return () => window.removeEventListener('open-explore-modules', handleOpenExplore);
+  }, []);
 
   React.useEffect(() => {
     setMounted(true);
@@ -272,6 +280,7 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
         <PwaRegister />
         <PwaUpdatePrompt />
         <CommandPalette />
+        <ExploreModulesModal isOpen={isExploreOpen} onClose={() => setIsExploreOpen(false)} />
         <FirstTimeClinicSetupModal
           isOpen={Boolean(
             mounted &&

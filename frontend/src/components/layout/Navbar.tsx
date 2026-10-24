@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { User, LogOut, QrCode, Monitor, Search } from 'lucide-react';
+import { User, LogOut, QrCode, Monitor, Search, Menu } from 'lucide-react';
+import { MobileMenuDrawer } from './MobileMenuDrawer';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from '../../context/I18nContext';
 import { LanguageSwitcher } from '../common/LanguageSwitcher';
@@ -14,6 +15,7 @@ export const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
   const { t, locale } = useTranslation();
   const [mounted, setMounted] = React.useState(false);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = React.useState(false);
 
   React.useEffect(() => {
     setMounted(true);
@@ -23,6 +25,16 @@ export const Navbar: React.FC = () => {
     <header className="sticky top-0 z-30 bg-[#FDFBF7]/95 backdrop-blur-md border-b border-[#E7E1D4] shadow-xs">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
+          {/* Mobile Menu Drawer Toggle */}
+          <button
+            type="button"
+            onClick={() => setMobileDrawerOpen(true)}
+            className="md:hidden p-2 rounded-xl text-stone-700 hover:text-stone-900 hover:bg-[#EFE9DD] border border-[#DFD8CA] bg-[#FAF8F5] transition-colors shadow-2xs shrink-0"
+            title={locale === 'km' ? 'បញ្ជីឧបករណ៍ & មុខងារទាំងអស់' : 'Open All Clinical Tools'}
+          >
+            <Menu className="w-4 h-4 text-stone-800" />
+          </button>
+
           <Link href="/dashboard" className="flex items-center gap-2 shrink-0 hover:opacity-95 transition-opacity">
             <ClinicLogo variant="navbar" size="md" />
           </Link>
@@ -136,7 +148,7 @@ export const Navbar: React.FC = () => {
                   <div className="text-[10px] font-mono font-semibold uppercase">
                     {user.role === 'SUPER_ADMIN' ? (
                       <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-amber-100 text-amber-900 border border-amber-300 font-bold text-[9px] tracking-wide">
-                        {locale === 'km' ? 'ម្ចាស់គ្លីនិក (OWNER)' : 'SUPER ADMIN'}
+                        {locale === 'km' ? 'ម្ចាស់គ្លីនិក - OWNER' : 'SUPER ADMIN'}
                       </span>
                     ) : (
                       <span className="text-teal-800 font-semibold">{user.role}</span>
@@ -163,6 +175,7 @@ export const Navbar: React.FC = () => {
           )}
         </div>
       </div>
+      <MobileMenuDrawer isOpen={mobileDrawerOpen} onClose={() => setMobileDrawerOpen(false)} />
     </header>
   );
 };

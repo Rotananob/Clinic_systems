@@ -173,7 +173,7 @@ export const ExploreModulesModal: React.FC<ExploreModulesModalProps> = ({
       {
         id: 'teleconsult',
         category: 'care',
-        titleKh: 'ពិគ្រោះជំងឺពីចម្ងាយ (Teleconsult)',
+        titleKh: 'ពិគ្រោះជំងឺពីចម្ងាយ - Teleconsult',
         titleEn: 'Teleconsultation WebRTC',
         descKh: 'វីដេអូខល WebRTC ជាមួយអ្នកជំងឺ និងចេញ QR e-Prescription',
         descEn: 'HD peer-to-peer encrypted video consultations and digitally signed prescriptions',
@@ -184,7 +184,7 @@ export const ExploreModulesModal: React.FC<ExploreModulesModalProps> = ({
       {
         id: 'concierge',
         category: 'care',
-        titleKh: 'ថែទាំតាមដានអ្នកជំងឺ (Concierge)',
+        titleKh: 'ថែទាំតាមដានអ្នកជំងឺ - Concierge',
         titleEn: 'Care Concierge & Adherence',
         descKh: 'ផ្ញើសាររំលឹកការលេបថ្នាំ និងតាមដានសុខភាពជាប្រចាំ',
         descEn: 'Automated SMS/Telegram medication reminders and chronic care adherence tracking',
@@ -411,23 +411,28 @@ export const ExploreModulesModal: React.FC<ExploreModulesModalProps> = ({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-6 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-150">
       {/* Backdrop */}
       <div className="fixed inset-0" onClick={onClose} />
 
       {/* Modal Dialog */}
-      <div className="relative w-full max-w-4xl bg-[#FDFBF7] rounded-3xl shadow-2xl border border-[#E7E1D4] z-10 flex flex-col max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-150">
+      <div className="relative w-full max-w-4xl bg-[#FDFBF7] rounded-2xl sm:rounded-3xl shadow-2xl border border-[#E7E1D4] z-10 flex flex-col h-[94vh] sm:h-auto sm:max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-150">
         {/* Header */}
-        <div className="px-5 py-4 border-b border-[#E7E1D4] bg-[#F7F3EA] flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-teal-800 text-white flex items-center justify-center shadow-xs">
-              <Compass className="w-5 h-5" />
+        <div className="px-3.5 py-3 sm:px-5 sm:py-4 border-b border-[#E7E1D4] bg-[#F7F3EA] flex items-center justify-between">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-teal-800 text-white flex items-center justify-center shadow-xs shrink-0">
+              <Compass className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div>
-              <h2 className="text-base sm:text-lg font-bold text-stone-900">
-                {isKm ? 'រុករកម៉ូឌុល & ឧបករណ៍គ្លីនិកទាំងអស់' : 'Explore All Clinical Modules & Tools'}
-              </h2>
-              <p className="text-xs text-stone-500">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm sm:text-lg font-bold text-stone-900 truncate">
+                  {isKm ? 'រុករកឧបករណ៍ & មុខងារទាំងអស់' : 'Explore All Tools & Features'}
+                </h2>
+                <span className="hidden xs:inline-flex items-center px-2 py-0.5 rounded-full bg-teal-100 text-teal-800 border border-teal-200 text-[10px] font-bold font-mono shrink-0">
+                  26 Tools
+                </span>
+              </div>
+              <p className="text-[11px] sm:text-xs text-stone-500 truncate mt-0.5">
                 {isKm
                   ? 'ស្វែងរក និងបើកមុខងារឯកទេសទាំងអស់តាមផ្នែកដោយងាយស្រួល'
                   : 'Discover and navigate to any clinical, diagnostic, or administrative tool'}
@@ -445,7 +450,7 @@ export const ExploreModulesModal: React.FC<ExploreModulesModalProps> = ({
         </div>
 
         {/* Search Bar & Categories Filter */}
-        <div className="p-4 border-b border-[#E7E1D4] bg-white space-y-3">
+        <div className="p-3 sm:p-4 border-b border-[#E7E1D4] bg-white space-y-2.5 sm:space-y-3">
           {/* Search Input */}
           <div className="relative flex items-center">
             <Search className="w-4 h-4 text-stone-400 absolute left-3.5 pointer-events-none" />
@@ -492,9 +497,9 @@ export const ExploreModulesModal: React.FC<ExploreModulesModalProps> = ({
         </div>
 
         {/* Modules Grid */}
-        <div className="p-5 overflow-y-auto space-y-3 touch-scroll flex-1">
+        <div className="p-3 sm:p-5 overflow-y-auto space-y-3 touch-scroll flex-1">
           {filteredModules.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-3.5">
               {filteredModules.map((item) => {
                 const Icon = item.icon;
                 const isPlanAllowed =

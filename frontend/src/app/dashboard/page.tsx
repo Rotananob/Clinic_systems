@@ -365,11 +365,11 @@ function DashboardView() {
 
           {/* Explore Modules Trigger */}
           <button
-            onClick={() => setIsExploreOpen(true)}
+            onClick={() => window.dispatchEvent(new CustomEvent('open-explore-modules'))}
             className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#F5EFE4] hover:bg-[#EFE6D8] text-teal-900 border border-[#DFD6C6] rounded-xl text-xs font-semibold transition-colors shadow-2xs active:scale-95"
           >
             <Compass className="w-4 h-4 text-teal-800" />
-            <span>{isKm ? 'រុករកមុខងារ' : 'Explore Tools'}</span>
+            <span>{isKm ? 'រុករកឧបករណ៍ & មុខងារ' : 'Explore Tools'}</span>
           </button>
 
           {/* Primary Doctor Action - Register Patient */}
@@ -1167,11 +1167,6 @@ function DashboardView() {
         isOpen={isRegisterOpen}
         onClose={() => setIsRegisterOpen(false)}
         onPatientCreated={() => fetchMetrics()}
-      />
-
-      <ExploreModulesModal
-        isOpen={isExploreOpen}
-        onClose={() => setIsExploreOpen(false)}
       />
 
       {/* Real Live KHQR Checkout Modal on Dashboard */}
