@@ -455,7 +455,7 @@ export const ExploreModulesModal: React.FC<ExploreModulesModalProps> = ({
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={
                 isKm
-                  ? 'វាយឈ្មោះមុខងារ ឧបករណ៍ ឬពាក្យគន្លឹះ (PACS, Lab, ធ្មេញ, ឃ្លាំង, វិក្កយបត្រ...)'
+                  ? 'វាយឈ្មោះមុខងារ ឧបករណ៍ ឬពាក្យគន្លឹះ - ឧទាហរណ៍៖ PACS, Lab, ធ្មេញ, ឃ្លាំង, វិក្កយបត្រ...'
                   : 'Search tools by name or keyword (PACS, Lab, Dental, Inventory, Billing...)'
               }
               className="w-full pl-10 pr-9 py-2.5 text-xs sm:text-sm bg-[#F9F7F2] border border-[#E2DAD0] rounded-xl text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-teal-700 focus:bg-white transition-all shadow-2xs"

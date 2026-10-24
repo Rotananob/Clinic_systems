@@ -46,12 +46,16 @@ interface PlanOption {
   khqrQuotaEn: string;
   patientQuotaKh: string;
   patientQuotaEn: string;
+  toolsCountKh: string;
+  toolsCountEn: string;
+  highlightKh: string;
+  highlightEn: string;
 }
 
 const PLAN_OPTIONS: PlanOption[] = [
   {
     id: 'STARTER_5',
-    nameKh: 'គ្លីនិកខ្នាតតូច (Starter)',
+    nameKh: 'គ្លីនិកស្តង់ដារ - Clinic Starter',
     nameEn: 'Clinic Starter ($5/mo)',
     monthlyUsd: 5,
     annualUsd: 48,
@@ -59,10 +63,14 @@ const PLAN_OPTIONS: PlanOption[] = [
     khqrQuotaEn: '250 dynamic QR / day',
     patientQuotaKh: '១,០០០ នាក់ / គណនី',
     patientQuotaEn: '1,000 patients / account',
+    toolsCountKh: '១០ ឧបករណ៍ស្នូល',
+    toolsCountEn: '10 Core Tools',
+    highlightKh: '១០ ឧបករណ៍ស្នូល: 250 Dynamic KHQR, សំឡេងខ្មែរ, ម៉ាស៊ីនព្រីន 80mm, ឱសថស្ថាន, លិខិត A4',
+    highlightEn: '10 Core Tools: 250 KHQR, Khmer Voice, 80mm Thermal POS, Pharmacy, A4 Certificates',
   },
   {
     id: 'PRO_8',
-    nameKh: 'គ្លីនិកវិជ្ជាជីវៈ (Polyclinic Pro)',
+    nameKh: 'គ្លីនិកវិជ្ជាជីវៈ - Polyclinic Pro',
     nameEn: 'Polyclinic Pro ($8/mo)',
     monthlyUsd: 8,
     annualUsd: 76,
@@ -70,17 +78,25 @@ const PLAN_OPTIONS: PlanOption[] = [
     khqrQuotaEn: '1,500 dynamic QR / day',
     patientQuotaKh: '៨,០០០ នាក់ / គណនី',
     patientQuotaEn: '8,000 patients / account',
+    toolsCountKh: '២០ ឧបករណ៍ទំនើប',
+    toolsCountEn: '20 Advanced Modules',
+    highlightKh: '២០ ឧបករណ៍ទំនើប: 1,500 KHQR, ធ្មេញ Odontogram, WebGL PACS DICOM, ឃ្លាំង FEFO, LIS Lab, គ្រែ IPD, CDSS, TV Signage',
+    highlightEn: '20 Advanced Modules: 1,500 KHQR, Dental Odontogram, PACS DICOM, FEFO Inventory, LIS Lab, IPD, CDSS, TV Signage',
   },
   {
     id: 'ENTERPRISE_12',
-    nameKh: 'មន្ទីរពេទ្យធំ (Hospital Enterprise)',
+    nameKh: 'មន្ទីរពេទ្យពេញលេញ - Hospital Enterprise',
     nameEn: 'Hospital Enterprise ($12/mo)',
     monthlyUsd: 12,
     annualUsd: 115,
-    khqrQuotaKh: 'មិនកំណត់ចំនួន (Unlimited)',
+    khqrQuotaKh: 'មិនកំណត់ចំនួន - Unlimited KHQR',
     khqrQuotaEn: 'Unlimited dynamic QR',
-    patientQuotaKh: 'មិនកំណត់ចំនួនអ្នកជំងឺ',
+    patientQuotaKh: 'មិនកំណត់ចំនួនអ្នកជំងឺ - Unlimited Patients',
     patientQuotaEn: 'Unlimited patients',
+    toolsCountKh: '២៦ មុខងារពេញលេញ',
+    toolsCountEn: '26 Complete Modules',
+    highlightKh: '២៦ មុខងារពេញលេញ: Unlimited KHQR, វីដេអូខល Teleconsult, QR e-Prescription, MoH DHIS2, Subdomain, 24/7 VIP SLA',
+    highlightEn: '26 Complete Modules: Unlimited KHQR, WebRTC Teleconsult, QR e-Prescription, MoH DHIS2, Subdomain, VIP 24/7 SLA',
   },
 ];
 
@@ -418,6 +434,11 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
                         <div className={`text-xs ${isSelected ? 'font-black text-teal-950' : isDowngrade ? 'font-medium text-stone-500' : 'font-bold text-stone-900'}`}>
                           {isKm ? plan.nameKh : plan.nameEn}
                         </div>
+                        <div className="mt-0.5">
+                          <span className="inline-block px-1.5 py-0.2 rounded text-[9px] font-extrabold bg-stone-100 text-teal-900 border border-stone-200">
+                            {isKm ? plan.toolsCountKh : plan.toolsCountEn}
+                          </span>
+                        </div>
                         <div className="flex items-baseline gap-1.5 mt-1 flex-wrap">
                           {billingCycle === 'ANNUAL' && (
                             <span className="text-xs font-bold text-stone-400 line-through decoration-rose-500 decoration-1 font-mono">
@@ -579,6 +600,12 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
                         </div>
                       </div>
 
+                      {/* Plan Feature Highlight Callout */}
+                      <div className="p-2.5 bg-teal-50/80 rounded-xl border border-teal-200/80 text-[11px] text-teal-950 font-medium flex items-start gap-2">
+                        <Sparkles className="w-3.5 h-3.5 text-teal-800 shrink-0 mt-0.5" />
+                        <span className="leading-snug">{isKm ? currentPlan.highlightKh : currentPlan.highlightEn}</span>
+                      </div>
+
                       {/* Timer & Live Poller Indicator */}
                       <div className="flex items-center justify-between p-2.5 bg-[#FAF7F2] rounded-xl border border-stone-200 text-[11px]">
                         <div className="flex items-center gap-1.5 text-stone-600 font-medium">
@@ -686,7 +713,7 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
                             onChange={(e) => setSupportNote(e.target.value)}
                             placeholder={
                               isKm
-                                ? 'បញ្ជាក់ព័ត៌មានបន្ថែម (ឧ. បានផ្ញើលុយតាម ABA វេលាម៉ោង...)'
+                                ? 'បញ្ជាក់ព័ត៌មានបន្ថែម - ឧទាហរណ៍៖ បានផ្ញើលុយតាម ABA វេលាម៉ោង...'
                                 : 'Optional note (e.g. Paid via ABA Mobile at 10:30 AM)'
                             }
                             className="w-full p-2 bg-white rounded-xl border border-stone-300 text-xs text-stone-800 placeholder-stone-400 focus:outline-hidden focus:border-teal-700"

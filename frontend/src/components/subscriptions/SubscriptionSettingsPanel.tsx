@@ -321,22 +321,31 @@ export const SubscriptionSettingsPanel: React.FC = () => {
                     <Lock className="w-2.5 h-2.5" />
                     <span>{isKm ? 'មិនអាចទម្លាក់គម្រោង' : 'LOCKED'}</span>
                   </div>
-                ) : null}
+                ) : (
+                  <div className="absolute -top-2.5 right-4 px-2 py-0.5 rounded-full bg-teal-100 text-teal-900 border border-teal-200 text-[10px] font-bold">
+                    {isKm ? '១០ ឧបករណ៍ស្នូល' : '10 Core Tools'}
+                  </div>
+                )}
 
                 <div>
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-xs text-stone-900">Clinic Starter</span>
+                    <div>
+                      <span className="font-bold text-xs text-stone-900 block">Clinic Starter</span>
+                      <span className="text-[10px] text-teal-800 font-bold">{isKm ? 'គ្រឹះគ្លីនិកស្តង់ដារ' : 'Essential Practice'}</span>
+                    </div>
                     <div className="text-right">
                       <span className="text-sm font-extrabold text-teal-800">$5/mo</span>
                       <span className="block text-[10px] text-emerald-700 font-bold">
-                        {isKm ? '$48/ឆ្នាំ ចុះ ២០%' : '$48/yr (20% off)'}
+                        {isKm ? '$48/ឆ្នាំ ចុះ ២០%' : '$48/yr - Save 20%'}
                       </span>
                     </div>
                   </div>
-                  <div className="text-[11px] text-stone-500 mt-2 space-y-1">
-                    <div>• 250 Dynamic KHQR / ថ្ងៃ</div>
-                    <div>• 1,000 អ្នកជំងឺ / គណនី</div>
-                    <div>• ម៉ាស៊ីនព្រីន 80mm & សំឡេងខ្មែរ</div>
+                  <div className="text-[11px] text-stone-600 mt-2 space-y-1.5 pt-2 border-t border-stone-100">
+                    <div className="font-semibold text-stone-900">• 250 Dynamic KHQR / ថ្ងៃ</div>
+                    <div>• 1,000 អ្នកជំងឺ / គណនី & 5 បុគ្គលិក</div>
+                    <div>• ហៅអ្នកជំងឺសំឡេងខ្មែរស្វ័យប្រវត្តិ</div>
+                    <div>• ម៉ាស៊ីនព្រីន 80mm & កេះថតលុយ</div>
+                    <div>• ចេញថ្នាំឱសថស្ថាន & លិខិត A4</div>
                   </div>
                 </div>
 
@@ -376,7 +385,7 @@ export const SubscriptionSettingsPanel: React.FC = () => {
                     ? 'bg-teal-50/50 border-teal-600 ring-1 ring-teal-600'
                     : isDowngrade
                     ? 'bg-stone-50/70 border-stone-200 opacity-60'
-                    : 'bg-white border-stone-200 hover:border-stone-300'
+                    : 'bg-white border-teal-700/60 shadow-xs ring-1 ring-teal-700/10'
                 }`}
               >
                 {isCurrent ? (
@@ -389,25 +398,31 @@ export const SubscriptionSettingsPanel: React.FC = () => {
                     <span>{isKm ? 'មិនអាចទម្លាក់គម្រោង' : 'LOCKED'}</span>
                   </div>
                 ) : (
-                  <div className="absolute -top-2.5 right-4 px-2 py-0.5 rounded-full bg-teal-800 text-white text-[10px] font-bold">
-                    POPULAR
+                  <div className="absolute -top-2.5 right-4 px-2.5 py-0.5 rounded-full bg-teal-800 text-white text-[10px] font-bold shadow-xs">
+                    {isKm ? 'ពេញនិយមបំផុត - ២០ ឧបករណ៍' : 'POPULAR - 20 MODULES'}
                   </div>
                 )}
 
                 <div>
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-xs text-stone-900">Polyclinic Pro</span>
+                    <div>
+                      <span className="font-bold text-xs text-stone-900 block">Polyclinic Pro</span>
+                      <span className="text-[10px] text-teal-800 font-bold">{isKm ? 'គ្លីនិកពហុព្យាបាល & ឯកទេស' : 'Polyclinic & Specialists'}</span>
+                    </div>
                     <div className="text-right">
                       <span className="text-sm font-extrabold text-teal-800">$8/mo</span>
                       <span className="block text-[10px] text-emerald-700 font-bold">
-                        {isKm ? '$76/ឆ្នាំ ចុះ ២០%' : '$76/yr (20% off)'}
+                        {isKm ? '$76/ឆ្នាំ ចុះ ២០%' : '$76/yr - Save 20%'}
                       </span>
                     </div>
                   </div>
-                  <div className="text-[11px] text-stone-500 mt-2 space-y-1">
-                    <div>• 1,500 Dynamic KHQR / ថ្ងៃ</div>
-                    <div>• ៨,០០០ អ្នកជំងឺ / គណនី</div>
-                    <div>• 4 Forum Topics Supergroup</div>
+                  <div className="text-[11px] text-stone-600 mt-2 space-y-1.5 pt-2 border-t border-stone-100">
+                    <div className="font-semibold text-stone-900">• 1,500 Dynamic KHQR / ថ្ងៃ</div>
+                    <div>• ៨,០០០ អ្នកជំងឺ / គណនី & 15 បុគ្គលិក</div>
+                    <div>• ពេទ្យធ្មេញ FDI Odontogram ៣២ ធ្មេញ</div>
+                    <div>• WebGL PACS DICOM & មន្ទីរពិសោធន៍ LIS</div>
+                    <div>• ឃ្លាំង FEFO, គ្រែ IPD & e-MAR 5-Rights</div>
+                    <div>• CDSS ការពារអន្តរកម្មថ្នាំ & TV Signage</div>
                   </div>
                 </div>
 
@@ -444,26 +459,36 @@ export const SubscriptionSettingsPanel: React.FC = () => {
                     : 'bg-white border-stone-200 hover:border-stone-300'
                 }`}
               >
-                {isCurrent && (
+                {isCurrent ? (
                   <div className="absolute -top-2.5 right-4 px-2 py-0.5 rounded-full bg-teal-800 text-white text-[10px] font-bold shadow-2xs">
                     {isKm ? 'គម្រោងបច្ចុប្បន្ន' : 'CURRENT PLAN'}
+                  </div>
+                ) : (
+                  <div className="absolute -top-2.5 right-4 px-2.5 py-0.5 rounded-full bg-amber-600 text-white text-[10px] font-bold shadow-xs">
+                    {isKm ? 'កម្លាំងខ្លាំងបំផុត - ២៦ មុខងារ' : 'ULTIMATE - 26 MODULES'}
                   </div>
                 )}
 
                 <div>
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-xs text-stone-900">Hospital Enterprise</span>
+                    <div>
+                      <span className="font-bold text-xs text-stone-900 block">Hospital Enterprise</span>
+                      <span className="text-[10px] text-amber-800 font-bold">{isKm ? 'មន្ទីរពេទ្យ & បណ្តាញសាខា' : 'Hospital & Multi-Branch'}</span>
+                    </div>
                     <div className="text-right">
                       <span className="text-sm font-extrabold text-teal-800">$12/mo</span>
                       <span className="block text-[10px] text-emerald-700 font-bold">
-                        {isKm ? '$115/ឆ្នាំ ចុះ ២០%' : '$115/yr (20% off)'}
+                        {isKm ? '$115/ឆ្នាំ ចុះ ២០%' : '$115/yr - Save 20%'}
                       </span>
                     </div>
                   </div>
-                  <div className="text-[11px] text-stone-500 mt-2 space-y-1">
-                    <div>• Unlimited KHQR / ថ្ងៃ</div>
-                    <div>• Custom Subdomain ផ្ទាល់ខ្លួន</div>
-                    <div>• ជំនួយបច្ចេកទេស VIP 24/7</div>
+                  <div className="text-[11px] text-stone-600 mt-2 space-y-1.5 pt-2 border-t border-stone-100">
+                    <div className="font-semibold text-stone-900">• Unlimited KHQR, អ្នកជំងឺ & បុគ្គលិក</div>
+                    <div>• វីដេអូខល WebRTC Teleconsultation HD</div>
+                    <div>• វេជ្ជបញ្ជា QR Cryptographic Signed</div>
+                    <div>• របាយការណ៍ក្រសួង MoH DHIS2 & eClaim</div>
+                    <div>• Custom Dedicated Subdomain ផ្ទាល់ខ្លួន</div>
+                    <div>• គ្រប់គ្រងសាខាច្រើន & 24/7 VIP SLA</div>
                   </div>
                 </div>
 
@@ -621,12 +646,16 @@ export const SubscriptionSettingsPanel: React.FC = () => {
                       )}
                     </div>
                     <div className="text-2xl font-black text-stone-900">$0</div>
+                    <div className="text-[10px] text-teal-800 font-bold uppercase tracking-wider">
+                      {isKm ? '៥ មុខងារស្នូល' : '5 Core Modules'}
+                    </div>
                     <div className="text-[11px] text-stone-500 space-y-1.5 pt-2 border-t border-stone-100">
                       <div>• 5 KHQR / ថ្ងៃ</div>
                       <div>• 50 អ្នកជំងឺ / គណនី</div>
                       <div>• 2 គណនីបុគ្គលិក</div>
-                      <div>• វិក្កយបត្រអេឡិចត្រូនិច</div>
-                      <div>• សាកល្បងឥតគិតថ្លៃរហូត</div>
+                      <div>• Vitals & SOAP Notes</div>
+                      <div>• វិក្កយបត្រអេឡិចត្រូនិច POS</div>
+                      <div>• ឥតគិតថ្លៃរហូត Free Forever</div>
                     </div>
                   </div>
 
@@ -672,14 +701,19 @@ export const SubscriptionSettingsPanel: React.FC = () => {
                         </div>
                         <div>
                           <div className="text-2xl font-black text-teal-900">$5<span className="text-xs font-normal text-stone-500">/mo</span></div>
-                          <div className="text-[10px] text-emerald-700 font-bold">$48/yr (-20%)</div>
+                          <div className="text-[10px] text-emerald-700 font-bold">$48/yr - Save 20%</div>
+                        </div>
+                        <div className="text-[10px] text-teal-800 font-bold uppercase tracking-wider">
+                          {isKm ? '១០ ឧបករណ៍ស្នូល' : '10 Core Tools'}
                         </div>
                         <div className="text-[11px] text-stone-500 space-y-1.5 pt-2 border-t border-stone-100">
-                          <div>• 250 KHQR / ថ្ងៃ</div>
-                          <div>• 1,000 អ្នកជំងឺ / គណនី</div>
-                          <div>• 5 គណនីបុគ្គលិក</div>
-                          <div>• ហៅអ្នកជំងឺសំឡេងខ្មែរ</div>
-                          <div>• ម៉ាស៊ីនព្រីន 80mm</div>
+                          <div>• 250 Dynamic KHQR / ថ្ងៃ</div>
+                          <div>• 1,000 អ្នកជំងឺ / គណនី & 5 បុគ្គលិក</div>
+                          <div>• ហៅអ្នកជំងឺសំឡេងខ្មែរស្វ័យប្រវត្តិ</div>
+                          <div>• ម៉ាស៊ីនព្រីន 80mm & កេះថតលុយ</div>
+                          <div>• ចេញថ្នាំ & គ្រប់គ្រងស្តុកឱសថ</div>
+                          <div>• លិខិតវេជ្ជសាស្ត្រផ្លូវការ A4</div>
+                          <div>• Telegram Alert Bot ប្រតិបត្តិការ</div>
                         </div>
                       </div>
 
@@ -743,14 +777,23 @@ export const SubscriptionSettingsPanel: React.FC = () => {
                         </div>
                         <div>
                           <div className="text-2xl font-black text-teal-900">$8<span className="text-xs font-normal text-stone-500">/mo</span></div>
-                          <div className="text-[10px] text-emerald-700 font-bold">$76/yr (-20%)</div>
+                          <div className="text-[10px] text-emerald-700 font-bold">$76/yr - Save 20%</div>
+                        </div>
+                        <div className="text-[10px] text-teal-800 font-bold uppercase tracking-wider">
+                          {isKm ? '២០ ឧបករណ៍ទំនើប & ឯកទេស' : '20 Advanced Modules'}
                         </div>
                         <div className="text-[11px] text-stone-500 space-y-1.5 pt-2 border-t border-stone-100">
-                          <div>• 1,500 KHQR / ថ្ងៃ</div>
-                          <div>• 8,000 អ្នកជំងឺ / គណនី</div>
-                          <div>• 15 គណនីបុគ្គលិក</div>
-                          <div>• 4 Forum Topics Supergroup</div>
-                          <div>• PACS & ស្តុកឱសថស្ថានកម្រិតខ្ពស់</div>
+                          <div>• 1,500 Dynamic KHQR / ថ្ងៃ</div>
+                          <div>• 8,000 អ្នកជំងឺ / គណនី & 15 បុគ្គលិក</div>
+                          <div>• ពេទ្យធ្មេញ FDI Odontogram ៣២ ធ្មេញ</div>
+                          <div>• WebGL PACS DICOM (X-Ray, CT)</div>
+                          <div>• LIS មន្ទីរពិសោធន៍ & Panic Alerts</div>
+                          <div>• ឃ្លាំង FEFO ច្រើនសាខា & Batch No</div>
+                          <div>• គ្រែ IPD & e-MAR 5-Rights Bedside</div>
+                          <div>• CDSS ការពារអន្តរកម្មថ្នាំ Drug-Drug</div>
+                          <div>• Smart TV Signage បង្ហាញជួរហៅលេខ</div>
+                          <div>• Telegram ៤ Topics Supergroup</div>
+                          <div>• កម្រៃគ្រូពេទ្យ Doctor Splits & P&L</div>
                         </div>
                       </div>
 
@@ -800,14 +843,21 @@ export const SubscriptionSettingsPanel: React.FC = () => {
                         </div>
                         <div>
                           <div className="text-2xl font-black text-teal-900">$12<span className="text-xs font-normal text-stone-500">/mo</span></div>
-                          <div className="text-[10px] text-emerald-700 font-bold">$115/yr (-20%)</div>
+                          <div className="text-[10px] text-emerald-700 font-bold">$115/yr - Save 20%</div>
+                        </div>
+                        <div className="text-[10px] text-amber-800 font-bold uppercase tracking-wider">
+                          {isKm ? '២៦ មុខងារពេញលេញ All-Access' : '26 Complete Modules'}
                         </div>
                         <div className="text-[11px] text-stone-500 space-y-1.5 pt-2 border-t border-stone-100">
-                          <div>• Unlimited KHQR / ថ្ងៃ</div>
-                          <div>• Unlimited អ្នកជំងឺ / គណនី</div>
-                          <div>• Unlimited គណនីបុគ្គលិក</div>
-                          <div>• Custom Subdomain ផ្ទាល់ខ្លួន</div>
-                          <div>• ជំនួយបច្ចេកទេស VIP 24/7</div>
+                          <div>• Unlimited KHQR, អ្នកជំងឺ & បុគ្គលិក</div>
+                          <div>• WebRTC Teleconsult វីដេអូខល HD</div>
+                          <div>• QR Cryptographic e-Prescription</div>
+                          <div>• MoH DHIS2 របាយការណ៍ជំងឺឆ្លង & eClaim</div>
+                          <div>• Dedicated Custom Subdomain ផ្ទាល់ខ្លួន</div>
+                          <div>• Custom Visual Invoice Designer</div>
+                          <div>• គ្រប់គ្រងបណ្តាញសាខាច្រើន Multi-Branch</div>
+                          <div>• រួមបញ្ចូលគ្រប់ ២០ ឧបករណ៍នៃគម្រោង Pro</div>
+                          <div>• ជំនួយបច្ចេកទេស VIP 24/7 Phone & SLA</div>
                         </div>
                       </div>
 

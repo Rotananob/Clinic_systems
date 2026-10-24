@@ -37,6 +37,8 @@ const PLAN_CARDS = [
     id: 'FREE',
     nameKh: 'Free Forever',
     nameEn: 'Free Forever',
+    moduleTagKh: '៥ មុខងារស្នូល',
+    moduleTagEn: '5 Core Modules',
     price: '$0 ឥតគិតថ្លៃរហូត',
     priceYearly: '$0 ឥតគិតថ្លៃរហូត',
     priceYearlyEn: '$0 Free Forever',
@@ -49,6 +51,8 @@ const PLAN_CARDS = [
     id: 'STARTER_5',
     nameKh: 'Clinic Starter',
     nameEn: 'Clinic Starter',
+    moduleTagKh: '១០ ឧបករណ៍ស្នូល',
+    moduleTagEn: '10 Core Tools',
     price: '$5/mo',
     priceYearly: '$48/ឆ្នាំ ចុះ ២០%',
     priceYearlyEn: '$48/yr Save 20%',
@@ -61,6 +65,8 @@ const PLAN_CARDS = [
     id: 'PRO_8',
     nameKh: 'Polyclinic Pro',
     nameEn: 'Polyclinic Pro',
+    moduleTagKh: '២០ ឧបករណ៍ទំនើប',
+    moduleTagEn: '20 Advanced Modules',
     price: '$8/mo',
     priceYearly: '$76/ឆ្នាំ ចុះ ២០%',
     priceYearlyEn: '$76/yr Save 20%',
@@ -74,6 +80,8 @@ const PLAN_CARDS = [
     id: 'ENTERPRISE_12',
     nameKh: 'Hospital Enterprise',
     nameEn: 'Hospital Enterprise',
+    moduleTagKh: '២៦ មុខងារពេញលេញ',
+    moduleTagEn: '26 Complete Modules',
     price: '$12/mo',
     priceYearly: '$115/ឆ្នាំ ចុះ ២០%',
     priceYearlyEn: '$115/yr Save 20%',
@@ -982,6 +990,11 @@ function RegisterContent() {
 
                           <div className={`text-xs font-sans ${isSelected ? 'font-black text-teal-950' : 'font-bold text-stone-900'}`}>
                             {isKm ? p.nameKh : p.nameEn}
+                          </div>
+                          <div className="mt-0.5">
+                            <span className="inline-block px-1.5 py-0.2 rounded text-[9px] font-extrabold bg-stone-100 text-teal-900 border border-stone-200">
+                              {isKm ? p.moduleTagKh : p.moduleTagEn}
+                            </span>
                           </div>
                           <div className={`text-sm sm:text-base font-sans mt-0.5 ${isSelected ? 'font-black text-teal-900' : 'font-extrabold text-stone-800'}`}>
                             {isYearly ? (isKm ? p.priceYearly : p.priceYearlyEn) : p.price}
