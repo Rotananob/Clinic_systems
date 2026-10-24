@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import {
   Check,
+  Lock,
+  ArrowUpRight,
   CreditCard,
   QrCode,
   ShieldCheck,
@@ -23,11 +25,13 @@ import {
 import { useTranslation } from '../../context/I18nContext';
 import { api } from '../../lib/api';
 import { playPaymentSuccessChime } from '../../lib/chime';
+import { isPlanDowngrade, isPlanUpgrade, isPlanRenewal, PLAN_TIER_RANK } from '../../lib/rbac';
 
 interface SubscriptionCheckoutModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialPlanTier?: 'STARTER_5' | 'PRO_8' | 'ENTERPRISE_12';
+  currentTenantPlanTier?: string;
   onActivated?: () => void;
 }
 
@@ -83,6 +87,7 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
   isOpen,
   onClose,
   initialPlanTier = 'PRO_8',
+  currentTenantPlanTier = 'FREE',
   onActivated,
 }) => {
   const { locale } = useTranslation();
@@ -361,6 +366,9 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {PLAN_OPTIONS.map((plan) => {
+                    const isDowngrade = isPlanDowngrade(currentTenantPlanTier, plan.id);
+                    const isCurrentTier = (currentTenantPlanTier || 'FREE') === plan.id;
+                    const isUpgrade = isPlanUpgrade(currentTenantPlanTier, plan.id);
                     const isSelected = selectedPlanTier === plan.id;
                     const price = billingCycle === 'ANNUAL' ? plan.annualUsd : plan.monthlyUsd;
                     const unit = billingCycle === 'ANNUAL' ? '/ឆ្នាំ' : '/ខែ';
@@ -370,23 +378,43 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
                       <button
                         key={plan.id}
                         type="button"
+                        disabled={isDowngrade}
                         onClick={() => {
+                          if (isDowngrade) return;
                           setSelectedPlanTier(plan.id);
                           initCheckout(plan.id, billingCycle);
                         }}
-                        className={`p-3.5 rounded-2xl border text-left transition-all relative cursor-pointer select-none ${
-                          isSelected
-                            ? 'bg-teal-50/90 border-2 border-teal-800 ring-4 ring-teal-700/20 shadow-md scale-[1.01]'
-                            : 'bg-white border-stone-200 hover:border-stone-400 shadow-2xs'
+                        className={`p-3.5 rounded-2xl border text-left transition-all relative select-none ${
+                          isDowngrade
+                            ? 'bg-stone-100/80 border-stone-200 opacity-60 cursor-not-allowed'
+                            : isSelected
+                            ? 'bg-teal-50/90 border-2 border-teal-800 ring-4 ring-teal-700/20 shadow-md scale-[1.01] cursor-pointer'
+                            : 'bg-white border-stone-200 hover:border-stone-400 shadow-2xs cursor-pointer'
                         }`}
                       >
-                        {isSelected && (
+                        {isDowngrade ? (
+                          <span className="absolute -top-2.5 right-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-stone-200 text-stone-600 border border-stone-300 flex items-center gap-1 shadow-2xs">
+                            <Lock className="w-2.5 h-2.5" />
+                            <span>{isKm ? 'មិនអាចទម្លាក់គម្រោង' : 'Cannot Downgrade'}</span>
+                          </span>
+                        ) : isSelected ? (
                           <span className="absolute -top-2.5 right-2 px-2 py-0.5 rounded-full text-[10px] font-black bg-teal-800 text-white shadow-xs flex items-center gap-1 border border-teal-900 animate-in fade-in zoom-in duration-150">
                             <Check className="w-3 h-3 stroke-[3]" />
                             <span>{isKm ? 'បានជ្រើសរើស' : 'SELECTED'}</span>
                           </span>
-                        )}
-                        <div className={`text-xs ${isSelected ? 'font-black text-teal-950' : 'font-bold text-stone-900'}`}>
+                        ) : isCurrentTier ? (
+                          <span className="absolute -top-2.5 right-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-100 text-teal-800 border border-teal-200 flex items-center gap-1 shadow-2xs">
+                            <ShieldCheck className="w-2.5 h-2.5" />
+                            <span>{isKm ? 'គម្រោងបច្ចុប្បន្ន' : 'Current Plan'}</span>
+                          </span>
+                        ) : isUpgrade ? (
+                          <span className="absolute -top-2.5 right-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300 flex items-center gap-1 shadow-2xs">
+                            <ArrowUpRight className="w-2.5 h-2.5" />
+                            <span>{isKm ? 'Upgrade គម្រោង' : 'Upgrade Plan'}</span>
+                          </span>
+                        ) : null}
+
+                        <div className={`text-xs ${isSelected ? 'font-black text-teal-950' : isDowngrade ? 'font-medium text-stone-500' : 'font-bold text-stone-900'}`}>
                           {isKm ? plan.nameKh : plan.nameEn}
                         </div>
                         <div className="flex items-baseline gap-1.5 mt-1 flex-wrap">
@@ -395,7 +423,7 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
                               ${plan.monthlyUsd * 12}
                             </span>
                           )}
-                          <div className={`text-lg font-black ${isSelected ? 'text-teal-950' : 'text-teal-900'}`}>
+                          <div className={`text-lg font-black ${isSelected ? 'text-teal-950' : isDowngrade ? 'text-stone-400' : 'text-teal-900'}`}>
                             ${price}
                             <span className="text-xs font-normal text-stone-500">
                               {isKm ? unit : unitEn}
@@ -411,14 +439,23 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
                           {isKm ? plan.khqrQuotaKh : plan.khqrQuotaEn}
                         </div>
                         <div className="mt-2.5 pt-2 border-t border-stone-200/60 flex items-center justify-between">
-                          {isSelected ? (
+                          {isDowngrade ? (
+                            <span className="text-[10px] font-semibold text-stone-400 flex items-center gap-1">
+                              <Lock className="w-3 h-3 text-stone-400" />
+                              <span>{isKm ? 'គម្រោងទាបជាង' : 'Lower Plan Tier'}</span>
+                            </span>
+                          ) : isSelected ? (
                             <span className="inline-flex items-center gap-1 text-[11px] font-black text-teal-950 bg-teal-200/90 px-2 py-0.5 rounded-md border border-teal-300 shadow-2xs">
                               <Check className="w-3.5 h-3.5 stroke-[3] text-teal-900" />
-                              <span className="font-black tracking-wide">{isKm ? 'បានជ្រើសរើស [X]' : 'SELECTED [X]'}</span>
+                              <span className="font-black tracking-wide">{isKm ? 'បានជ្រើសរើស' : 'SELECTED'}</span>
+                            </span>
+                          ) : isCurrentTier ? (
+                            <span className="text-[10px] font-bold text-teal-800">
+                              {isKm ? 'បន្តគម្រោងនេះ' : 'Renew Plan'}
                             </span>
                           ) : (
-                            <span className="text-[10px] font-semibold text-stone-400">
-                              {isKm ? 'ចុចជ្រើសរើស' : 'Click to select'}
+                            <span className="text-[10px] font-semibold text-teal-700">
+                              {isKm ? 'ជ្រើសរើស Upgrade' : 'Click to select'}
                             </span>
                           )}
                         </div>

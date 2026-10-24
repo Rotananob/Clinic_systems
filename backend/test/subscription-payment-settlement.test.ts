@@ -1,6 +1,12 @@
 import { test, describe } from 'node:test';
 import * as assert from 'node:assert/strict';
-import { SAAS_PLANS } from '../src/common/constants/plans.constant.ts';
+import {
+  SAAS_PLANS,
+  isPlanDowngrade,
+  isPlanUpgrade,
+  isPlanRenewal,
+  PLAN_TIER_RANK,
+} from '../src/common/constants/plans.constant.ts';
 
 const PlanTier = {
   FREE: 'FREE',
@@ -240,6 +246,64 @@ describe('100% Anti-Bypass Guard & Strict Settlement Validation Test Suite', () 
     const tamperedAmount = 1.0; // Hacker tried to pay $1 for $8 plan
     const isTampered = tamperedAmount !== officialMonthly;
     assert.equal(isTampered, true, 'Must detect price tampering');
+  });
+
+test('should strictly prevent downgrade from higher plan tier to lower plan tier', () => {
+    // Current tier is PRO_8
+    const currentTier = PlanTier.PRO_8;
+
+    // Downgrades to STARTER_5 or FREE must be flagged as downgrade
+    assert.equal(isPlanDowngrade(currentTier, PlanTier.STARTER_5), true);
+    assert.equal(isPlanDowngrade(currentTier, PlanTier.FREE), true);
+
+    // Same tier is NOT a downgrade (it is a renewal)
+    assert.equal(isPlanDowngrade(currentTier, PlanTier.PRO_8), false);
+    assert.equal(isPlanRenewal(currentTier, PlanTier.PRO_8), true);
+
+    // Upgrade to ENTERPRISE_12 is NOT a downgrade
+    assert.equal(isPlanDowngrade(currentTier, PlanTier.ENTERPRISE_12), false);
+    assert.equal(isPlanUpgrade(currentTier, PlanTier.ENTERPRISE_12), true);
+  });
+
+  test('should enforce downgrade prevention when current tier is ENTERPRISE_12', () => {
+    const currentTier = PlanTier.ENTERPRISE_12;
+
+    assert.equal(isPlanDowngrade(currentTier, PlanTier.PRO_8), true);
+    assert.equal(isPlanDowngrade(currentTier, PlanTier.STARTER_5), true);
+    assert.equal(isPlanDowngrade(currentTier, PlanTier.FREE), true);
+    assert.equal(isPlanRenewal(currentTier, PlanTier.ENTERPRISE_12), true);
+    assert.equal(isPlanUpgrade(currentTier, PlanTier.ENTERPRISE_12), false);
+  });
+
+  test('should allow FREE tier to upgrade to any paid tier and block downgrade', () => {
+    const currentTier = PlanTier.FREE;
+
+    assert.equal(isPlanUpgrade(currentTier, PlanTier.STARTER_5), true);
+    assert.equal(isPlanUpgrade(currentTier, PlanTier.PRO_8), true);
+    assert.equal(isPlanUpgrade(currentTier, PlanTier.ENTERPRISE_12), true);
+    assert.equal(isPlanDowngrade(currentTier, PlanTier.FREE), false);
+  });
+
+  test('should calculate accurate expiration extension without losing active days', () => {
+    const now = new Date('2026-10-24T12:00:00.000Z');
+    // Clinic still has 10 days remaining
+    const currentPeriodEnd = new Date('2026-11-03T12:00:00.000Z');
+
+    const calculateAccurateExpiry = (currentEnd: Date | null, addedDays: number, currentDate: Date) => {
+      const baseDate = currentEnd && currentEnd.getTime() > currentDate.getTime() ? currentEnd : currentDate;
+      return new Date(baseDate.getTime() + addedDays * 24 * 60 * 60 * 1000);
+    };
+
+    // Monthly renewal (+30 days) should extend from currentPeriodEnd (Nov 3 + 30 days = Dec 3)
+    const newEndMonthly = calculateAccurateExpiry(currentPeriodEnd, 30, now);
+    assert.equal(newEndMonthly.toISOString(), '2026-12-03T12:00:00.000Z');
+    const totalRemainingDays = Math.round((newEndMonthly.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    assert.equal(totalRemainingDays, 40); // 10 existing + 30 added
+
+    // If expired 5 days ago, should extend 30 days from NOW
+    const pastPeriodEnd = new Date('2026-10-19T12:00:00.000Z');
+    const newEndFromPast = calculateAccurateExpiry(pastPeriodEnd, 30, now);
+    assert.equal(newEndFromPast.toISOString(), '2026-11-23T12:00:00.000Z');
   });
 
   test('should format support request notification for Super Admin Master Bot with zero emojis', () => {

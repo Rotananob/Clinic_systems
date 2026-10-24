@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { PlanTier, SubscriptionStatus } from '@prisma/client';
-import { SAAS_PLANS } from '../common/constants/plans.constant';
+import { SAAS_PLANS, isPlanDowngrade, isPlanUpgrade, isPlanRenewal } from '../common/constants/plans.constant';
 import { CreateSubscriptionCheckoutDto, BillingCycle } from './dto/create-subscription-checkout.dto';
 import {
   VerifySubscriptionSettlementDto,
@@ -141,11 +141,34 @@ export class SubscriptionPaymentService {
       throw new BadRequestException(`Invalid plan tier: ${dto.planTier}`);
     }
 
+    // Downgrade Protection Algorithm:
+    // Strictly prevent checkout if target tier is lower than tenant's current active tier
+    if (isPlanDowngrade(tenant.planTier, dto.planTier)) {
+      throw new BadRequestException({
+        statusCode: 400,
+        error: 'DOWNGRADE_NOT_ALLOWED',
+        messageKh:
+          'មិនអនុញ្ញាតឱ្យទម្លាក់ទៅកាន់គម្រោងទាបជាងគម្រោងបច្ចុប្បន្នឡើយ។ លោកអ្នកអាចបន្តគម្រោងបច្ចុប្បន្ន ឬ Upgrade ទៅកាន់គម្រោងខ្ពស់ជាង។',
+        messageEn: `Downgrading from ${tenant.planTier} to ${dto.planTier} is not permitted. You can only renew your current tier or upgrade to a higher tier.`,
+        currentTier: tenant.planTier,
+        targetTier: dto.planTier,
+      });
+    }
+
     const isAnnual = dto.billingCycle === BillingCycle.ANNUAL;
     // Calculate pricing: Monthly price or Annual (20% discount)
     const amountUsd = isAnnual
       ? Math.round(planConfig.priceUsd * 12 * 0.8) // 20% discount
       : planConfig.priceUsd;
+
+    // Accurate Expiry Algorithm:
+    // If tenant subscription is currently active in the future, extend from currentPeriodEnd.
+    // If expired or starting fresh, start from now.
+    const addedDays = isAnnual ? 365 : 30;
+    const now = new Date();
+    const currentEnd = tenant.currentPeriodEnd;
+    const baseDate = currentEnd && currentEnd.getTime() > now.getTime() ? currentEnd : now;
+    const targetEndDate = new Date(baseDate.getTime() + addedDays * 24 * 60 * 60 * 1000);
 
     const invoiceNumber = `SUB-${tenant.slug.toUpperCase()}-${Date.now().toString().slice(-6)}`;
     let tranId = `TXN-SUB-${tenant.slug}-${Date.now()}`;
@@ -223,7 +246,7 @@ export class SubscriptionPaymentService {
         amountUsd,
         status: SubscriptionStatus.PAST_DUE, // Pending payment confirmation
         startDate: new Date(),
-        endDate: new Date(Date.now() + (isAnnual ? 365 : 30) * 24 * 60 * 60 * 1000),
+        endDate: targetEndDate,
         invoiceNumber,
         paymentTranId: tranId,
         paymentMethod: 'KHQR',
@@ -266,6 +289,13 @@ export class SubscriptionPaymentService {
         hotline: this.supportHotline,
       },
       expiresAt,
+      targetEndDate: targetEndDate.toISOString(),
+      targetEndDateFormattedKh: targetEndDate.toLocaleDateString('km-KH'),
+      targetEndDateFormattedEn: targetEndDate.toLocaleDateString('en-US'),
+      currentPlanTier: tenant.planTier,
+      isUpgrade: isPlanUpgrade(tenant.planTier, dto.planTier),
+      isRenewal: isPlanRenewal(tenant.planTier, dto.planTier),
+      addedDays,
     };
   }
 
@@ -334,6 +364,15 @@ export class SubscriptionPaymentService {
     const planConfig = SAAS_PLANS[subscription.planTier];
     if (!planConfig) {
       throw new BadRequestException(`Invalid plan tier: ${subscription.planTier}`);
+    }
+
+    if (isPlanDowngrade(tenant.planTier, subscription.planTier)) {
+      throw new BadRequestException({
+        statusCode: 400,
+        error: 'DOWNGRADE_NOT_ALLOWED',
+        messageKh: 'មិនអនុញ្ញាតឱ្យទម្លាក់ទៅកាន់គម្រោងទាបជាងគម្រោងបច្ចុប្បន្នឡើយ។',
+        messageEn: `Downgrading from ${tenant.planTier} to ${subscription.planTier} is not permitted.`,
+      });
     }
 
     // 1. Anti-Tampering Check: Verify invoice amount matches true plan pricing

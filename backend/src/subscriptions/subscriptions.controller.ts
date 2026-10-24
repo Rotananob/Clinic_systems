@@ -31,6 +31,18 @@ export class SubscriptionsController {
     private readonly subscriptionInvoiceService: SubscriptionInvoiceService,
   ) {}
 
+    @ApiOperation({ summary: 'Get all available subscription plan tiers with upgrade and renewal eligibility for current tenant' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Get('plans')
+  getAvailablePlans(@Request() req: any) {
+    const tenantId = req.user?.tenantId;
+    if (!tenantId) {
+      throw new ForbiddenException('Tenant context required');
+    }
+    return this.billingCycleService.getAvailablePlans(tenantId);
+  }
+
   @ApiOperation({ summary: 'Get current clinic subscription status, days remaining, and plan quotas' })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)

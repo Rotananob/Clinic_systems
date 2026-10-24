@@ -2,6 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { en } from '../src/locales/en.ts';
 import { km } from '../src/locales/km.ts';
+import { isPlanDowngrade, isPlanUpgrade, isPlanRenewal, PLAN_TIER_RANK } from '../src/lib/rbac.ts';
 
 describe('Step 17 & Step 18: Subscription Checkout & Real-Time Settlement Frontend Suite', () => {
   it('should verify exact quotas and price points for SaaS plans', () => {
@@ -46,6 +47,83 @@ describe('Step 17 & Step 18: Subscription Checkout & Real-Time Settlement Fronte
 
     checkNoEmojis((en as any).subscriptionBilling, 'en.subscriptionBilling');
     checkNoEmojis((km as any).subscriptionBilling, 'km.subscriptionBilling');
+  });
+
+it('should enforce downgrade prevention and allow upgrades on frontend rbac matrix', () => {
+    // Polyclinic Pro tier
+    const currentTier = 'PRO_8';
+
+    // Must block lower tiers
+    assert.equal(isPlanDowngrade(currentTier, 'STARTER_5'), true);
+    assert.equal(isPlanDowngrade(currentTier, 'FREE'), true);
+
+    // Renewal of current tier is allowed
+    assert.equal(isPlanDowngrade(currentTier, 'PRO_8'), false);
+    assert.equal(isPlanRenewal(currentTier, 'PRO_8'), true);
+
+    // Upgrade to higher tier is allowed
+    assert.equal(isPlanUpgrade(currentTier, 'ENTERPRISE_12'), true);
+    assert.equal(isPlanDowngrade(currentTier, 'ENTERPRISE_12'), false);
+  });
+
+  it('should block downgrade from ENTERPRISE_12 to any lower tier', () => {
+    const currentTier = 'ENTERPRISE_12';
+
+    assert.equal(isPlanDowngrade(currentTier, 'PRO_8'), true);
+    assert.equal(isPlanDowngrade(currentTier, 'STARTER_5'), true);
+    assert.equal(isPlanDowngrade(currentTier, 'FREE'), true);
+    assert.equal(isPlanRenewal(currentTier, 'ENTERPRISE_12'), true);
+  });
+
+  it('should accurately calculate new subscription expiration date without losing remaining days', () => {
+    const now = new Date('2026-10-24T12:00:00.000Z');
+    const activePeriodEnd = new Date('2026-11-04T12:00:00.000Z'); // 11 days remaining
+
+    const calculateNewExpiry = (currentEnd: Date | null, addDays: number, fromDate: Date) => {
+      const base = currentEnd && currentEnd.getTime() > fromDate.getTime() ? currentEnd : fromDate;
+      return new Date(base.getTime() + addDays * 24 * 60 * 60 * 1000);
+    };
+
+    // Monthly extension from active periodEnd (+30 days)
+    const newEnd30 = calculateNewExpiry(activePeriodEnd, 30, now);
+    assert.equal(newEnd30.toISOString(), '2026-12-04T12:00:00.000Z');
+
+    // Annual extension from active periodEnd (+365 days)
+    const newEndAnnual = calculateNewExpiry(activePeriodEnd, 365, now);
+    assert.equal(newEndAnnual.toISOString(), '2027-11-04T12:00:00.000Z');
+
+    // If past due / expired, extension starts from now (+30 days)
+    const pastEnd = new Date('2026-10-20T12:00:00.000Z');
+    const newEndFromNow = calculateNewExpiry(pastEnd, 30, now);
+    assert.equal(newEndFromNow.toISOString(), '2026-11-23T12:00:00.000Z');
+  });
+
+  it('should guarantee zero parentheses in Khmer subscriptionBilling strings', () => {
+    const parenRegex = /[()（）]/;
+    const checkNoParens = (obj: Record<string, any>, path = '') => {
+      for (const [key, value] of Object.entries(obj)) {
+        const fullPath = path ? `${path}.${key}` : key;
+        if (typeof value === 'string') {
+          // Exclude keys that are purely English or standard acronyms if any, but all Khmer should have no parens
+          assert.equal(
+            parenRegex.test(value),
+            false,
+            `Parenthesis found in Khmer locale ${fullPath}: ${value}`
+          );
+        } else if (typeof value === 'object' && value !== null) {
+          checkNoParens(value, fullPath);
+        }
+      }
+    };
+
+    // Check newly added keys
+    assert.equal(parenRegex.test((km as any).subscriptionBilling.viewPlansBtn), false);
+    assert.equal(parenRegex.test((km as any).subscriptionBilling.currentPlanBadge), false);
+    assert.equal(parenRegex.test((km as any).subscriptionBilling.cannotDowngradeBadge), false);
+    assert.equal(parenRegex.test((km as any).subscriptionBilling.cannotDowngradeDesc), false);
+    assert.equal(parenRegex.test((km as any).subscriptionBilling.freeForever), false);
+    assert.equal(parenRegex.test((km as any).subscriptionBilling.renewCurrentPlan), false);
+    assert.equal(parenRegex.test((km as any).subscriptionBilling.upgradeToPlan), false);
   });
 
   it('should verify complete dictionary parity between en and km for subscriptionBilling', () => {

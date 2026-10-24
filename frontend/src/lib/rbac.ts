@@ -466,3 +466,30 @@ export function getRequiredPlanForRoute(pathname: string): {
       return { tier: 'FREE', nameKh: 'គម្រោងសាកល្បង - Free Starter', nameEn: 'Free Starter', priceUsd: 0 };
   }
 }
+
+export function isPlanDowngrade(
+  currentTier: PlanTier | string | undefined | null,
+  targetTier: PlanTier | string,
+): boolean {
+  const currentRank = PLAN_TIER_RANK[(currentTier as PlanTier) || 'FREE'] ?? 0;
+  const targetRank = PLAN_TIER_RANK[(targetTier as PlanTier) || 'FREE'] ?? 0;
+  return targetRank < currentRank;
+}
+
+export function isPlanUpgrade(
+  currentTier: PlanTier | string | undefined | null,
+  targetTier: PlanTier | string,
+): boolean {
+  const currentRank = PLAN_TIER_RANK[(currentTier as PlanTier) || 'FREE'] ?? 0;
+  const targetRank = PLAN_TIER_RANK[(targetTier as PlanTier) || 'FREE'] ?? 0;
+  return targetRank > currentRank;
+}
+
+export function isPlanRenewal(
+  currentTier: PlanTier | string | undefined | null,
+  targetTier: PlanTier | string,
+): boolean {
+  const currentRank = PLAN_TIER_RANK[(currentTier as PlanTier) || 'FREE'] ?? 0;
+  const targetRank = PLAN_TIER_RANK[(targetTier as PlanTier) || 'FREE'] ?? 0;
+  return targetRank === currentRank && targetRank > 0;
+}

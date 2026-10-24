@@ -941,6 +941,33 @@ class ApiClient {
         currentSubscription: any;
         recentInvoices: any[];
       }>('/subscriptions/current'),
+    getPlans: () =>
+      this.request<{
+        success: boolean;
+        currentPlanTier: string;
+        currentRank: number;
+        isFree: boolean;
+        plans: Array<{
+          tier: string;
+          nameKh: string;
+          nameEn: string;
+          priceUsd: number;
+          annualPriceUsd: number;
+          annualDiscountPercent: number;
+          maxMonthlyPatients: number;
+          maxDailyKhqr: number;
+          maxStaffAccounts: number;
+          telegramTopicsAllowed: boolean;
+          voiceCallAllowed: boolean;
+          inventoryFullAllowed: boolean;
+          rank: number;
+          isCurrent: boolean;
+          isDowngrade: boolean;
+          isUpgrade: boolean;
+          canSelect: boolean;
+          canRenew: boolean;
+        }>;
+      }>('/subscriptions/plans'),
     getHistory: () =>
       this.request<{
         success: boolean;

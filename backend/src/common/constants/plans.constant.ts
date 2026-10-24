@@ -135,3 +135,30 @@ export function isRouteAllowedForPlan(
 
   return currentRank >= requiredRank;
 }
+
+export function isPlanDowngrade(
+  currentTier: PlanTier | string | undefined | null,
+  targetTier: PlanTier | string,
+): boolean {
+  const currentRank = PLAN_TIER_RANK[(currentTier as PlanTier) || PlanTier.FREE] ?? 0;
+  const targetRank = PLAN_TIER_RANK[(targetTier as PlanTier) || PlanTier.FREE] ?? 0;
+  return targetRank < currentRank;
+}
+
+export function isPlanUpgrade(
+  currentTier: PlanTier | string | undefined | null,
+  targetTier: PlanTier | string,
+): boolean {
+  const currentRank = PLAN_TIER_RANK[(currentTier as PlanTier) || PlanTier.FREE] ?? 0;
+  const targetRank = PLAN_TIER_RANK[(targetTier as PlanTier) || PlanTier.FREE] ?? 0;
+  return targetRank > currentRank;
+}
+
+export function isPlanRenewal(
+  currentTier: PlanTier | string | undefined | null,
+  targetTier: PlanTier | string,
+): boolean {
+  const currentRank = PLAN_TIER_RANK[(currentTier as PlanTier) || PlanTier.FREE] ?? 0;
+  const targetRank = PLAN_TIER_RANK[(targetTier as PlanTier) || PlanTier.FREE] ?? 0;
+  return targetRank === currentRank && targetRank > 0;
+}

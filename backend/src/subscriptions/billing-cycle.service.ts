@@ -1,7 +1,7 @@
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy, Optional, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, OnModuleDestroy, Optional, Inject, forwardRef, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { PlanTier, SubscriptionStatus } from '@prisma/client';
-import { SAAS_PLANS } from '../common/constants/plans.constant';
+import { SAAS_PLANS, PLAN_TIER_RANK } from '../common/constants/plans.constant';
 import { TelegramService } from '../telegram/telegram.service';
 import { PlatformMasterBotService } from '../telegram/platform-master-bot.service';
 
@@ -75,6 +75,8 @@ export class BillingCycleService implements OnModuleInit, OnModuleDestroy {
     let markedExpired = 0;
 
     for (const tenant of tenants) {
+      // Free Forever tier never expires and is never marked PAST_DUE or frozen
+      if (tenant.planTier === PlanTier.FREE) continue;
       const activeSub = tenant.subscriptions?.[0];
       const expiryDate = activeSub?.endDate || tenant.currentPeriodEnd;
 
@@ -274,15 +276,27 @@ export class BillingCycleService implements OnModuleInit, OnModuleDestroy {
     });
 
     if (!tenant) {
-      throw new Error(`Tenant ${tenantId} not found`);
+      throw new NotFoundException(`Tenant ${tenantId} not found`);
     }
 
     const activeSub = tenant.subscriptions?.[0] || null;
     const now = new Date();
-    const expiryDate = activeSub?.endDate || tenant.currentPeriodEnd || now;
-    const msDiff = expiryDate.getTime() - now.getTime();
-    const daysRemaining = Math.max(0, Math.ceil(msDiff / (1000 * 60 * 60 * 24)));
+    const isFree = tenant.planTier === PlanTier.FREE;
+    const expiryDate = isFree ? null : (activeSub?.endDate || tenant.currentPeriodEnd || null);
+    
+    let daysRemaining = null;
+    let isExpired = false;
+    let isPastDue = false;
+
+    if (!isFree && expiryDate) {
+      const msDiff = expiryDate.getTime() - now.getTime();
+      daysRemaining = Math.max(0, Math.ceil(msDiff / (1000 * 60 * 60 * 24)));
+      isExpired = tenant.subscriptionStatus === SubscriptionStatus.EXPIRED || (expiryDate.getTime() < now.getTime() && msDiff < -3 * 24 * 60 * 60 * 1000);
+      isPastDue = tenant.subscriptionStatus === SubscriptionStatus.PAST_DUE || (expiryDate.getTime() < now.getTime() && !isExpired);
+    }
+
     const planConfig = SAAS_PLANS[tenant.planTier] || SAAS_PLANS[PlanTier.FREE];
+    const currentRank = PLAN_TIER_RANK[tenant.planTier] ?? 0;
 
     return {
       success: true,
@@ -294,15 +308,74 @@ export class BillingCycleService implements OnModuleInit, OnModuleDestroy {
       planNameKh: planConfig.nameKh,
       planNameEn: planConfig.nameEn,
       priceUsd: planConfig.priceUsd,
-      subscriptionStatus: tenant.subscriptionStatus,
-      daysRemaining,
-      currentPeriodEnd: expiryDate,
+      subscriptionStatus: isFree ? SubscriptionStatus.ACTIVE : tenant.subscriptionStatus,
+      isFree,
+      daysRemaining: isFree ? null : daysRemaining,
+      currentPeriodEnd: expiryDate ? expiryDate.toISOString() : null,
+      expiryFormattedKh: expiryDate ? expiryDate.toLocaleDateString('km-KH') : null,
+      expiryFormattedEn: expiryDate ? expiryDate.toLocaleDateString('en-US') : null,
       isActive: tenant.isActive,
       maxDailyKhqr: tenant.maxDailyKhqr,
       maxMonthlyPatients: tenant.maxMonthlyPatients,
       maxStaffAccounts: tenant.maxStaffAccounts,
       currentSubscription: activeSub,
       recentInvoices: tenant.subscriptions || [],
+      currentRank,
+      canUpgrade: currentRank < 3,
+      canRenew: !isFree,
+    };
+  }
+
+  /**
+   * Returns all available subscription plan tiers with upgrade, renewal, and downgrade eligibility flags.
+   */
+  async getAvailablePlans(tenantId: string) {
+    const tenant = await this.prisma.tenant.findUnique({
+      where: { id: tenantId },
+    });
+    if (!tenant) {
+      throw new NotFoundException(`Clinic tenant ${tenantId} not found`);
+    }
+
+    const currentRank = PLAN_TIER_RANK[tenant.planTier] ?? 0;
+    const isFree = tenant.planTier === PlanTier.FREE;
+
+    const plans = Object.values(SAAS_PLANS).map((p) => {
+      const rank = PLAN_TIER_RANK[p.tier] ?? 0;
+      const isCurrent = p.tier === tenant.planTier;
+      const isDowngrade = rank < currentRank;
+      const isUpgrade = rank > currentRank;
+      const canSelect = !isDowngrade;
+      const canRenew = isCurrent && p.tier !== PlanTier.FREE;
+
+      return {
+        tier: p.tier,
+        nameKh: p.nameKh,
+        nameEn: p.nameEn,
+        priceUsd: p.priceUsd,
+        annualPriceUsd: p.priceUsd > 0 ? Math.round(p.priceUsd * 12 * 0.8) : 0,
+        annualDiscountPercent: 20,
+        maxMonthlyPatients: p.maxMonthlyPatients,
+        maxDailyKhqr: p.maxDailyKhqr,
+        maxStaffAccounts: p.maxStaffAccounts,
+        telegramTopicsAllowed: p.telegramTopicsAllowed,
+        voiceCallAllowed: p.voiceCallAllowed,
+        inventoryFullAllowed: p.inventoryFullAllowed,
+        rank,
+        isCurrent,
+        isDowngrade,
+        isUpgrade,
+        canSelect,
+        canRenew,
+      };
+    });
+
+    return {
+      success: true,
+      currentPlanTier: tenant.planTier,
+      currentRank,
+      isFree,
+      plans,
     };
   }
 
