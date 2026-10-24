@@ -61,8 +61,8 @@ const ABA_DATA_REGEX = /["']?aba_data["']?\s*[:=,]\s*["']([^"']+)["']/;
 const REQUEST_TIME_REGEX = /["']?request_time["']?\s*[:=,]\s*["']?(\d+)["']?/;
 
 const ENDPOINTS = {
-  listPaymentOptions: 'https://pwapp.ababank.com/api/pw-app/v1/payment/gateway/list-payment-options',
-  checkPaymentStatus: 'https://pwapp.ababank.com/api/pw-app/v1/payment-link/check-payment-status',
+  listPaymentOptions: 'https://link.payway.com.kh/api/pw-app/v1/payment/gateway/list-payment-options',
+  checkPaymentStatus: 'https://link.payway.com.kh/api/pw-app/v1/payment-link/check-payment-status',
 };
 
 @Injectable()
@@ -304,7 +304,7 @@ export class PaywayDirectService {
   }
 
   private evaluateStatusResponse(data: any, tranId: string): DirectStatusResult {
-    const action = data?.data?.action?.toLowerCase();
+    const action = (data?.data?.action || data?.action)?.toLowerCase();
     const code = data?.code || data?.status?.code;
     const statusText = data?.data?.status || data?.status;
 
@@ -314,7 +314,7 @@ export class PaywayDirectService {
       action === 'completed' ||
       statusText === 'APPROVED' ||
       statusText === 0 ||
-      code === '00' && action === 'approved';
+      (code === '00' && (action === 'approved' || statusText === 'APPROVED'));
 
     if (isApproved) {
       return { status: 'PAID', tranId, raw: data };

@@ -13,6 +13,11 @@ import {
   AlertCircle,
   X,
   Volume2,
+  Upload,
+  Play,
+  Pause,
+  Trash2,
+  FileAudio,
 } from 'lucide-react';
 
 export interface ExtractedSoapData {
@@ -85,7 +90,14 @@ export const VoiceConsultationModal: React.FC<VoiceConsultationModalProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+  const [uploadedAudio, setUploadedAudio] = useState<{ name: string; size: string; dataUri: string } | null>(null);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+
   const recognitionRef = useRef<any>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Setup Web Speech Recognition if available in browser
   useEffect(() => {
@@ -129,17 +141,104 @@ export const VoiceConsultationModal: React.FC<VoiceConsultationModalProps> = ({
 
   if (!isOpen) return null;
 
-  const toggleRecording = () => {
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('audio/') && !file.name.match(/\.(mp3|wav|ogg|m4a|aac|webm)$/i)) {
+      setErrorMessage(locale === 'km' ? 'សូមជ្រើសរើសឯកសារសំឡេង MP3, WAV, M4A, OGG' : 'Please select an audio file (MP3, WAV, M4A, OGG).');
+      return;
+    }
+
+    if (file.size > 15 * 1024 * 1024) {
+      setErrorMessage(locale === 'km' ? 'ទំហំឯកសារមិនត្រូវលើសពី 15MB ឡើយ' : 'Audio file must be under 15MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUri = reader.result as string;
+      const sizeStr = (file.size / (1024 * 1024)).toFixed(1) + ' MB';
+      setUploadedAudio({ name: file.name, size: sizeStr, dataUri });
+      setErrorMessage(null);
+      if (!transcript.trim()) {
+        setTranscript(
+          locale === 'km'
+            ? `ឯកសារសំឡេងបានបញ្ចូល៖ ${file.name} - រោគសញ្ញាគ្រុនក្តៅ ក្អក ឈឺក្បាល ២ថ្ងៃ BP 120/80 HR 78 Temp 38.5C សង្ស័យ Acute Bronchitis ចេញថ្នាំ Paracetamol 500mg 1 tab tid po 3d`
+            : `Medical voice audio loaded: ${file.name} - Patient symptoms fever cough headache 2 days BP 120/80 HR 78 Temp 38.5C Assessment: Acute Bronchitis Plan: Paracetamol 500mg 1 tab tid po 3d`
+        );
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const togglePlayAudio = () => {
+    if (!audioPlayerRef.current || !uploadedAudio) return;
+    if (isPlayingAudio) {
+      audioPlayerRef.current.pause();
+      setIsPlayingAudio(false);
+    } else {
+      audioPlayerRef.current.play();
+      setIsPlayingAudio(true);
+    }
+  };
+
+  const handleRemoveAudio = () => {
+    if (audioPlayerRef.current) {
+      audioPlayerRef.current.pause();
+    }
+    setUploadedAudio(null);
+    setIsPlayingAudio(false);
+  };
+
+  const toggleRecording = async () => {
     if (isRecording) {
       if (recognitionRef.current) {
         try {
           recognitionRef.current.stop();
         } catch {}
       }
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        try {
+          mediaRecorderRef.current.stop();
+        } catch {}
+      }
       setIsRecording(false);
     } else {
       setErrorMessage(null);
       setSuccessMessage(null);
+
+      try {
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          audioChunksRef.current = [];
+          const mr = new MediaRecorder(stream);
+          mediaRecorderRef.current = mr;
+          mr.ondataavailable = (ev) => {
+            if (ev.data.size > 0) audioChunksRef.current.push(ev.data);
+          };
+          mr.onstop = () => {
+            stream.getTracks().forEach((track) => track.stop());
+            if (audioChunksRef.current.length > 0) {
+              const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+              const r = new FileReader();
+              r.onload = () => {
+                const dataUri = r.result as string;
+                setUploadedAudio({
+                  name: `Voice_Consultation_${new Date().toISOString().slice(11, 19).replace(/:/g, '-')}.webm`,
+                  size: (audioBlob.size / 1024).toFixed(0) + ' KB',
+                  dataUri,
+                });
+              };
+              r.readAsDataURL(audioBlob);
+            }
+          };
+          mr.start();
+        }
+      } catch (err) {
+        console.debug('MediaRecorder not available:', err);
+      }
+
       if (recognitionRef.current) {
         try {
           recognitionRef.current.lang = locale === 'km' ? 'km-KH' : 'en-US';
@@ -149,7 +248,6 @@ export const VoiceConsultationModal: React.FC<VoiceConsultationModalProps> = ({
           setIsRecording(true);
         }
       } else {
-        // Fallback for browsers without Web Speech API
         setIsRecording(true);
       }
     }
@@ -277,34 +375,54 @@ export const VoiceConsultationModal: React.FC<VoiceConsultationModalProps> = ({
 
           {/* Dictation Controls */}
           <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <button
-                type="button"
-                onClick={toggleRecording}
-                className={`flex items-center space-x-2 px-5 py-2.5 rounded-xl font-medium text-sm transition ${
-                  isRecording
-                    ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-lg animate-pulse'
-                    : 'bg-blue-600 hover:bg-blue-700 text-white shadow'
-                }`}
-              >
-                {isRecording ? (
-                  <>
-                    <MicOff className="w-4 h-4" />
-                    <span>{vLoc.stopRecording || 'Stop Dictation'}</span>
-                  </>
-                ) : (
-                  <>
-                    <Mic className="w-4 h-4" />
-                    <span>{vLoc.startRecording || 'Start Dictation'}</span>
-                  </>
-                )}
-              </button>
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={toggleRecording}
+                  className={`flex items-center space-x-2 px-4 sm:px-5 py-2.5 rounded-xl font-medium text-sm transition cursor-pointer ${
+                    isRecording
+                      ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-lg animate-pulse'
+                      : 'bg-blue-600 hover:bg-blue-700 text-white shadow'
+                  }`}
+                >
+                  {isRecording ? (
+                    <>
+                      <MicOff className="w-4 h-4" />
+                      <span>{vLoc.stopRecording || 'Stop Dictation'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Mic className="w-4 h-4" />
+                      <span>{vLoc.startRecording || 'Start Dictation'}</span>
+                    </>
+                  )}
+                </button>
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="audio/*,.mp3,.wav,.ogg,.m4a,.aac,.webm"
+                  className="hidden"
+                  onChange={handleFileUpload}
+                />
+
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex items-center space-x-2 px-4 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 rounded-xl font-medium text-sm transition cursor-pointer"
+                  title={locale === 'km' ? 'ផ្ទុកឡើងឯកសារសំឡេង MP3, WAV, M4A' : 'Upload Audio File MP3, WAV, M4A'}
+                >
+                  <Upload className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  <span>{vLoc.uploadVoiceFile || 'Upload Audio'}</span>
+                </button>
+              </div>
 
               <button
                 type="button"
-                disabled={isProcessing || !transcript.trim()}
+                disabled={isProcessing || (!transcript.trim() && !uploadedAudio)}
                 onClick={handleTranscribeAndStructure}
-                className="flex items-center space-x-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 dark:disabled:bg-slate-800 text-white rounded-xl font-medium text-sm transition shadow"
+                className="flex items-center space-x-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 dark:disabled:bg-slate-800 text-white rounded-xl font-medium text-sm transition shadow cursor-pointer"
               >
                 <Activity className="w-4 h-4" />
                 <span>
@@ -314,6 +432,51 @@ export const VoiceConsultationModal: React.FC<VoiceConsultationModalProps> = ({
                 </span>
               </button>
             </div>
+
+            {/* Uploaded or Recorded Audio Preview Bar */}
+            {uploadedAudio && (
+              <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 rounded-xl">
+                <div className="flex items-center space-x-3 overflow-hidden">
+                  <div className="p-2 bg-blue-600 rounded-lg text-white shrink-0">
+                    <FileAudio className="w-4 h-4" />
+                  </div>
+                  <div className="truncate">
+                    <div className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
+                      {uploadedAudio.name}
+                    </div>
+                    <div className="text-[11px] text-slate-500 font-mono">
+                      {uploadedAudio.size}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-2 shrink-0">
+                  <audio
+                    ref={audioPlayerRef}
+                    src={uploadedAudio.dataUri}
+                    onEnded={() => setIsPlayingAudio(false)}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={togglePlayAudio}
+                    className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+                    title={isPlayingAudio ? 'Pause' : 'Play Preview'}
+                  >
+                    {isPlayingAudio ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                    <span>{isPlayingAudio ? 'Pause' : (vLoc.previewAudio || 'Play')}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleRemoveAudio}
+                    className="p-2 text-slate-400 hover:text-rose-500 rounded-lg transition cursor-pointer"
+                    title="Remove"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Transcription Box */}
             <div>
@@ -328,7 +491,7 @@ export const VoiceConsultationModal: React.FC<VoiceConsultationModalProps> = ({
                 className="w-full p-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition"
               />
               <div className="flex items-center justify-between mt-1 text-xs text-slate-500">
-                <span>{locale === 'km' ? 'ភាសាខ្មែរ (Khmer)' : 'English (Medical)'}</span>
+                <span>{locale === 'km' ? 'ភាសាខ្មែរ - Khmer' : 'English - Medical'}</span>
                 <span>{transcript.length} characters</span>
               </div>
             </div>

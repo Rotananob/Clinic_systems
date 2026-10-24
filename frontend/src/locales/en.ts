@@ -564,6 +564,11 @@ export const en = {
     confidenceLabel: 'AI Clinical Confidence',
     icdCodeLabel: 'International Classification of Diseases',
     telegramVoiceHelp: 'Doctors can also record Telegram voice memos directly to the official clinic bot for instant SOAP structuring.',
+    uploadVoiceFile: 'Upload Audio File',
+    customVoiceActive: 'Custom Voice Active',
+    recordCustomVoice: 'Record Custom Voice',
+    previewAudio: 'Play Audio Preview',
+    resetDefaultVoice: 'Reset to Default',
   },
   cdss: {
     allSafeVerified: 'Clinical Decision Support (CDSS): 100% verified safe. No adverse drug interactions or allergy conflicts detected.',

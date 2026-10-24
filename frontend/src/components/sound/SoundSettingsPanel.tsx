@@ -69,7 +69,7 @@ export function SoundSettingsPanel() {
     {
       event: 'payment_success',
       titleEn: 'Payment Success Sound',
-      titleKh: 'សំឡេងទូទាត់ជោគជ័យ (KHQR & សាច់ប្រាក់)',
+      titleKh: 'សំឡេងទូទាត់ជោគជ័យ - KHQR និងសាច់ប្រាក់',
       descriptionEn: 'Audible chime or real voice when a customer scans KHQR or pays cash.',
       descriptionKh: 'សំឡេងរោទ៍ ឬសំឡេងនិយាយពេលអតិថិជនស្កេន KHQR ឬទូទាត់ប្រាក់រួចរាល់។',
       playFn: playPaymentSuccessChime,
@@ -77,7 +77,7 @@ export function SoundSettingsPanel() {
     {
       event: 'queue_call',
       titleEn: 'Patient Queue Call Sound',
-      titleKh: 'សំឡេងហៅលេខអ្នកជំងឺ (Queue Token)',
+      titleKh: 'សំឡេងហៅលេខអ្នកជំងឺ - Queue Token',
       descriptionEn: 'Broadcast chime played in waiting lobby when reception or doctor calls patient.',
       descriptionKh: 'សំឡេងប្រកាសនៅក្នុងបន្ទប់រង់ចាំពេលគិលានុបដ្ឋាយិកា ឬវេជ្ជបណ្ឌិតហៅអ្នកជំងឺ។',
       playFn: playHospitalChime,
@@ -130,7 +130,7 @@ export function SoundSettingsPanel() {
     if (!file || !selectedUploadEvent) return;
 
     if (!file.type.startsWith('audio/') && !file.name.match(/\.(mp3|wav|ogg|m4a|aac)$/i)) {
-      setErrorNotice(isKm ? 'សូមជ្រើសរើសឯកសារសំឡេង (MP3, WAV, M4A, OGG)' : 'Please select an audio file (MP3, WAV, M4A, OGG).');
+      setErrorNotice(isKm ? 'សូមជ្រើសរើសឯកសារសំឡេង MP3, WAV, M4A, OGG' : 'Please select an audio file (MP3, WAV, M4A, OGG).');
       return;
     }
 
@@ -265,7 +265,7 @@ export function SoundSettingsPanel() {
           </h2>
           <p className="text-xs text-slate-500 mt-1 leading-relaxed">
             {isKm
-              ? 'លោកអ្នកអាចប្រើប្រាស់សំឡេងលំនាំដើម បញ្ចូលឯកសារសំឡេងផ្ទាល់ខ្លួន (MP3/WAV) ឬថតសំឡេងនិយាយផ្ទាល់ដើម្បីប្រកាសក្នុងគ្លីនិក។'
+              ? 'លោកអ្នកអាចប្រើប្រាស់សំឡេងលំនាំដើម បញ្ចូលឯកសារសំឡេងផ្ទាល់ខ្លួន - MP3 ឬ WAV - ឬថតសំឡេងនិយាយផ្ទាល់ដើម្បីប្រកាសក្នុងគ្លីនិក។'
               : 'Customize notification alerts with default chimes, uploaded audio files, or your own live microphone recordings.'}
           </p>
         </div>

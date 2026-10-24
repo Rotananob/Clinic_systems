@@ -8,6 +8,13 @@ import { ClinicLogo } from '../common/ClinicLogo';
 import { QRCodeSVG } from 'qrcode.react';
 import { buildLiveAbaKhqr } from '../../lib/khqr';
 import {
+  getCustomAudio,
+  setCustomAudio,
+  clearCustomAudio,
+  playAudioDataUri,
+  CustomAudioItem,
+} from '../../lib/chime';
+import {
   QrCode,
   Volume2,
   Printer,
@@ -35,6 +42,8 @@ import {
   Code2,
   Play,
   Pause,
+  Upload,
+  RotateCcw,
 } from 'lucide-react';
 
 type ConsoleTab = 'khqr' | 'voice' | 'queue' | 'hardware';
@@ -56,6 +65,63 @@ export const LandingHero: React.FC = () => {
   // 3D Tilt container ref (Desktop pointer only with requestAnimationFrame throttle)
   const cardRef = useRef<HTMLDivElement>(null);
   const rafIdRef = useRef<number | null>(null);
+
+  // Custom Voice Queue State in Demo (Real-Time Preview)
+  const [customQueueVoice, setCustomQueueVoice] = useState<CustomAudioItem | null>(null);
+  const [isPreviewingVoice, setIsPreviewingVoice] = useState(false);
+  const demoVoiceInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = getCustomAudio('queue_call');
+      if (stored) setCustomQueueVoice(stored);
+    }
+  }, []);
+
+  const handleDemoVoiceSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('audio/') && !file.name.match(/\.(mp3|wav|ogg|m4a|aac)$/i)) {
+      alert(isKm ? 'សូមជ្រើសរើសឯកសារសំឡេង MP3, WAV, M4A, OGG' : 'Please select an audio file MP3, WAV, M4A, OGG.');
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      alert(isKm ? 'ទំហំឯកសារមិនត្រូវលើសពី 10MB ឡើយ' : 'Audio file must be under 10MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const dataUri = reader.result as string;
+      const item: CustomAudioItem = {
+        dataUri,
+        name: file.name,
+        type: 'upload',
+        createdAt: Date.now(),
+      };
+      setCustomAudio('queue_call', item);
+      setCustomQueueVoice(item);
+      // Immediately trigger real-time preview playback
+      setIsPreviewingVoice(true);
+      await playAudioDataUri(dataUri);
+      setTimeout(() => setIsPreviewingVoice(false), 2200);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handlePreviewVoice = async () => {
+    if (!customQueueVoice?.dataUri || isPreviewingVoice) return;
+    setIsPreviewingVoice(true);
+    await playAudioDataUri(customQueueVoice.dataUri);
+    setTimeout(() => setIsPreviewingVoice(false), 2200);
+  };
+
+  const handleResetDemoVoice = () => {
+    clearCustomAudio('queue_call');
+    setCustomQueueVoice(null);
+  };
 
   // Mode 1: KHQR Real Live Scannable Cockpit
   const [customMerchantName, setCustomMerchantName] = useState('NOB ROTANA');
@@ -200,8 +266,13 @@ export const LandingHero: React.FC = () => {
     }
   }, []);
 
-  // Khmer Speech Synthesis
-  const playQueueSpeech = useCallback((ticketNum: number, roomStr: string) => {
+  // Khmer Speech Synthesis & Custom Voice Playback
+  const playQueueSpeech = useCallback(async (ticketNum: number, roomStr: string) => {
+    const custom = getCustomAudio('queue_call');
+    if (custom && custom.dataUri) {
+      await playAudioDataUri(custom.dataUri);
+      return;
+    }
     try {
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
@@ -666,7 +737,7 @@ export const LandingHero: React.FC = () => {
                               : 'text-stone-400 hover:text-white'
                           }`}
                         >
-                          KHR (៛)
+                          KHR - ៛
                         </button>
                       </div>
                     </div>
@@ -1151,6 +1222,78 @@ export const LandingHero: React.FC = () => {
                         CALLING_NOW
                       </span>
                     </div>
+                  </div>
+
+                  {/* Custom Voice Upload & Real-time Preview in Home Page Demo */}
+                  <div className="p-3.5 rounded-2xl bg-stone-900/90 border border-teal-500/30 space-y-2.5 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-white flex items-center gap-1.5">
+                        <Mic className="w-4 h-4 text-teal-400" />
+                        <span>{isKm ? 'សំឡេងហៅអ្នកជំងឺផ្ទាល់ខ្លួន' : 'Custom Queue Voice Announcement'}</span>
+                      </span>
+                      {customQueueVoice ? (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-500/40 flex items-center gap-1">
+                          <Check className="w-3 h-3 text-emerald-400" />
+                          <span>{isKm ? 'សំឡេងផ្ទាល់ខ្លួនសកម្ម' : 'Custom Voice Active'}</span>
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-stone-400">
+                          {isKm ? 'ប្រើសំឡេងស្វ័យប្រវត្តិតាមម៉ាស៊ីន' : 'Using default speech engine'}
+                        </span>
+                      )}
+                    </div>
+
+                    {customQueueVoice ? (
+                      <div className="flex items-center justify-between gap-2 p-2 bg-stone-800/80 rounded-xl border border-stone-700">
+                        <div className="truncate text-stone-200 text-[11px] font-mono">
+                          {customQueueVoice.name}
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <button
+                            type="button"
+                            onClick={handlePreviewVoice}
+                            disabled={isPreviewingVoice}
+                            className="px-2.5 py-1 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-[11px] font-bold transition flex items-center gap-1 cursor-pointer active:scale-95"
+                            title={isKm ? 'សាកល្បងស្តាប់សំឡេង' : 'Preview Voice'}
+                          >
+                            <Play className={`w-3 h-3 ${isPreviewingVoice ? 'animate-pulse' : ''}`} />
+                            <span>{isKm ? 'សាកល្បងស្តាប់' : 'Preview'}</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleResetDemoVoice}
+                            className="p-1 text-stone-400 hover:text-rose-400 rounded-lg transition cursor-pointer"
+                            title={isKm ? 'ប្រើសំឡេងដើម' : 'Reset to default'}
+                          >
+                            <RotateCcw className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-[11px] text-stone-400 leading-relaxed font-sans">
+                        {isKm
+                          ? 'លោកអ្នកអាចផ្ទុកឡើងឯកសារសំឡេង MP3 ឬ WAV ផ្ទាល់ខ្លួនសម្រាប់ហៅអ្នកជំងឺ និងសាកល្បងស្តាប់ភ្លាមៗ។'
+                          : 'Upload your own MP3 or WAV clinic announcement audio and preview it in real-time.'}
+                      </p>
+                    )}
+
+                    {/* Hidden file input */}
+                    <input
+                      ref={demoVoiceInputRef}
+                      type="file"
+                      accept="audio/*,.mp3,.wav,.ogg,.m4a"
+                      className="hidden"
+                      onChange={handleDemoVoiceSelected}
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => demoVoiceInputRef.current?.click()}
+                      className="w-full py-2 bg-white/10 hover:bg-white/15 border border-teal-500/30 text-teal-200 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <Upload className="w-3.5 h-3.5 text-teal-300" />
+                      <span>{isKm ? 'ផ្ទុកឡើងសំឡេងផ្ទាល់ខ្លួន - MP3, WAV, M4A' : 'Upload Custom Voice - MP3, WAV, M4A'}</span>
+                    </button>
                   </div>
 
                   {/* Action Call Button */}
