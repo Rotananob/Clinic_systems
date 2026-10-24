@@ -35,6 +35,7 @@ import {
   LayoutTemplate,
   Building2,
   Globe,
+  User,
   UserCheck,
   LogOut,
 } from 'lucide-react';
@@ -169,6 +170,83 @@ export const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({ isOpen, onCl
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto touch-scroll p-3.5 space-y-3.5">
+          {/* User Profile Card & Quick Actions - Mobile */}
+          {user && (
+            <div className="p-3 rounded-2xl bg-white border border-[#DFD6C6] shadow-xs space-y-2.5">
+              <div className="flex items-center gap-2.5">
+                <Link
+                  href="/profile"
+                  onClick={onClose}
+                  className="relative shrink-0 group block"
+                  title={isKh ? 'មើលព័ត៌មានផ្ទាល់ខ្លួន' : 'View Profile'}
+                >
+                  {user.avatarUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={user.avatarUrl}
+                      alt={user.fullNameEn}
+                      className="w-10 h-10 rounded-full object-cover border-2 border-teal-700/30 group-hover:border-teal-700 shadow-2xs transition-all"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-teal-800 text-white font-bold text-sm flex items-center justify-center shadow-2xs group-hover:bg-teal-900 transition-colors">
+                      {(user.fullNameEn || user.email || 'U').charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white" />
+                </Link>
+
+                <div className="min-w-0 flex-1">
+                  <Link
+                    href="/profile"
+                    onClick={onClose}
+                    className="block group"
+                  >
+                    <div className="text-xs font-black text-stone-900 truncate leading-snug group-hover:text-teal-900">
+                      {isKh && user.fullNameKh ? user.fullNameKh : user.fullNameEn}
+                    </div>
+                    <div className="text-[10px] text-stone-500 truncate font-mono">
+                      {user.email}
+                    </div>
+                  </Link>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold font-mono uppercase bg-teal-100 text-teal-800 border border-teal-200">
+                      {user.role === 'SUPER_ADMIN' ? (isKh ? 'ម្ចាស់ប្រព័ន្ធ - OWNER' : 'SUPER ADMIN') : user.role}
+                    </span>
+                    {user.tenant?.clinicNameKh && (
+                      <span className="text-[9px] text-stone-400 truncate max-w-[100px]">
+                        {isKh ? user.tenant.clinicNameKh : user.tenant.clinicNameEn}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Direct View Profile & Logout Action Buttons */}
+              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#F0EAE0]">
+                <Link
+                  href="/profile"
+                  onClick={onClose}
+                  className="flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#F6F2E9] hover:bg-[#EFE8DC] text-stone-800 text-xs font-bold border border-[#DDD5C5] transition-colors shadow-2xs active:scale-98"
+                >
+                  <User className="w-3.5 h-3.5 text-teal-800" />
+                  <span>{isKh ? 'គណនីផ្ទាល់ខ្លួន' : 'View Profile'}</span>
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    logout();
+                  }}
+                  className="flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-800 text-xs font-bold border border-rose-200 transition-colors shadow-2xs active:scale-98 cursor-pointer"
+                >
+                  <LogOut className="w-3.5 h-3.5 text-rose-700" />
+                  <span>{isKh ? 'ចាកចេញ' : 'Log Out'}</span>
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Eye-catching Explore All Tools & Features Banner */}
           <div
             onClick={handleOpenExplore}

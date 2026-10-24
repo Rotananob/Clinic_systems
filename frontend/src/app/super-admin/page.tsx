@@ -479,6 +479,31 @@ export default function SuperAdminFleetPage() {
           <h1 className="text-2xl font-extrabold text-stone-900 mt-1 font-sans">
             {isKm ? 'ផ្ទាំងគ្រប់គ្រងបណ្តាញគ្លីនិក & ប្រព័ន្ធកណ្តាល' : 'Multi-Clinic Fleet Hub & System Metrics'}
           </h1>
+
+
+          {/* Super Admin Direct URL Link Pill */}
+          <div className="mt-2.5 inline-flex flex-wrap items-center gap-2 px-3 py-1.5 rounded-xl bg-[#F7F3EA] border border-[#DFD6C6] text-xs font-mono">
+            <span className="text-[11px] font-bold text-stone-600 font-sans">
+              {isKm ? 'តំណភ្ជាប់ Super Admin URL៖' : 'Super Admin URL Link:'}
+            </span>
+            <span className="text-teal-900 font-bold selection:bg-teal-200">
+              {typeof window !== 'undefined' ? `${window.location.origin}/super-admin` : 'http://localhost:3000/super-admin'}
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                const url = typeof window !== 'undefined' ? `${window.location.origin}/super-admin` : 'http://localhost:3000/super-admin';
+                navigator.clipboard.writeText(url);
+                toast.success(isKm ? 'បានចម្លងតំណភ្ជាប់ Super Admin URL រួចរាល់' : 'Super Admin URL copied to clipboard');
+              }}
+              className="p-1 rounded-md bg-white hover:bg-stone-100 text-stone-700 border border-stone-300 transition-colors shadow-2xs cursor-pointer"
+              title={isKm ? 'ចម្លងតំណភ្ជាប់ URL' : 'Copy URL Link'}
+            >
+              <Copy className="w-3.5 h-3.5 text-stone-700" />
+            </button>
+          </div>
+
+
           <p className="text-xs text-stone-500 mt-0.5">
             {isKm
               ? 'គ្រប់គ្រង Workspace គ្លីនិកទាំងអស់ ត្រួតពិនិត្យចំណូល SaaS និងបញ្ជាបិទបើកប្រព័ន្ធពីចម្ងាយ'
@@ -538,6 +563,57 @@ export default function SuperAdminFleetPage() {
         </div>
       )}
 
+      {/* Super Admin Master Security Credentials Hub Card */}
+      <div className="p-4 sm:p-5 rounded-2xl bg-[#F6F2EA] border border-[#DDD5C5] shadow-xs">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-teal-800 text-white flex items-center justify-center shrink-0 shadow-xs">
+              <ShieldCheck className="w-5 h-5 text-amber-300" />
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-black text-stone-900 uppercase tracking-wide">
+                  {isKm ? 'គណនីមេគ្រប់គ្រងបណ្តាញហាងទូទាំងប្រទេស' : 'Super Admin Master Security Profile'}
+                </span>
+                <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-bold font-mono">
+                  ROOT OWNER
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center gap-3 text-xs text-stone-600">
+                <span className="flex items-center gap-1 font-mono">
+                  <Mail className="w-3.5 h-3.5 text-stone-500" />
+                  <span className="font-bold text-stone-900">owner@clinic.com</span>
+                </span>
+                <span className="text-stone-300">•</span>
+                <span className="flex items-center gap-1 font-mono">
+                  <KeyRound className="w-3.5 h-3.5 text-stone-500" />
+                  <span className="font-bold text-stone-900">Bcrypt 12 Rounds Salted Encryption</span>
+                </span>
+                <span className="text-stone-300">•</span>
+                <span className="flex items-center gap-1">
+                  <Globe className="w-3.5 h-3.5 text-stone-500" />
+                  <span className="font-medium text-stone-700">{isKm ? 'គ្រប់គ្រងហាង និងគ្លីនិកទាំងអស់' : 'All Stores & Tenants'}</span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                navigator.clipboard.writeText('owner@clinic.com');
+                toast.success(isKm ? 'បានចម្លងអ៊ីមែល owner@clinic.com' : 'Copied owner email to clipboard');
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-stone-100 text-stone-700 border border-stone-300 text-xs font-semibold shadow-2xs transition-all active:scale-95 cursor-pointer"
+            >
+              <Copy className="w-3.5 h-3.5" />
+              <span>{isKm ? 'ចម្លងអ៊ីមែល' : 'Copy Email'}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Super Admin Central Navigation Tabs */}
       <div className="flex items-center gap-2 border-b border-stone-200 pb-3">
         <button
@@ -550,7 +626,7 @@ export default function SuperAdminFleetPage() {
           }`}
         >
           <Building2 className="w-4 h-4" />
-          <span>{isKm ? 'គ្រប់គ្រងគ្លីនិកទាំងអស់ (Clinics Fleet)' : 'All Clinics Fleet'}</span>
+          <span>{isKm ? 'គ្រប់គ្រងគ្លីនិកទាំងអស់ - Clinics Fleet' : 'All Clinics Fleet'}</span>
           <span
             className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
               activeTab === 'CLINICS'
@@ -572,7 +648,7 @@ export default function SuperAdminFleetPage() {
           }`}
         >
           <Users className="w-4 h-4" />
-          <span>{isKm ? 'គ្រប់គ្រងអ្នកប្រើប្រាស់ទាំងអស់ (Global Users)' : 'Global User Governance'}</span>
+          <span>{isKm ? 'គ្រប់គ្រងអ្នកប្រើប្រាស់ទាំងអស់ - Global Users' : 'Global User Governance'}</span>
           <span
             className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
               activeTab === 'USERS'
@@ -714,10 +790,10 @@ export default function SuperAdminFleetPage() {
               aria-label={isKm ? 'ត្រងតាមស្ថានភាព' : 'Filter by status'}
               className="px-3 py-2 rounded-xl border border-stone-300 text-xs font-semibold text-stone-700 bg-white focus:outline-hidden"
             >
-              <option value="ALL">{isKm ? 'គ្រប់ស្ថានភាព (All Status)' : 'All Statuses'}</option>
-              <option value="ACTIVE">{isKm ? 'សកម្ម (Active)' : 'Active'}</option>
-              <option value="PAST_DUE">{isKm ? 'ហួសកំណត់ (Past Due)' : 'Past Due'}</option>
-              <option value="FROZEN">{isKm ? 'ចាក់សោ (Frozen)' : 'Frozen'}</option>
+              <option value="ALL">{isKm ? 'គ្រប់ស្ថានភាព - All Status' : 'All Statuses'}</option>
+              <option value="ACTIVE">{isKm ? 'សកម្ម - Active' : 'Active'}</option>
+              <option value="PAST_DUE">{isKm ? 'ហួសកំណត់ - Past Due' : 'Past Due'}</option>
+              <option value="FROZEN">{isKm ? 'ចាក់សោ - Frozen' : 'Frozen'}</option>
             </select>
 
             <select
@@ -726,7 +802,7 @@ export default function SuperAdminFleetPage() {
               aria-label={isKm ? 'ត្រងតាមគម្រោង' : 'Filter by tier'}
               className="px-3 py-2 rounded-xl border border-stone-300 text-xs font-semibold text-stone-700 bg-white focus:outline-hidden"
             >
-              <option value="ALL">{isKm ? 'គ្រប់គម្រោង (All Tiers)' : 'All Plans'}</option>
+              <option value="ALL">{isKm ? 'គ្រប់គម្រោង - All Tiers' : 'All Plans'}</option>
               <option value="FREE">Free Plan</option>
               <option value="STARTER_5">Starter ($5/mo)</option>
               <option value="PRO_8">Pro ($8/mo)</option>
@@ -779,10 +855,33 @@ export default function SuperAdminFleetPage() {
                         <div className="text-[11px] text-stone-600 font-medium">
                           {clinic.clinicNameEn}
                         </div>
-                        <div className="text-[10px] font-mono text-teal-800 flex items-center gap-1 mt-0.5">
-                          <span>{clinic.subdomain}</span>
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <a
+                            href={`/dashboard?tenantSlug=${clinic.slug || clinic.subdomain || ''}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-teal-800 hover:text-teal-950 hover:underline bg-teal-50 px-1.5 py-0.5 rounded border border-teal-200"
+                            title={isKm ? 'បើកមើលផ្ទាំងគ្រប់គ្រងហាងនេះក្នុងផ្ទាំងថ្មី' : 'Open store portal in new tab'}
+                          >
+                            <span>/{clinic.slug || clinic.subdomain}</span>
+                            <ExternalLink className="w-2.5 h-2.5 text-teal-700" />
+                          </a>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const storeUrl = typeof window !== 'undefined'
+                                ? `${window.location.origin}/dashboard?tenantSlug=${clinic.slug || clinic.subdomain || ''}`
+                                : `http://localhost:3000/dashboard?tenantSlug=${clinic.slug || clinic.subdomain || ''}`;
+                              navigator.clipboard.writeText(storeUrl);
+                              toast.success(isKm ? `បានចម្លងតំណភ្ជាប់ហាង ${clinic.clinicNameKh}` : `Copied store URL for ${clinic.clinicNameEn}`);
+                            }}
+                            className="p-1 rounded text-stone-500 hover:text-stone-900 hover:bg-stone-100 border border-stone-200 cursor-pointer"
+                            title={isKm ? 'ចម្លងតំណភ្ជាប់ហាង' : 'Copy Store URL'}
+                          >
+                            <Copy className="w-2.5 h-2.5" />
+                          </button>
                         </div>
-                        <div className="text-[10px] text-stone-400 mt-0.5">
+                        <div className="text-[10px] text-stone-400 mt-1">
                           {clinic.phonePrimary || 'N/A'} • MoH: {clinic.mohLicenseNumber || 'N/A'}
                         </div>
                       </td>
@@ -872,6 +971,17 @@ export default function SuperAdminFleetPage() {
                       {/* Remote Action Buttons */}
                       <td className="py-3 px-4 text-right">
                         <div className="flex items-center justify-end gap-1.5">
+                          {/* Open Store Dashboard in new tab */}
+                          <a
+                            href={`/dashboard?tenantSlug=${clinic.slug || clinic.subdomain || ''}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-1.5 rounded-lg border border-teal-300 bg-teal-50 text-teal-800 hover:bg-teal-100 transition-colors"
+                            title={isKm ? 'បើកមើលផ្ទាំងគ្រប់គ្រងហាងនេះ' : 'Open Store Dashboard'}
+                          >
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </a>
+
                           {/* Freeze / Unfreeze Toggle */}
                           <button
                             type="button"
@@ -968,7 +1078,7 @@ export default function SuperAdminFleetPage() {
                   }}
                   className="px-3 py-2 rounded-xl border border-stone-200 text-xs font-medium text-stone-700 bg-stone-50/50 focus:outline-hidden"
                 >
-                  <option value="ALL">{isKm ? 'គ្រប់តួនាទី (All Roles)' : 'All Roles'}</option>
+                  <option value="ALL">{isKm ? 'គ្រប់តួនាទី - All Roles' : 'All Roles'}</option>
                   <option value="SUPER_ADMIN">SUPER ADMIN</option>
                   <option value="ADMIN">CLINIC ADMIN</option>
                   <option value="DOCTOR">DOCTOR</option>
@@ -988,7 +1098,7 @@ export default function SuperAdminFleetPage() {
                   }}
                   className="px-3 py-2 rounded-xl border border-stone-200 text-xs font-medium text-stone-700 bg-stone-50/50 focus:outline-hidden max-w-[180px] truncate"
                 >
-                  <option value="ALL">{isKm ? 'គ្រប់គ្លីនិក (All Clinics)' : 'All Clinics'}</option>
+                  <option value="ALL">{isKm ? 'គ្រប់គ្លីនិក - All Clinics' : 'All Clinics'}</option>
                   {clinics.map((c) => (
                     <option key={c.id} value={c.id}>
                       {isKm ? c.clinicNameKh : c.clinicNameEn}
@@ -1006,8 +1116,8 @@ export default function SuperAdminFleetPage() {
                   className="px-3 py-2 rounded-xl border border-stone-200 text-xs font-medium text-stone-700 bg-stone-50/50 focus:outline-hidden"
                 >
                   <option value="ALL">{isKm ? 'គ្រប់ស្ថានភាព' : 'All Status'}</option>
-                  <option value="ACTIVE">{isKm ? 'សកម្ម (Active)' : 'Active'}</option>
-                  <option value="DISABLED">{isKm ? 'ចាក់សោ (Disabled)' : 'Disabled'}</option>
+                  <option value="ACTIVE">{isKm ? 'សកម្ម - Active' : 'Active'}</option>
+                  <option value="DISABLED">{isKm ? 'ចាក់សោ - Disabled' : 'Disabled'}</option>
                 </select>
 
                 {/* Create User Button */}
@@ -1227,10 +1337,10 @@ export default function SuperAdminFleetPage() {
                 <h3 className="font-bold text-sm text-stone-900">
                   {selectedClinic.isActive
                     ? isKm
-                      ? 'ចាក់សោរផ្អាកដំណើរការ (Emergency Freeze)'
+                      ? 'ចាក់សោរផ្អាកដំណើរការ - Emergency Freeze'
                       : 'Emergency Lockout / Freeze Clinic'
                     : isKm
-                    ? 'បើកដំណើរការគ្លីនិកឡើងវិញ (Unfreeze)'
+                    ? 'បើកដំណើរការគ្លីនិកឡើងវិញ - Unfreeze'
                     : 'Restore Clinic Workspace Access'}
                 </h3>
                 <p className="text-xs text-stone-500">{selectedClinic.clinicNameKh}</p>
@@ -1250,7 +1360,7 @@ export default function SuperAdminFleetPage() {
             {selectedClinic.isActive && (
               <div className="space-y-1">
                 <label className="text-[11px] font-bold text-stone-700">
-                  {isKm ? 'មូលហេតុនៃការចាក់សោរ (Reason):' : 'Lockout Reason:'}
+                  {isKm ? 'មូលហេតុនៃការចាក់សោរ - Reason :' : 'Lockout Reason:'}
                 </label>
                 <input
                   type="text"
@@ -1339,7 +1449,7 @@ export default function SuperAdminFleetPage() {
 
               <div>
                 <label className="block text-[11px] font-bold text-stone-700 mb-1">
-                  {isKm ? 'ពន្យារសុពលភាពបន្ថែម (ថ្ងៃ):' : 'Add Complimentary Days:'}
+                  {isKm ? 'ពន្យារសុពលភាពបន្ថែម - ថ្ងៃ :' : 'Add Complimentary Days:'}
                 </label>
                 <div className="grid grid-cols-4 gap-2">
                   {[15, 30, 90, 365].map((days) => (
@@ -1361,7 +1471,7 @@ export default function SuperAdminFleetPage() {
 
               <div>
                 <label className="block text-[11px] font-bold text-stone-700 mb-1">
-                  {isKm ? 'កំណត់សម្គាល់រដ្ឋបាល (Reason):' : 'Administrative Reason:'}
+                  {isKm ? 'កំណត់សម្គាល់រដ្ឋបាល - Reason :' : 'Administrative Reason:'}
                 </label>
                 <input
                   type="text"
@@ -1482,7 +1592,7 @@ export default function SuperAdminFleetPage() {
               <div>
                 <h3 className="font-bold text-sm text-stone-900">
                   {isKm
-                    ? 'កុងតាក់ថែទាំប្រព័ន្ធទូទាំងប្រទេស (Maintenance Mode)'
+                    ? 'កុងតាក់ថែទាំប្រព័ន្ធទូទាំងប្រទេស - Maintenance Mode'
                     : 'Nationwide Maintenance Mode Switch'}
                 </h3>
                 <p className="text-xs text-stone-500">Platform-Wide Infrastructure Control</p>
@@ -1491,7 +1601,7 @@ export default function SuperAdminFleetPage() {
 
             <p className="text-xs text-stone-600 leading-relaxed">
               {isKm
-                ? 'នៅពេលបើក Maintenance Mode រាល់ Traffic ពីគ្លីនិកទាំងអស់នឹងឃើញផ្ទាំងជូនដំណឹងអំពីការថែទាំម៉ាស៊ីនបម្រើការ (503 Service Unavailable)។ មានតែ Super Admin ប៉ុណ្ណោះដែលអាចបញ្ជាបាន។'
+                ? 'នៅពេលបើក Maintenance Mode រាល់ Traffic ពីគ្លីនិកទាំងអស់នឹងឃើញផ្ទាំងជូនដំណឹងអំពីការថែទាំម៉ាស៊ីនបម្រើការ - 503 Service Unavailable ។ មានតែ Super Admin ប៉ុណ្ណោះដែលអាចបញ្ជាបាន។'
                 : 'Activating maintenance mode will shield all incoming clinical traffic with a 503 maintenance screen. Only Super Admins can bypass.'}
             </p>
 
@@ -1549,7 +1659,7 @@ export default function SuperAdminFleetPage() {
                     : 'Updating...'
                   : maintenanceForm.enabled
                   ? isKm
-                    ? 'បិទ Maintenance (បើកដំណើរការឡើងវិញ)'
+                    ? 'បិទ Maintenance - បើកដំណើរការឡើងវិញ'
                     : 'Deactivate Maintenance'
                   : isKm
                   ? 'បើក Maintenance Mode ឥឡូវនេះ'
@@ -1580,7 +1690,7 @@ export default function SuperAdminFleetPage() {
             <form onSubmit={handleCreateUser} className="space-y-3 text-xs">
               <div>
                 <label className="block text-[11px] font-bold text-stone-700 mb-1">
-                  {isKm ? 'អ៊ីមែល (Email) *' : 'Email Address *'}
+                  {isKm ? 'អ៊ីមែល - Email *' : 'Email Address *'}
                 </label>
                 <input
                   type="email"
@@ -1594,7 +1704,7 @@ export default function SuperAdminFleetPage() {
 
               <div>
                 <label className="block text-[11px] font-bold text-stone-700 mb-1">
-                  {isKm ? 'លេខសម្ងាត់ (Password) *' : 'Initial Password *'}
+                  {isKm ? 'លេខសម្ងាត់ - Password *' : 'Initial Password *'}
                 </label>
                 <div className="flex gap-2">
                   <input
@@ -1646,7 +1756,7 @@ export default function SuperAdminFleetPage() {
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block text-[11px] font-bold text-stone-700 mb-1">
-                    {isKm ? 'តួនាទី (Role) *' : 'Role *'}
+                    {isKm ? 'តួនាទី - Role *' : 'Role *'}
                   </label>
                   <select
                     value={createUserForm.role}
@@ -1666,14 +1776,14 @@ export default function SuperAdminFleetPage() {
 
                 <div>
                   <label className="block text-[11px] font-bold text-stone-700 mb-1">
-                    {isKm ? 'គ្លីនិកសាមី (Clinic)' : 'Clinic Tenant'}
+                    {isKm ? 'គ្លីនិកសាមី - Clinic' : 'Clinic Tenant'}
                   </label>
                   <select
                     value={createUserForm.tenantId}
                     onChange={(e) => setCreateUserForm({ ...createUserForm, tenantId: e.target.value })}
                     className="w-full px-3 py-2 rounded-xl border border-stone-300 text-stone-900 text-xs focus:outline-hidden"
                   >
-                    <option value="">{isKm ? 'គ្មាន (Platform Core)' : 'None (Platform Core)'}</option>
+                    <option value="">{isKm ? 'គ្មាន - Platform Core' : 'None (Platform Core)'}</option>
                     {clinics.map((c) => (
                       <option key={c.id} value={c.id}>
                         {isKm ? c.clinicNameKh : c.clinicNameEn}
@@ -1784,7 +1894,7 @@ export default function SuperAdminFleetPage() {
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block text-[11px] font-bold text-stone-700 mb-1">
-                    {isKm ? 'តួនាទី (Role) *' : 'Role *'}
+                    {isKm ? 'តួនាទី - Role *' : 'Role *'}
                   </label>
                   <select
                     value={editUserForm.role}
@@ -1804,14 +1914,14 @@ export default function SuperAdminFleetPage() {
 
                 <div>
                   <label className="block text-[11px] font-bold text-stone-700 mb-1">
-                    {isKm ? 'គ្លីនិកសាមី (Clinic)' : 'Clinic Tenant'}
+                    {isKm ? 'គ្លីនិកសាមី - Clinic' : 'Clinic Tenant'}
                   </label>
                   <select
                     value={editUserForm.tenantId}
                     onChange={(e) => setEditUserForm({ ...editUserForm, tenantId: e.target.value })}
                     className="w-full px-3 py-2 rounded-xl border border-stone-300 text-stone-900 text-xs focus:outline-hidden"
                   >
-                    <option value="">{isKm ? 'គ្មាន (Platform Core)' : 'None (Platform Core)'}</option>
+                    <option value="">{isKm ? 'គ្មាន - Platform Core' : 'None (Platform Core)'}</option>
                     {clinics.map((c) => (
                       <option key={c.id} value={c.id}>
                         {isKm ? c.clinicNameKh : c.clinicNameEn}
@@ -1913,7 +2023,7 @@ export default function SuperAdminFleetPage() {
             <form onSubmit={handleConfirmResetPassword} className="space-y-3 text-xs">
               <div>
                 <label className="block text-[11px] font-bold text-stone-700 mb-1">
-                  {isKm ? 'លេខសម្ងាត់ថ្មី (New Password) *' : 'New Secure Password *'}
+                  {isKm ? 'លេខសម្ងាត់ថ្មី - New Password *' : 'New Secure Password *'}
                 </label>
                 <div className="flex gap-2">
                   <input

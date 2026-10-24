@@ -101,7 +101,7 @@ export default function ProfilePage() {
     e.target.value = '';
 
     if (!file.type.startsWith('image/')) {
-      showFeedback('error', isKh ? 'សូមជ្រើសរើសឯកសាររូបភាពត្រឹមត្រូវ (JPG, PNG, WEBP)' : 'Please select a valid image file');
+      showFeedback('error', isKh ? 'សូមជ្រើសរើសឯកសាររូបភាពត្រឹមត្រូវ - JPG, PNG ឬ WEBP' : 'Please select a valid image file');
       return;
     }
 
@@ -361,6 +361,34 @@ export default function ProfilePage() {
         </div>
       </div>
 
+      {/* Mobile Quick Logout Action Card */}
+      <div className="block sm:hidden p-3.5 rounded-2xl bg-[#FFF5F5] border border-rose-200/80 shadow-2xs">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-rose-100 text-rose-800 flex items-center justify-center shrink-0 border border-rose-200">
+              <LogOut className="w-4 h-4 text-rose-700" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-xs font-black text-rose-950 truncate">
+                {isKh ? 'ចាកចេញពីប្រព័ន្ធ - Log Out' : 'Sign Out of System'}
+              </div>
+              <div className="text-[10px] text-stone-500 font-mono truncate">
+                {user?.email}
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleLogout}
+            disabled={loggingOut}
+            className="px-3.5 py-2 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold shadow-xs transition-all active:scale-95 disabled:opacity-50 shrink-0 flex items-center gap-1.5 cursor-pointer"
+          >
+            {loggingOut ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <LogOut className="w-3.5 h-3.5" />}
+            <span>{isKh ? 'ចាកចេញ' : 'Log Out'}</span>
+          </button>
+        </div>
+      </div>
+
       {/* Global Feedback Alert */}
       {feedback && (
         <div
@@ -430,7 +458,7 @@ export default function ProfilePage() {
           }`}
         >
           <Shield className="w-3.5 h-3.5" />
-          <span>{isKh ? 'សិទ្ធិប្រើប្រាស់ (RBAC)' : 'Role Permissions'}</span>
+          <span>{isKh ? 'សិទ្ធិប្រើប្រាស់ - RBAC' : 'Role Permissions'}</span>
         </button>
       </div>
 
@@ -440,7 +468,7 @@ export default function ProfilePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-stone-700 mb-1.5">
-                {isKh ? 'ឈ្មោះជាភាសាអង់គ្លេស (Full Name English)' : 'Full Name (English)'}
+                {isKh ? 'ឈ្មោះជាភាសាអង់គ្លេស - English' : 'Full Name (English)'}
               </label>
               <input
                 type="text"
@@ -454,7 +482,7 @@ export default function ProfilePage() {
 
             <div>
               <label className="block text-xs font-semibold text-stone-700 mb-1.5">
-                {isKh ? 'ឈ្មោះជាភាសាខ្មែរ (Full Name Khmer)' : 'Full Name (Khmer)'}
+                {isKh ? 'ឈ្មោះជាភាសាខ្មែរ - Khmer' : 'Full Name (Khmer)'}
               </label>
               <input
                 type="text"
@@ -467,7 +495,7 @@ export default function ProfilePage() {
 
             <div>
               <label className="block text-xs font-semibold text-stone-700 mb-1.5">
-                {isKh ? 'អ៊ីមែលចូលប្រើប្រាស់ (Email Address - Read Only)' : 'Staff Email Address'}
+                {isKh ? 'អ៊ីមែលចូលប្រើប្រាស់ - Email Address' : 'Staff Email Address'}
               </label>
               <div className="relative">
                 <Mail className="w-4 h-4 text-stone-400 absolute left-3 top-3" />
@@ -482,7 +510,7 @@ export default function ProfilePage() {
 
             <div>
               <label className="block text-xs font-semibold text-stone-700 mb-1.5">
-                {isKh ? 'លេខទូរស័ព្ទទំនាក់ទំនង (Phone Number)' : 'Contact Phone'}
+                {isKh ? 'លេខទូរស័ព្ទទំនាក់ទំនង - Contact Phone' : 'Contact Phone'}
               </label>
               <div className="relative">
                 <Phone className="w-4 h-4 text-stone-400 absolute left-3 top-3" />
@@ -498,7 +526,7 @@ export default function ProfilePage() {
 
             <div>
               <label className="block text-xs font-semibold text-stone-700 mb-1.5">
-                {isKh ? 'ផ្នែក ឬឯកទេស (Department / Specialty)' : 'Department / Specialty'}
+                {isKh ? 'ផ្នែក ឬឯកទេស - Department' : 'Department / Specialty'}
               </label>
               <input
                 type="text"
@@ -528,7 +556,7 @@ export default function ProfilePage() {
 
           <div>
             <label className="block text-xs font-semibold text-stone-700 mb-1.5">
-              {isKh ? 'ជីវប្រវត្តិសង្ខេប ឬកំណត់ចំណាំ (Bio / Notes)' : 'Bio / Professional Notes'}
+              {isKh ? 'ជីវប្រវត្តិសង្ខេប ឬកំណត់ចំណាំ - Bio Notes' : 'Bio / Professional Notes'}
             </label>
             <textarea
               rows={3}
@@ -558,7 +586,7 @@ export default function ProfilePage() {
           <div className="space-y-4 max-w-md">
             <div>
               <label className="block text-xs font-semibold text-stone-700 mb-1.5">
-                {isKh ? 'ពាក្យសម្ងាត់បច្ចុប្បន្ន (Current Password)' : 'Current Password'}
+                {isKh ? 'ពាក្យសម្ងាត់បច្ចុប្បន្ន - Current Password' : 'Current Password'}
               </label>
               <div className="relative">
                 <Lock className="w-4 h-4 text-stone-400 absolute left-3 top-3" />
@@ -575,7 +603,7 @@ export default function ProfilePage() {
 
             <div>
               <label className="block text-xs font-semibold text-stone-700 mb-1.5">
-                {isKh ? 'ពាក្យសម្ងាត់ថ្មី (New Password - យ៉ាងតិច 8 តួ)' : 'New Password (Min 8 characters)'}
+                {isKh ? 'ពាក្យសម្ងាត់ថ្មី - យ៉ាងតិច ៨ តួអក្សរ' : 'New Password (Min 8 characters)'}
               </label>
               <div className="relative">
                 <KeyRound className="w-4 h-4 text-stone-400 absolute left-3 top-3" />
@@ -592,7 +620,7 @@ export default function ProfilePage() {
 
             <div>
               <label className="block text-xs font-semibold text-stone-700 mb-1.5">
-                {isKh ? 'បញ្ជាក់ពាក្យសម្ងាត់ថ្មី (Confirm New Password)' : 'Confirm New Password'}
+                {isKh ? 'បញ្ជាក់ពាក្យសម្ងាត់ថ្មី - Confirm New Password' : 'Confirm New Password'}
               </label>
               <div className="relative">
                 <KeyRound className="w-4 h-4 text-stone-400 absolute left-3 top-3" />
@@ -605,6 +633,19 @@ export default function ProfilePage() {
                   className="w-full pl-9 pr-3.5 py-2.5 text-xs sm:text-sm border border-[#E7E1D4] bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-700 font-mono"
                 />
               </div>
+            </div>
+
+            {/* Super Secure Password Advice */}
+            <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-300/60 text-[11px] text-amber-950 space-y-1">
+              <div className="font-bold flex items-center gap-1.5 text-amber-900">
+                <ShieldCheck className="w-3.5 h-3.5 text-amber-700" />
+                <span>{isKh ? 'ស្តង់ដារសុវត្ថិភាពពាក្យសម្ងាត់កម្រិតខ្ពស់' : 'Super Secure Password Standards'}</span>
+              </div>
+              <p className="text-stone-600 leading-relaxed">
+                {isKh
+                  ? 'ត្រូវប្រើពាក្យសម្ងាត់យ៉ាងតិច ៨ តួអក្សរ ដោយរួមបញ្ចូលអក្សរធំ អក្សរតូច លេខ និងនិមិត្តសញ្ញាពិសេសដូចជា #, $, !, @។ រាល់ពាក្យសម្ងាត់ត្រូវបាន Encrypt ដោយកូដកម្មវិធី Bcrypt ១២ ជុំយ៉ាងរឹងមាំបំផុត។'
+                  : 'Must use at least 8 characters combining uppercase, lowercase, numbers, and special symbols like #, $, !, @. Passwords are encrypted with 12-round Bcrypt.'}
+              </p>
             </div>
 
             <div className="pt-2">
@@ -623,7 +664,7 @@ export default function ProfilePage() {
           <div className="pt-6 border-t border-[#E7E1D4] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="text-xs font-bold text-stone-900">
-                {isKh ? 'សម័យប្រជុំ និងការចាកចេញ (Active Session & Sign Out)' : 'Active Session & Sign Out'}
+                {isKh ? 'សម័យប្រជុំ និងការចាកចេញ - Active Session & Sign Out' : 'Active Session & Sign Out'}
               </div>
               <div className="text-[11px] text-stone-500">
                 {isKh
@@ -638,7 +679,7 @@ export default function ProfilePage() {
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs transition-all active:scale-95 disabled:opacity-50 cursor-pointer self-start sm:self-auto"
             >
               {loggingOut ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
-              <span>{isKh ? 'ចាកចេញពីប្រព័ន្ធ (Log Out)' : 'Sign Out of Device'}</span>
+              <span>{isKh ? 'ចាកចេញពីប្រព័ន្ធ - Log Out' : 'Sign Out of Device'}</span>
             </button>
           </div>
         </form>
@@ -655,7 +696,7 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   <div className="text-xs font-bold text-stone-900">
-                    {isKh ? 'ភាសាប្រព័ន្ធ (System Language)' : 'Interface Language'}
+                    {isKh ? 'ភាសាប្រព័ន្ធ - System Language' : 'Interface Language'}
                   </div>
                   <div className="text-[11px] text-stone-500">
                     {isKh ? 'ជ្រើសរើសភាសាខ្មែរ ឬភាសាអង់គ្លេស' : 'Switch between Khmer and English'}
@@ -695,7 +736,7 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   <div className="text-xs font-bold text-stone-900">
-                    {isKh ? 'សំឡេងដាស់តឿន (Audio Chimes)' : 'Sound Effects & Chimes'}
+                    {isKh ? 'សំឡេងដាស់តឿន - Audio Chimes' : 'Sound Effects & Chimes'}
                   </div>
                   <div className="text-[11px] text-stone-500">
                     {isKh ? 'សំឡេងពេលទទួលការទូទាត់ KHQR និងហៅលេខអ្នកជំងឺ' : 'Play sounds on payment success and queue calling'}
@@ -717,7 +758,7 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   <div className="text-xs font-bold text-stone-900">
-                    {isKh ? 'ការជូនដំណឹង (Push Notifications)' : 'Push Notifications'}
+                    {isKh ? 'ការជូនដំណឹង - Push Notifications' : 'Push Notifications'}
                   </div>
                   <div className="text-[11px] text-stone-500">
                     {isKh ? 'ទទួលដំណឹងពេលមានអ្នកជំងឺថ្មី ឬការទូទាត់ជោគជ័យ' : 'Receive alerts on new visits and invoice payments'}
@@ -741,7 +782,7 @@ export default function ProfilePage() {
           <div className="flex items-center justify-between border-b border-[#E7E1D4] pb-3">
             <div>
               <div className="text-xs font-bold text-stone-900">
-                {isKh ? 'តារាងសិទ្ធិប្រើប្រាស់តាមតួនាទី (Role-Based Access Matrix)' : 'Role Permissions Matrix'}
+                {isKh ? 'តារាងសិទ្ធិប្រើប្រាស់តាមតួនាទី - Role Matrix' : 'Role Permissions Matrix'}
               </div>
               <div className="text-[11px] text-stone-500">
                 {isKh ? 'ពិនិត្យមើលថាតើតួនាទីរបស់អ្នកអាចចូលប្រើប្រាស់ម៉ូឌុលណាខ្លះ' : 'Modules you are allowed or restricted to access'}
@@ -749,7 +790,7 @@ export default function ProfilePage() {
             </div>
             {isSuperAdmin && (
               <span className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-bold border border-amber-300">
-                {isKh ? 'សិទ្ធិពេញលេញ (Full Access)' : 'Full Access'}
+                {isKh ? 'សិទ្ធិពេញលេញ - Full Access' : 'Full Access'}
               </span>
             )}
           </div>

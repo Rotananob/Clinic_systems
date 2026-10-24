@@ -126,7 +126,7 @@ export const Navbar: React.FC = () => {
             <div className="flex items-center gap-1 sm:gap-2 pl-1 sm:pl-2 border-l border-[#E7DFC9]">
               <Link
                 href="/profile"
-                className="flex items-center gap-2 px-2 py-1 rounded-xl hover:bg-[#F2ECE0] transition-colors group"
+                className="flex items-center gap-1.5 sm:gap-2 p-1 sm:px-2 sm:py-1 rounded-xl hover:bg-[#F2ECE0] transition-colors group active:scale-95"
                 title={locale === 'km' ? 'មើល និងកែសម្រួលព័ត៌មានផ្ទាល់ខ្លួន' : 'View & Edit Profile'}
               >
                 {user.avatarUrl ? (
@@ -137,7 +137,7 @@ export const Navbar: React.FC = () => {
                     className="w-8 h-8 rounded-full object-cover border border-[#DFD6C6] shadow-2xs group-hover:border-teal-700"
                   />
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-teal-800 text-white font-bold text-xs flex items-center justify-center shadow-2xs">
+                  <div className="w-8 h-8 rounded-full bg-teal-800 text-white font-bold text-xs flex items-center justify-center shadow-2xs group-hover:bg-teal-900 transition-colors">
                     {(user.fullNameEn || user.email || 'U').charAt(0).toUpperCase()}
                   </div>
                 )}
@@ -157,9 +157,11 @@ export const Navbar: React.FC = () => {
                 </div>
               </Link>
               <button
+                type="button"
                 onClick={logout}
-                className="p-1.5 sm:p-2 rounded-lg text-stone-500 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                className="p-1.5 sm:p-2 rounded-xl text-stone-500 hover:text-rose-700 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-all active:scale-95 cursor-pointer"
                 title={t.nav.logout}
+                aria-label={t.nav.logout}
               >
                 <LogOut className="w-4 h-4" />
               </button>
