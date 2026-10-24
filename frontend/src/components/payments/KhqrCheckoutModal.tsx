@@ -679,11 +679,11 @@ export function KhqrCheckoutModal({
                   onClick={() => setSelectedMethod('aba')}
                   className={`flex-1 py-1.5 px-2 rounded-lg transition-all flex items-center justify-center gap-1.5 ${
                     selectedMethod === 'aba'
-                      ? 'bg-white text-slate-900 shadow-xs'
+                      ? 'bg-white text-[#055E7C] font-bold shadow-xs'
                       : 'hover:text-slate-900'
                   }`}
                 >
-                  <span className="w-2 h-2 rounded-full bg-[#005F86]" />
+                  <img src="/images/aba-pay.svg" alt="ABA Pay" className="h-4 w-auto shrink-0" />
                   <span>ABA Pay</span>
                 </button>
 
@@ -692,11 +692,11 @@ export function KhqrCheckoutModal({
                   onClick={() => setSelectedMethod('khqr')}
                   className={`flex-1 py-1.5 px-2 rounded-lg transition-all flex items-center justify-center gap-1.5 ${
                     selectedMethod === 'khqr'
-                      ? 'bg-white text-slate-900 shadow-xs'
+                      ? 'bg-white text-rose-700 font-bold shadow-xs'
                       : 'hover:text-slate-900'
                   }`}
                 >
-                  <span className="w-2 h-2 rounded-full bg-[#E1251B]" />
+                  <img src="/images/khqr.svg" alt="KHQR" className="h-4 w-auto shrink-0" />
                   <span>KHQR</span>
                 </button>
 
@@ -776,14 +776,14 @@ export function KhqrCheckoutModal({
                     target="_blank"
                     rel="noreferrer"
                     onClick={handleDeeplinkClick}
-                    className="flex items-center gap-2 p-2.5 rounded-xl border border-blue-200 bg-gradient-to-r from-[#00529C] to-[#003d73] text-white shadow-2xs hover:opacity-95 transition-all"
+                    className="flex items-center gap-2.5 p-2.5 rounded-xl border border-[#00475E] bg-[#055E7C] hover:bg-[#03455B] text-white shadow-xs hover:shadow-md transition-all group active:scale-[0.98]"
                   >
-                    <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center font-black text-[10px] shrink-0">
-                      ABA
+                    <div className="shrink-0 flex items-center justify-center p-0.5 rounded-md bg-[#00475E]/60 border border-white/20">
+                      <img src="/images/aba-pay.svg" alt="ABA Pay" className="h-6 w-auto block select-none" />
                     </div>
                     <div className="text-left overflow-hidden">
-                      <div className="text-xs font-bold leading-tight truncate">ABA Mobile</div>
-                      <div className="text-[10px] text-blue-100/90 leading-tight">បង់ភ្លាមៗ</div>
+                      <div className="text-xs font-bold leading-tight truncate text-white">ABA Mobile</div>
+                      <div className="text-[10px] text-cyan-200/90 leading-tight font-medium">ABA Pay - រហ័ស</div>
                     </div>
                   </a>
 
@@ -793,14 +793,14 @@ export function KhqrCheckoutModal({
                     target="_blank"
                     rel="noreferrer"
                     onClick={handleDeeplinkClick}
-                    className="flex items-center gap-2 p-2.5 rounded-xl border border-red-200 bg-gradient-to-r from-[#E12228] to-[#b81419] text-white shadow-2xs hover:opacity-95 transition-all"
+                    className="flex items-center gap-2.5 p-2.5 rounded-xl border border-red-300 bg-gradient-to-r from-[#E12228] to-[#b81419] text-white shadow-xs hover:shadow-md transition-all group active:scale-[0.98]"
                   >
-                    <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center font-black text-[9px] shrink-0">
-                      KHQR
+                    <div className="shrink-0 flex items-center justify-center">
+                      <img src="/images/bakong.svg" alt="Bakong" className="w-7 h-7 rounded-full shrink-0 select-none shadow-xs" />
                     </div>
                     <div className="text-left overflow-hidden">
-                      <div className="text-xs font-bold leading-tight truncate">Bakong App</div>
-                      <div className="text-[10px] text-red-100 leading-tight">បាគង</div>
+                      <div className="text-xs font-bold leading-tight truncate text-white">Bakong App</div>
+                      <div className="text-[10px] text-red-100 leading-tight font-medium">បាគង - រហ័ស</div>
                     </div>
                   </a>
 

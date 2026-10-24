@@ -177,8 +177,8 @@ export const AbaPaywayTesterCard: React.FC = () => {
       {/* Top Banner Header */}
       <div className="bg-gradient-to-r from-teal-900 via-teal-800 to-stone-900 text-white px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-teal-200 shrink-0 shadow-xs">
-            <QrCode className="w-6 h-6" />
+          <div className="w-12 h-12 rounded-2xl bg-[#055E7C] border border-cyan-400/30 flex items-center justify-center p-1.5 shrink-0 shadow-xs">
+            <img src="/images/aba-pay.svg" alt="ABA Pay" className="h-7 w-auto block select-none drop-shadow-xs" />
           </div>
           <div>
             <div className="flex items-center gap-2">
@@ -447,9 +447,9 @@ export const AbaPaywayTesterCard: React.FC = () => {
                     <span className="font-bold text-stone-900">
                       {qrResult.merchantName || 'KruPet'}
                     </span>
-                    <span className="text-[10px] text-emerald-700 font-semibold flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
-                      {isKm ? 'ABA Live Gateway KHQR ស្កេនបានពិតៗ' : 'Live ABA Gateway KHQR (100% Scannable)'}
+                    <span className="text-[10px] text-[#055E7C] font-bold flex items-center gap-1.5">
+                      <img src="/images/aba-pay.svg" alt="ABA Pay" className="h-3.5 w-auto shrink-0" />
+                      <span>{isKm ? 'ABA Live Gateway KHQR ស្កេនបានពិតៗ' : 'Live ABA Gateway KHQR (100% Scannable)'}</span>
                     </span>
                   </div>
                   <span className="font-bold font-mono text-teal-800 text-sm">

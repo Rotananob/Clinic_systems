@@ -22,6 +22,7 @@ import {
   Copy,
   AlertCircle,
 } from 'lucide-react';
+import { AbaPayButton } from '../payments/AbaPayButton';
 import { useTranslation } from '../../context/I18nContext';
 import { api } from '../../lib/api';
 import { playPaymentSuccessChime } from '../../lib/chime';
@@ -601,16 +602,15 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
                   {/* Deeplink & Action Buttons */}
                   <div className="pt-2 flex flex-col sm:flex-row items-center gap-3">
                     {checkoutData.deeplinks?.aba && (
-                      <a
+                      <AbaPayButton
                         href={checkoutData.deeplinks.aba}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="w-full sm:w-auto flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-teal-800 hover:bg-teal-700 text-white font-bold text-xs transition-colors shadow-xs"
-                      >
-                        <Zap className="w-4 h-4 text-teal-200" />
-                        <span>{isKm ? 'ទូទាត់តាម App ABA Mobile' : 'Pay via ABA Mobile App'}</span>
-                        <ExternalLink className="w-3.5 h-3.5 text-teal-300" />
-                      </a>
+                        isKm={isKm}
+                        labelKh="ទូទាត់តាម ABA Mobile"
+                        labelEn="Pay via ABA Mobile"
+                        sublabelKh="ABA Pay - ដោះសោគម្រោងភ្លាមៗ"
+                        sublabelEn="Instant KHQR Activation"
+                        className="w-full sm:w-auto flex-1"
+                      />
                     )}
 
                     <button
