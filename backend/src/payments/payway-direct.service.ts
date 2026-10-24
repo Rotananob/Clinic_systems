@@ -7,6 +7,8 @@ export interface DirectPaywaySession {
   checkoutUrl: string;
   cookieHeader: string;
   cachedAt: number;
+  merchantName?: string;
+  merchantLogo?: string;
 }
 
 export interface DirectInvoiceResult {
@@ -17,6 +19,8 @@ export interface DirectInvoiceResult {
   requestTime: string;
   cookieHeader: string;
   checkoutUrl: string;
+  merchantName?: string;
+  merchantLogo?: string;
 }
 
 export interface DirectStatusResult {
@@ -53,7 +57,7 @@ const API_HEADERS_BASE: Record<string, string> = {
   'sec-ch-ua-platform': '"Android"',
   'sec-fetch-dest': 'empty',
   'sec-fetch-mode': 'cors',
-  'sec-fetch-site': 'cross-site',
+  'sec-fetch-site': 'same-origin',
   'language': 'en',
 };
 
@@ -114,17 +118,50 @@ export class PaywayDirectService {
     }
 
     const rawAbaData = abaMatch[1].replace(/\\u002F/g, '/');
+    const merchantInfo = this.extractMerchantInfo(html);
+
     const session: DirectPaywaySession = {
       abaData: rawAbaData,
       requestTime: reqMatch[1],
       checkoutUrl,
       cookieHeader,
       cachedAt: Date.now(),
+      merchantName: merchantInfo.merchantName,
+      merchantLogo: merchantInfo.merchantLogo,
     };
 
     this.sessionPool.set(checkoutUrl, session);
-    this.logger.log(`Handshake clearance captured for ${checkoutUrl}. Has cookies: ${Boolean(cookieHeader)}`);
+    this.logger.log(`Handshake clearance captured for ${checkoutUrl}. Has cookies: ${Boolean(cookieHeader)}, Merchant: ${session.merchantName}`);
     return session;
+  }
+
+  /**
+   * Extracts merchant company name, outlet name, and logo directly from PayWay landing page HTML or Nuxt payload.
+   */
+  extractMerchantInfo(html: string): { merchantName: string; merchantLogo?: string } {
+    try {
+      const nuxtMatch = html.match(/window\.__NUXT__\s*=\s*(.+?);<\/script>/s);
+      if (nuxtMatch) {
+        const sandbox: any = {};
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const vm = require('vm');
+        vm.runInNewContext('var out = ' + nuxtMatch[1], sandbox, { timeout: 1000 });
+        const summary = sandbox?.out?.data?.[0]?.data?.transaction_summary?.merchant;
+        if (summary) {
+          return {
+            merchantName: summary.outlet_name || summary.company || 'ABA Merchant',
+            merchantLogo: summary.company_logo ? summary.company_logo.replace(/\\u002F/g, '/') : undefined,
+          };
+        }
+      }
+    } catch {}
+
+    const companyMatch = html.match(/company:\s*["']([^"']+)["']/);
+    const logoMatch = html.match(/company_logo:\s*["']([^"']+)["']/);
+    return {
+      merchantName: companyMatch ? companyMatch[1] : 'ABA Merchant',
+      merchantLogo: logoMatch ? logoMatch[1].replace(/\\u002F/g, '/') : undefined,
+    };
   }
 
   /**
@@ -211,6 +248,8 @@ export class PaywayDirectService {
       requestTime: session.requestTime,
       cookieHeader: session.cookieHeader,
       checkoutUrl,
+      merchantName: session.merchantName,
+      merchantLogo: session.merchantLogo,
     };
   }
 

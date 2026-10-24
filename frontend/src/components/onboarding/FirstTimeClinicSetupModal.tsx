@@ -32,49 +32,49 @@ interface FirstTimeClinicSetupModalProps {
 const CLINIC_SPECIALTIES = [
   {
     id: 'General Medical Clinic',
-    nameKh: 'គ្លីនិកទូទៅ & វេជ្ជសាស្ត្រគ្រួសារ (General Practice)',
+    nameKh: 'គ្លីនិកទូទៅ & វេជ្ជសាស្ត្រគ្រួសារ - General Practice',
     nameEn: 'General Medical Clinic',
     descKh: 'ពិគ្រោះជំងឺទូទៅ កត់ត្រា SOAP និងចេញវេជ្ជបញ្ជា',
   },
   {
     id: 'Dental & Oral Surgery Clinic',
-    nameKh: 'គ្លីនិកទន្តសាស្ត្រ & ធ្មេញ (Dental & Oral Surgery)',
+    nameKh: 'គ្លីនិកទន្តសាស្ត្រ & ធ្មេញ - Dental & Oral Surgery',
     nameEn: 'Dental & Oral Surgery Clinic',
     descKh: 'គំនូសធ្មេញ Odontogram ៣២ គ្រាប់ និងផែនការព្យាបាលធ្មេញ',
   },
   {
     id: 'Pharmacy & Community Drugstore',
-    nameKh: 'ឱសថស្ថាន & ហាងលក់ថ្នាំ (Pharmacy & Drugstore)',
+    nameKh: 'ឱសថស្ថាន & ហាងលក់ថ្នាំ - Pharmacy & Drugstore',
     nameEn: 'Pharmacy & Community Drugstore',
     descKh: 'គ្រប់គ្រងស្តុកឱសថ បើកថ្នាំ និងគិតលុយ KHQR POS',
   },
   {
     id: 'Polyclinic & Outpatient Center',
-    nameKh: 'មន្ទីរសម្រាកព្យាបាល & ពហុព្យាបាល (Polyclinic)',
+    nameKh: 'មន្ទីរសម្រាកព្យាបាល & ពហុព្យាបាល - Polyclinic',
     nameEn: 'Polyclinic & Outpatient Center',
     descKh: 'ពហុឯកទេស មានគ្រែសម្រាក និងបន្ទប់ពិគ្រោះច្រើន',
   },
   {
     id: 'Pediatric & Child Health',
-    nameKh: 'គ្លីនិកកុមារ & វ៉ាក់សាំង (Pediatrics)',
+    nameKh: 'គ្លីនិកកុមារ & វ៉ាក់សាំង - Pediatrics',
     nameEn: 'Pediatric & Child Health',
     descKh: 'វ៉ាក់សាំងកុមារ បន្ទាត់លូតលាស់ WHO និងកម្រិតថ្នាំតាមគីឡូ',
   },
   {
     id: "Maternity & Women's Health",
-    nameKh: "គ្លីនិកសម្ភព & រោគស្ត្រី (Maternity & Women's Health)",
+    nameKh: "គ្លីនិកសម្ភព & រោគស្ត្រី - Maternity & Women's Health",
     nameEn: "Maternity & Women's Health",
     descKh: 'តាមដានផ្ទៃពោះ ANC គណនាថ្ងៃសម្រាល និងរូបភាពអេកូ',
   },
   {
     id: 'Dermatology & Aesthetic Clinic',
-    nameKh: 'គ្លីនិកសើស្បែក & សម្រស់ (Dermatology)',
+    nameKh: 'គ្លីនិកសើស្បែក & សម្រស់ - Dermatology',
     nameEn: 'Dermatology & Aesthetic Clinic',
     descKh: 'ព្យាបាលជំងឺសើស្បែក ឡាស៊ែរ និងសេវាកម្មសម្រស់',
   },
   {
     id: 'Eye & ENT Specialty Clinic',
-    nameKh: 'គ្លីនិកចក្ខុរោគ & ច្រមុះបំពង់ក (Eye & ENT)',
+    nameKh: 'គ្លីនិកចក្ខុរោគ & ច្រមុះបំពង់ក - Eye & ENT',
     nameEn: 'Eye & ENT Specialty Clinic',
     descKh: 'ពិនិត្យភ្នែក វាស់កម្រិតគំហើញ និងជំងឺត្រចៀក ច្រមុះ បំពង់ក',
   },
@@ -158,7 +158,7 @@ export const FirstTimeClinicSetupModal: React.FC<FirstTimeClinicSetupModalProps>
     if (!clinicNameEn.trim()) {
       setErrorMsg(
         isKm
-          ? 'សូមបញ្ចូលឈ្មោះគ្លីនិកជាអក្សរឡាតាំង (English)។'
+          ? 'សូមបញ្ចូលឈ្មោះគ្លីនិកជាអក្សរឡាតាំង English។'
           : 'Please enter your clinic name in English.'
       );
       return;
@@ -281,7 +281,7 @@ export const FirstTimeClinicSetupModal: React.FC<FirstTimeClinicSetupModalProps>
 
               <div>
                 <label className="block text-xs font-bold text-stone-700 mb-1.5">
-                  {isKm ? 'ឈ្មោះគ្លីនិកជាអក្សរឡាតាំង (English)' : 'Clinic Name (English)'} *
+                  {isKm ? 'ឈ្មោះគ្លីនិកជាអក្សរឡាតាំង English' : 'Clinic Name (English)'} *
                 </label>
                 <input
                   type="text"
@@ -347,7 +347,7 @@ export const FirstTimeClinicSetupModal: React.FC<FirstTimeClinicSetupModalProps>
                 3
               </span>
               <h3 className="text-sm font-bold text-stone-900">
-                {isKm ? 'ភ្ជាប់ ABA Merchant Link (ឥតគិតថ្លៃ)' : 'Connect Free ABA Merchant Link'}
+                {isKm ? 'ភ្ជាប់ ABA Merchant Link: ឥតគិតថ្លៃ' : 'Connect Free ABA Merchant Link'}
               </h3>
             </div>
 
@@ -366,7 +366,7 @@ export const FirstTimeClinicSetupModal: React.FC<FirstTimeClinicSetupModalProps>
                 <li>{isKm ? 'ចូលទៅកាន់ Services រួចជ្រើសរើស ABA Merchant / PayWay' : 'Go to Services and select ABA Merchant / PayWay'}</li>
                 <li>
                   {isKm
-                    ? 'ចម្លងយក Merchant Payment Link របស់អ្នក (ឧ. https://link.payway.com.kh/...) រួច Paste ក្នុងប្រអប់ខាងក្រោម'
+                    ? 'ចម្លងយក Merchant Payment Link របស់អ្នក ឧទាហរណ៍ https://link.payway.com.kh/... រួច Paste ក្នុងប្រអប់ខាងក្រោម'
                     : 'Copy your Merchant Payment Link (e.g. https://link.payway.com.kh/...) and paste below'}
                 </li>
               </ol>
@@ -380,7 +380,7 @@ export const FirstTimeClinicSetupModal: React.FC<FirstTimeClinicSetupModalProps>
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="block text-xs font-bold text-stone-700">
-                  {isKm ? 'តំណភ្ជាប់ ABA Merchant Link (PayWay URL)' : 'ABA Merchant Link (PayWay URL)'} *
+                  {isKm ? 'តំណភ្ជាប់ ABA Merchant Link: PayWay URL' : 'ABA Merchant Link (PayWay URL)'} *
                 </label>
                 <button
                   type="button"
@@ -441,7 +441,7 @@ export const FirstTimeClinicSetupModal: React.FC<FirstTimeClinicSetupModalProps>
                     {testKhqrResult.liveGateway && (
                       <div className="text-[10px] text-teal-800 font-semibold flex items-center gap-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-teal-600 animate-pulse" />
-                        <span>{isKm ? 'ភ្ជាប់ពី ABA PayWay Live Gateway (ស្កេនបានពិតៗ)' : 'Live ABA PayWay Gateway (100% Scannable)'}</span>
+                        <span>{isKm ? 'ភ្ជាប់ពី ABA PayWay Live Gateway: ស្កេនបានពិតៗ' : 'Live ABA PayWay Gateway (100% Scannable)'}</span>
                       </div>
                     )}
                     <div className="text-[11px] text-stone-500 font-mono">

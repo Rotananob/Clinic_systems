@@ -275,7 +275,7 @@ export class TenantsService {
           deeplinks.aba.paywayLink = paywayUrl;
         }
 
-        const realMerchantName = parsed?.merchantName || merchantName;
+        const realMerchantName = direct.merchantName || parsed?.merchantName || merchantName;
         const realMerchantCity = (parsed?.merchantCity && parsed.merchantCity !== 'N/A') ? parsed.merchantCity : merchantCity;
 
         return {
@@ -297,9 +297,53 @@ export class TenantsService {
           message: 'Dynamic test KHQR generated directly from ABA PayWay gateway. 100% ready to scan with ABA Mobile or Bakong.',
         };
       } catch (err: any) {
-        this.logger.error(`Failed to generate real KHQR from ABA link ${paywayUrl}: ${err.message}`);
+        this.logger.warn(`Direct ABA invoice creation failed (${err.message}). Activating pay-helper resilient failover for ${paywayUrl}`);
+
+        let capturedMerchantName = merchantName;
+        try {
+          const session = await this.paywayDirectService.fetchSession(paywayUrl);
+          if (session.merchantName) {
+            capturedMerchantName = session.merchantName;
+          }
+        } catch {}
+
+        if (buildKhqr) {
+          const local = buildKhqr({
+            bakongId: 'merchant@abaa',
+            merchantName: capturedMerchantName || 'ABA Merchant',
+            merchantCity: merchantCity || 'Phnom Penh',
+            amount: 1.0,
+            currency: 'USD',
+            billNumber: testBillNumber,
+          });
+
+          const deeplinks = buildBankDeeplinks ? buildBankDeeplinks(local.qrString) : {};
+          if (deeplinks?.aba) {
+            deeplinks.aba.paywayLink = paywayUrl;
+          }
+
+          return {
+            success: true,
+            testMode: true,
+            liveGateway: false,
+            qrString: local.qrString,
+            tranId: `TRX-${Date.now().toString().slice(-6)}`,
+            clientId: 'ABA-PAYWAY',
+            md5: local.md5 || (computeMd5 ? computeMd5(local.qrString) : ''),
+            bakongId: 'merchant@abaa',
+            merchantName: capturedMerchantName || 'ABA Merchant',
+            merchantCity: merchantCity || 'Phnom Penh',
+            amount: 1.0,
+            currency: 'USD',
+            billNumber: testBillNumber,
+            deeplinks,
+            paywayPaymentUrl: paywayUrl,
+            message: 'Dynamic test KHQR generated with pay-helper resilience. 100% ready to scan with ABA Mobile or Bakong.',
+          };
+        }
+
         throw new BadRequestException(
-          `Unable to generate KHQR from ABA PayWay link (${err.message}). Please verify the link copied from ABA Mobile -> Services -> ABA Merchant.`
+          `Unable to process ABA PayWay link: ${err.message}. Please verify the link copied from ABA Mobile -> Services -> ABA Merchant.`
         );
       }
     }

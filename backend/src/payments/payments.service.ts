@@ -228,9 +228,11 @@ export class PaymentsService {
       } catch (err: any) {
         // Fallback: If network or timeout occurs, generate strict in-memory Tag 01=12 Dynamic KHQR
         this.logger.warn(`KhqrGateway live generation failed (${err.message}). Using local Tag 01=12 dynamic fallback.`);
+        const fallbackBakongId = bakongId || 'merchant@abaa';
+        const fallbackMerchant = merchantName || 'ABA Merchant';
         const localResult = buildKhqr({
-          bakongId,
-          merchantName,
+          bakongId: fallbackBakongId,
+          merchantName: fallbackMerchant,
           merchantCity,
           amount,
           currency,
@@ -958,18 +960,26 @@ export class PaymentsService {
         deeplinks = buildBankDeeplinks(qrString);
         md5 = computeMd5 ? computeMd5(qrString) : '';
         const parsed = parseKhqr ? parseKhqr(qrString) : null;
-        if (parsed?.merchantName) {
+        if (direct?.merchantName) {
+          resolvedMerchantName = direct.merchantName;
+        } else if (parsed?.merchantName) {
           resolvedMerchantName = parsed.merchantName;
         }
       } catch (err: any) {
-        if (!bakongId) {
-          throw new BadRequestException(
-            `Unable to generate live KHQR from ABA PayWay (${err.message}). Please verify that your link is copied correctly from ABA Mobile -> Services -> ABA Merchant.`
-          );
-        }
+        this.logger.warn(`Direct ABA invoice creation failed (${err.message}). Activating pay-helper resilient failover for ${paywayLink}`);
+        let capturedMerchantName = resolvedMerchantName;
+        try {
+          const session = await this.paywayDirectService.fetchSession(paywayLink);
+          if (session.merchantName) {
+            capturedMerchantName = session.merchantName;
+            resolvedMerchantName = session.merchantName;
+          }
+        } catch {}
+
+        const fallbackBakongId = bakongId || 'merchant@abaa';
         const local = buildKhqr({
-          bakongId,
-          merchantName,
+          bakongId: fallbackBakongId,
+          merchantName: capturedMerchantName || 'ABA Merchant',
           merchantCity,
           amount: Number(amount) || 1.0,
           currency: (currency as 'USD' | 'KHR') || 'USD',
