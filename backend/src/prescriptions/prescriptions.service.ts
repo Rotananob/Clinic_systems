@@ -8,17 +8,11 @@ export class PrescriptionsService {
   constructor(private prisma: PrismaService) {}
 
   private async generateNextPrescriptionCode(): Promise<string> {
-    const year = new Date().getFullYear();
-    const count = await this.prisma.prescription.count();
-    const sequence = (count + 1).toString().padStart(4, '0');
-    return `RX-${year}-${sequence}`;
+    return this.prisma.generateNextPrescriptionCode();
   }
 
   private async generateNextInvoiceNumber(): Promise<string> {
-    const year = new Date().getFullYear();
-    const count = await this.prisma.invoice.count();
-    const sequence = (count + 1).toString().padStart(4, '0');
-    return `INV-${year}-${sequence}`;
+    return this.prisma.generateNextInvoiceNumber();
   }
 
   async create(doctorId: string, dto: CreatePrescriptionDto) {

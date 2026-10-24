@@ -698,8 +698,7 @@ export class PaymentsService {
     });
 
     if (!patient) {
-      const patientCount = await this.prisma.patient.count();
-      const patientCode = `PAT-${year}-${(patientCount + 1).toString().padStart(4, '0')}`;
+      const patientCode = await this.prisma.generateNextPatientCode();
       patient = await this.prisma.patient.create({
         data: {
           patientCode,
@@ -712,8 +711,7 @@ export class PaymentsService {
     }
 
     // 2. Generate unique invoice number
-    const invoiceCount = await this.prisma.invoice.count();
-    const invoiceNumber = `INV-${year}-${(invoiceCount + 1).toString().padStart(4, '0')}`;
+    const invoiceNumber = await this.prisma.generateNextInvoiceNumber();
 
     // 3. Create Invoice
     const invoice = await this.prisma.invoice.create({

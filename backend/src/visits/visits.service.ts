@@ -10,17 +10,11 @@ export class VisitsService {
   constructor(private prisma: PrismaService) {}
 
   private async generateNextVisitCode(): Promise<string> {
-    const year = new Date().getFullYear();
-    const count = await this.prisma.visit.count();
-    const sequence = (count + 1).toString().padStart(4, '0');
-    return `VST-${year}-${sequence}`;
+    return this.prisma.generateNextVisitCode();
   }
 
   private async generateNextInvoiceNumber(): Promise<string> {
-    const year = new Date().getFullYear();
-    const count = await this.prisma.invoice.count();
-    const sequence = (count + 1).toString().padStart(4, '0');
-    return `INV-${year}-${sequence}`;
+    return this.prisma.generateNextInvoiceNumber();
   }
 
   async create(createVisitDto: CreateVisitDto) {
@@ -270,9 +264,7 @@ export class VisitsService {
 
       // 3. If prescriptions are present, generate a draft prescription
       if (soap.plan.prescriptions && soap.plan.prescriptions.length > 0) {
-        const year = new Date().getFullYear();
-        const count = await tx.prescription.count();
-        const prescriptionCode = `RX-${year}-${(count + 1).toString().padStart(4, '0')}`;
+        const prescriptionCode = await this.prisma.generateNextPrescriptionCode();
 
         const createdRx = await tx.prescription.create({
           data: {

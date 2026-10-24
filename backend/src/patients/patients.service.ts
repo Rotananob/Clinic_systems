@@ -11,10 +11,7 @@ export class PatientsService {
   ) {}
 
   private async generateNextPatientCode(): Promise<string> {
-    const year = new Date().getFullYear();
-    const count = await this.prisma.patient.count();
-    const sequence = (count + 1).toString().padStart(4, '0');
-    return `PAT-${year}-${sequence}`;
+    return this.prisma.generateNextPatientCode();
   }
 
   async checkDuplicate(phone: string, nationalId?: string) {
@@ -61,24 +58,41 @@ export class PatientsService {
       );
     }
 
-    const patientCode = await this.generateNextPatientCode();
+    let attempts = 0;
+    while (attempts < 3) {
+      const patientCode = await this.generateNextPatientCode();
+      try {
+        return await this.prisma.patient.create({
+          data: {
+            patientCode,
+            nameEn: createPatientDto.nameEn,
+            nameKh: createPatientDto.nameKh,
+            gender: createPatientDto.gender,
+            dob: createPatientDto.dob ? new Date(createPatientDto.dob) : null,
+            phone: createPatientDto.phone,
+            nationalId: createPatientDto.nationalId,
+            address: createPatientDto.address,
+            bloodType: createPatientDto.bloodType,
+            allergies: createPatientDto.allergies,
+            emergencyContactName: createPatientDto.emergencyContactName,
+            emergencyContactPhone: createPatientDto.emergencyContactPhone,
+          },
+        });
+      } catch (err: any) {
+        const isUniqueConstraint =
+          err?.code === 'P2002' ||
+          (typeof err?.message === 'string' && err.message.includes('Unique constraint failed'));
+        const isPatientCodeTarget =
+          err?.meta?.target?.includes?.('patientCode') ||
+          (typeof err?.message === 'string' && err.message.includes('patientCode'));
 
-    return this.prisma.patient.create({
-      data: {
-        patientCode,
-        nameEn: createPatientDto.nameEn,
-        nameKh: createPatientDto.nameKh,
-        gender: createPatientDto.gender,
-        dob: createPatientDto.dob ? new Date(createPatientDto.dob) : null,
-        phone: createPatientDto.phone,
-        nationalId: createPatientDto.nationalId,
-        address: createPatientDto.address,
-        bloodType: createPatientDto.bloodType,
-        allergies: createPatientDto.allergies,
-        emergencyContactName: createPatientDto.emergencyContactName,
-        emergencyContactPhone: createPatientDto.emergencyContactPhone,
-      },
-    });
+        if (isUniqueConstraint && isPatientCodeTarget && attempts < 2) {
+          attempts++;
+          continue;
+        }
+        throw err;
+      }
+    }
   }
 
   async findAll(query: { search?: string; page?: number; limit?: number }) {

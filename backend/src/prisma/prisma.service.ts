@@ -86,7 +86,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
             email: 'owner@clinic.com',
             passwordHash: superAdminHash,
             fullNameEn: 'Rotana Nob (System Owner & Director)',
-            fullNameKh: 'លោក ណុប រតនា (ម្ចាស់ប្រព័ន្ធ & នាយកប្រតិបត្តិ)',
+            fullNameKh: 'លោក ណុប រតនា - ម្ចាស់ប្រព័ន្ធ & នាយកប្រតិបត្តិ',
             role: 'SUPER_ADMIN' as any,
             phone: '012888999',
             isActive: true,
@@ -216,5 +216,245 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
       return next(params);
     });
+  }
+
+  /**
+   * Generates a globally unique patient code: PAT-YYYY-XXXX
+   * Bypasses tenant isolation to avoid collision across multiple tenant clinics
+   */
+  async generateNextPatientCode(): Promise<string> {
+    const year = new Date().getFullYear();
+    let maxSeq = 0;
+    try {
+      const rows: any[] = await this.$queryRawUnsafe(`
+        SELECT substring("patientCode" from '^PAT-${year}-([0-9]+)$')::int as max_seq
+        FROM patients
+        WHERE "patientCode" ~ '^PAT-${year}-[0-9]+$'
+        ORDER BY max_seq DESC
+        LIMIT 1
+      `);
+      if (rows && rows.length > 0 && rows[0]?.max_seq != null) {
+        maxSeq = Number(rows[0].max_seq);
+      }
+    } catch {
+      try {
+        const count = await this.patient.count();
+        maxSeq = count;
+      } catch {
+        maxSeq = 0;
+      }
+    }
+
+    let nextSeq = maxSeq + 1;
+    let candidate = `PAT-${year}-${nextSeq.toString().padStart(4, '0')}`;
+    let attempts = 0;
+    while (attempts < 50) {
+      let existing: any = null;
+      try {
+        const found: any[] = await this.$queryRawUnsafe(
+          `SELECT id FROM patients WHERE "patientCode" = $1 LIMIT 1`,
+          candidate,
+        );
+        if (Array.isArray(found) && found.length > 0) {
+          existing = found[0];
+        }
+      } catch {
+        try {
+          existing = await this.patient.findFirst({
+            where: { patientCode: candidate },
+          });
+        } catch {
+          existing = null;
+        }
+      }
+
+      if (!existing) {
+        return candidate;
+      }
+      nextSeq++;
+      candidate = `PAT-${year}-${nextSeq.toString().padStart(4, '0')}`;
+      attempts++;
+    }
+    return `PAT-${year}-${Date.now().toString().slice(-4)}`;
+  }
+
+  /**
+   * Generates a globally unique visit code: VST-YYYY-XXXX
+   * Bypasses tenant isolation to avoid collision across multiple tenant clinics
+   */
+  async generateNextVisitCode(): Promise<string> {
+    const year = new Date().getFullYear();
+    let maxSeq = 0;
+    try {
+      const rows: any[] = await this.$queryRawUnsafe(`
+        SELECT substring("visitCode" from '^VST-${year}-([0-9]+)$')::int as max_seq
+        FROM visits
+        WHERE "visitCode" ~ '^VST-${year}-[0-9]+$'
+        ORDER BY max_seq DESC
+        LIMIT 1
+      `);
+      if (rows && rows.length > 0 && rows[0]?.max_seq != null) {
+        maxSeq = Number(rows[0].max_seq);
+      }
+    } catch {
+      try {
+        const count = await this.visit.count();
+        maxSeq = count;
+      } catch {
+        maxSeq = 0;
+      }
+    }
+
+    let nextSeq = maxSeq + 1;
+    let candidate = `VST-${year}-${nextSeq.toString().padStart(4, '0')}`;
+    let attempts = 0;
+    while (attempts < 50) {
+      let existing: any = null;
+      try {
+        const found: any[] = await this.$queryRawUnsafe(
+          `SELECT id FROM visits WHERE "visitCode" = $1 LIMIT 1`,
+          candidate,
+        );
+        if (Array.isArray(found) && found.length > 0) {
+          existing = found[0];
+        }
+      } catch {
+        try {
+          existing = await this.visit.findFirst({
+            where: { visitCode: candidate },
+          });
+        } catch {
+          existing = null;
+        }
+      }
+
+      if (!existing) {
+        return candidate;
+      }
+      nextSeq++;
+      candidate = `VST-${year}-${nextSeq.toString().padStart(4, '0')}`;
+      attempts++;
+    }
+    return `VST-${year}-${Date.now().toString().slice(-4)}`;
+  }
+
+  /**
+   * Generates a globally unique prescription code: RX-YYYY-XXXX
+   * Bypasses tenant isolation to avoid collision across multiple tenant clinics
+   */
+  async generateNextPrescriptionCode(): Promise<string> {
+    const year = new Date().getFullYear();
+    let maxSeq = 0;
+    try {
+      const rows: any[] = await this.$queryRawUnsafe(`
+        SELECT substring("prescriptionCode" from '^RX-${year}-([0-9]+)$')::int as max_seq
+        FROM prescriptions
+        WHERE "prescriptionCode" ~ '^RX-${year}-[0-9]+$'
+        ORDER BY max_seq DESC
+        LIMIT 1
+      `);
+      if (rows && rows.length > 0 && rows[0]?.max_seq != null) {
+        maxSeq = Number(rows[0].max_seq);
+      }
+    } catch {
+      try {
+        const count = await this.prescription.count();
+        maxSeq = count;
+      } catch {
+        maxSeq = 0;
+      }
+    }
+
+    let nextSeq = maxSeq + 1;
+    let candidate = `RX-${year}-${nextSeq.toString().padStart(4, '0')}`;
+    let attempts = 0;
+    while (attempts < 50) {
+      let existing: any = null;
+      try {
+        const found: any[] = await this.$queryRawUnsafe(
+          `SELECT id FROM prescriptions WHERE "prescriptionCode" = $1 LIMIT 1`,
+          candidate,
+        );
+        if (Array.isArray(found) && found.length > 0) {
+          existing = found[0];
+        }
+      } catch {
+        try {
+          existing = await this.prescription.findFirst({
+            where: { prescriptionCode: candidate },
+          });
+        } catch {
+          existing = null;
+        }
+      }
+
+      if (!existing) {
+        return candidate;
+      }
+      nextSeq++;
+      candidate = `RX-${year}-${nextSeq.toString().padStart(4, '0')}`;
+      attempts++;
+    }
+    return `RX-${year}-${Date.now().toString().slice(-4)}`;
+  }
+
+  /**
+   * Generates a globally unique invoice number: INV-YYYY-XXXX
+   * Bypasses tenant isolation to avoid collision across multiple tenant clinics
+   */
+  async generateNextInvoiceNumber(): Promise<string> {
+    const year = new Date().getFullYear();
+    let maxSeq = 0;
+    try {
+      const rows: any[] = await this.$queryRawUnsafe(`
+        SELECT substring("invoiceNumber" from '^INV-${year}-([0-9]+)$')::int as max_seq
+        FROM invoices
+        WHERE "invoiceNumber" ~ '^INV-${year}-[0-9]+$'
+        ORDER BY max_seq DESC
+        LIMIT 1
+      `);
+      if (rows && rows.length > 0 && rows[0]?.max_seq != null) {
+        maxSeq = Number(rows[0].max_seq);
+      }
+    } catch {
+      try {
+        const count = await this.invoice.count();
+        maxSeq = count;
+      } catch {
+        maxSeq = 0;
+      }
+    }
+
+    let nextSeq = maxSeq + 1;
+    let candidate = `INV-${year}-${nextSeq.toString().padStart(4, '0')}`;
+    let attempts = 0;
+    while (attempts < 50) {
+      let existing: any = null;
+      try {
+        const found: any[] = await this.$queryRawUnsafe(
+          `SELECT id FROM invoices WHERE "invoiceNumber" = $1 LIMIT 1`,
+          candidate,
+        );
+        if (Array.isArray(found) && found.length > 0) {
+          existing = found[0];
+        }
+      } catch {
+        try {
+          existing = await this.invoice.findFirst({
+            where: { invoiceNumber: candidate },
+          });
+        } catch {
+          existing = null;
+        }
+      }
+
+      if (!existing) {
+        return candidate;
+      }
+      nextSeq++;
+      candidate = `INV-${year}-${nextSeq.toString().padStart(4, '0')}`;
+      attempts++;
+    }
+    return `INV-${year}-${Date.now().toString().slice(-4)}`;
   }
 }
