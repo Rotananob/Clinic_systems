@@ -20,7 +20,7 @@ export const PublicNavbar: React.FC = () => {
     <header className="sticky top-0 z-50 w-full bg-[#FAF7F2]/95 backdrop-blur-md border-b border-[#E7E1D4] shadow-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand Logo */}
-        <Link href="/" className="flex items-center group">
+        <Link href={user ? '/dashboard' : '/'} className="flex items-center group">
           <ClinicLogo variant="navbar" size="md" />
         </Link>
 

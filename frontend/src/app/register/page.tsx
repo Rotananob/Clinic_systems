@@ -118,6 +118,14 @@ function RegisterContent() {
   const { locale } = useTranslation();
   const isKm = locale === 'km';
 
+  // Redirect if already authenticated
+  useEffect(() => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('clinic_access_token') : null;
+    if (token) {
+      router.replace('/dashboard');
+    }
+  }, [router]);
+
   const initialPlan = normalizePlanTier(searchParams.get('plan'));
   const isYearly = searchParams.get('billing') === 'yearly';
   const [selectedPlan, setSelectedPlan] = useState<string>(initialPlan);
@@ -330,7 +338,10 @@ function RegisterContent() {
         localStorage.setItem('clinic_user', JSON.stringify(fullUser));
 
         // Directly route to dashboard where first-time clinic setup wizard pops up immediately
-        router.push('/dashboard');
+        if (typeof window !== 'undefined') {
+          window.history.replaceState(null, '', '/dashboard');
+        }
+        router.replace('/dashboard');
       }
     } catch (err: any) {
       setErrorMessage(err.message || 'Verification failed. Please check the code and try again.');

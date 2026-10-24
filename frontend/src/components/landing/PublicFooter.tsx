@@ -3,12 +3,14 @@
 import React from 'react';
 import Link from 'next/link';
 import { useTranslation } from '../../context/I18nContext';
+import { useAuth } from '../../context/AuthContext';
 import { ClinicLogo } from '../common/ClinicLogo';
 import { ShieldCheck } from 'lucide-react';
 
 export const PublicFooter: React.FC = () => {
   const { locale } = useTranslation();
   const isKm = locale === 'km';
+  const { user } = useAuth();
 
   return (
     <footer className="bg-[#FAF7F2] border-t border-[#E7E0D2] pt-14 pb-12 text-stone-600 text-xs">
@@ -16,7 +18,7 @@ export const PublicFooter: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand Info */}
           <div className="space-y-3 md:col-span-1">
-            <Link href="/" className="inline-block">
+            <Link href={user ? '/dashboard' : '/'} className="inline-block">
               <ClinicLogo variant="navbar" size="md" />
             </Link>
             <p className="text-xs text-stone-500 leading-relaxed mt-2">

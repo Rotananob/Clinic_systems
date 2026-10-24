@@ -63,6 +63,20 @@ function DashboardView() {
   const router = useRouter();
   const clinicType = user?.tenant?.clinicType;
 
+  // Strict browser history trap: prevents back button from navigating to landing or register
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.history.pushState(null, '', window.location.href);
+      const handlePopState = () => {
+        window.history.pushState(null, '', window.location.href);
+      };
+      window.addEventListener('popstate', handlePopState);
+      return () => {
+        window.removeEventListener('popstate', handlePopState);
+      };
+    }
+  }, []);
+
   const [metrics, setMetrics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from '../context/I18nContext';
 import { PublicNavbar } from '../components/landing/PublicNavbar';
@@ -21,6 +22,15 @@ export default function RootHomePage() {
   const { user } = useAuth();
   const { locale } = useTranslation();
   const isKm = locale === 'km';
+  const router = useRouter();
+
+  // Redirect authenticated clinic users directly to dashboard
+  React.useEffect(() => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('clinic_access_token') : null;
+    if (token || user) {
+      router.replace('/dashboard');
+    }
+  }, [user, router]);
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F7F4EE] text-stone-900 selection:bg-teal-800 selection:text-white">

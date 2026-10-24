@@ -23,7 +23,7 @@ export const Navbar: React.FC = () => {
     <header className="sticky top-0 z-30 bg-[#FDFBF7]/95 backdrop-blur-md border-b border-[#E7E1D4] shadow-xs">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <Link href="/" className="flex items-center gap-2 shrink-0 hover:opacity-95 transition-opacity">
+          <Link href="/dashboard" className="flex items-center gap-2 shrink-0 hover:opacity-95 transition-opacity">
             <ClinicLogo variant="navbar" size="md" />
           </Link>
 

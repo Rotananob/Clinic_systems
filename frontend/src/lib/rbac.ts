@@ -17,6 +17,14 @@ export interface RoutePermission {
 
 export const ROUTE_PERMISSIONS: RoutePermission[] = [
   {
+    path: '/dashboard',
+    allowedRoles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR', 'RECEPTIONIST', 'CASHIER', 'PHARMACIST'],
+    labelEn: 'Clinic Dashboard',
+    labelKh: 'ផ្ទាំងគ្រប់គ្រងគ្លីនិក',
+    descriptionEn: 'Live clinical metrics, patient queue, and operational center',
+    descriptionKh: 'ស្ថិតិគ្លីនិកផ្ទាល់ ក្ដារហៅអ្នកជំងឺ និងមជ្ឈមណ្ឌលប្រតិបត្តិការ',
+  },
+  {
     path: '/',
     allowedRoles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR', 'RECEPTIONIST', 'CASHIER', 'PHARMACIST'],
     labelEn: 'Dashboard Overview',
@@ -281,9 +289,9 @@ export function getClinicTargetRoute(
     tenant?: { clinicType?: string };
   } | null,
 ): string {
-  if (!user) return '/';
-  if (user.role === 'SUPER_ADMIN') return '/';
-  if (user.targetRoute) return user.targetRoute;
+  if (!user) return '/dashboard';
+  if (user.role === 'SUPER_ADMIN' || user.role === 'ADMIN') return '/dashboard';
+  if (user.targetRoute && user.targetRoute !== '/') return user.targetRoute;
 
   const category = resolveClinicCategory(user.tenant?.clinicType);
   const role = user.role;
@@ -304,7 +312,7 @@ export function getClinicTargetRoute(
   if (role === 'CASHIER') return '/billing';
   if (role === 'RECEPTIONIST') return '/queue';
 
-  return '/queue';
+  return '/dashboard';
 }
 
 export function isModuleRelevantForClinic(

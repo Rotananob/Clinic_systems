@@ -25,7 +25,7 @@ export const MobileNavDock: React.FC = () => {
   const isSuperAdmin = user?.role === 'SUPER_ADMIN';
 
   const potentialItems = [
-    { label: isKh ? 'ទំព័រដើម' : 'Home', href: '/', icon: LayoutDashboard },
+    { label: isKh ? 'ផ្ទាំងគ្រប់គ្រង' : 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { label: isKh ? 'អ្នកជំងឺ' : 'Patients', href: '/patients', icon: Users },
     { label: isKh ? 'ជួរហៅ' : 'Queue', href: '/queue', icon: Monitor },
     { label: isKh ? 'ពិគ្រោះ' : 'Visits', href: '/visits', icon: Calendar },

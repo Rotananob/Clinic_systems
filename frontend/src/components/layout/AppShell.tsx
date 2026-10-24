@@ -224,7 +224,7 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
                 </p>
                 <button
                   type="button"
-                  onClick={() => router.push('/')}
+                  onClick={() => router.push('/dashboard')}
                   className="px-4 py-2 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors"
                 >
                   {isKm ? 'ត្រឡប់ទៅផ្ទាំងដើម' : 'Back to Dashboard'}
@@ -256,7 +256,7 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
                   </Link>
                   <button
                     type="button"
-                    onClick={() => router.push('/')}
+                    onClick={() => router.push('/dashboard')}
                     className="w-full sm:w-auto px-4 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-semibold border border-stone-300 transition-colors"
                   >
                     {isKm ? 'ត្រឡប់ទៅផ្ទាំងដើម' : 'Back to Dashboard'}

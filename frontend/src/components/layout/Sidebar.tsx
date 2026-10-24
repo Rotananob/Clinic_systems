@@ -58,7 +58,7 @@ export const Sidebar: React.FC = () => {
   }, []);
 
   const allNavItems = [
-    { label: t.nav.dashboard, href: '/', icon: LayoutDashboard },
+    { label: t.nav.dashboard, href: '/dashboard', icon: LayoutDashboard },
     { label: t.nav.patients, href: '/patients', icon: Users },
     { label: t.nav.visits, href: '/visits', icon: Calendar },
     { label: t.nav.queue, href: '/queue', icon: Monitor },
@@ -118,7 +118,9 @@ export const Sidebar: React.FC = () => {
     <aside className="hidden md:flex flex-col w-64 border-r border-[#E7E1D4] bg-[#FDFBF7] min-h-[calc(100vh-4rem)] p-4 shadow-2xs select-none">
       {/* Brand Badge in Sidebar */}
       <div className="mb-3">
-        <ClinicLogo variant="sidebar" />
+        <Link href="/dashboard" className="block hover:opacity-90 transition-opacity">
+          <ClinicLogo variant="sidebar" />
+        </Link>
       </div>
 
       {/* Role Pill */}

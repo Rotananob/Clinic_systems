@@ -170,7 +170,8 @@ export default function LoginPage() {
       const loggedInUser = await login(email.trim(), password);
       setFailedAttempts(0);
       const targetDestination = getClinicTargetRoute(loggedInUser);
-      router.push(targetDestination);
+      if (typeof window !== 'undefined') { window.history.replaceState(null, '', targetDestination); }
+      router.replace(targetDestination);
     } catch (err: unknown) {
       const nextFailures = failedAttempts + 1;
       setFailedAttempts(nextFailures);
