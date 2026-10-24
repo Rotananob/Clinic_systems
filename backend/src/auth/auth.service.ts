@@ -388,11 +388,13 @@ export class AuthService {
     }
 
     // 4. Resolve plan tier configuration and quotas
-    const selectedTier = dto.planTier || PlanTier.FREE;
-    const planConfig = SAAS_PLANS[selectedTier] || SAAS_PLANS[PlanTier.FREE];
+    // STRICT SECURITY GUARD: Initial workspace provisioning is ALWAYS on PlanTier.FREE.
+    // Paid tiers (STARTER_5, PRO_8, ENTERPRISE_12) strictly require verified payment settlement.
+    const requestedTier = dto.planTier && dto.planTier !== PlanTier.FREE ? dto.planTier : PlanTier.FREE;
+    const initialTier = PlanTier.FREE;
+    const planConfig = SAAS_PLANS[initialTier];
     const passwordHash = await bcrypt.hash(dto.password, 10);
     const now = new Date();
-    const periodEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
     // 5. Atomically provision Isolated Tenant Workspace, Subscription, and Admin User within 2 seconds
     const result = await this.prisma.$transaction(async (tx) => {
@@ -404,12 +406,12 @@ export class AuthService {
           clinicType,
           phonePrimary: phone,
           email: normalizedEmail,
-          planTier: selectedTier,
+          planTier: initialTier,
           subscriptionStatus: SubscriptionStatus.ACTIVE,
-          currentPeriodEnd: periodEnd,
-          maxDailyKhqr: planConfig.maxDailyKhqr === -1 ? 999999 : planConfig.maxDailyKhqr,
-          maxMonthlyPatients: planConfig.maxMonthlyPatients === -1 ? 999999 : planConfig.maxMonthlyPatients,
-          maxStaffAccounts: planConfig.maxStaffAccounts === -1 ? 999999 : planConfig.maxStaffAccounts,
+          currentPeriodEnd: null, // Free forever never expires
+          maxDailyKhqr: planConfig.maxDailyKhqr,
+          maxMonthlyPatients: planConfig.maxMonthlyPatients,
+          maxStaffAccounts: planConfig.maxStaffAccounts,
           isActive: true,
         },
       });
@@ -417,13 +419,13 @@ export class AuthService {
       const subscription = await tx.tenantSubscription.create({
         data: {
           tenantId: tenant.id,
-          planTier: selectedTier,
-          amountUsd: planConfig.priceUsd,
+          planTier: initialTier,
+          amountUsd: 0,
           status: SubscriptionStatus.ACTIVE,
           startDate: now,
-          endDate: periodEnd,
-          invoiceNumber: `SUB-${tenant.slug.toUpperCase()}-${Date.now().toString().slice(-4)}`,
-          paymentMethod: 'INITIAL_ONBOARDING_PROVISION',
+          endDate: null,
+          invoiceNumber: `SUB-${tenant.slug.toUpperCase()}-FREE`,
+          paymentMethod: 'FREE_COMMUNITY_TIER',
         },
       });
 
@@ -496,6 +498,8 @@ export class AuthService {
       success: true,
       accessToken: this.jwtService.sign(tokenPayload),
       targetRoute,
+      requirePayment: requestedTier !== PlanTier.FREE,
+      pendingPlanTier: requestedTier !== PlanTier.FREE ? requestedTier : undefined,
       permissions: ROLE_PERMISSIONS_MATRIX[result.user.role] || [],
       allowedRoutes: ROLE_ALLOWED_ROUTES[result.user.role] || ['/profile'],
       user: {
