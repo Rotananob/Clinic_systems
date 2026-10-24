@@ -81,8 +81,9 @@ describe('EmailVerificationService Test Suite', () => {
     assert.ok(res.message);
     assert.ok(capturedMail);
     assert.equal(capturedMail.to, 'doctor.cheasok@krupet.health');
-    assert.match(capturedMail.subject, /\[KruPet\]/);
+    assert.match(capturedMail.subject, /KruPet/);
     assert.match(capturedMail.html, /KruPet/);
+    assert.equal(capturedMail.headers['Auto-Submitted'], 'auto-generated');
   });
 
   it('should dispatch sendPasswordResetCode safely with reset subject and template', async () => {

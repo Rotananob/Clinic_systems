@@ -149,9 +149,8 @@ export class EmailVerificationService {
     description: string;
     logoBuffer: Buffer | null;
   }): string {
-    const { code, badgeText, description } = params;
+    const { code, badgeText, description, logoBuffer } = params;
     const digits = code.split('');
-    const logoUrl = 'https://clinic-systems.vercel.app/icons/icon-192.png';
 
     const digitCells = digits
       .map(
@@ -165,6 +164,10 @@ export class EmailVerificationService {
       )
       .join('');
 
+    const logoHtml = logoBuffer
+      ? `<img src="cid:krupet-logo" alt="KruPet Logo" width="60" height="60" style="display: block; border-radius: 16px; margin: 0 auto; border: 1.5px solid rgba(255, 255, 255, 0.25);" />`
+      : `<div style="width: 56px; height: 56px; line-height: 56px; background: #0d9488; color: #ffffff; font-size: 24px; font-weight: 900; border-radius: 16px; text-align: center; margin: 0 auto; font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; border: 1.5px solid rgba(255, 255, 255, 0.25);">KP</div>`;
+
     return `
       <!DOCTYPE html>
       <html lang="km">
@@ -173,10 +176,7 @@ export class EmailVerificationService {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="color-scheme" content="light dark">
         <meta name="supported-color-schemes" content="light dark">
-        <title>KruPet Verification Code: ${code}</title>
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+        <title>KruPet: ${code}</title>
         <style>
           :root {
             color-scheme: light dark;
@@ -203,11 +203,11 @@ export class EmailVerificationService {
             padding: 0 !important;
             width: 100% !important;
             background-color: #f7f4ee;
-            font-family: 'Kantumruy Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Khmer OS Siemreap', 'Khmer OS Battambang', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Kantumruy Pro', sans-serif;
           }
         </style>
       </head>
-      <body style="margin: 0; padding: 0; background-color: #f7f4ee; font-family: 'Kantumruy Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Khmer OS Siemreap', sans-serif; color: #1c1917;">
+      <body style="margin: 0; padding: 0; background-color: #f7f4ee; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Kantumruy Pro', sans-serif; color: #1c1917;">
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f7f4ee; padding: 32px 12px;">
           <tr>
             <td align="center">
@@ -215,11 +215,11 @@ export class EmailVerificationService {
                 
                 <!-- Header Banner with Official KruPet Branding -->
                 <tr>
-                  <td style="background: linear-gradient(135deg, #022c27 0%, #043d35 35%, #064e3b 70%, #0d5f58 100%); padding: 36px 24px 28px; text-align: center;">
+                  <td style="background: linear-gradient(135deg, #022c27 0%, #043d35 35%, #064e3b 70%, #0d5f58 100%); padding: 32px 24px 26px; text-align: center;">
                     <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin: 0 auto 12px;">
                       <tr>
-                        <td align="center" style="width: 76px; height: 76px; background: rgba(255, 255, 255, 0.12); border-radius: 22px; border: 1.5px solid rgba(255, 255, 255, 0.25); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);">
-                          <img src="${logoUrl}" alt="KruPet Official Logo" width="64" height="64" style="display: block; border-radius: 18px; margin: 0 auto;" />
+                        <td align="center">
+                          ${logoHtml}
                         </td>
                       </tr>
                     </table>
@@ -229,7 +229,7 @@ export class EmailVerificationService {
                       <span style="display: inline-block; background-color: rgba(94, 234, 212, 0.25); color: #5eead4; border: 1px solid rgba(94, 234, 212, 0.5); border-radius: 12px; font-size: 10px; font-weight: 800; font-family: 'Plus Jakarta Sans', monospace; padding: 2px 10px; margin-left: 6px; vertical-align: middle; text-transform: uppercase;">${badgeText}</span>
                     </div>
 
-                    <p style="color: #ccfbf1; margin: 0; font-size: 13px; font-weight: 500; font-family: 'Kantumruy Pro', sans-serif; line-height: 1.5;">
+                    <p style="color: #ccfbf1; margin: 0; font-size: 13px; font-weight: 500; font-family: -apple-system, BlinkMacSystemFont, sans-serif; line-height: 1.5;">
                       ប្រព័ន្ធគ្រប់គ្រងគ្លីនិក និងវេជ្ជសាស្ត្រឌីជីថលឆ្លាតវៃ
                     </p>
                   </td>
@@ -238,7 +238,7 @@ export class EmailVerificationService {
                 <!-- Content Area -->
                 <tr>
                   <td style="padding: 32px 28px 24px; background-color: #ffffff;">
-                    <p style="font-size: 15px; line-height: 1.7; color: #1c1917; margin: 0 0 20px 0; font-family: 'Kantumruy Pro', sans-serif; font-weight: 500;">
+                    <p style="font-size: 15px; line-height: 1.7; color: #1c1917; margin: 0 0 20px 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-weight: 500;">
                       ${description}
                     </p>
 
@@ -250,13 +250,13 @@ export class EmailVerificationService {
                         </tr>
                       </table>
 
-                      <div style="color: #5eead4 !important; font-size: 12px; font-weight: 700; font-family: 'Kantumruy Pro', sans-serif; margin-bottom: 8px;">
+                      <div style="color: #5eead4 !important; font-size: 12px; font-weight: 700; font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin-bottom: 8px;">
                         លេខកូដសម្ងាត់សម្រាប់ផ្ទៀងផ្ទាត់ ៦ ខ្ទង់
                       </div>
 
                       <div style="display: inline-block; background: rgba(255, 255, 255, 0.1); border: 1px dashed rgba(94, 234, 212, 0.4); border-radius: 8px; padding: 4px 14px;">
                         <span style="color: #99f6e4; font-size: 11px; font-family: monospace;">One-Time Code:</span>
-                        <strong style="color: #ffffff !important; font-size: 15px; font-family: 'JetBrains Mono', monospace; letter-spacing: 2px; margin-left: 6px;">${code}</strong>
+                        <strong style="color: #ffffff !important; font-size: 15px; font-family: 'JetBrains Mono', Consolas, Monaco, monospace; letter-spacing: 2px; margin-left: 6px;">${code}</strong>
                       </div>
                     </div>
 
@@ -264,14 +264,14 @@ export class EmailVerificationService {
                     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f0fdf4; border-left: 4px solid #0d9488; border-radius: 8px; margin: 0 0 20px 0;">
                       <tr>
                         <td style="padding: 12px 16px;">
-                          <p style="font-size: 12.5px; color: #064e3b; line-height: 1.6; margin: 0; font-family: 'Kantumruy Pro', sans-serif;">
+                          <p style="font-size: 12.5px; color: #064e3b; line-height: 1.6; margin: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
                             <strong style="color: #042f2e;">សុពលភាព៖</strong> លេខកូដនេះមានសុពលភាពត្រឹមតែ <strong>១០ នាទី</strong> ប៉ុណ្ណោះ។ សូមកុំចែករំលែកលេខកូដនេះទៅកាន់អ្នកដទៃជាដាច់ខាត ដើម្បីការពារសុវត្ថិភាពទិន្នន័យគ្លីនិករបស់អ្នក។
                           </p>
                         </td>
                       </tr>
                     </table>
 
-                    <p style="font-size: 12px; color: #78716c; line-height: 1.6; margin: 0; font-family: 'Kantumruy Pro', sans-serif;">
+                    <p style="font-size: 12px; color: #78716c; line-height: 1.6; margin: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
                       ប្រសិនបើលោកអ្នកមិនបានស្នើសុំលេខកូដនេះទេ សូមកុំមានការព្រួយបារម្ភ គណនីរបស់អ្នកនៅតែមានសុវត្ថិភាពពេញលេញជានិច្ច។
                     </p>
                   </td>
@@ -283,7 +283,7 @@ export class EmailVerificationService {
                     <p style="font-size: 12px; font-weight: 700; color: #042f2e; margin: 0 0 4px 0; font-family: 'Plus Jakarta Sans', sans-serif;">
                       KruPet - Clinical Operating System
                     </p>
-                    <p style="font-size: 11px; color: #78716c; margin: 0; font-family: 'Kantumruy Pro', sans-serif; line-height: 1.5;">
+                    <p style="font-size: 11px; color: #78716c; margin: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; line-height: 1.5;">
                       រក្សាសិទ្ធិគ្រប់យ៉ាងដោយ KruPet - ប្រព័ន្ធសុខាភិបាលឌីជីថល ព្រះរាជាណាចក្រកម្ពុជា
                     </p>
                   </td>
@@ -303,9 +303,10 @@ export class EmailVerificationService {
     subject: string;
     text: string;
     htmlContent: string;
+    logoBuffer: Buffer | null;
     successMessage: string;
   }): Promise<{ success: boolean; message: string }> {
-    const { to, subject, text, htmlContent, successMessage } = params;
+    const { to, subject, text, htmlContent, logoBuffer, successMessage } = params;
     const candidates = [
       process.env.FRONTEND_URL,
       'https://clinic-systems.vercel.app',
@@ -313,6 +314,19 @@ export class EmailVerificationService {
     ].filter(Boolean) as string[];
 
     const secret = process.env.INTERNAL_MAILER_SECRET || 'krupet-mailer-secret-2026-production';
+    const user = process.env.GMAIL_USER || 'xflowstudio5@gmail.com';
+
+    const attachments = logoBuffer
+      ? [
+          {
+            filename: 'krupet-logo.png',
+            content: logoBuffer.toString('base64'),
+            encoding: 'base64',
+            cid: 'krupet-logo',
+            contentType: 'image/png',
+          },
+        ]
+      : undefined;
 
     for (const base of candidates) {
       const cleanBase = base.replace(/\/+$/, '');
@@ -330,7 +344,17 @@ export class EmailVerificationService {
             subject,
             html: htmlContent,
             text,
-            fromName: 'KruPet - Clinical OS',
+            fromName: 'KruPet',
+            replyTo: user,
+            headers: {
+              'Auto-Submitted': 'auto-generated',
+              'X-Auto-Response-Suppress': 'All',
+              'X-Priority': '1',
+              'Importance': 'high',
+              'Priority': 'urgent',
+              'X-Entity-Ref-ID': `krupet-otp-${Date.now()}`,
+            },
+            attachments,
           }),
           signal: AbortSignal.timeout(12000),
         });
@@ -377,11 +401,20 @@ export class EmailVerificationService {
     }
 
     const mailOptions: any = {
-      from: `"KruPet - Clinical OS" <${user}>`,
+      from: `"KruPet" <${user}>`,
       to,
+      replyTo: user,
       subject,
       text,
       html: htmlContent,
+      headers: {
+        'Auto-Submitted': 'auto-generated',
+        'X-Auto-Response-Suppress': 'All',
+        'X-Priority': '1',
+        'Importance': 'high',
+        'Priority': 'urgent',
+        'X-Entity-Ref-ID': `krupet-otp-${Date.now()}`,
+      },
     };
 
     if (logoBuffer) {
@@ -427,6 +460,7 @@ export class EmailVerificationService {
           subject,
           text,
           htmlContent,
+          logoBuffer,
           successMessage,
         });
       } catch (relayErr: any) {
@@ -493,6 +527,7 @@ export class EmailVerificationService {
           subject,
           text,
           htmlContent,
+          logoBuffer,
           successMessage,
         });
       } catch (relayErr2: any) {
@@ -557,10 +592,27 @@ export class EmailVerificationService {
       logoBuffer,
     });
 
+    const fullText = [
+      'KruPet - ប្រព័ន្ធគ្រប់គ្រងគ្លីនិក និងវេជ្ជសាស្ត្រឌីជីថលឆ្លាតវៃ',
+      '',
+      'សូមស្វាគមន៍មកកាន់ KruPet',
+      'នេះជាលេខកូដបញ្ជាក់ ៦ ខ្ទង់របស់អ្នក ដើម្បីបង្កើត និងផ្ទៀងផ្ទាត់គណនី Workspace គ្លីនិក៖',
+      '',
+      `>>> ${code} <<<`,
+      '',
+      'សុពលភាព៖ លេខកូដនេះមានសុពលភាពត្រឹមតែ ១០ នាទីប៉ុណ្ណោះ។',
+      'សូមកុំចែករំលែកលេខកូដនេះទៅកាន់អ្នកដទៃជាដាច់ខាត ដើម្បីការពារសុវត្ថិភាពទិន្នន័យគ្លីនិករបស់អ្នក។',
+      '',
+      'ប្រសិនបើលោកអ្នកមិនបានស្នើសុំលេខកូដនេះទេ សូមកុំមានការព្រួយបារម្ភ គណនីរបស់អ្នកនៅតែមានសុវត្ថិភាពពេញលេញជានិច្ច។',
+      '',
+      'KruPet - Clinical Operating System',
+      'រក្សាសិទ្ធិគ្រប់យ៉ាងដោយ KruPet - ប្រព័ន្ធសុខាភិបាលឌីជីថល ព្រះរាជាណាចក្រកម្ពុជា',
+    ].join('\n');
+
     return this.dispatchEmail({
       to: normalizedEmail,
-      subject: `[KruPet] លេខកូដបញ្ជាក់ការចុះឈ្មោះគ្លីនិក - Verification Code: ${code}`,
-      text: `KruPet - លេខកូដបញ្ជាក់ការចុះឈ្មោះគ្លីនិករបស់អ្នកគឺ: ${code} - មានសុពលភាព ១០ នាទី។`,
+      subject: `KruPet: លេខកូដផ្ទៀងផ្ទាត់គណនីរបស់អ្នកគឺ ${code}`,
+      text: fullText,
       htmlContent,
       logoBuffer,
       successMessage: 'លេខកូដបញ្ជាក់ ៦ ខ្ទង់ត្រូវបានផ្ញើទៅកាន់ Gmail របស់អ្នករួចរាល់ហើយ។ សូមពិនិត្យមើលប្រអប់សំបុត្រ Gmail របស់អ្នក។',
@@ -589,10 +641,27 @@ export class EmailVerificationService {
       logoBuffer,
     });
 
+    const fullText = [
+      'KruPet - ប្រព័ន្ធគ្រប់គ្រងគ្លីនិក និងវេជ្ជសាស្ត្រឌីជីថលឆ្លាតវៃ',
+      '',
+      'យើងបានទទួលសំណើសុំកំណត់ពាក្យសម្ងាត់គណនី KruPet របស់អ្នកឡើងវិញ។',
+      'នេះជាលេខកូដសម្ងាត់ ៦ ខ្ទង់សម្រាប់ផ្ទៀងផ្ទាត់៖',
+      '',
+      `>>> ${code} <<<`,
+      '',
+      'សុពលភាព៖ លេខកូដនេះមានសុពលភាពត្រឹមតែ ១០ នាទីប៉ុណ្ណោះ។',
+      'សូមកុំចែករំលែកលេខកូដនេះទៅកាន់អ្នកដទៃជាដាច់ខាត ដើម្បីការពារសុវត្ថិភាពគណនីរបស់អ្នក។',
+      '',
+      'ប្រសិនបើលោកអ្នកមិនបានស្នើសុំលេខកូដនេះទេ សូមកុំមានការព្រួយបារម្ភ គណនីរបស់អ្នកនៅតែមានសុវត្ថិភាពពេញលេញជានិច្ច។',
+      '',
+      'KruPet - Clinical Operating System',
+      'រក្សាសិទ្ធិគ្រប់យ៉ាងដោយ KruPet - ប្រព័ន្ធសុខាភិបាលឌីជីថល ព្រះរាជាណាចក្រកម្ពុជា',
+    ].join('\n');
+
     return this.dispatchEmail({
       to: normalizedEmail,
-      subject: `[KruPet] លេខកូដកំណត់ពាក្យសម្ងាត់ឡើងវិញ - Reset Code: ${code}`,
-      text: `KruPet - លេខកូដកំណត់ពាក្យសម្ងាត់គណនីឡើងវិញរបស់អ្នកគឺ: ${code} - មានសុពលភាព ១០ នាទី។`,
+      subject: `KruPet: លេខកូដកំណត់ពាក្យសម្ងាត់គណនីឡើងវិញគឺ ${code}`,
+      text: fullText,
       htmlContent,
       logoBuffer,
       successMessage: 'លេខកូដបញ្ជាក់ ៦ ខ្ទង់សម្រាប់កំណត់ពាក្យសម្ងាត់ឡើងវិញ ត្រូវបានផ្ញើទៅកាន់ Gmail របស់អ្នករួចរាល់ហើយ។',

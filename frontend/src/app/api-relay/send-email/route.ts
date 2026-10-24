@@ -17,7 +17,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { secret, to, subject, html, text, fromName } = body;
+    const { secret, to, subject, html, text, fromName, headers, replyTo, attachments } = body;
 
     if (!secret || secret !== RELAY_SECRET) {
       return NextResponse.json(
@@ -47,13 +47,34 @@ export async function POST(req: NextRequest) {
       greetingTimeout: 12000,
     });
 
-    const info = await transporter.sendMail({
-      from: `"${fromName || 'KruPet - Clinical OS'}" <${user}>`,
+    const senderName = fromName || 'KruPet';
+    const mailOptions: any = {
+      from: `"${senderName}" <${user}>`,
       to,
+      replyTo: replyTo || user,
       subject,
       text: text || '',
       html: html || '',
-    });
+      headers: {
+        'Auto-Submitted': 'auto-generated',
+        'X-Auto-Response-Suppress': 'All',
+        'X-Priority': '1',
+        'Importance': 'high',
+        'Priority': 'urgent',
+        ...(headers || {}),
+      },
+    };
+
+    if (attachments && Array.isArray(attachments)) {
+      mailOptions.attachments = attachments.map((att: any) => ({
+        filename: att.filename,
+        content: att.content ? Buffer.from(att.content, att.encoding || 'base64') : undefined,
+        cid: att.cid,
+        contentType: att.contentType,
+      }));
+    }
+
+    const info = await transporter.sendMail(mailOptions);
 
     return NextResponse.json({
       success: true,
