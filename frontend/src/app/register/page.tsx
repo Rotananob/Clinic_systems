@@ -126,6 +126,31 @@ function clearVerificationSession() {
   } catch {}
 }
 
+function getOrCreateDeviceId(): string {
+  if (typeof window === 'undefined') return 'device-client';
+  let id = localStorage.getItem('clinic_device_id');
+  if (!id) {
+    id = 'dev-' + Math.random().toString(36).substring(2, 12) + '-' + Date.now().toString(36);
+    localStorage.setItem('clinic_device_id', id);
+  }
+  return id;
+}
+
+function getDailyQrGenerations(): number {
+  if (typeof window === 'undefined') return 0;
+  const today = new Date().toISOString().split('T')[0];
+  const raw = localStorage.getItem(`clinic_qr_daily_${today}`);
+  return raw ? parseInt(raw, 10) : 0;
+}
+
+function incrementDailyQrGenerations(): number {
+  if (typeof window === 'undefined') return 0;
+  const today = new Date().toISOString().split('T')[0];
+  const count = getDailyQrGenerations() + 1;
+  localStorage.setItem(`clinic_qr_daily_${today}`, count.toString());
+  return count;
+}
+
 function RegisterContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -383,13 +408,28 @@ function RegisterContent() {
       setLoadingPayment(true);
       setPaymentError(null);
       setActivatedSuccess(false);
+
+      // Enforce 10-times daily spam protection per device
+      const dailyCount = getDailyQrGenerations();
+      if (dailyCount >= 10) {
+        setPaymentError(
+          isKm
+            ? 'ឧបករណ៍របស់លោកអ្នកបានបង្កើត QR Code ចំនួន ១០ ដងក្នុងមួយថ្ងៃរួចហើយ ដើម្បីការពារការ Spam ប្រព័ន្ធ។ សូមព្យាយាមម្តងទៀតនៅថ្ងៃស្អែក ឬទាក់ទងមកកាន់យើងខ្ញុំ។'
+            : 'This device has reached the daily limit of 10 KHQR generation requests to prevent spam. Please try again tomorrow or contact support.'
+        );
+        return;
+      }
+
+      const deviceId = getOrCreateDeviceId();
       const res = await api.subscriptions.createCheckout({
         planTier: plan as any,
         billingCycle: cycle,
+        deviceId,
       });
       if (res && res.success) {
+        incrementDailyQrGenerations();
         setCheckoutData(res);
-        setPaymentCountdown(180); // Strictly 3 minutes
+        setPaymentCountdown(res.expiresInSeconds || 180); // Strictly 3 minutes
       } else {
         setPaymentError(
           isKm
@@ -789,6 +829,30 @@ function RegisterContent() {
                               sublabelEn="Instant Auto-Upgrade Settlement"
                               className="w-full"
                             />
+                          )}
+
+                          {/* Bakong App Deeplink Button */}
+                          {checkoutData.deeplinks?.bakong && (
+                            <a
+                              href={checkoutData.deeplinks.bakong}
+                              target="_self"
+                              className="w-full py-2.5 px-3.5 rounded-xl bg-[#E1251B] hover:bg-[#C91F16] active:bg-[#B31A12] text-white shadow-xs hover:shadow-md border border-[#B31A12] transition-all flex items-center justify-between group select-none cursor-pointer"
+                            >
+                              <div className="flex items-center gap-2.5">
+                                <div className="shrink-0 flex items-center justify-center px-1.5 py-0.5 rounded-md bg-white/20 border border-white/30 text-[10px] font-black tracking-wider text-white">
+                                  BAKONG
+                                </div>
+                                <div className="text-left overflow-hidden">
+                                  <div className="text-xs font-bold leading-tight truncate text-white">
+                                    {isKm ? 'ទូទាត់តាម App Bakong' : 'Pay via Bakong App'}
+                                  </div>
+                                  <div className="text-[10px] text-red-100 leading-tight font-medium truncate mt-0.5">
+                                    {isKm ? 'ស្កេន ឬបើកកម្មវិធី Bakong ផ្ទាល់' : 'Instant KHQR Bakong Transfer'}
+                                  </div>
+                                </div>
+                              </div>
+                              <ExternalLink className="w-3.5 h-3.5 text-red-100 opacity-80 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+                            </a>
                           )}
 
                           {/* Manual Verify Button */}

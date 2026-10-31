@@ -25,4 +25,11 @@ export class CreateSubscriptionCheckoutDto {
   @IsEnum(BillingCycle)
   @IsOptional()
   billingCycle?: BillingCycle;
+
+  @ApiPropertyOptional({
+    description: 'Unique client device identifier for daily spam protection limit',
+  })
+  @IsString()
+  @IsOptional()
+  deviceId?: string;
 }

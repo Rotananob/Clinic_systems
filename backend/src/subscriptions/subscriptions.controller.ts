@@ -101,7 +101,9 @@ export class SubscriptionsController {
     if (!tenantId) {
       throw new ForbiddenException('Tenant context required');
     }
-    return this.subscriptionPaymentService.createCheckout(tenantId, dto);
+    const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.socket?.remoteAddress || '127.0.0.1';
+    const deviceId = dto.deviceId || (req.headers['x-device-id'] as string) || clientIp;
+    return this.subscriptionPaymentService.createCheckout(tenantId, dto, deviceId);
   }
 
   @ApiOperation({ summary: 'Step 18: Instant automated settlement verification & plan activation with anti-bypass guard' })

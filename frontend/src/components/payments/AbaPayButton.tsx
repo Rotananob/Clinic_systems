@@ -63,11 +63,16 @@ export const AbaPayButton: React.FC<AbaPayButtonProps> = ({
   } ${className}`;
 
   if (href && !disabled) {
+    const isAppDeeplink =
+      href.startsWith('abamobile') ||
+      href.startsWith('intent:') ||
+      href.startsWith('bakong:') ||
+      href.includes('link.payway.com.kh/app');
     return (
       <a
         href={href}
-        target="_blank"
-        rel="noreferrer"
+        target={isAppDeeplink ? '_self' : '_blank'}
+        rel={isAppDeeplink ? undefined : 'noreferrer'}
         onClick={onClick}
         className={baseClasses}
       >

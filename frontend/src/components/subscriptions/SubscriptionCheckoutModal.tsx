@@ -138,13 +138,23 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
       setErrorMsg('');
       setActivated(false);
       setSupportSubmitted(false);
+      let deviceId = 'device-client';
+      if (typeof window !== 'undefined') {
+        let id = localStorage.getItem('clinic_device_id');
+        if (!id) {
+          id = 'dev-' + Math.random().toString(36).substring(2, 12) + '-' + Date.now().toString(36);
+          localStorage.setItem('clinic_device_id', id);
+        }
+        deviceId = id;
+      }
       const res = await api.subscriptions.createCheckout({
         planTier: plan,
         billingCycle: cycle,
+        deviceId,
       });
       if (res && res.success) {
         setCheckoutData(res);
-        setSecondsRemaining(900);
+        setSecondsRemaining(res.expiresInSeconds || 180);
       } else {
         setErrorMsg('Failed to initialize subscription checkout');
       }
@@ -640,6 +650,20 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
                       />
                     )}
 
+                    {checkoutData.deeplinks?.bakong && (
+                      <a
+                        href={checkoutData.deeplinks.bakong}
+                        target="_self"
+                        className="w-full sm:w-auto inline-flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-[#E1251B] hover:bg-[#C91F16] active:bg-[#B31A12] text-white font-bold text-xs shadow-xs transition-all select-none cursor-pointer"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="font-black text-[10px] tracking-wider px-1.5 py-0.5 rounded bg-white/20">BAKONG</span>
+                          <span>{isKm ? 'ទូទាត់តាម Bakong' : 'Pay via Bakong'}</span>
+                        </div>
+                        <ExternalLink className="w-3.5 h-3.5 ml-2 text-red-100" />
+                      </a>
+                    )}
+
                     <button
                       type="button"
                       disabled={verifying}
@@ -666,7 +690,7 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
                       <div className="flex items-center justify-between">
                         <div className="font-bold text-teal-950 flex items-center gap-1.5">
                           <MessageSquare className="w-4 h-4 text-teal-800" />
-                          <span>{isKm ? 'ផ្នែកបម្រើអតិថិជន ២៤/៧ (Human Support & Fast Resolution)' : '24/7 Official Payment Support'}</span>
+                          <span>{isKm ? 'ផ្នែកបម្រើអតិថិជន ២៤/៧ - Human Support' : '24/7 Official Payment Support'}</span>
                         </div>
                         <span className="text-[10px] text-teal-800 font-semibold bg-teal-100 px-2 py-0.5 rounded-full">
                           {isKm ? 'ឆ្លើយតបក្នុង ៥ នាទី' : '5-min response'}

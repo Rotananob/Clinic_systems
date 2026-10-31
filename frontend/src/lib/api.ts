@@ -996,7 +996,7 @@ class ApiClient {
       }>('/subscriptions/check-cycles', {
         method: 'POST',
       }),
-    createCheckout: (data: { planTier: string; billingCycle?: string }) =>
+    createCheckout: (data: { planTier: string; billingCycle?: string; deviceId?: string }) =>
       this.request<{
         success: boolean;
         subscriptionId: string;
@@ -1010,10 +1010,11 @@ class ApiClient {
         tranId: string;
         qrString: string;
         md5: string;
+        expiresInSeconds?: number;
         deeplinks: {
           aba: string;
           bakong: string;
-          paywayUrl: string;
+          paywayUrl?: string;
         };
         merchant: {
           bakongId: string;

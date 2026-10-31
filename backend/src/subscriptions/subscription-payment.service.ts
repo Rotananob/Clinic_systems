@@ -99,7 +99,10 @@ export class SubscriptionPaymentService {
   private readonly platformPaywayUrl =
     process.env.PLATFORM_PAYWAY_URL ||
     process.env.PAYWAY_PAYMENT_URL ||
-    'https://link.payway.com.kh/ABAPAYCK539089j';
+    'https://link.payway.com.kh/ABAPAYRs559002R';
+
+  // Strict anti-spam rate limiter: Max 10 KHQR payment generation requests per device/IP per day
+  private readonly dailyDeviceGenerations = new Map<string, number>();
 
   public readonly supportTelegramUrl =
     process.env.SUPPORT_TELEGRAM_URL || 'https://t.me/rotana_support';
@@ -120,10 +123,42 @@ export class SubscriptionPaymentService {
   ) {}
 
   /**
-   * Step 17: Creates a Dynamic KHQR Tag 01=12 checkout session for SaaS subscription upgrade or renewal.
-   * Generates live ABA PayWay invoice when available or structured fallback with anti-tampering metadata.
+   * Enforces strict rate limit of maximum 10 checkout KHQR generation requests per device per day.
    */
-  async createCheckout(tenantId: string, dto: CreateSubscriptionCheckoutDto) {
+  private checkAndEnforceDeviceLimit(deviceId: string): void {
+    const today = new Date().toISOString().split('T')[0];
+    const key = `${deviceId}:${today}`;
+    const current = this.dailyDeviceGenerations.get(key) || 0;
+    if (current >= 10) {
+      throw new BadRequestException({
+        statusCode: 429,
+        error: 'DEVICE_DAILY_LIMIT_EXCEEDED',
+        message:
+          'This device has reached the daily limit of 10 KHQR generation requests to prevent spam. Please try again tomorrow or contact support.',
+        messageKh:
+          'ឧបករណ៍របស់លោកអ្នកបានបង្កើត QR Code ចំនួន ១០ ដងក្នុងមួយថ្ងៃរួចហើយ ដើម្បីការពារការ Spam ប្រព័ន្ធ។ សូមព្យាយាមម្តងទៀតនៅថ្ងៃស្អែក ឬទាក់ទងមកកាន់យើងខ្ញុំ។',
+        messageEn:
+          'This device has reached the daily limit of 10 KHQR generation requests to prevent spam. Please try again tomorrow or contact support.',
+        maxPerDay: 10,
+        currentCount: current,
+      });
+    }
+    this.dailyDeviceGenerations.set(key, current + 1);
+  }
+
+  /**
+   * Step 17: Creates a Dynamic KHQR Tag 01=12 checkout session for SaaS subscription upgrade or renewal.
+   * Generates live ABA PayWay invoice using the platform merchant link and pay-helper failover.
+   */
+  async createCheckout(
+    tenantId: string,
+    dto: CreateSubscriptionCheckoutDto,
+    deviceId?: string,
+  ) {
+    if (deviceId) {
+      this.checkAndEnforceDeviceLimit(deviceId);
+    }
+
     const tenant = await this.prisma.tenant.findUnique({
       where: { id: tenantId },
     });
@@ -204,12 +239,34 @@ export class SubscriptionPaymentService {
         }
       } catch (err: any) {
         this.logger.warn(
-          `Live PayWay subscription checkout generation fallback: ${err.message}. Using dynamic Tag 01=12 payload.`,
+          `Live PayWay subscription checkout generation fallback: ${err.message}. Trying pay-helper KhqrGateway.`,
         );
       }
     }
 
-    // 2. Fallback to Tag 01=12 dynamic KHQR if live gateway was unreachable
+    // 2. Resilient failover using pay-helper KhqrGateway
+    if (!qrString) {
+      try {
+        const { KhqrGateway } = require('D:/WEB Development/Rotana-payway-bridge/KhqrDeeplink-headless-bridge/packages/khqr-helper/dist/index.cjs');
+        const gateway = new KhqrGateway({ checkoutUrl: this.platformPaywayUrl });
+        const invoice = await gateway.createInvoice({ amount: amountUsd, currency: 'USD' });
+        if (invoice && invoice.qrString) {
+          qrString = invoice.qrString;
+          tranId = invoice.tranId || tranId;
+          md5 = crypto.createHash('md5').update(qrString).digest('hex');
+          isLiveGateway = true;
+          gatewayMeta = {
+            clientId: 'PAYWAY_GATEWAY',
+            checkoutUrl: this.platformPaywayUrl,
+          };
+          this.logger.log(`Live PayWay subscription invoice created via pay-helper KhqrGateway. TranID: ${tranId}`);
+        }
+      } catch (gwErr: any) {
+        this.logger.warn(`pay-helper KhqrGateway fallback: ${gwErr.message}. Using dynamic Tag 01=12 payload.`);
+      }
+    }
+
+    // 3. Fallback to Tag 01=12 dynamic KHQR if both live gateways were unreachable
     if (!qrString) {
       const khqr = buildDynamicKhqr({
         bakongId: this.platformBakongId,
@@ -254,7 +311,7 @@ export class SubscriptionPaymentService {
       },
     });
 
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString(); // 15 minutes TTL
+    const expiresAt = new Date(Date.now() + 3 * 60 * 1000).toISOString(); // Strictly 3 minutes TTL
 
     this.logger.log(
       `Generated KHQR Subscription checkout for ${tenant.slug}: ${dto.planTier} ($${amountUsd} USD). TranID: ${tranId}, LiveGateway: ${isLiveGateway}`,
@@ -274,10 +331,11 @@ export class SubscriptionPaymentService {
       qrString,
       md5,
       isLiveGateway,
+      expiresInSeconds: 180,
+      expiresAt,
       deeplinks: {
         aba: abaDeeplink,
         bakong: bakongDeeplink,
-        paywayUrl: this.platformPaywayUrl,
       },
       merchant: {
         bakongId: this.platformBakongId,
