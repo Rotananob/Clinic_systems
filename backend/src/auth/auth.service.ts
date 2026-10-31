@@ -423,7 +423,7 @@ export class AuthService {
           amountUsd: 0,
           status: SubscriptionStatus.ACTIVE,
           startDate: now,
-          endDate: null,
+          endDate: new Date(now.getTime() + 100 * 365 * 24 * 60 * 60 * 1000),
           invoiceNumber: `SUB-${tenant.slug.toUpperCase()}-FREE`,
           paymentMethod: 'FREE_COMMUNITY_TIER',
         },

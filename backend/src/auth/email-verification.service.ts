@@ -668,7 +668,7 @@ export class EmailVerificationService {
     });
   }
 
-  verifyCode(email: string, code: string): boolean {
+  verifyCode(email: string, code: string, consume = true): boolean {
     const normalizedEmail = email.trim().toLowerCase();
     const entry = this.verificationCodes.get(normalizedEmail);
 
@@ -691,8 +691,15 @@ export class EmailVerificationService {
       throw new BadRequestException('លេខកូដបញ្ជាក់មិនត្រឹមត្រូវទេ។');
     }
 
-    // Success: consume code
-    this.verificationCodes.delete(normalizedEmail);
+    // Success: consume code if requested
+    if (consume) {
+      this.verificationCodes.delete(normalizedEmail);
+    }
     return true;
+  }
+
+  consumeCode(email: string): void {
+    const normalizedEmail = email.trim().toLowerCase();
+    this.verificationCodes.delete(normalizedEmail);
   }
 }

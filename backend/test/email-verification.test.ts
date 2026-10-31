@@ -18,6 +18,22 @@ describe('EmailVerificationService Test Suite', () => {
     assert.equal(result, true);
   });
 
+  it('should preserve code when consume is false and allow retry until consumeCode is called', () => {
+    const code = service.generateCode('retry.test@clinic.com');
+    // First verification without consuming
+    const firstCheck = service.verifyCode('retry.test@clinic.com', code, false);
+    assert.equal(firstCheck, true);
+    // Second verification still valid
+    const secondCheck = service.verifyCode('retry.test@clinic.com', code, false);
+    assert.equal(secondCheck, true);
+    // Now consume code
+    service.consumeCode('retry.test@clinic.com');
+    // Subsequent check must throw code expired or not found
+    assert.throws(() => {
+      service.verifyCode('retry.test@clinic.com', code);
+    });
+  });
+
   it('should reject incorrect code', () => {
     service.generateCode('doctor@clinic.com');
     assert.throws(

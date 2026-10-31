@@ -48,19 +48,26 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Password reset successfully' })
   @Post('reset-password-with-code')
   async resetPasswordWithCode(@Body() dto: ResetPasswordWithCodeDto) {
-    this.emailVerificationService.verifyCode(dto.email, dto.resetCode);
-    return this.authService.resetPasswordWithVerifiedCode(dto.email, dto.newPassword);
+    this.emailVerificationService.verifyCode(dto.email, dto.resetCode, false);
+    const result = await this.authService.resetPasswordWithVerifiedCode(dto.email, dto.newPassword);
+    this.emailVerificationService.consumeCode(dto.email);
+    return result;
   }
 
   @ApiOperation({ summary: 'Verify 6-digit code and create clinic workspace' })
   @ApiResponse({ status: 201, description: 'Clinic tenant and admin account created with active JWT' })
   @Post('register-with-code')
   async registerWithCode(@Body() dto: RegisterWithCodeDto) {
-    // 1. Verify code
-    this.emailVerificationService.verifyCode(dto.email, dto.verificationCode);
+    // 1. Verify code without consuming prematurely
+    this.emailVerificationService.verifyCode(dto.email, dto.verificationCode, false);
 
     // 2. Provision clinic
-    return this.authService.registerClinic(dto);
+    const result = await this.authService.registerClinic(dto);
+
+    // 3. Consume code only upon successful registration
+    this.emailVerificationService.consumeCode(dto.email);
+
+    return result;
   }
 
   @ApiOperation({ summary: '60-second instant onboarding for new clinic workspace' })
