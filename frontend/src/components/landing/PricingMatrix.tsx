@@ -40,7 +40,7 @@ import {
 } from 'lucide-react';
 
 export interface PricingPlan {
-  id: 'FREE' | 'STARTER_5' | 'PRO_8' | 'ENTERPRISE_12';
+  id: 'FREE' | 'STARTER_5' | 'PRO_8' | 'ENTERPRISE_12' | 'SPECIALIST_15' | 'UNLIMITED_20';
   nameKh: string;
   nameEn: string;
   badgeKh?: string;
@@ -72,7 +72,7 @@ export interface SystemToolItem {
   titleEn: string;
   descKh: string;
   descEn: string;
-  minTier: 'FREE' | 'STARTER_5' | 'PRO_8' | 'ENTERPRISE_12';
+  minTier: 'FREE' | 'STARTER_5' | 'PRO_8' | 'ENTERPRISE_12' | 'SPECIALIST_15' | 'UNLIMITED_20';
   icon: React.ComponentType<{ className?: string }>;
   isSpecial?: boolean;
 }
@@ -267,6 +267,92 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
         'Dedicated high-performance database & cloud backup',
         'All 20 advanced modules from Polyclinic Pro included',
         '24/7 VIP Phone and Telegram SLA support with 1-hr response',
+      ],
+    },
+    {
+      id: 'SPECIALIST_15',
+      nameKh: 'គម្រោងឯកទេសជាន់ខ្ពស់ Specialist Clinic',
+      nameEn: 'Specialist Clinic 15$/mo',
+      badgeKh: 'ឯកទេសវេជ្ជសាស្ត្រ',
+      badgeEn: 'Specialist Tier',
+      moduleCountKh: '២៨ មុខងារឯកទេស',
+      moduleCountEn: '28 Specialist Modules',
+      descKh: 'ប្រព័ន្ធគ្រប់គ្រងវេជ្ជសាស្ត្រឯកទេសកម្រិតខ្ពស់ - AI សំឡេងកត់ត្រាពិគ្រោះជំងឺ Dictation, SOAP Structuring ស្វ័យប្រវត្ត, CDSS ពិនិត្យប្រតិកម្មថ្នាំ DDI, ឃ្លាំងស្តុកច្រើនសាខា និងវិបផតថលសមាគមវេជ្ជសាស្ត្រ',
+      descEn: 'Advanced medical specialty system - AI voice medical dictation, automated SOAP structuring, CDSS drug-drug interaction safety guard, multi-branch inventory, and TMA portal.',
+      monthlyUsd: 15,
+      yearlyUsd: 144, // 20% discount ($12.00/mo)
+      originalYearlyUsd: 180,
+      yearlySavingsUsd: 36,
+      equivalentMonthlyUsd: '12.00',
+      khqrLimitKh: 'មិនកំណត់ចំនួន Unlimited',
+      khqrLimitEn: 'Unlimited dynamic QR / day',
+      patientLimitKh: 'មិនកំណត់ចំនួន / គណនី',
+      patientLimitEn: 'Unlimited patients / account',
+      staffLimitKh: '៥០ គណនីបុគ្គលិក',
+      staffLimitEn: '50 staff accounts',
+      featuresKh: [
+        'មិនកំណត់រាល់ប្រតិបត្តិការ Dynamic KHQR Unlimited',
+        'មិនកំណត់ចំនួនអ្នកជំងឺ និង ៥០ គណនីបុគ្គលិក',
+        'AI Voice Dictation សំឡេងខ្មែរ កត់ត្រាពិគ្រោះជំងឺដោយស្វ័យប្រវត្តិ',
+        'Automated Medical SOAP Notes Structuring',
+        'CDSS Clinical Decision Support ពិនិត្យប្រតិកម្មថ្នាំ DDI Guard',
+        'បណ្តាញឃ្លាំងស្តុកច្រើនសាខា Multi-Branch Depot Sync',
+        'វិបផតថលសមាគមវេជ្ជសាស្ត្រ TMA Portal & EMR Hub',
+        'រួមបញ្ចូលរាល់ ២៦ មុខងារនៃ Hospital Enterprise ទាំងអស់',
+        'ជំនួយបច្ចេកទេសពិសេស 24/7 Priority SLA',
+      ],
+      featuresEn: [
+        'Unlimited dynamic KHQR transactions',
+        'Unlimited patients & 50 staff accounts',
+        'AI Khmer Voice Clinical Dictation & Speech-to-Text',
+        'Automated Medical SOAP Notes Structuring engine',
+        'CDSS Clinical Decision Support & Drug-Drug Interaction guard',
+        'Multi-Branch central inventory depot & inter-branch transfer',
+        'Medical association TMA Portal & specialty referral engine',
+        'All 26 Hospital Enterprise features included',
+        '24/7 Priority Engineering SLA support',
+      ],
+    },
+    {
+      id: 'UNLIMITED_20',
+      nameKh: 'គម្រោងគ្មានដែនកំណត់ Unlimited PaaS',
+      nameEn: 'Unlimited PaaS 20$/mo',
+      badgeKh: 'PaaS គ្មានដែនកំណត់',
+      badgeEn: 'Unlimited Enterprise PaaS',
+      moduleCountKh: '៣០+ គ្មានដែនកំណត់',
+      moduleCountEn: '30+ Unlimited Modules',
+      descKh: 'ដំណោះស្រាយ Platform as a Service ពេញលេញ - ប្រើប្រាស់ដូមេនផ្ទាល់ខ្លួន White-label Domain, Dedicated Database Instance ឯករាជ្យ, Telegram Master Super Admin Bot, មិនកំណត់ចំនួនសាខា និងបុគ្គលិក 24/7 Priority SLA',
+      descEn: 'Full Platform as a Service solution - white-label custom domain, dedicated isolated cloud database instance, Telegram Master Bot, unlimited branches & staff, 24/7 dedicated engineering SLA.',
+      monthlyUsd: 20,
+      yearlyUsd: 192, // 20% discount ($16.00/mo)
+      originalYearlyUsd: 240,
+      yearlySavingsUsd: 48,
+      equivalentMonthlyUsd: '16.00',
+      khqrLimitKh: 'មិនកំណត់ចំនួន Unlimited',
+      khqrLimitEn: 'Unlimited dynamic QR / day',
+      patientLimitKh: 'មិនកំណត់ចំនួន / គណនី',
+      patientLimitEn: 'Unlimited patients / account',
+      staffLimitKh: 'មិនកំណត់ចំនួន Unlimited',
+      staffLimitEn: 'Unlimited staff accounts',
+      featuresKh: [
+        'ដំណោះស្រាយ PaaS ពេញលេញសម្រាប់បណ្តាញមន្ទីរពេទ្យ',
+        'White-label Custom Domain ប្រើប្រាស់ដូមេនផ្ទាល់ខ្លួនរបស់គ្លីនិក',
+        'Dedicated Cloud Database Instance ឯករាជ្យសុវត្ថិភាពខ្ពស់',
+        'Telegram Super Admin Master Bot គ្រប់គ្រងសាខា និងប្រតិបត្តិការ',
+        'មិនកំណត់ចំនួនសាខា និងមិនកំណត់ចំនួនបុគ្គលិក Unlimited Fleet',
+        'មិនកំណត់ចំនួនអ្នកជំងឺ និង Unlimited KHQR',
+        'រួមបញ្ចូលរាល់ឧបករណ៍ និងមុខងារទាំងអស់ក្នុងប្រព័ន្ធ ១០០%',
+        '24/7 Dedicated Engineering Support & VIP SLA 15-minute response',
+      ],
+      featuresEn: [
+        'Complete Hospital PaaS operating infrastructure',
+        'White-label custom domain - e.g. emr.yourhospital.com',
+        'Dedicated isolated cloud database instance',
+        'Telegram Master Super Admin Bot for remote executive control',
+        'Unlimited hospital branches and unlimited staff accounts',
+        'Unlimited patient records & unlimited KHQR transactions',
+        'Full 100% platform feature access across all present & future modules',
+        '24/7 Dedicated engineering team & 15-minute response SLA',
       ],
     },
   ];
@@ -621,6 +707,18 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
             Enterprise $12
           </span>
         );
+      case 'SPECIALIST_15':
+        return (
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-900 border border-purple-300">
+            Specialist $15
+          </span>
+        );
+      case 'UNLIMITED_20':
+        return (
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-900 border border-blue-300">
+            Unlimited $20
+          </span>
+        );
       default:
         return null;
     }
@@ -685,7 +783,7 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
       </div>
 
       {/* 4 Pricing Cards Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 items-stretch">
         {plans.map((p) => {
           const isSelected = selectedPlanId === p.id;
 
@@ -711,6 +809,10 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
                   className={`absolute -top-3.5 left-1/2 -translate-x-1/2 px-3 py-1 text-[10px] font-bold rounded-full uppercase tracking-wider shadow-xs ${
                     p.id === 'ENTERPRISE_12'
                       ? 'bg-amber-600 text-white'
+                      : p.id === 'SPECIALIST_15'
+                      ? 'bg-purple-700 text-white'
+                      : p.id === 'UNLIMITED_20'
+                      ? 'bg-blue-800 text-white'
                       : 'bg-teal-800 text-white'
                   }`}
                 >
@@ -1051,7 +1153,11 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
                         ? 'Starter $5'
                         : t.minTier === 'PRO_8'
                         ? 'Pro $8'
-                        : 'Enterprise $12'}
+                        : t.minTier === 'ENTERPRISE_12'
+                        ? 'Enterprise $12'
+                        : t.minTier === 'SPECIALIST_15'
+                        ? 'Specialist $15'
+                        : 'Unlimited $20'}
                     </strong>
                   </div>
                 </div>

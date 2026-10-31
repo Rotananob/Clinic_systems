@@ -11,7 +11,8 @@ export class CreateSubscriptionCheckoutDto {
   @ApiProperty({
     enum: PlanTier,
     example: PlanTier.STARTER_5,
-    description: 'Target SaaS subscription tier: STARTER_5 ($5/mo), PRO_8 ($8/mo), or ENTERPRISE_12 ($12/mo)',
+    description:
+      'Target SaaS subscription tier: STARTER_5 ($5/mo), PRO_8 ($8/mo), ENTERPRISE_12 ($12/mo), SPECIALIST_15 ($15/mo), or UNLIMITED_20 ($20/mo)',
   })
   @IsEnum(PlanTier)
   @IsNotEmpty()

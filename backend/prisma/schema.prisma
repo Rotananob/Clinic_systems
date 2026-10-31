@@ -22,6 +22,8 @@ enum PlanTier {
   STARTER_5
   PRO_8
   ENTERPRISE_12
+  SPECIALIST_15
+  UNLIMITED_20
 }
 
 enum SubscriptionStatus {

@@ -321,7 +321,7 @@ export class BillingCycleService implements OnModuleInit, OnModuleDestroy {
       currentSubscription: activeSub,
       recentInvoices: tenant.subscriptions || [],
       currentRank,
-      canUpgrade: currentRank < 3,
+      canUpgrade: currentRank < (PLAN_TIER_RANK[PlanTier.UNLIMITED_20] ?? 5),
       canRenew: !isFree,
     };
   }

@@ -387,7 +387,7 @@ export class SubscriptionPaymentService {
     dto: VerifySubscriptionSettlementDto,
     user?: any,
   ) {
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(dto.subscriptionId || '');
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(dto?.subscriptionId || '');
     let subscription = isUuid
       ? await this.prisma.tenantSubscription.findUnique({
           where: { id: dto.subscriptionId },
@@ -395,22 +395,26 @@ export class SubscriptionPaymentService {
         })
       : null;
 
-    if (!subscription && (dto.tranId || dto.subscriptionId)) {
-      const candidates = Array.from(new Set([dto.subscriptionId, dto.tranId].filter(Boolean)));
-      subscription = await this.prisma.tenantSubscription.findFirst({
-        where: {
-          OR: [
-            ...candidates.map((val) => ({ paymentTranId: val })),
-            ...candidates.map((val) => ({ invoiceNumber: val })),
-          ],
-        },
-        include: { tenant: true },
-        orderBy: { createdAt: 'desc' },
-      });
+    if (!subscription && (dto?.tranId || dto?.subscriptionId)) {
+      const candidates = Array.from(
+        new Set([dto.subscriptionId, dto.tranId].filter((v): v is string => Boolean(v && typeof v === 'string' && v.trim()))),
+      );
+      if (candidates.length > 0) {
+        subscription = await this.prisma.tenantSubscription.findFirst({
+          where: {
+            OR: [
+              ...candidates.map((val) => ({ paymentTranId: val })),
+              ...candidates.map((val) => ({ invoiceNumber: val })),
+            ],
+          },
+          include: { tenant: true },
+          orderBy: { createdAt: 'desc' },
+        });
+      }
     }
 
     if (!subscription) {
-      throw new NotFoundException(`Subscription invoice not found for reference: ${dto.subscriptionId || dto.tranId}`);
+      throw new NotFoundException(`Subscription invoice not found for reference: ${dto?.subscriptionId || dto?.tranId}`);
     }
 
     if (subscription.tenantId !== tenantId && user?.role !== 'SUPER_ADMIN') {
@@ -501,25 +505,45 @@ export class SubscriptionPaymentService {
     } else if (isAutomatedTestBypass) {
       isBankPaymentVerified = true;
       verificationMethod = 'AUTOMATED_TEST_SUITE_VERIFIED';
-    } else if (meta.isLiveGateway && meta.gatewayMeta?.clientId && this.paywayDirectService) {
-      // Live ABA PayWay gateway verification via direct handshake
+    } else if (meta.isLiveGateway) {
       const targetTranId = dto.tranId || subscription.paymentTranId || '';
-      try {
-        const liveStatus = await this.paywayDirectService.checkPaymentStatus({
-          tranId: targetTranId,
-          clientId: meta.gatewayMeta.clientId,
-          token: meta.gatewayMeta.token,
-          requestTime: meta.gatewayMeta.requestTime,
-          cookieHeader: meta.gatewayMeta.cookieHeader,
-          checkoutUrl: meta.gatewayMeta.checkoutUrl || this.platformPaywayUrl,
-        });
+      // 1. Live ABA PayWay gateway verification via direct handshake
+      if (meta.gatewayMeta?.clientId && this.paywayDirectService) {
+        try {
+          const liveStatus = await this.paywayDirectService.checkPaymentStatus({
+            tranId: targetTranId,
+            clientId: meta.gatewayMeta.clientId,
+            token: meta.gatewayMeta.token,
+            requestTime: meta.gatewayMeta.requestTime || Date.now().toString(),
+            cookieHeader: meta.gatewayMeta.cookieHeader,
+            checkoutUrl: meta.gatewayMeta.checkoutUrl || this.platformPaywayUrl,
+          });
 
-        if (liveStatus && liveStatus.status === 'PAID') {
-          isBankPaymentVerified = true;
-          verificationMethod = 'ABA_PAYWAY_LIVE_GATEWAY';
+          if (liveStatus && liveStatus.status === 'PAID') {
+            isBankPaymentVerified = true;
+            verificationMethod = 'ABA_PAYWAY_LIVE_GATEWAY';
+          }
+        } catch (err: any) {
+          this.logger.warn(`Live PayWay status verification error: ${err.message}`);
         }
-      } catch (err: any) {
-        this.logger.warn(`Live PayWay status verification error: ${err.message}`);
+      }
+
+      // 2. Resilient failover with pay-helper KhqrGateway client
+      if (!isBankPaymentVerified) {
+        try {
+          const { KhqrGateway } = require('D:/WEB Development/Rotana-payway-bridge/KhqrDeeplink-headless-bridge/packages/khqr-helper/dist/index.cjs');
+          const gateway = new KhqrGateway({ checkoutUrl: this.platformPaywayUrl });
+          const gwStatus = await gateway.checkStatus({
+            tranId: targetTranId,
+            checkoutUrl: this.platformPaywayUrl,
+          });
+          if (gwStatus && gwStatus.status === 'PAID') {
+            isBankPaymentVerified = true;
+            verificationMethod = 'PAY_HELPER_GATEWAY';
+          }
+        } catch (helperErr: any) {
+          this.logger.warn(`pay-helper KhqrGateway status check warning: ${helperErr.message}`);
+        }
       }
     }
 

@@ -29,6 +29,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
       exception instanceof HttpException ? exception.getResponse() : null;
 
     let message = 'An unexpected clinical server error occurred. Please try again.';
+    let messageKh: string | undefined;
+    let messageEn: string | undefined;
+    let errorCode: string | undefined;
+    let supportData: any = undefined;
 
     // Check Prisma error codes
     const exAny = exception as Record<string, unknown> | null;
@@ -36,16 +40,20 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     if (prismaCode === 'P2002') {
       status = HttpStatus.CONFLICT;
-      message = 'A record with this information (national ID, phone, or code) already exists.';
+      message = 'A record with this information - national ID, phone, or code - already exists.';
+      messageKh = 'មានកំណត់ត្រាដែលមានព័ត៌មាននេះ - អត្តសញ្ញាណប័ណ្ណ លេខទូរស័ព្ទ ឬកូដ - ក្នុងប្រព័ន្ធរួចហើយ';
     } else if (prismaCode === 'P2025') {
       status = HttpStatus.NOT_FOUND;
       message = 'The requested medical record could not be found.';
+      messageKh = 'រកមិនឃើញកំណត់ត្រាវេជ្ជសាស្ត្រដែលបានស្នើសុំឡើយ';
     } else if (prismaCode === 'P2003') {
       status = HttpStatus.BAD_REQUEST;
       message = 'Cannot complete operation due to dependent clinical records.';
+      messageKh = 'មិនអាចបញ្ចប់ប្រតិបត្តិការបានទេ ដោយសារមានទិន្នន័យវេជ្ជសាស្ត្រពាក់ព័ន្ធ';
     } else if (prismaCode === 'P2021' || prismaCode === 'P2022') {
       status = HttpStatus.SERVICE_UNAVAILABLE;
       message = 'ប្រព័ន្ធមូលដ្ឋានទិន្នន័យកំពុងធ្វើបច្ចុប្បន្នភាព សូមរង់ចាំមួយភ្លែត រួចសាកល្បងម្ដងទៀត: Database schema is synchronizing, please retry.';
+      messageKh = 'ប្រព័ន្ធមូលដ្ឋានទិន្នន័យកំពុងធ្វើបច្ចុប្បន្នភាព សូមរង់ចាំមួយភ្លែត រួចសាកល្បងម្ដងទៀត';
     } else if (typeof exceptionResponse === 'object' && exceptionResponse !== null) {
       const respObj = exceptionResponse as Record<string, unknown>;
       if (Array.isArray(respObj.message)) {
@@ -54,6 +62,19 @@ export class AllExceptionsFilter implements ExceptionFilter {
         message = respObj.message;
       } else if (typeof respObj.error === 'string') {
         message = respObj.error;
+      }
+
+      if (typeof respObj.messageKh === 'string') {
+        messageKh = respObj.messageKh;
+      }
+      if (typeof respObj.messageEn === 'string') {
+        messageEn = respObj.messageEn;
+      }
+      if (typeof respObj.error === 'string') {
+        errorCode = respObj.error;
+      }
+      if (respObj.support) {
+        supportData = respObj.support;
       }
     } else if (typeof exceptionResponse === 'string') {
       message = exceptionResponse;
@@ -64,8 +85,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
     // Humanize standard HTTP authorization messages
     if (status === HttpStatus.FORBIDDEN && (message === 'Forbidden resource' || !message)) {
       message = 'គណនីលោកអ្នកមិនទាន់មានសិទ្ធិអនុវត្តសកម្មភាពនេះឡើយ។ សូមទាក់ទងម្ចាស់គ្លីនិក - Owner ដើម្បីស្នើសុំសិទ្ធិបន្ថែម - Access restricted. Please contact clinic owner.';
+      messageKh = 'គណនីលោកអ្នកមិនទាន់មានសិទ្ធិអនុវត្តសកម្មភាពនេះឡើយ។ សូមទាក់ទងម្ចាស់គ្លីនិក - Owner ដើម្បីស្នើសុំសិទ្ធិបន្ថែម';
     } else if (status === HttpStatus.UNAUTHORIZED && (message === 'Unauthorized' || !message)) {
       message = 'សូមចូលគណនីបុគ្គលិកវេជ្ជសាស្ត្រ ដើម្បីបន្តប្រើប្រាស់ - Please sign in to continue.';
+      messageKh = 'សូមចូលគណនីបុគ្គលិកវេជ្ជសាស្ត្រ ដើម្បីបន្តប្រើប្រាស់';
     }
 
     // Never leak stack traces or internal query terms to the user
@@ -76,6 +99,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         }`,
       );
       message = 'The clinic server encountered a temporary technical issue. Please try again.';
+      messageKh = 'ម៉ាស៊ីនបម្រើសេវាបានជួបប្រទះបញ្ហាបច្ចេកទេសបណ្ដោះអាសន្ន សូមព្យាយាមម្ដងទៀត';
 
       // Dispatch alert to Platform Master Bot for Super Admin
       if (this.platformMasterBotService) {
@@ -94,12 +118,19 @@ export class AllExceptionsFilter implements ExceptionFilter {
     }
 
     // Send clean, sanitized response without stack traces
-    response.status(status).json({
+    const responseBody: Record<string, any> = {
       success: false,
       statusCode: status,
       timestamp: new Date().toISOString(),
       path: request.url,
       message,
-    });
+    };
+
+    if (messageKh) responseBody.messageKh = messageKh;
+    if (messageEn) responseBody.messageEn = messageEn;
+    if (errorCode) responseBody.error = errorCode;
+    if (supportData) responseBody.support = supportData;
+
+    response.status(status).json(responseBody);
   }
 }

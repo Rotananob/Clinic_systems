@@ -46,13 +46,15 @@ const PLAN_CARDS = [
     khqrLimitEn: '5 transactions / day',
     patientsKh: 'អ្នកជំងឺ ៥០ នាក់ / គណនី',
     patientsEn: '50 patients / account',
+    toolsDetailKh: 'អ្នកជំងឺ, ជួររង់ចាំ, សញ្ញាជីវិត, ពិគ្រោះជំងឺ, គណនីគ្រូពេទ្យ ២',
+    toolsDetailEn: 'Patients, Queue, Vitals, Consultations, 2 Doctor accounts',
   },
   {
     id: 'STARTER_5',
     nameKh: 'Clinic Starter',
     nameEn: 'Clinic Starter',
-    moduleTagKh: '១០ ឧបករណ៍ស្នូល',
-    moduleTagEn: '10 Core Tools',
+    moduleTagKh: '១៤ ឧបករណ៍ស្នូល',
+    moduleTagEn: '14 Core Tools',
     price: '$5/mo',
     priceYearly: '$48/ឆ្នាំ ចុះ ២០%',
     priceYearlyEn: '$48/yr Save 20%',
@@ -60,6 +62,8 @@ const PLAN_CARDS = [
     khqrLimitEn: '250 transactions / day',
     patientsKh: 'អ្នកជំងឺ ១,០០០ នាក់ / គណនី',
     patientsEn: '1,000 patients / account',
+    toolsDetailKh: 'វេជ្ជបញ្ជា, KHQR POS, វិក្កយបត្រ, លិខិតបញ្ជាក់សុខភាព, របាយការណ៍, គណនី ៥',
+    toolsDetailEn: 'Prescriptions, POS KHQR, Invoices, Certificates, Reports, 5 Staff',
   },
   {
     id: 'PRO_8',
@@ -75,6 +79,8 @@ const PLAN_CARDS = [
     patientsKh: 'អ្នកជំងឺ ៨,០០០ នាក់ / គណនី',
     patientsEn: '8,000 patients / account',
     popular: true,
+    toolsDetailKh: 'ឃ្លាំងស្តុក FEFO, ទន្តសាស្ត្រ, មន្ទីរពិសោធន៍, PACS, គ្រែ IPD, ស្លាកទូរទស្សន៍, គណនី ១៥',
+    toolsDetailEn: 'FEFO Inventory, Dental, Lab LIS, PACS DICOM, IPD Beds, Signage, 15 Staff',
   },
   {
     id: 'ENTERPRISE_12',
@@ -89,6 +95,40 @@ const PLAN_CARDS = [
     khqrLimitEn: 'Unlimited KHQR',
     patientsKh: 'មិនកំណត់ចំនួនអ្នកជំងឺ / គណនី',
     patientsEn: 'Unlimited patients / account',
+    toolsDetailKh: 'ពិគ្រោះវីដេអូ, e-Claim, ប៊ូតុងទូទាត់, ផ្ទេរសាខា, វិក្កយបត្រពន្ធ, គណនីមិនកំណត់',
+    toolsDetailEn: 'WebRTC Teleconsult, e-Claim, Payment Links, Transfers, Unlimited Staff',
+  },
+  {
+    id: 'SPECIALIST_15',
+    nameKh: 'Specialist Clinic',
+    nameEn: 'Specialist Clinic',
+    moduleTagKh: '២៨ មុខងារឯកទេស',
+    moduleTagEn: '28 Specialist Modules',
+    price: '$15/mo',
+    priceYearly: '$144/ឆ្នាំ ចុះ ២០%',
+    priceYearlyEn: '$144/yr Save 20%',
+    khqrLimitKh: 'Unlimited KHQR',
+    khqrLimitEn: 'Unlimited KHQR',
+    patientsKh: 'មិនកំណត់ចំនួនអ្នកជំងឺ / គណនី',
+    patientsEn: 'Unlimited patients / account',
+    toolsDetailKh: 'AI សំឡេងខ្មែរ Dictation, SOAP Structuring, ឃ្លាំងច្រើនសាខា, CDSS ពិនិត្យថ្នាំ, TMA Portal',
+    toolsDetailEn: 'AI Voice Dictation, SOAP Structuring, Multi-Branch Depot, CDSS DDI, TMA Portal',
+  },
+  {
+    id: 'UNLIMITED_20',
+    nameKh: 'Unlimited PaaS',
+    nameEn: 'Unlimited PaaS',
+    moduleTagKh: '៣០+ គ្មានដែនកំណត់',
+    moduleTagEn: '30+ Unlimited Modules',
+    price: '$20/mo',
+    priceYearly: '$192/ឆ្នាំ ចុះ ២០%',
+    priceYearlyEn: '$192/yr Save 20%',
+    khqrLimitKh: 'Unlimited KHQR',
+    khqrLimitEn: 'Unlimited KHQR',
+    patientsKh: 'មិនកំណត់ចំនួនអ្នកជំងឺ / គណនី',
+    patientsEn: 'Unlimited patients / account',
+    toolsDetailKh: 'White-label Domain ផ្ទាល់ខ្លួន, Database ដាច់ដោយឡែក, VIP Telegram Master Bot, 24/7 SLA',
+    toolsDetailEn: 'White-label Custom Domain, Dedicated DB, VIP Telegram Master Bot, 24/7 SLA',
   },
 ];
 
@@ -98,9 +138,10 @@ function normalizePlanTier(raw?: string | null): string {
   if (clean === 'STARTER' || clean === 'STARTER_5') return 'STARTER_5';
   if (clean === 'PRO' || clean === 'PRO_8') return 'PRO_8';
   if (clean === 'ENTERPRISE' || clean === 'ENTERPRISE_12') return 'ENTERPRISE_12';
+  if (clean === 'SPECIALIST' || clean === 'SPECIALIST_15') return 'SPECIALIST_15';
+  if (clean === 'UNLIMITED' || clean === 'UNLIMITED_20') return 'UNLIMITED_20';
   return 'FREE';
 }
-
 const REGISTRATION_SESSION_KEY = 'krupet_verification_session_v1';
 
 function saveVerificationSession(data: {
@@ -546,25 +587,11 @@ function RegisterContent() {
         );
       }
     } catch (err: any) {
-      const msg = err?.message || '';
-      if (
-        msg.includes('PAYMENT_NOT_SETTLED') ||
-        msg.toLowerCase().includes('not settled') ||
-        msg.toLowerCase().includes('banking')
-      ) {
-        setPaymentError(
-          isKm
-            ? 'មិនទាន់រកឃើញការទូទាត់នៅក្នុងប្រព័ន្ធធនាគារឡើយ។ សូមស្កេន KHQR និងបញ្ចប់ការផ្ទេរប្រាក់ក្នុង App ធនាគារជាមុនសិន។'
-            : 'Payment has not been settled in the banking system yet. Please complete the transfer in your banking app and verify again.'
-        );
-      } else {
-        setPaymentError(
-          err.message ||
-            (isKm
-              ? 'ការផ្ទៀងផ្ទាត់មិនទាន់បានជោគជ័យ សូមព្យាយាមម្តងទៀត'
-              : 'Verification failed. Please try again.')
-        );
-      }
+      setPaymentError(
+        isKm
+          ? 'មិនទាន់រកឃើញការទូទាត់នៅក្នុងប្រព័ន្ធធនាគារឡើយ។ សូមស្កេន KHQR និងបញ្ចប់ការផ្ទេរប្រាក់ក្នុង App ធនាគារជាមុនសិន។'
+          : 'Payment has not been settled in the banking system yet. Please complete the transfer in your banking app and verify again.'
+      );
     } finally {
       setVerifyingSettlement(false);
     }
@@ -1045,7 +1072,7 @@ function RegisterContent() {
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
                     {PLAN_CARDS.map((p) => {
                       const isSelected = selectedPlan === p.id;
                       return (
@@ -1083,6 +1110,9 @@ function RegisterContent() {
                           </div>
                           <div className={`text-[10px] mt-1 ${isSelected ? 'font-bold text-teal-900/80' : 'text-stone-500'}`}>
                             {isKm ? p.khqrLimitKh : p.khqrLimitEn}
+                          </div>
+                          <div className={`text-[9px] mt-1 line-clamp-2 leading-tight ${isSelected ? 'text-teal-950 font-medium' : 'text-stone-500'}`}>
+                            {isKm ? p.toolsDetailKh : p.toolsDetailEn}
                           </div>
                         </button>
                       );

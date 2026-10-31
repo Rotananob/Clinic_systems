@@ -212,7 +212,7 @@ export const ROUTE_PERMISSIONS: RoutePermission[] = [
     path: '/super-admin',
     allowedRoles: ['SUPER_ADMIN'],
     labelEn: 'Super Admin Platform Hub',
-    labelKh: 'ផ្ទាំងគ្រប់គ្រងបណ្តាញគ្លីនិក (Fleet Hub)',
+    labelKh: 'ផ្ទាំងគ្រប់គ្រងបណ្តាញគ្លីនិក - Fleet Hub',
     descriptionEn: 'Multi-clinic fleet metrics, remote emergency lockout, and platform maintenance',
     descriptionKh: 'ស្ថិតិ SaaS រួម បណ្តាញគ្លីនិកទាំងអស់ ការបញ្ជាពីចម្ងាយ និងការថែទាំប្រព័ន្ធ',
   },
@@ -357,15 +357,15 @@ export function isModuleRelevantForClinic(
 export function getRoleDisplayName(role: string | undefined | null, isKh: boolean): string {
   switch (role) {
     case 'SUPER_ADMIN':
-      return isKh ? 'ម្ចាស់គ្លីនិក (Owner)' : 'SUPER ADMIN (OWNER)';
+      return isKh ? 'ម្ចាស់គ្លីនិក - Owner' : 'SUPER ADMIN (OWNER)';
     case 'ADMIN':
       return isKh ? 'អ្នកគ្រប់គ្រងទូទៅ' : 'CLINIC ADMIN';
     case 'DOCTOR':
       return isKh ? 'វេជ្ជបណ្ឌិតពិគ្រោះ' : 'MEDICAL DOCTOR';
     case 'CASHIER':
-      return isKh ? 'បេឡាករ (គិតលុយ)' : 'CASHIER';
+      return isKh ? 'បេឡាករ - គិតលុយ' : 'CASHIER';
     case 'PHARMACIST':
-      return isKh ? 'ឱសថការី (បើកថ្នាំ)' : 'PHARMACIST';
+      return isKh ? 'ឱសថការី - បើកថ្នាំ' : 'PHARMACIST';
     case 'RECEPTIONIST':
       return isKh ? 'ផ្នែកទទួលភ្ញៀវ' : 'RECEPTIONIST';
     default:
@@ -373,7 +373,7 @@ export function getRoleDisplayName(role: string | undefined | null, isKh: boolea
   }
 }
 
-export type PlanTier = 'FREE' | 'STARTER_5' | 'PRO_8' | 'ENTERPRISE_12';
+export type PlanTier = 'FREE' | 'STARTER_5' | 'PRO_8' | 'ENTERPRISE_12' | 'SPECIALIST_15' | 'UNLIMITED_20';
 
 export const ROUTE_MINIMUM_PLAN: Record<string, PlanTier> = {
   '/': 'FREE',
@@ -411,6 +411,8 @@ export const PLAN_TIER_RANK: Record<PlanTier, number> = {
   STARTER_5: 1,
   PRO_8: 2,
   ENTERPRISE_12: 3,
+  SPECIALIST_15: 4,
+  UNLIMITED_20: 5,
 };
 
 export function isRouteAllowedForPlan(

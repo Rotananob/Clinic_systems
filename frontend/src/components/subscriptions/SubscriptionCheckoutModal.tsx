@@ -31,13 +31,13 @@ import { isPlanDowngrade, isPlanUpgrade, isPlanRenewal, PLAN_TIER_RANK } from '.
 interface SubscriptionCheckoutModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialPlanTier?: 'STARTER_5' | 'PRO_8' | 'ENTERPRISE_12';
+  initialPlanTier?: 'STARTER_5' | 'PRO_8' | 'ENTERPRISE_12' | 'SPECIALIST_15' | 'UNLIMITED_20';
   currentTenantPlanTier?: string;
   onActivated?: () => void;
 }
 
 interface PlanOption {
-  id: 'STARTER_5' | 'PRO_8' | 'ENTERPRISE_12';
+  id: 'STARTER_5' | 'PRO_8' | 'ENTERPRISE_12' | 'SPECIALIST_15' | 'UNLIMITED_20';
   nameKh: string;
   nameEn: string;
   monthlyUsd: number;
@@ -98,6 +98,36 @@ const PLAN_OPTIONS: PlanOption[] = [
     highlightKh: '២៦ មុខងារពេញលេញ: Unlimited KHQR, វីដេអូខល Teleconsult, QR e-Prescription, MoH DHIS2, Subdomain, 24/7 VIP SLA',
     highlightEn: '26 Complete Modules: Unlimited KHQR, WebRTC Teleconsult, QR e-Prescription, MoH DHIS2, Subdomain, VIP 24/7 SLA',
   },
+  {
+    id: 'SPECIALIST_15',
+    nameKh: 'គ្លីនិកឯកទេសជាន់ខ្ពស់ - Specialist Clinic',
+    nameEn: 'Specialist Clinic ($15/mo)',
+    monthlyUsd: 15,
+    annualUsd: 144,
+    khqrQuotaKh: 'មិនកំណត់ចំនួន - Unlimited KHQR',
+    khqrQuotaEn: 'Unlimited dynamic QR',
+    patientQuotaKh: 'មិនកំណត់ចំនួនអ្នកជំងឺ - Unlimited Patients',
+    patientQuotaEn: 'Unlimited patients',
+    toolsCountKh: '២៨ មុខងារឯកទេស',
+    toolsCountEn: '28 Specialist Modules',
+    highlightKh: '២៨ មុខងារឯកទេស: Unlimited KHQR, AI សំឡេងខ្មែរ Dictation, SOAP Structuring, ឃ្លាំងច្រើនសាខា, CDSS ពិនិត្យថ្នាំ, TMA Portal',
+    highlightEn: '28 Specialist Modules: Unlimited KHQR, AI Voice Dictation, SOAP Structuring, Multi-Branch Warehouse, CDSS Drug Guard, TMA Portal',
+  },
+  {
+    id: 'UNLIMITED_20',
+    nameKh: 'គ្មានដែនកំណត់ PaaS - Unlimited PaaS',
+    nameEn: 'Unlimited PaaS ($20/mo)',
+    monthlyUsd: 20,
+    annualUsd: 192,
+    khqrQuotaKh: 'មិនកំណត់ចំនួន - Unlimited KHQR',
+    khqrQuotaEn: 'Unlimited dynamic QR',
+    patientQuotaKh: 'មិនកំណត់ចំនួនអ្នកជំងឺ - Unlimited Patients',
+    patientQuotaEn: 'Unlimited patients',
+    toolsCountKh: '៣០+ គ្មានដែនកំណត់',
+    toolsCountEn: '30+ Unlimited PaaS',
+    highlightKh: '៣០+ គ្មានដែនកំណត់: Unlimited All, ប្រើប្រាស់ដូមេនគ្លីនិកផ្ទាល់, ទិន្នន័យដាច់ដោយឡែក, Telegram VIP Master Bot, 24/7 SLA',
+    highlightEn: '30+ Unlimited PaaS: Unlimited All, Custom White-label Domain, Dedicated DB, Telegram Master Bot, 24/7 Priority SLA',
+  },
 ];
 
 export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps> = ({
@@ -110,7 +140,7 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
   const { locale } = useTranslation();
   const isKm = locale === 'km';
 
-  const [selectedPlanTier, setSelectedPlanTier] = useState<'STARTER_5' | 'PRO_8' | 'ENTERPRISE_12'>(
+  const [selectedPlanTier, setSelectedPlanTier] = useState<'STARTER_5' | 'PRO_8' | 'ENTERPRISE_12' | 'SPECIALIST_15' | 'UNLIMITED_20'>(
     initialPlanTier,
   );
   const [billingCycle, setBillingCycle] = useState<'MONTHLY' | 'ANNUAL'>('MONTHLY');
@@ -132,7 +162,7 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
   // Initialize checkout session when modal opens or plan/cycle changes
-  const initCheckout = async (plan: 'STARTER_5' | 'PRO_8' | 'ENTERPRISE_12', cycle: 'MONTHLY' | 'ANNUAL') => {
+  const initCheckout = async (plan: 'STARTER_5' | 'PRO_8' | 'ENTERPRISE_12' | 'SPECIALIST_15' | 'UNLIMITED_20', cycle: 'MONTHLY' | 'ANNUAL') => {
     try {
       setLoadingCheckout(true);
       setErrorMsg('');
@@ -245,11 +275,9 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
       }
     } catch (err: any) {
       setErrorMsg(
-        err.messageKh ||
-          err.message ||
-          (isKm
-            ? 'មិនទាន់រកឃើញការទូទាត់នៅក្នុងប្រព័ន្ធធនាគារឡើយ។ សូមស្កេន KHQR និងបញ្ចប់ការទូទាត់ក្នុង App ធនាគាររបស់អ្នក។'
-            : 'Payment not settled yet. Please complete the scan in your mobile banking app.'),
+        isKm
+          ? 'មិនទាន់រកឃើញការទូទាត់នៅក្នុងប្រព័ន្ធធនាគារឡើយ។ សូមស្កេន KHQR និងបញ្ចប់ការទូទាត់ក្នុង App ធនាគាររបស់អ្នក។'
+          : 'Payment not settled yet. Please complete the scan in your mobile banking app.'
       );
     } finally {
       setVerifying(false);
@@ -391,7 +419,7 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
                 <label className="text-xs font-bold uppercase tracking-wider text-stone-700 block">
                   {isKm ? '១. ជ្រើសរើសគម្រោងសេវាកម្ម' : '1. Select Subscription Tier'}
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                   {PLAN_OPTIONS.map((plan) => {
                     const isDowngrade = isPlanDowngrade(currentTenantPlanTier, plan.id);
                     const isCurrentTier = (currentTenantPlanTier || 'FREE') === plan.id;

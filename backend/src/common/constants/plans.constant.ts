@@ -57,6 +57,30 @@ export const SAAS_PLANS: Record<PlanTier, PlanConfig> = {
     priceUsd: 12,
     maxMonthlyPatients: -1, // Unlimited
     maxDailyKhqr: -1, // Unlimited dynamic QR transactions
+    maxStaffAccounts: -1,
+    telegramTopicsAllowed: true,
+    voiceCallAllowed: true,
+    inventoryFullAllowed: true,
+  },
+  [PlanTier.SPECIALIST_15]: {
+    tier: PlanTier.SPECIALIST_15,
+    nameKh: 'គម្រោងឯកទេសជាន់ខ្ពស់',
+    nameEn: 'Medical Specialist 15$/mo',
+    priceUsd: 15,
+    maxMonthlyPatients: -1, // Unlimited
+    maxDailyKhqr: -1, // Unlimited dynamic QR transactions
+    maxStaffAccounts: -1,
+    telegramTopicsAllowed: true,
+    voiceCallAllowed: true,
+    inventoryFullAllowed: true,
+  },
+  [PlanTier.UNLIMITED_20]: {
+    tier: PlanTier.UNLIMITED_20,
+    nameKh: 'គម្រោងគ្មានដែនកំណត់',
+    nameEn: 'Unlimited PaaS 20$/mo',
+    priceUsd: 20,
+    maxMonthlyPatients: -1, // Unlimited
+    maxDailyKhqr: -1, // Unlimited dynamic QR transactions
     maxStaffAccounts: -1, // Unlimited
     telegramTopicsAllowed: true,
     voiceCallAllowed: true,
@@ -100,6 +124,8 @@ export const PLAN_TIER_RANK: Record<PlanTier, number> = {
   [PlanTier.STARTER_5]: 1,
   [PlanTier.PRO_8]: 2,
   [PlanTier.ENTERPRISE_12]: 3,
+  [PlanTier.SPECIALIST_15]: 4,
+  [PlanTier.UNLIMITED_20]: 5,
 };
 
 export function isRouteAllowedForPlan(
