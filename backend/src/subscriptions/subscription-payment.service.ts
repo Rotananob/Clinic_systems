@@ -329,13 +329,30 @@ export class SubscriptionPaymentService {
     dto: VerifySubscriptionSettlementDto,
     user?: any,
   ) {
-    const subscription = await this.prisma.tenantSubscription.findUnique({
-      where: { id: dto.subscriptionId },
-      include: { tenant: true },
-    });
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(dto.subscriptionId || '');
+    let subscription = isUuid
+      ? await this.prisma.tenantSubscription.findUnique({
+          where: { id: dto.subscriptionId },
+          include: { tenant: true },
+        })
+      : null;
+
+    if (!subscription && (dto.tranId || dto.subscriptionId)) {
+      const candidates = Array.from(new Set([dto.subscriptionId, dto.tranId].filter(Boolean)));
+      subscription = await this.prisma.tenantSubscription.findFirst({
+        where: {
+          OR: [
+            ...candidates.map((val) => ({ paymentTranId: val })),
+            ...candidates.map((val) => ({ invoiceNumber: val })),
+          ],
+        },
+        include: { tenant: true },
+        orderBy: { createdAt: 'desc' },
+      });
+    }
 
     if (!subscription) {
-      throw new NotFoundException(`Subscription invoice ${dto.subscriptionId} not found`);
+      throw new NotFoundException(`Subscription invoice not found for reference: ${dto.subscriptionId || dto.tranId}`);
     }
 
     if (subscription.tenantId !== tenantId && user?.role !== 'SUPER_ADMIN') {
@@ -457,6 +474,8 @@ export class SubscriptionPaymentService {
       throw new BadRequestException({
         statusCode: 400,
         error: 'PAYMENT_NOT_SETTLED',
+        message:
+          'Payment has not been settled in the banking system yet. Please complete the transaction via your mobile banking app.',
         messageKh:
           'ការទូទាត់ប្រាក់មិនទាន់បានបញ្ចប់នៅក្នុងប្រព័ន្ធធនាគារនៅឡើយទេ។ សូមស្កេន KHQR និងបញ្ចប់ការទូទាត់ក្នុង ABA Mobile ឬ Bakong App របស់អ្នក។',
         messageEn:
@@ -600,10 +619,27 @@ export class SubscriptionPaymentService {
     dto: RequestSubscriptionSupportDto,
     user?: any,
   ) {
-    const subscription = await this.prisma.tenantSubscription.findUnique({
-      where: { id: dto.subscriptionId },
-      include: { tenant: true },
-    });
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(dto.subscriptionId || '');
+    let subscription = isUuid
+      ? await this.prisma.tenantSubscription.findUnique({
+          where: { id: dto.subscriptionId },
+          include: { tenant: true },
+        })
+      : null;
+
+    if (!subscription && (dto.subscriptionId || (dto as any).tranId)) {
+      const candidates = Array.from(new Set([dto.subscriptionId, (dto as any).tranId].filter(Boolean)));
+      subscription = await this.prisma.tenantSubscription.findFirst({
+        where: {
+          OR: [
+            ...candidates.map((val) => ({ paymentTranId: val })),
+            ...candidates.map((val) => ({ invoiceNumber: val })),
+          ],
+        },
+        include: { tenant: true },
+        orderBy: { createdAt: 'desc' },
+      });
+    }
 
     if (!subscription) {
       throw new NotFoundException(`Subscription invoice ${dto.subscriptionId} not found`);
@@ -661,9 +697,21 @@ export class SubscriptionPaymentService {
       throw new ForbiddenException('Only Super Admin can manually approve subscriptions');
     }
 
-    const subscription = await this.prisma.tenantSubscription.findUnique({
-      where: { id: subscriptionId },
-    });
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(subscriptionId || '');
+    let subscription = isUuid
+      ? await this.prisma.tenantSubscription.findUnique({
+          where: { id: subscriptionId },
+        })
+      : null;
+
+    if (!subscription) {
+      subscription = await this.prisma.tenantSubscription.findFirst({
+        where: {
+          OR: [{ paymentTranId: subscriptionId }, { invoiceNumber: subscriptionId }],
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+    }
 
     if (!subscription) {
       throw new NotFoundException(`Subscription ${subscriptionId} not found`);
@@ -672,7 +720,7 @@ export class SubscriptionPaymentService {
     return this.executeSettlementTransaction(
       subscription.tenantId,
       {
-        subscriptionId,
+        subscriptionId: subscription.id,
         adminOverride: true,
       },
       superAdminUser,

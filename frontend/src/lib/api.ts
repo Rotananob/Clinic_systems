@@ -365,8 +365,19 @@ class ApiClient {
           const errorData = await response.json();
           if (Array.isArray(errorData?.message)) {
             errorMessage = errorData.message.join('. ');
+          } else if (
+            errorData?.messageKh &&
+            typeof window !== 'undefined' &&
+            localStorage.getItem('clinic_locale') === 'km'
+          ) {
+            errorMessage = errorData.messageKh;
           } else {
-            errorMessage = errorData?.message || errorData?.error || errorMessage;
+            errorMessage =
+              errorData?.message ||
+              errorData?.messageEn ||
+              errorData?.messageKh ||
+              errorData?.error ||
+              errorMessage;
           }
         } catch {
           // use default error message

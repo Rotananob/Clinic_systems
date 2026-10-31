@@ -88,10 +88,23 @@ export class SubscriptionInvoiceService {
    * Step 20: Fetches official structured SaaS tax invoice data for a subscription payment.
    */
   async getSubscriptionReceipt(tenantId: string, subscriptionId: string): Promise<SaaSReceiptData> {
-    const subscription = await this.prisma.tenantSubscription.findUnique({
-      where: { id: subscriptionId },
-      include: { tenant: true },
-    });
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(subscriptionId || '');
+    let subscription = isUuid
+      ? await this.prisma.tenantSubscription.findUnique({
+          where: { id: subscriptionId },
+          include: { tenant: true },
+        })
+      : null;
+
+    if (!subscription) {
+      subscription = await this.prisma.tenantSubscription.findFirst({
+        where: {
+          tenantId,
+          OR: [{ invoiceNumber: subscriptionId }, { paymentTranId: subscriptionId }],
+        },
+        include: { tenant: true },
+      });
+    }
 
     if (!subscription) {
       throw new NotFoundException(`Subscription invoice ${subscriptionId} not found`);

@@ -248,7 +248,7 @@ function RegisterContent() {
     const pollInterval = setInterval(async () => {
       try {
         const res = await api.subscriptions.verifySettlement({
-          subscriptionId: checkoutData.tranId,
+          subscriptionId: checkoutData.subscriptionId || checkoutData.tranId,
           tranId: checkoutData.tranId,
           md5: checkoutData.md5,
         });
@@ -471,7 +471,7 @@ function RegisterContent() {
     setPaymentError(null);
     try {
       const res = await api.subscriptions.verifySettlement({
-        subscriptionId: checkoutData.tranId,
+        subscriptionId: checkoutData.subscriptionId || checkoutData.tranId,
         tranId: checkoutData.tranId,
         md5: checkoutData.md5,
       });
@@ -501,12 +501,30 @@ function RegisterContent() {
       } else {
         setPaymentError(
           isKm
-            ? 'មិនទាន់រកឃើញប្រតិបត្តិការបង់ប្រាក់នៅឡើយទេ។ សូមស្កេនទូទាត់តាម App ធនាគារជាមុនសិន។'
+            ? 'មិនទាន់រកឃើញការទូទាត់នៅក្នុងប្រព័ន្ធធនាគារឡើយ។ សូមស្កេន KHQR និងបញ្ចប់ការផ្ទេរប្រាក់ក្នុង App ធនាគារជាមុនសិន។'
             : 'Payment transaction not verified yet. Please scan and pay via your banking app.'
         );
       }
     } catch (err: any) {
-      setPaymentError(err.message || (isKm ? 'ការផ្ទៀងផ្ទាត់មិនទាន់បានជោគជ័យ' : 'Verification failed'));
+      const msg = err?.message || '';
+      if (
+        msg.includes('PAYMENT_NOT_SETTLED') ||
+        msg.toLowerCase().includes('not settled') ||
+        msg.toLowerCase().includes('banking')
+      ) {
+        setPaymentError(
+          isKm
+            ? 'មិនទាន់រកឃើញការទូទាត់នៅក្នុងប្រព័ន្ធធនាគារឡើយ។ សូមស្កេន KHQR និងបញ្ចប់ការផ្ទេរប្រាក់ក្នុង App ធនាគារជាមុនសិន។'
+            : 'Payment has not been settled in the banking system yet. Please complete the transfer in your banking app and verify again.'
+        );
+      } else {
+        setPaymentError(
+          err.message ||
+            (isKm
+              ? 'ការផ្ទៀងផ្ទាត់មិនទាន់បានជោគជ័យ សូមព្យាយាមម្តងទៀត'
+              : 'Verification failed. Please try again.')
+        );
+      }
     } finally {
       setVerifyingSettlement(false);
     }

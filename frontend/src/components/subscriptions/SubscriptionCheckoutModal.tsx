@@ -178,7 +178,7 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
     const checkSettlement = async () => {
       try {
         const res = await api.subscriptions.verifySettlement({
-          subscriptionId: checkoutData.subscriptionId,
+          subscriptionId: checkoutData.subscriptionId || checkoutData.tranId,
           tranId: checkoutData.tranId,
           md5: checkoutData.md5,
         });
@@ -217,7 +217,7 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
       setVerifying(true);
       setErrorMsg('');
       const res = await api.subscriptions.verifySettlement({
-        subscriptionId: checkoutData.subscriptionId,
+        subscriptionId: checkoutData.subscriptionId || checkoutData.tranId,
         tranId: checkoutData.tranId,
         md5: checkoutData.md5,
       });
