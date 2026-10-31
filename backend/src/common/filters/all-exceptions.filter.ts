@@ -63,9 +63,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     // Humanize standard HTTP authorization messages
     if (status === HttpStatus.FORBIDDEN && (message === 'Forbidden resource' || !message)) {
-      message = 'គណនីលោកអ្នកមិនទាន់មានសិទ្ធិអនុវត្តសកម្មភាពនេះឡើយ។ សូមទាក់ទងម្ចាស់គ្លីនិក (Owner) ដើម្បីស្នើសុំសិទ្ធិបន្ថែម។ (Access restricted. Please contact clinic owner.)';
+      message = 'គណនីលោកអ្នកមិនទាន់មានសិទ្ធិអនុវត្តសកម្មភាពនេះឡើយ។ សូមទាក់ទងម្ចាស់គ្លីនិក - Owner ដើម្បីស្នើសុំសិទ្ធិបន្ថែម - Access restricted. Please contact clinic owner.';
     } else if (status === HttpStatus.UNAUTHORIZED && (message === 'Unauthorized' || !message)) {
-      message = 'សូមចូលគណនីបុគ្គលិកវេជ្ជសាស្ត្រ ដើម្បីបន្តប្រើប្រាស់ (Please sign in to continue).';
+      message = 'សូមចូលគណនីបុគ្គលិកវេជ្ជសាស្ត្រ ដើម្បីបន្តប្រើប្រាស់ - Please sign in to continue.';
     }
 
     // Never leak stack traces or internal query terms to the user

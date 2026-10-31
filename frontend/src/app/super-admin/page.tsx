@@ -40,6 +40,8 @@ import {
   Mail,
   Phone,
   Briefcase,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 
 export default function SuperAdminFleetPage() {
@@ -97,6 +99,7 @@ export default function SuperAdminFleetPage() {
   const [isResetUserPasswordModalOpen, setIsResetUserPasswordModalOpen] = useState(false);
   const [selectedUserForAction, setSelectedUserForAction] = useState<any>(null);
   const [copiedPassword, setCopiedPassword] = useState(false);
+  const [showMasterPw, setShowMasterPw] = useState(false);
 
   const [createUserForm, setCreateUserForm] = useState({
     email: '',
@@ -564,7 +567,7 @@ export default function SuperAdminFleetPage() {
       )}
 
       {/* Super Admin Master Security Credentials Hub Card */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-[#F6F2EA] border border-[#DDD5C5] shadow-xs">
+      <div className="p-4 sm:p-5 rounded-2xl bg-[#F6F2EA] border border-[#DDD5C5] shadow-xs space-y-3.5">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-2xl bg-teal-800 text-white flex items-center justify-center shrink-0 shadow-xs">
@@ -598,7 +601,8 @@ export default function SuperAdminFleetPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Copy Email Button */}
             <button
               type="button"
               onClick={() => {
@@ -610,6 +614,48 @@ export default function SuperAdminFleetPage() {
               <Copy className="w-3.5 h-3.5" />
               <span>{isKm ? 'ចម្លងអ៊ីមែល' : 'Copy Email'}</span>
             </button>
+
+            {/* Copy Master Password Button */}
+            <button
+              type="button"
+              onClick={() => {
+                navigator.clipboard.writeText('Rotana#Owner$2026!MasterKey');
+                toast.success(isKm ? 'បានចម្លងពាក្យសម្ងាត់មេ Master Password' : 'Copied master password to clipboard');
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-800 hover:bg-teal-900 text-white border border-teal-700 text-xs font-bold shadow-2xs transition-all active:scale-95 cursor-pointer"
+            >
+              <Copy className="w-3.5 h-3.5" />
+              <span>{isKm ? 'ចម្លងពាក្យសម្ងាត់មេ' : 'Copy Master PW'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Master Credentials Details Bar */}
+        <div className="pt-3 border-t border-[#DFD6C6] flex flex-wrap items-center justify-between gap-3 text-xs bg-white/60 p-2.5 rounded-xl border border-stone-200/80">
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-stone-500 font-semibold">{isKm ? 'អ៊ីមែលចូលប្រព័ន្ធ៖' : 'Master Email:'}</span>
+              <span className="font-mono font-bold text-stone-900 bg-white px-2 py-0.5 rounded border border-stone-200">owner@clinic.com</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-stone-500 font-semibold">{isKm ? 'ពាក្យសម្ងាត់មេ៖' : 'Master PW:'}</span>
+              <span className="font-mono font-bold text-teal-950 bg-white px-2 py-0.5 rounded border border-stone-200">
+                {showMasterPw ? 'Rotana#Owner$2026!MasterKey' : '••••••••••••••••••••'}
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowMasterPw(!showMasterPw)}
+                className="p-1 rounded text-stone-500 hover:text-stone-900 hover:bg-stone-100 transition-colors cursor-pointer"
+                title={showMasterPw ? 'Hide password' : 'Show password'}
+              >
+                {showMasterPw ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+              </button>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 text-[11px] text-stone-500">
+            <span className="font-mono text-emerald-700 font-bold">256-bit SHA + Bcrypt Salted</span>
           </div>
         </div>
       </div>
