@@ -90,4 +90,36 @@ describe('Phase 8: DICOM PACS & Medical Viewer UI Suite', () => {
     assert.equal(classifyCobb(45, 10).severity, 'MODERATE');
     assert.equal(classifyCobb(68, 12).severity, 'SEVERE');
   });
+
+  it('should accurately calculate Euclidean distance in mm based on calibrated pixel spacing', () => {
+    const pixelSpacingMm = 0.143; // Standard DICOM Tag (0028,0030)
+    const calculateDistance = (p1: { x: number; y: number }, p2: { x: number; y: number }, spacing: number) => {
+      const px = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+      const mm = parseFloat((px * spacing).toFixed(1));
+      return { px: Math.round(px), mm };
+    };
+
+    // Horizontal line: 100 px = 14.3 mm
+    assert.deepEqual(calculateDistance({ x: 50, y: 50 }, { x: 150, y: 50 }, pixelSpacingMm), { px: 100, mm: 14.3 });
+
+    // 3-4-5 Triangle: dx=300, dy=400 -> hypot=500 px -> 500 * 0.143 = 71.5 mm
+    assert.deepEqual(calculateDistance({ x: 0, y: 0 }, { x: 300, y: 400 }, pixelSpacingMm), { px: 500, mm: 71.5 });
+  });
+
+  it('should verify standard CT and X-Ray Window Width / Center (WW/WL) presets', () => {
+    const presets: Record<string, { ww: number; wl: number }> = {
+      DEFAULT: { ww: 400, wl: 40 },
+      BONE: { ww: 2000, wl: 500 },
+      LUNG: { ww: 1500, wl: -600 },
+      SOFT: { ww: 350, wl: 40 },
+      BRAIN: { ww: 80, wl: 40 },
+    };
+
+    assert.equal(presets.BONE.ww, 2000);
+    assert.equal(presets.BONE.wl, 500);
+    assert.equal(presets.LUNG.ww, 1500);
+    assert.equal(presets.LUNG.wl, -600);
+    assert.equal(presets.BRAIN.ww, 80);
+    assert.equal(presets.BRAIN.wl, 40);
+  });
 });

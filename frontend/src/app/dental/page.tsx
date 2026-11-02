@@ -16,7 +16,9 @@ import {
   Shield,
   Clock,
   Printer,
-  ChevronRight
+  ChevronRight,
+  Baby,
+  UserCheck
 } from 'lucide-react';
 import { useTranslation } from '../../context/I18nContext';
 import { api } from '../../lib/api';
@@ -28,7 +30,8 @@ export default function DentalPage() {
 
   // State
   const [selectedPatientId, setSelectedPatientId] = useState<string>('PT-1001');
-  const [activeTab, setActiveTab] = useState<'chart' | 'plans' | 'procedures' | 'periodontal'>('chart');
+  const [activeTab, setActiveTab] = useState<'chart' | 'periodontal' | 'plans' | 'procedures'>('chart');
+  const [dentitionType, setDentitionType] = useState<'adult' | 'pediatric'>('adult');
   const [loading, setLoading] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -47,6 +50,7 @@ export default function DentalPage() {
     status: 'HEALTHY',
     surfaces: { mesial: false, distal: false, occlusal: false, buccal: false, lingual: false },
     mobilityScore: 0,
+    furcationClass: 'NONE',
     pocketDepthsMm: [2, 2, 2, 2, 2, 2],
     bleedingOnProbing: [false, false, false, false, false, false],
     notes: ''
@@ -74,7 +78,7 @@ export default function DentalPage() {
   };
 
   const formatMoney = (usd: number) => {
-    return `$${usd.toFixed(2)} (${(usd * exchangeRate).toLocaleString()} ៛)`;
+    return '$' + usd.toFixed(2) + ' - ' + (usd * exchangeRate).toLocaleString() + ' KHR';
   };
 
   // Adult Tooth Quadrants
@@ -82,6 +86,20 @@ export default function DentalPage() {
   const upperLeftTeeth = [21, 22, 23, 24, 25, 26, 27, 28];
   const lowerRightTeeth = [48, 47, 46, 45, 44, 43, 42, 41];
   const lowerLeftTeeth = [31, 32, 33, 34, 35, 36, 37, 38];
+
+  // Pediatric Deciduous Quadrants (FDI 51-85)
+  const pedUpperRightTeeth = [55, 54, 53, 52, 51];
+  const pedUpperLeftTeeth = [61, 62, 63, 64, 65];
+  const pedLowerRightTeeth = [85, 84, 83, 82, 81];
+  const pedLowerLeftTeeth = [71, 72, 73, 74, 75];
+
+  // Active tooth list depending on dentition
+  const activeUpperRight = dentitionType === 'adult' ? upperRightTeeth : pedUpperRightTeeth;
+  const activeUpperLeft = dentitionType === 'adult' ? upperLeftTeeth : pedUpperLeftTeeth;
+  const activeLowerRight = dentitionType === 'adult' ? lowerRightTeeth : pedLowerRightTeeth;
+  const activeLowerLeft = dentitionType === 'adult' ? lowerLeftTeeth : pedLowerLeftTeeth;
+
+  const allActiveTeeth = [...activeUpperRight, ...activeUpperLeft, ...activeLowerRight, ...activeLowerLeft];
 
   // Load Data
   const loadDentalData = async () => {
@@ -121,6 +139,7 @@ export default function DentalPage() {
         status: existing.status || 'HEALTHY',
         surfaces: existing.surfaces || { mesial: false, distal: false, occlusal: false, buccal: false, lingual: false },
         mobilityScore: existing.mobilityScore || 0,
+        furcationClass: existing.furcationClass || 'NONE',
         pocketDepthsMm: existing.pocketDepthsMm || [2, 2, 2, 2, 2, 2],
         bleedingOnProbing: existing.bleedingOnProbing || [false, false, false, false, false, false],
         notes: existing.notes || ''
@@ -130,6 +149,7 @@ export default function DentalPage() {
         status: 'HEALTHY',
         surfaces: { mesial: false, distal: false, occlusal: false, buccal: false, lingual: false },
         mobilityScore: 0,
+        furcationClass: 'NONE',
         pocketDepthsMm: [2, 2, 2, 2, 2, 2],
         bleedingOnProbing: [false, false, false, false, false, false],
         notes: ''
@@ -159,7 +179,7 @@ export default function DentalPage() {
     if (!selectedToothNumber) return;
     setShowToothModal(false);
     setNewPlanData({
-      title: `Treatment Plan for Tooth ${selectedToothNumber}`,
+      title: 'Treatment Plan for Tooth ' + selectedToothNumber,
       dentistName: 'Dr. Seng Chanthou',
       items: [
         {
@@ -290,6 +310,31 @@ export default function DentalPage() {
     );
   };
 
+  // Calculate BOP percentage from charted teeth
+  const calculateBopSummary = () => {
+    if (!chart?.teeth) return { totalProbed: 0, totalBop: 0, bopPct: 0, risk: 'LOW' };
+    const teethKeys = Object.keys(chart.teeth);
+    let totalProbed = 0;
+    let totalBop = 0;
+
+    for (const key of teethKeys) {
+      const tState = chart.teeth[key];
+      if (tState.bleedingOnProbing && Array.isArray(tState.bleedingOnProbing)) {
+        totalProbed += 6;
+        totalBop += tState.bleedingOnProbing.filter(Boolean).length;
+      }
+    }
+
+    const bopPct = totalProbed > 0 ? Math.round((totalBop / totalProbed) * 100) : (chart?.bleedingScorePct || 0);
+    let risk = 'LOW';
+    if (bopPct > 30) risk = 'HIGH';
+    else if (bopPct >= 10) risk = 'MODERATE';
+
+    return { totalProbed, totalBop, bopPct, risk };
+  };
+
+  const bopSummary = calculateBopSummary();
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 select-none font-sans text-stone-900">
       {/* Toast Notification */}
@@ -316,6 +361,28 @@ export default function DentalPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
+          {/* Dentition Selector Toggle */}
+          <div className="flex items-center bg-stone-100 rounded-lg p-1 border border-stone-200 text-xs">
+            <button
+              onClick={() => setDentitionType('adult')}
+              className={`px-3 py-1 rounded-md font-bold transition-all flex items-center gap-1.5 ${
+                dentitionType === 'adult' ? 'bg-white text-teal-900 shadow-2xs' : 'text-stone-500 hover:text-stone-800'
+              }`}
+            >
+              <UserCheck className="w-3.5 h-3.5" />
+              <span>{d.dentitionAdult || 'Adult (32 Teeth FDI 11-48)'}</span>
+            </button>
+            <button
+              onClick={() => setDentitionType('pediatric')}
+              className={`px-3 py-1 rounded-md font-bold transition-all flex items-center gap-1.5 ${
+                dentitionType === 'pediatric' ? 'bg-white text-teal-900 shadow-2xs' : 'text-stone-500 hover:text-stone-800'
+              }`}
+            >
+              <Baby className="w-3.5 h-3.5" />
+              <span>{d.dentitionPediatric || 'Pediatric (20 Deciduous FDI 51-85)'}</span>
+            </button>
+          </div>
+
           {/* Patient Switcher */}
           <div className="flex items-center bg-stone-100 rounded-lg px-2.5 py-1.5 border border-stone-200 text-xs">
             <span className="text-stone-500 font-semibold mr-2">Patient:</span>
@@ -324,9 +391,9 @@ export default function DentalPage() {
               onChange={(e) => setSelectedPatientId(e.target.value)}
               className="bg-transparent font-bold text-stone-900 outline-none"
             >
-              <option value="PT-1001">PT-1001 (Keo Samnang)</option>
-              <option value="PT-1002">PT-1002 (Sok Vicheka)</option>
-              <option value="PT-1003">PT-1003 (Chan Monika)</option>
+              <option value="PT-1001">PT-1001 - Keo Samnang</option>
+              <option value="PT-1002">PT-1002 - Sok Vicheka</option>
+              <option value="PT-1003">PT-1003 - Chan Monika</option>
             </select>
           </div>
 
@@ -343,19 +410,19 @@ export default function DentalPage() {
       {/* WHO DMFT Index Scorecard */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="bg-white rounded-xl p-4 border border-stone-200 shadow-2xs">
-          <div className="text-xs font-semibold text-stone-500">{d.dmftDecayed || 'Decayed (D)'}</div>
+          <div className="text-xs font-semibold text-stone-500">{d.dmftDecayed || 'Decayed D'}</div>
           <div className="text-2xl font-black text-rose-700 mt-1">{chart?.dmftIndex?.decayed ?? 0}</div>
           <div className="text-[11px] text-stone-400 mt-0.5">Teeth requiring restoration</div>
         </div>
 
         <div className="bg-white rounded-xl p-4 border border-stone-200 shadow-2xs">
-          <div className="text-xs font-semibold text-stone-500">{d.dmftMissing || 'Missing (M)'}</div>
+          <div className="text-xs font-semibold text-stone-500">{d.dmftMissing || 'Missing M'}</div>
           <div className="text-2xl font-black text-stone-600 mt-1">{chart?.dmftIndex?.missing ?? 0}</div>
           <div className="text-[11px] text-stone-400 mt-0.5">Extracted or congenital absence</div>
         </div>
 
         <div className="bg-white rounded-xl p-4 border border-stone-200 shadow-2xs">
-          <div className="text-xs font-semibold text-stone-500">{d.dmftFilled || 'Filled (F)'}</div>
+          <div className="text-xs font-semibold text-stone-500">{d.dmftFilled || 'Filled F'}</div>
           <div className="text-2xl font-black text-blue-700 mt-1">{chart?.dmftIndex?.filled ?? 0}</div>
           <div className="text-[11px] text-stone-400 mt-0.5">Restored or crowned teeth</div>
         </div>
@@ -367,19 +434,20 @@ export default function DentalPage() {
         </div>
 
         <div className="bg-white rounded-xl p-4 border border-stone-200 shadow-2xs">
-          <div className="text-xs font-semibold text-stone-500">Caries Risk Category</div>
-          <div className="mt-1">
-            <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-black uppercase tracking-wider ${
-              chart?.dmftIndex?.riskCategory === 'LOW'
+          <div className="text-xs font-semibold text-stone-500">Bleeding on Probing (BOP)</div>
+          <div className="mt-1 flex items-baseline gap-2">
+            <span className="text-2xl font-black text-rose-600">{bopSummary.bopPct}%</span>
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+              bopSummary.risk === 'LOW'
                 ? 'bg-emerald-100 text-emerald-800'
-                : chart?.dmftIndex?.riskCategory === 'MODERATE'
+                : bopSummary.risk === 'MODERATE'
                 ? 'bg-amber-100 text-amber-800'
                 : 'bg-rose-100 text-rose-800'
             }`}>
-              {chart?.dmftIndex?.riskCategory || 'LOW'} RISK
+              {bopSummary.risk === 'LOW' ? (d.healthyGingiva || 'Healthy') : bopSummary.risk === 'MODERATE' ? (d.localizedGingivitis || 'Gingivitis') : (d.generalizedPeriodontitis || 'Periodontitis')}
             </span>
           </div>
-          <div className="text-[11px] text-stone-400 mt-1">Plaque: {chart?.plaqueScorePct || 0}%</div>
+          <div className="text-[11px] text-stone-400 mt-1">Plaque Score: {chart?.plaqueScorePct || 0}%</div>
         </div>
       </div>
 
@@ -387,6 +455,7 @@ export default function DentalPage() {
       <div className="border-b border-stone-200 flex gap-6 text-xs font-bold">
         {[
           { key: 'chart', label: d.tabChart || 'Odontogram Chart', icon: Sparkles },
+          { key: 'periodontal', label: d.tabPeriodontal || 'Periodontal Charting & BOP', icon: Activity },
           { key: 'plans', label: d.tabTreatmentPlan || 'Treatment Plans', icon: FileText },
           { key: 'procedures', label: d.tabProcedures || 'Dental Fee Schedule', icon: DollarSign }
         ].map((tab) => {
@@ -453,20 +522,22 @@ export default function DentalPage() {
             <div>
               <div className="flex items-center justify-between border-b border-stone-200 pb-2 mb-4">
                 <h3 className="text-sm font-black text-stone-900 uppercase tracking-wide">
-                  {d.upperJaw || 'Maxilla (Upper Jaw)'}
+                  {d.upperJaw || 'Maxilla Upper Jaw'}
                 </h3>
-                <span className="text-xs text-stone-500 font-mono">FDI Adult Dentition 18 to 28</span>
+                <span className="text-xs text-stone-500 font-mono">
+                  {dentitionType === 'adult' ? 'FDI Adult Dentition 18 to 28' : 'FDI Pediatric Deciduous 55 to 65'}
+                </span>
               </div>
               <div className="flex flex-wrap items-center justify-center gap-2">
-                {/* Quadrant 1: 18 -> 11 */}
+                {/* Quadrant 1 / 5 */}
                 <div className="flex items-center gap-1.5">
-                  {upperRightTeeth.map((tn) => renderToothBox(tn))}
+                  {activeUpperRight.map((tn) => renderToothBox(tn))}
                 </div>
                 {/* Midline separator */}
                 <div className="w-px h-16 bg-stone-300 mx-2" />
-                {/* Quadrant 2: 21 -> 28 */}
+                {/* Quadrant 2 / 6 */}
                 <div className="flex items-center gap-1.5">
-                  {upperLeftTeeth.map((tn) => renderToothBox(tn))}
+                  {activeUpperLeft.map((tn) => renderToothBox(tn))}
                 </div>
               </div>
             </div>
@@ -475,20 +546,22 @@ export default function DentalPage() {
             <div>
               <div className="flex items-center justify-between border-b border-stone-200 pb-2 mb-4">
                 <h3 className="text-sm font-black text-stone-900 uppercase tracking-wide">
-                  {d.lowerJaw || 'Mandible (Lower Jaw)'}
+                  {d.lowerJaw || 'Mandible Lower Jaw'}
                 </h3>
-                <span className="text-xs text-stone-500 font-mono">FDI Adult Dentition 48 to 38</span>
+                <span className="text-xs text-stone-500 font-mono">
+                  {dentitionType === 'adult' ? 'FDI Adult Dentition 48 to 38' : 'FDI Pediatric Deciduous 85 to 75'}
+                </span>
               </div>
               <div className="flex flex-wrap items-center justify-center gap-2">
-                {/* Quadrant 4: 48 -> 41 */}
+                {/* Quadrant 4 / 8 */}
                 <div className="flex items-center gap-1.5">
-                  {lowerRightTeeth.map((tn) => renderToothBox(tn))}
+                  {activeLowerRight.map((tn) => renderToothBox(tn))}
                 </div>
                 {/* Midline separator */}
                 <div className="w-px h-16 bg-stone-300 mx-2" />
-                {/* Quadrant 3: 31 -> 38 */}
+                {/* Quadrant 3 / 7 */}
                 <div className="flex items-center gap-1.5">
-                  {lowerLeftTeeth.map((tn) => renderToothBox(tn))}
+                  {activeLowerLeft.map((tn) => renderToothBox(tn))}
                 </div>
               </div>
             </div>
@@ -496,7 +569,130 @@ export default function DentalPage() {
         </div>
       )}
 
-      {/* TAB 2: TREATMENT PLANS */}
+      {/* TAB 2: PERIODONTAL CHARTING & BOP */}
+      {activeTab === 'periodontal' && (
+        <div className="space-y-6">
+          {/* Periodontal Probing Grid Header */}
+          <div className="bg-white rounded-xl border border-stone-200 p-5 shadow-2xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-100 pb-3">
+              <div>
+                <h3 className="text-sm font-black text-stone-900 flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-teal-700" />
+                  <span>{d.periodontalTitle || 'Periodontal Examination & Bleeding on Probing'}</span>
+                </h3>
+                <p className="text-xs text-stone-500 mt-0.5">
+                  6-Point circumferential probing depths: DB (Disto-buccal), B (Mid-buccal), MB (Mesio-buccal), DL (Disto-lingual), L (Mid-lingual), ML (Mesio-lingual)
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 text-xs">
+                <span className="px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 font-bold border border-emerald-200">
+                  Normal &lt;= 3 mm
+                </span>
+                <span className="px-2.5 py-1 rounded-md bg-amber-50 text-amber-800 font-bold border border-amber-200">
+                  Pocket 4 - 5 mm
+                </span>
+                <span className="px-2.5 py-1 rounded-md bg-rose-50 text-rose-800 font-bold border border-rose-200">
+                  Severe Pocket &gt;= 6 mm
+                </span>
+              </div>
+            </div>
+
+            {/* 6-Point Periodontal Probing Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="bg-stone-50 border-b border-stone-200 text-stone-500 font-bold uppercase tracking-wider">
+                    <th className="p-2.5">Tooth</th>
+                    <th className="p-2.5">Condition</th>
+                    <th className="p-2.5 text-center bg-teal-50/50">DB (mm)</th>
+                    <th className="p-2.5 text-center bg-teal-50/50">B (mm)</th>
+                    <th className="p-2.5 text-center bg-teal-50/50">MB (mm)</th>
+                    <th className="p-2.5 text-center bg-slate-50/50">DL (mm)</th>
+                    <th className="p-2.5 text-center bg-slate-50/50">L (mm)</th>
+                    <th className="p-2.5 text-center bg-slate-50/50">ML (mm)</th>
+                    <th className="p-2.5 text-center">BOP Bleeding</th>
+                    <th className="p-2.5 text-center">{d.mobility || 'Mobility'}</th>
+                    <th className="p-2.5 text-center">{d.furcationClass || 'Furcation'}</th>
+                    <th className="p-2.5 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-stone-100 font-mono">
+                  {allActiveTeeth.map((toothNum) => {
+                    const tooth = chart?.teeth?.[toothNum];
+                    const depths = tooth?.pocketDepthsMm || [2, 2, 2, 2, 2, 2];
+                    const bops = tooth?.bleedingOnProbing || [false, false, false, false, false, false];
+                    const bopCount = bops.filter(Boolean).length;
+                    const mobility = tooth?.mobilityScore ?? 0;
+                    const furcation = tooth?.furcationClass || 'NONE';
+                    const status = tooth?.status || 'HEALTHY';
+
+                    const renderDepthCell = (depth: number, bop: boolean) => {
+                      const colorClass = depth >= 6 ? 'text-rose-700 font-black' : depth >= 4 ? 'text-amber-700 font-bold' : 'text-emerald-700 font-medium';
+                      return (
+                        <div className={`flex items-center justify-center gap-1 ${colorClass}`}>
+                          <span>{depth}</span>
+                          {bop && <span className="w-1.5 h-1.5 rounded-full bg-rose-600 inline-block" title="Bleeding on Probing" />}
+                        </div>
+                      );
+                    };
+
+                    return (
+                      <tr key={toothNum} className="hover:bg-stone-50 transition-colors">
+                        <td className="p-2.5 font-bold text-stone-900">{toothNum}</td>
+                        <td className="p-2.5 font-sans">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${getToothStatusColor(status)}`}>
+                            {status}
+                          </span>
+                        </td>
+                        <td className="p-2.5 text-center bg-teal-50/30">{renderDepthCell(depths[0], bops[0])}</td>
+                        <td className="p-2.5 text-center bg-teal-50/30">{renderDepthCell(depths[1], bops[1])}</td>
+                        <td className="p-2.5 text-center bg-teal-50/30">{renderDepthCell(depths[2], bops[2])}</td>
+                        <td className="p-2.5 text-center bg-slate-50/30">{renderDepthCell(depths[3], bops[3])}</td>
+                        <td className="p-2.5 text-center bg-slate-50/30">{renderDepthCell(depths[4], bops[4])}</td>
+                        <td className="p-2.5 text-center bg-slate-50/30">{renderDepthCell(depths[5], bops[5])}</td>
+                        <td className="p-2.5 text-center font-sans">
+                          {bopCount > 0 ? (
+                            <span className="px-2 py-0.5 rounded bg-rose-100 text-rose-800 text-[10px] font-bold">
+                              {bopCount} / 6 sites
+                            </span>
+                          ) : (
+                            <span className="text-stone-400 text-[10px]">None</span>
+                          )}
+                        </td>
+                        <td className="p-2.5 text-center font-sans">
+                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                            mobility > 0 ? 'bg-amber-100 text-amber-800' : 'text-stone-500'
+                          }`}>
+                            Grade {mobility}
+                          </span>
+                        </td>
+                        <td className="p-2.5 text-center font-sans">
+                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                            furcation !== 'NONE' ? 'bg-rose-100 text-rose-800' : 'text-stone-400'
+                          }`}>
+                            {furcation.replace('CLASS_', 'Class ')}
+                          </span>
+                        </td>
+                        <td className="p-2.5 text-right font-sans">
+                          <button
+                            onClick={() => handleSelectTooth(toothNum)}
+                            className="px-2.5 py-1 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded font-bold text-[11px] transition-colors"
+                          >
+                            Probe
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 3: TREATMENT PLANS */}
       {activeTab === 'plans' && (
         <div className="space-y-4">
           {treatmentPlans.map((plan) => (
@@ -585,7 +781,7 @@ export default function DentalPage() {
         </div>
       )}
 
-      {/* TAB 3: DENTAL FEE SCHEDULE */}
+      {/* TAB 4: DENTAL FEE SCHEDULE */}
       {activeTab === 'procedures' && (
         <div className="bg-white rounded-xl border border-stone-200 shadow-2xs overflow-hidden">
           <div className="p-4 border-b border-stone-200 flex items-center justify-between">
@@ -614,7 +810,7 @@ export default function DentalPage() {
                       </span>
                     </td>
                     <td className="p-3 text-right font-mono font-bold text-stone-900">${proc.defaultFeeUsd.toFixed(2)}</td>
-                    <td className="p-3 text-right font-mono font-bold text-teal-800">{proc.defaultFeeKhr.toLocaleString()} ៛</td>
+                    <td className="p-3 text-right font-mono font-bold text-teal-800">{proc.defaultFeeKhr.toLocaleString()} KHR</td>
                   </tr>
                 ))}
               </tbody>
@@ -626,11 +822,11 @@ export default function DentalPage() {
       {/* MODAL: Tooth Detail & Examination Drawer */}
       {showToothModal && selectedToothNumber && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full border border-stone-200 overflow-hidden">
+          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full border border-stone-200 overflow-hidden max-h-[90vh] flex flex-col">
             <div className="flex items-center justify-between p-4 border-b border-stone-100">
               <h3 className="font-bold text-sm text-stone-900 flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-teal-700" />
-                <span>Tooth {selectedToothNumber} Examination</span>
+                <span>Tooth {selectedToothNumber} Detailed Examination</span>
               </h3>
               <button
                 onClick={() => setShowToothModal(false)}
@@ -639,7 +835,7 @@ export default function DentalPage() {
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <form onSubmit={handleSaveTooth} className="p-4 space-y-3.5 text-xs">
+            <form onSubmit={handleSaveTooth} className="p-4 space-y-3.5 text-xs overflow-y-auto flex-1">
               {/* Tooth Condition Status */}
               <div>
                 <label className="block text-stone-600 font-semibold mb-1">Tooth Condition Status</label>
@@ -699,19 +895,77 @@ export default function DentalPage() {
                 </div>
               </div>
 
-              {/* Mobility Score */}
+              {/* 6-Point Periodontal Pocket Depths (DB, B, MB, DL, L, ML) */}
               <div>
-                <label className="block text-stone-600 font-semibold mb-1">{d.mobility || 'Mobility Grade'}</label>
-                <select
-                  value={toothFormData.mobilityScore}
-                  onChange={(e) => setToothFormData({ ...toothFormData, mobilityScore: parseInt(e.target.value) || 0 })}
-                  className="w-full bg-stone-50 border border-stone-200 rounded-lg px-3 py-2 text-stone-900"
-                >
-                  <option value={0}>Grade 0 (Physiological mobility under 0.2mm)</option>
-                  <option value={1}>Grade I (Slight horizontal mobility 0.2 to 1mm)</option>
-                  <option value={2}>Grade II (Moderate horizontal mobility exceeding 1mm)</option>
-                  <option value={3}>Grade III (Severe horizontal and vertical depression)</option>
-                </select>
+                <label className="block text-stone-600 font-semibold mb-1">
+                  6-Point Periodontal Probing Depths (mm) &amp; BOP
+                </label>
+                <div className="grid grid-cols-6 gap-2">
+                  {['DB', 'B', 'MB', 'DL', 'L', 'ML'].map((label, idx) => (
+                    <div key={label} className="bg-stone-50 p-2 rounded-lg border border-stone-200 text-center">
+                      <span className="text-[10px] font-bold text-stone-500 block mb-1">{label}</span>
+                      <input
+                        type="number"
+                        min={1}
+                        max={15}
+                        value={toothFormData.pocketDepthsMm[idx] ?? 2}
+                        onChange={(e) => {
+                          const newDepths = [...toothFormData.pocketDepthsMm];
+                          newDepths[idx] = Math.max(1, parseInt(e.target.value) || 1);
+                          setToothFormData({ ...toothFormData, pocketDepthsMm: newDepths });
+                        }}
+                        className="w-full text-center font-bold text-xs bg-white border border-stone-300 rounded py-1"
+                      />
+                      <label className="flex items-center justify-center gap-1 mt-1.5 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={toothFormData.bleedingOnProbing[idx] ?? false}
+                          onChange={(e) => {
+                            const newBops = [...toothFormData.bleedingOnProbing];
+                            newBops[idx] = e.target.checked;
+                            setToothFormData({ ...toothFormData, bleedingOnProbing: newBops });
+                          }}
+                          className="rounded text-rose-600 w-3 h-3"
+                        />
+                        <span className="text-[9px] font-bold text-rose-700">BOP</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Mobility Grade & Furcation Class Grid */}
+              <div className="grid grid-cols-2 gap-3">
+                {/* Mobility Score */}
+                <div>
+                  <label className="block text-stone-600 font-semibold mb-1">{d.mobility || 'Mobility Grade'}</label>
+                  <select
+                    value={toothFormData.mobilityScore}
+                    onChange={(e) => setToothFormData({ ...toothFormData, mobilityScore: parseInt(e.target.value) || 0 })}
+                    className="w-full bg-stone-50 border border-stone-200 rounded-lg px-3 py-2 text-stone-900"
+                  >
+                    <option value={0}>Grade 0 - Normal &lt; 0.2mm</option>
+                    <option value={1}>Grade I - Slight 0.2-1mm</option>
+                    <option value={2}>Grade II - Moderate &gt; 1mm</option>
+                    <option value={3}>Grade III - Severe vertical</option>
+                  </select>
+                </div>
+
+                {/* Furcation Class */}
+                <div>
+                  <label className="block text-stone-600 font-semibold mb-1">{d.furcationClass || 'Furcation Class'}</label>
+                  <select
+                    value={toothFormData.furcationClass}
+                    onChange={(e) => setToothFormData({ ...toothFormData, furcationClass: e.target.value })}
+                    className="w-full bg-stone-50 border border-stone-200 rounded-lg px-3 py-2 text-stone-900"
+                  >
+                    <option value="NONE">None - No Furcation</option>
+                    <option value="CLASS_I">Class I - Incipient bone loss</option>
+                    <option value="CLASS_II">Class II - Cul-de-sac pocket</option>
+                    <option value="CLASS_III">Class III - Through and through</option>
+                    <option value="CLASS_IV">Class IV - Through with recession</option>
+                  </select>
+                </div>
               </div>
 
               {/* Clinical Notes */}
@@ -719,7 +973,7 @@ export default function DentalPage() {
                 <label className="block text-stone-600 font-semibold mb-1">{d.toothNotes || 'Clinical Notes'}</label>
                 <textarea
                   rows={2}
-                  placeholder="e.g. Sensitivity to percussion, cold pulp test positive"
+                  placeholder="e.g. Cold sensitivity positive, distal subgingival calculus present"
                   value={toothFormData.notes}
                   onChange={(e) => setToothFormData({ ...toothFormData, notes: e.target.value })}
                   className="w-full bg-stone-50 border border-stone-200 rounded-lg px-3 py-2 text-stone-900"
@@ -790,7 +1044,7 @@ export default function DentalPage() {
                 <input
                   type="number"
                   min={11}
-                  max={48}
+                  max={85}
                   value={newPlanData.items[0]?.toothNumber || 16}
                   onChange={(e) =>
                     setNewPlanData({

@@ -82,6 +82,14 @@ export default function PacsWorkstationPage() {
   const [cineFps, setCineFps] = useState<number>(15);
   const [activeFrame, setActiveFrame] = useState<number>(1);
 
+  // Caliper 2D interactive states
+  const [isCaliperActive, setIsCaliperActive] = useState<boolean>(false);
+  const [caliperP1, setCaliperP1] = useState<{ x: number; y: number } | null>(null);
+  const [caliperP2, setCaliperP2] = useState<{ x: number; y: number } | null>(null);
+  const [isDraggingCaliper, setIsDraggingCaliper] = useState<boolean>(false);
+  const imageContainerRef = useRef<HTMLDivElement>(null);
+  const pixelSpacingMm = 0.143; // Standard DICOM Pixel Spacing Tag (0028,0030)
+
   // Reporting states
   const [findingsInput, setFindingsInput] = useState<string>('');
   const [impressionInput, setImpressionInput] = useState<string>('');
@@ -444,7 +452,7 @@ export default function PacsWorkstationPage() {
 
               {/* Presets */}
               <div className="flex items-center gap-1">
-                {['DEFAULT', 'BONE', 'LUNG', 'SOFT'].map((preset) => (
+                {['DEFAULT', 'BONE', 'LUNG', 'SOFT', 'BRAIN'].map((preset) => (
                   <button
                     key={preset}
                     onClick={() => applyPreset(preset)}

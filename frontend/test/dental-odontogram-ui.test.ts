@@ -135,4 +135,52 @@ describe('Phase 15: Dental Odontogram & Tooth Treatment Planner UI Test Suite', 
     // Verify tooth 11 is central incisor (upper right central)
     assert.equal(upperRight[7], 11);
   });
+
+  it('should verify standard FDI 20 pediatric deciduous teeth across quadrants 5 to 8', () => {
+    const pedUpperRight = [55, 54, 53, 52, 51];
+    const pedUpperLeft = [61, 62, 63, 64, 65];
+    const pedLowerLeft = [71, 72, 73, 74, 75];
+    const pedLowerRight = [85, 84, 83, 82, 81];
+
+    const allPedTeeth = [...pedUpperRight, ...pedUpperLeft, ...pedLowerLeft, ...pedLowerRight];
+    assert.equal(allPedTeeth.length, 20);
+
+    const uniqueSet = new Set(allPedTeeth);
+    assert.equal(uniqueSet.size, 20);
+
+    // FDI 55 is pediatric upper right second molar
+    assert.equal(pedUpperRight[0], 55);
+    // FDI 51 is pediatric upper right central incisor
+    assert.equal(pedUpperRight[4], 51);
+  });
+
+  it('should calculate bleeding on probing percentage and assign periodontal severity', () => {
+    const calculateBop = (totalBleedingSites: number, totalProbedSites: number) => {
+      const bopPct = totalProbedSites > 0 ? Math.round((totalBleedingSites / totalProbedSites) * 100) : 0;
+      let severity: 'HEALTHY' | 'GINGIVITIS' | 'PERIODONTITIS' = 'HEALTHY';
+      if (bopPct > 30) severity = 'PERIODONTITIS';
+      else if (bopPct >= 10) severity = 'GINGIVITIS';
+      return { bopPct, severity };
+    };
+
+    assert.deepEqual(calculateBop(0, 10), { bopPct: 0, severity: 'HEALTHY' });
+    assert.deepEqual(calculateBop(15, 192), { bopPct: 8, severity: 'HEALTHY' });
+    assert.deepEqual(calculateBop(35, 192), { bopPct: 18, severity: 'GINGIVITIS' });
+    assert.deepEqual(calculateBop(70, 192), { bopPct: 36, severity: 'PERIODONTITIS' });
+  });
+
+  it('should classify 6-point probing depth according to clinical threshold', () => {
+    const classifyDepth = (depthMm: number) => {
+      if (depthMm >= 6) return 'SEVERE_POCKET';
+      if (depthMm >= 4) return 'MILD_POCKET';
+      return 'NORMAL_SULCUS';
+    };
+
+    assert.equal(classifyDepth(2), 'NORMAL_SULCUS');
+    assert.equal(classifyDepth(3), 'NORMAL_SULCUS');
+    assert.equal(classifyDepth(4), 'MILD_POCKET');
+    assert.equal(classifyDepth(5), 'MILD_POCKET');
+    assert.equal(classifyDepth(6), 'SEVERE_POCKET');
+    assert.equal(classifyDepth(9), 'SEVERE_POCKET');
+  });
 });

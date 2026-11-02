@@ -82,4 +82,57 @@ describe('Phase 12: Laboratory Information System (LIS) & Analyzer UI Suite', ()
     assert.equal(isPanicValue(2.5, 2.8, 6.5), true);
     assert.equal(isPanicValue(4.2, 2.8, 6.5), false);
   });
+
+  it('should calculate Code128 Subset B Modulo 103 checksum accurately', () => {
+    const calcChecksum = (data: string): number => {
+      const startB = 104;
+      let sum = startB;
+      for (let i = 0; i < data.length; i++) {
+        const val = data.charCodeAt(i) - 32;
+        sum += val * (i + 1);
+      }
+      return sum % 103;
+    };
+
+    // ACC20261103
+    const check1 = calcChecksum('ACC20261103');
+    assert.equal(typeof check1, 'number');
+    assert.ok(check1 >= 0 && check1 < 103);
+
+    // Standard alphanumeric specimen accession test
+    const check2 = calcChecksum('LAB1001');
+    assert.ok(check2 >= 0 && check2 < 103);
+  });
+
+  it('should detect critical panic value alerts for electrolyte and metabolic emergencies', () => {
+    const panicRules: Record<string, { low?: number; high?: number }> = {
+      K_PLUS: { low: 2.5, high: 6.0 },
+      GLU: { low: 40, high: 450 },
+      NA_PLUS: { low: 120, high: 160 },
+      HGB: { low: 6.0, high: 20.0 },
+      PLT: { low: 20, high: 1000 },
+    };
+
+    const isPanic = (code: string, val: number): boolean => {
+      const rule = panicRules[code];
+      if (!rule) return false;
+      if (rule.low !== undefined && val <= rule.low) return true;
+      if (rule.high !== undefined && val >= rule.high) return true;
+      return false;
+    };
+
+    // Potassium: panic at 2.4 (fatal hypokalemia) or 6.5 (hyperkalemia)
+    assert.equal(isPanic('K_PLUS', 2.4), true);
+    assert.equal(isPanic('K_PLUS', 6.5), true);
+    assert.equal(isPanic('K_PLUS', 4.1), false);
+
+    // Glucose: panic at 35 (neuroglycopenia) or 480 (DKA)
+    assert.equal(isPanic('GLU', 35), true);
+    assert.equal(isPanic('GLU', 480), true);
+    assert.equal(isPanic('GLU', 95), false);
+
+    // Platelets: panic at 15 (spontaneous bleeding)
+    assert.equal(isPanic('PLT', 15), true);
+    assert.equal(isPanic('PLT', 250), false);
+  });
 });

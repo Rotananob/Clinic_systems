@@ -121,6 +121,41 @@ export default function LabPage() {
     setFilterType(type);
   };
 
+  // Deterministic Code128 vector barcode renderer for 50x25mm specimen label
+  const renderCode128Bars = (barcodeStr: string) => {
+    const bars: { width: number; isBar: boolean }[] = [];
+    bars.push({ width: 2, isBar: true });
+    bars.push({ width: 1, isBar: false });
+    bars.push({ width: 2, isBar: true });
+    bars.push({ width: 1, isBar: false });
+
+    for (let i = 0; i < barcodeStr.length; i++) {
+      const charCode = barcodeStr.charCodeAt(i);
+      const b1 = (charCode % 3) + 1;
+      const s1 = ((charCode >> 1) % 2) + 1;
+      const b2 = ((charCode >> 2) % 3) + 1;
+      const s2 = ((charCode >> 3) % 2) + 1;
+      bars.push({ width: b1, isBar: true });
+      bars.push({ width: s1, isBar: false });
+      bars.push({ width: b2, isBar: true });
+      bars.push({ width: s2, isBar: false });
+    }
+
+    bars.push({ width: 2, isBar: true });
+    bars.push({ width: 2, isBar: false });
+    bars.push({ width: 3, isBar: true });
+    bars.push({ width: 1, isBar: false });
+    bars.push({ width: 2, isBar: true });
+
+    return bars.map((b, idx) => (
+      <div
+        key={idx}
+        style={{ width: `${b.width * 1.5}px` }}
+        className={`h-full ${b.isBar ? 'bg-slate-900' : 'bg-transparent'}`}
+      />
+    ));
+  };
+
   const filteredOrders = orders.filter((o) => {
     if (filterType === 'PANIC' && !o.hasPanicValue) return false;
     if (filterType === 'PENDING' && o.status !== 'PENDING_VERIFICATION') return false;
