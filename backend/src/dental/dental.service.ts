@@ -19,13 +19,38 @@ export interface ToothSurfaceCondition {
   lingual: boolean;
 }
 
+export type FurcationClass = 'NONE' | 'CLASS_I' | 'CLASS_II' | 'CLASS_III' | 'CLASS_IV';
+export type MobilityGrade = 0 | 1 | 2 | 3;
+
+export interface PeriodontalSixPointDepth {
+  distobuccal: number;  // DB
+  buccal: number;        // B
+  mesiobuccal: number;   // MB
+  distolingual: number; // DL
+  lingual: number;       // L
+  mesiolingual: number;  // ML
+}
+
+export interface PeriodontalSixPointBop {
+  distobuccal: boolean;  // DB
+  buccal: boolean;        // B
+  mesiobuccal: boolean;   // MB
+  distolingual: boolean; // DL
+  lingual: boolean;       // L
+  mesiolingual: boolean;  // ML
+}
+
 export interface ToothState {
   toothNumber: number;
   status: ToothStatus;
   surfaces: ToothSurfaceCondition;
   mobilityScore: number; // 0 (normal), 1 (slight), 2 (moderate), 3 (severe)
+  mobilityGrade?: MobilityGrade;
+  furcationClass?: FurcationClass;
   pocketDepthsMm: [number, number, number, number, number, number]; // MB, B, DB, ML, L, DL
+  sixPointDepth?: PeriodontalSixPointDepth;
   bleedingOnProbing: [boolean, boolean, boolean, boolean, boolean, boolean];
+  sixPointBop?: PeriodontalSixPointBop;
   notes: string;
 }
 
@@ -100,6 +125,29 @@ export class DentalService {
     48, 47, 46, 45, 44, 43, 42, 41,
     31, 32, 33, 34, 35, 36, 37, 38
   ];
+
+  // FDI Deciduous (Primary Pediatric) 20 Teeth Numbers
+  // Upper Right (55 to 51), Upper Left (61 to 65)
+  // Lower Left (71 to 75), Lower Right (85 to 81)
+  static readonly DECIDUOUS_TEETH_NUMBERS: number[] = [
+    55, 54, 53, 52, 51,
+    61, 62, 63, 64, 65,
+    71, 72, 73, 74, 75,
+    85, 84, 83, 82, 81,
+  ];
+
+  static readonly ALL_FDI_TEETH_NUMBERS: number[] = [
+    ...DentalService.ADULT_TEETH_NUMBERS,
+    ...DentalService.DECIDUOUS_TEETH_NUMBERS,
+  ];
+
+  static isDeciduousTooth(toothNumber: number): boolean {
+    return DentalService.DECIDUOUS_TEETH_NUMBERS.includes(toothNumber);
+  }
+
+  static isValidFdiTooth(toothNumber: number): boolean {
+    return DentalService.ALL_FDI_TEETH_NUMBERS.includes(toothNumber);
+  }
 
   private procedures: DentalProcedure[] = [
     {
@@ -408,7 +456,45 @@ export class DentalService {
     const key = tenantId ? `${tenantId}:${patientId}` : patientId;
     const chart = this.getDentalChart(patientId, tenantId);
     if (!chart.teeth[toothNumber]) {
-      throw new Error(`Invalid tooth number ${toothNumber}. Expected standard FDI two-digit identifier.`);
+      if (DentalService.isDeciduousTooth(toothNumber)) {
+        chart.teeth[toothNumber] = {
+          toothNumber,
+          status: 'HEALTHY',
+          surfaces: { mesial: false, distal: false, occlusal: false, buccal: false, lingual: false },
+          mobilityScore: 0,
+          pocketDepthsMm: [2, 2, 2, 2, 2, 2],
+          bleedingOnProbing: [false, false, false, false, false, false],
+          notes: ''
+        };
+      } else {
+        throw new Error(`Invalid tooth number ${toothNumber}. Expected standard FDI two-digit identifier.`);
+      }
+    }
+
+    if (data.sixPointDepth) {
+      data.pocketDepthsMm = [
+        data.sixPointDepth.mesiobuccal,
+        data.sixPointDepth.buccal,
+        data.sixPointDepth.distobuccal,
+        data.sixPointDepth.mesiolingual,
+        data.sixPointDepth.lingual,
+        data.sixPointDepth.distolingual,
+      ];
+    }
+
+    if (data.sixPointBop) {
+      data.bleedingOnProbing = [
+        data.sixPointBop.mesiobuccal,
+        data.sixPointBop.buccal,
+        data.sixPointBop.distobuccal,
+        data.sixPointBop.mesiolingual,
+        data.sixPointBop.lingual,
+        data.sixPointBop.distolingual,
+      ];
+    }
+
+    if (data.mobilityGrade !== undefined && data.mobilityScore === undefined) {
+      data.mobilityScore = data.mobilityGrade;
     }
 
     chart.teeth[toothNumber] = {
@@ -425,6 +511,47 @@ export class DentalService {
 
     this.charts.set(key, chart);
     return chart;
+  }
+
+  calculateBopPercentage(patientId: string, tenantId?: string): {
+    totalSites: number;
+    bleedingSites: number;
+    bopPercentage: number;
+    inflammationLevel: 'HEALTHY_OR_STABLE' | 'LOCALIZED_GINGIVITIS' | 'GENERALIZED_PERIODONTITIS';
+  } {
+    const chart = this.getDentalChart(patientId, tenantId);
+    let totalSites = 0;
+    let bleedingSites = 0;
+
+    for (const tooth of Object.values(chart.teeth)) {
+      if (tooth.status === 'MISSING') continue;
+      totalSites += 6;
+      if (tooth.sixPointBop) {
+        if (tooth.sixPointBop.distobuccal) bleedingSites++;
+        if (tooth.sixPointBop.buccal) bleedingSites++;
+        if (tooth.sixPointBop.mesiobuccal) bleedingSites++;
+        if (tooth.sixPointBop.distolingual) bleedingSites++;
+        if (tooth.sixPointBop.lingual) bleedingSites++;
+        if (tooth.sixPointBop.mesiolingual) bleedingSites++;
+      } else if (tooth.bleedingOnProbing) {
+        bleedingSites += tooth.bleedingOnProbing.filter(Boolean).length;
+      }
+    }
+
+    const bopPercentage = totalSites > 0 ? Math.round((bleedingSites / totalSites) * 1000) / 10 : 0;
+    let inflammationLevel: 'HEALTHY_OR_STABLE' | 'LOCALIZED_GINGIVITIS' | 'GENERALIZED_PERIODONTITIS' = 'HEALTHY_OR_STABLE';
+    if (bopPercentage > 30) {
+      inflammationLevel = 'GENERALIZED_PERIODONTITIS';
+    } else if (bopPercentage >= 10) {
+      inflammationLevel = 'LOCALIZED_GINGIVITIS';
+    }
+
+    return {
+      totalSites,
+      bleedingSites,
+      bopPercentage,
+      inflammationLevel,
+    };
   }
 
   getTreatmentPlans(patientId: string, tenantId?: string): DentalTreatmentPlan[] {

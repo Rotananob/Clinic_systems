@@ -104,7 +104,7 @@ export class IpdService {
         id: 'bed-101',
         bedNumber: 'MED-B1',
         ward: 'WARD_GENERAL_MED',
-        wardNameKh: 'អគារជំងឺទូទៅ (General Ward)',
+        wardNameKh: 'អគារជំងឺទូទៅ - General Ward',
         wardNameEn: 'General Medical Ward',
         dailyRateUsd: 25.0,
         status: 'OCCUPIED',
@@ -116,7 +116,7 @@ export class IpdService {
         id: 'bed-102',
         bedNumber: 'MED-B2',
         ward: 'WARD_GENERAL_MED',
-        wardNameKh: 'អគារជំងឺទូទៅ (General Ward)',
+        wardNameKh: 'អគារជំងឺទូទៅ - General Ward',
         wardNameEn: 'General Medical Ward',
         dailyRateUsd: 25.0,
         status: 'AVAILABLE',
@@ -125,7 +125,7 @@ export class IpdService {
         id: 'bed-103',
         bedNumber: 'MED-B3',
         ward: 'WARD_GENERAL_MED',
-        wardNameKh: 'អគារជំងឺទូទៅ (General Ward)',
+        wardNameKh: 'អគារជំងឺទូទៅ - General Ward',
         wardNameEn: 'General Medical Ward',
         dailyRateUsd: 25.0,
         status: 'CLEANING_REQUIRED',
@@ -134,7 +134,7 @@ export class IpdService {
         id: 'bed-201',
         bedNumber: 'SURG-B1',
         ward: 'WARD_SURGICAL',
-        wardNameKh: 'អគារសង្គ្រោះក្រោយវះកាត់ (Surgical Post-Op)',
+        wardNameKh: 'អគារសង្គ្រោះក្រោយវះកាត់ - Surgical Post-Op',
         wardNameEn: 'Surgical Recovery Ward',
         dailyRateUsd: 45.0,
         status: 'AVAILABLE',
@@ -143,7 +143,7 @@ export class IpdService {
         id: 'bed-202',
         bedNumber: 'SURG-B2',
         ward: 'WARD_SURGICAL',
-        wardNameKh: 'អគារសង្គ្រោះក្រោយវះកាត់ (Surgical Post-Op)',
+        wardNameKh: 'អគារសង្គ្រោះក្រោយវះកាត់ - Surgical Post-Op',
         wardNameEn: 'Surgical Recovery Ward',
         dailyRateUsd: 45.0,
         status: 'AVAILABLE',
@@ -152,7 +152,7 @@ export class IpdService {
         id: 'bed-301',
         bedNumber: 'MAT-B1',
         ward: 'WARD_MATERNITY',
-        wardNameKh: 'អគារសម្ភព និងទារក (Maternity Suite)',
+        wardNameKh: 'អគារសម្ភព និងទារក - Maternity Suite',
         wardNameEn: 'Maternity & Neonatal Ward',
         dailyRateUsd: 50.0,
         status: 'AVAILABLE',
@@ -183,7 +183,7 @@ export class IpdService {
       bedId: 'bed-101',
       bedNumber: 'MED-B1',
       ward: 'WARD_GENERAL_MED',
-      wardNameKh: 'អគារជំងឺទូទៅ (General Ward)',
+      wardNameKh: 'អគារជំងឺទូទៅ - General Ward',
       wardNameEn: 'General Medical Ward',
       attendingDoctor: 'Dr. CHAN Vanna',
       admittingDiagnosis: 'Community-Acquired Pneumonia with Moderate Hypoxemia',
@@ -267,8 +267,11 @@ export class IpdService {
   }
 
   // Get all beds in clinic with occupancy stats
-  getBeds(ward?: WardCode, status?: BedStatus): Bed[] {
+  getBeds(ward?: WardCode, status?: BedStatus, tenantId?: string): Bed[] {
     let list = Array.from(this.beds.values());
+    if (tenantId) {
+      list = list.filter((b) => !b.tenantId || b.tenantId === tenantId);
+    }
     if (ward) {
       list = list.filter((b) => b.ward === ward);
     }
@@ -311,6 +314,9 @@ export class IpdService {
     if (!bed) {
       throw new NotFoundException(`Bed ${data.bedId} not found`);
     }
+    if (data.tenantId && bed.tenantId && bed.tenantId !== data.tenantId) {
+      throw new BadRequestException(`Cross-tenant bed admission violation: Bed ${bed.bedNumber} belongs to tenant ${bed.tenantId}`);
+    }
     if (bed.status !== 'AVAILABLE') {
       throw new BadRequestException(`Bed ${bed.bedNumber} is currently ${bed.status} and cannot be assigned`);
     }
@@ -320,7 +326,8 @@ export class IpdService {
     const admissionNumber = `IPD-${timestampStr}-${randSuffix}`;
     const cleanPt = data.patientId.replace(/[^a-zA-Z0-9]/g, '');
     const wristbandBarcode = `WB-${cleanPt}-${timestampStr}`;
-    const admissionId = `adm-${Date.now()}`;
+    const randId = Math.floor(1000 + Math.random() * 9000);
+    const admissionId = `adm-${Date.now()}-${randId}`;
 
     const newAdmission: InpatientAdmission = {
       id: admissionId,
@@ -350,6 +357,7 @@ export class IpdService {
     bed.currentAdmissionId = admissionId;
     bed.currentPatientId = data.patientId;
     bed.currentPatientName = data.patientName;
+    if (data.tenantId) bed.tenantId = data.tenantId;
     this.beds.set(bed.id, bed);
 
     this.admissions.set(admissionId, newAdmission);
@@ -369,6 +377,9 @@ export class IpdService {
     const targetBed = this.beds.get(targetBedId);
     if (!targetBed) {
       throw new NotFoundException(`Target bed ${targetBedId} not found`);
+    }
+    if (admission.tenantId && targetBed.tenantId && targetBed.tenantId !== admission.tenantId) {
+      throw new BadRequestException(`Cross-tenant bed transfer violation: Target bed ${targetBed.bedNumber} belongs to tenant ${targetBed.tenantId}`);
     }
     if (targetBed.status !== 'AVAILABLE') {
       throw new BadRequestException(`Target bed ${targetBed.bedNumber} is not available`);
@@ -427,6 +438,93 @@ export class IpdService {
 
     this.admissions.set(admission.id, admission);
     return admission;
+  }
+
+
+  // Calculate daily stay charges and net balance due
+  calculateStayCharges(admissionId: string, asOfDate?: string): {
+    admissionNumber: string;
+    patientId: string;
+    ward: WardCode;
+    dailyRateUsd: number;
+    dailyRateKhr: number;
+    admissionDate: string;
+    calculateToDate: string;
+    daysStayed: number;
+    totalRoomChargesUsd: number;
+    totalRoomChargesKhr: number;
+    depositAmountUsd: number;
+    netBalanceDueUsd: number;
+    netBalanceDueKhr: number;
+  } {
+    const admission = this.admissions.get(admissionId);
+    if (!admission) {
+      throw new NotFoundException(`Admission ${admissionId} not found`);
+    }
+
+    const exchangeRate = 4100;
+    const toDate = asOfDate ? new Date(asOfDate) : (admission.dischargeDate ? new Date(admission.dischargeDate) : new Date());
+    const fromDate = new Date(admission.admissionDate);
+    const diffMs = toDate.getTime() - fromDate.getTime();
+    const rawDays = diffMs / (1000 * 60 * 60 * 24);
+    const daysStayed = Math.max(1, Math.ceil(rawDays));
+
+    const totalRoomChargesUsd = daysStayed * admission.dailyRateUsd;
+    const totalRoomChargesKhr = totalRoomChargesUsd * exchangeRate;
+    const netBalanceDueUsd = Math.max(0, totalRoomChargesUsd - admission.depositAmountUsd);
+    const netBalanceDueKhr = netBalanceDueUsd * exchangeRate;
+
+    return {
+      admissionNumber: admission.admissionNumber,
+      patientId: admission.patientId,
+      ward: admission.ward,
+      dailyRateUsd: admission.dailyRateUsd,
+      dailyRateKhr: admission.dailyRateUsd * exchangeRate,
+      admissionDate: admission.admissionDate,
+      calculateToDate: toDate.toISOString(),
+      daysStayed,
+      totalRoomChargesUsd,
+      totalRoomChargesKhr,
+      depositAmountUsd: admission.depositAmountUsd,
+      netBalanceDueUsd,
+      netBalanceDueKhr,
+    };
+  }
+
+  // Get detailed ward-by-ward bed occupancy breakdown
+  getWardOccupancyBreakdown(tenantId?: string): Record<WardCode, {
+    wardNameEn: string;
+    wardNameKh: string;
+    totalBeds: number;
+    occupiedBeds: number;
+    availableBeds: number;
+    occupancyRatePercent: number;
+  }> {
+    const wardCodes: WardCode[] = [
+      'WARD_GENERAL_MED',
+      'WARD_SURGICAL',
+      'WARD_MATERNITY',
+      'WARD_OBSERVATION',
+    ];
+
+    const result: any = {};
+    for (const wc of wardCodes) {
+      const beds = this.getBeds(wc, undefined, tenantId);
+      const total = beds.length;
+      const occupied = beds.filter((b) => b.status === 'OCCUPIED').length;
+      const available = beds.filter((b) => b.status === 'AVAILABLE').length;
+      const rate = total > 0 ? Math.round((occupied / total) * 100) : 0;
+      const sample = beds[0];
+      result[wc] = {
+        wardNameEn: sample ? sample.wardNameEn : wc,
+        wardNameKh: sample ? sample.wardNameKh : wc,
+        totalBeds: total,
+        occupiedBeds: occupied,
+        availableBeds: available,
+        occupancyRatePercent: rate,
+      };
+    }
+    return result;
   }
 
   // Clean and mark bed as AVAILABLE

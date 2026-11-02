@@ -18,6 +18,11 @@ export type LabOrderStatus =
 
 export type AnalyteFlag = 'NORMAL' | 'LOW' | 'HIGH' | 'PANIC_CRITICAL' | 'DELTA_ALERT';
 
+export interface DemographicContext {
+  age?: number;
+  gender?: 'M' | 'F' | 'OTHER';
+}
+
 export interface AnalyteReference {
   code: string;
   nameEn: string;
@@ -191,7 +196,216 @@ export const STANDARD_ANALYTES: Record<string, AnalyteReference> = {
   },
 };
 
+
+export const CRITICAL_PANIC_THRESHOLDS: Record<string, { panicLow?: number; panicHigh?: number; clinicalRiskEn: string; clinicalRiskKh: string }> = {
+  K_PLUS: {
+    panicLow: 2.5,
+    panicHigh: 6.0,
+    clinicalRiskEn: 'Critical Potassium Level - Arrhythmia and Cardiac Arrest Risk',
+    clinicalRiskKh: 'កម្រិតប៉ូតាស្យូមគ្រោះថ្នាក់ខ្លាំង - ប្រឈមនឹងគាំងបេះដូង',
+  },
+  GLU: {
+    panicLow: 40,
+    panicHigh: 450,
+    clinicalRiskEn: 'Critical Glucose Level - Neuroglycopenia and DKA Risk',
+    clinicalRiskKh: 'កម្រិតជាតិស្ករគ្រោះថ្នាក់ខ្លាំង - ប្រឈមនឹងសន្លប់បាត់ស្មារតី',
+  },
+  NA_PLUS: {
+    panicLow: 120,
+    panicHigh: 160,
+    clinicalRiskEn: 'Critical Sodium Level - Brain Edema and Seizure Risk',
+    clinicalRiskKh: 'កម្រិតសូដ្យូមគ្រោះថ្នាក់ខ្លាំង - ប្រឈមនឹងប្រកាច់',
+  },
+  PLT: {
+    panicLow: 20,
+    panicHigh: 1000,
+    clinicalRiskEn: 'Critical Platelets - Spontaneous Hemorrhage Risk',
+    clinicalRiskKh: 'កម្រិតប្លាកែតគ្រោះថ្នាក់ខ្លាំង - ប្រឈមនឹងហូរឈាមធ្ងន់ធ្ងរ',
+  },
+  HGB: {
+    panicLow: 6.0,
+    panicHigh: 20.0,
+    clinicalRiskEn: 'Critical Hemoglobin - Hypoxia and Heart Failure Risk',
+    clinicalRiskKh: 'កម្រិតអេម៉ូក្លូប៊ីនគ្រោះថ្នាក់ខ្លាំង - ប្រឈមនឹងខ្សោយបេះដូង',
+  },
+};
+
+export const DEMOGRAPHIC_REFERENCE_RANGES: Record<string, {
+  default: { min: number; max: number };
+  adultMale?: { min: number; max: number };
+  adultFemale?: { min: number; max: number };
+  pediatric?: { min: number; max: number };
+}> = {
+  HGB: {
+    default: { min: 12.0, max: 16.5 },
+    adultMale: { min: 13.5, max: 17.5 },
+    adultFemale: { min: 12.0, max: 15.5 },
+    pediatric: { min: 11.0, max: 14.5 },
+  },
+  CREA: {
+    default: { min: 0.6, max: 1.2 },
+    adultMale: { min: 0.7, max: 1.3 },
+    adultFemale: { min: 0.5, max: 1.1 },
+    pediatric: { min: 0.3, max: 0.7 },
+  },
+  RBC: {
+    default: { min: 3.8, max: 5.8 },
+    adultMale: { min: 4.5, max: 5.9 },
+    adultFemale: { min: 4.0, max: 5.2 },
+    pediatric: { min: 3.8, max: 5.0 },
+  },
+  GLU: {
+    default: { min: 70, max: 110 },
+    adultMale: { min: 70, max: 100 },
+    adultFemale: { min: 70, max: 100 },
+    pediatric: { min: 60, max: 100 },
+  },
+};
+
 export class LisService {
+
+  static calculateCode128Checksum(data: string): number {
+    const startCode = 104; // Subset B
+    let sum = startCode;
+    for (let i = 0; i < data.length; i++) {
+      const asciiVal = data.charCodeAt(i);
+      const code128Val = asciiVal - 32;
+      sum += code128Val * (i + 1);
+    }
+    return sum % 103;
+  }
+
+  static generateCode128Barcode(accessionNumber: string, patientId: string): {
+    barcodeData: string;
+    checkDigit: number;
+    fullCode128String: string;
+    symbology: string;
+  } {
+    const cleanPt = patientId.replace(/\D/g, '').padStart(4, '0');
+    const cleanAcc = accessionNumber.replace(/[^a-zA-Z0-9]/g, '');
+    const barcodeData = `${cleanAcc}${cleanPt}`;
+    const checkDigit = LisService.calculateCode128Checksum(barcodeData);
+    return {
+      barcodeData,
+      checkDigit,
+      fullCode128String: `${barcodeData}${checkDigit.toString().padStart(2, '0')}`,
+      symbology: 'CODE128_B',
+    };
+  }
+
+  static verifyCode128Barcode(fullBarcode: string): boolean {
+    if (!fullBarcode || fullBarcode.length < 4) return false;
+    const data = fullBarcode.slice(0, -2);
+    const expectedCheckDigit = parseInt(fullBarcode.slice(-2), 10);
+    const calculatedCheckDigit = LisService.calculateCode128Checksum(data);
+    return expectedCheckDigit === calculatedCheckDigit;
+  }
+
+  getDemographicReferenceRange(
+    code: string,
+    demographics?: DemographicContext,
+  ): { minNormal: number; maxNormal: number; source: string } {
+    const base = STANDARD_ANALYTES[code];
+    const stratified = DEMOGRAPHIC_REFERENCE_RANGES[code];
+    if (!stratified || !demographics) {
+      return {
+        minNormal: base ? base.minNormal : 0,
+        maxNormal: base ? base.maxNormal : 9999,
+        source: 'STANDARD_POPULATION',
+      };
+    }
+
+    const isChild = demographics.age !== undefined && demographics.age < 18;
+    if (isChild && stratified.pediatric) {
+      return { minNormal: stratified.pediatric.min, maxNormal: stratified.pediatric.max, source: 'PEDIATRIC' };
+    }
+    if (demographics.gender === 'M' && stratified.adultMale) {
+      return { minNormal: stratified.adultMale.min, maxNormal: stratified.adultMale.max, source: 'ADULT_MALE' };
+    }
+    if (demographics.gender === 'F' && stratified.adultFemale) {
+      return { minNormal: stratified.adultFemale.min, maxNormal: stratified.adultFemale.max, source: 'ADULT_FEMALE' };
+    }
+
+    return {
+      minNormal: stratified.default.min,
+      maxNormal: stratified.default.max,
+      source: 'DEFAULT',
+    };
+  }
+
+  evaluateAnalyteWithDemographics(
+    code: string,
+    value: number,
+    demographics?: DemographicContext,
+    previousValue?: number,
+  ): AnalyteResult & {
+    isCriticalPanic: boolean;
+    criticalAlertMessageEn?: string;
+    criticalAlertMessageKh?: string;
+  } {
+    const baseRef = STANDARD_ANALYTES[code];
+    const demoRange = this.getDemographicReferenceRange(code, demographics);
+    const panicDef = CRITICAL_PANIC_THRESHOLDS[code];
+
+    let isPanic = false;
+    let criticalAlertMessageEn = undefined;
+    let criticalAlertMessageKh = undefined;
+
+    if (panicDef) {
+      if (panicDef.panicLow !== undefined && value <= panicDef.panicLow) {
+        isPanic = true;
+        criticalAlertMessageEn = panicDef.clinicalRiskEn;
+        criticalAlertMessageKh = panicDef.clinicalRiskKh;
+      }
+      if (panicDef.panicHigh !== undefined && value >= panicDef.panicHigh) {
+        isPanic = true;
+        criticalAlertMessageEn = panicDef.clinicalRiskEn;
+        criticalAlertMessageKh = panicDef.clinicalRiskKh;
+      }
+    } else if (baseRef) {
+      if (baseRef.panicLow !== undefined && value <= baseRef.panicLow) isPanic = true;
+      if (baseRef.panicHigh !== undefined && value >= baseRef.panicHigh) isPanic = true;
+    }
+
+    let deltaPercent = undefined;
+    let isDeltaAlert = false;
+    if (previousValue !== undefined && previousValue > 0) {
+      deltaPercent = parseFloat((((value - previousValue) / previousValue) * 100).toFixed(1));
+      const maxDelta = baseRef?.maxDeltaPercent ?? 40;
+      if (Math.abs(deltaPercent) > maxDelta) {
+        isDeltaAlert = true;
+      }
+    }
+
+    let flag: AnalyteFlag = 'NORMAL';
+    if (isPanic) {
+      flag = 'PANIC_CRITICAL';
+    } else if (isDeltaAlert) {
+      flag = 'DELTA_ALERT';
+    } else if (value < demoRange.minNormal) {
+      flag = 'LOW';
+    } else if (value > demoRange.maxNormal) {
+      flag = 'HIGH';
+    }
+
+    return {
+      code,
+      nameEn: baseRef?.nameEn || code,
+      nameKh: baseRef?.nameKh || code,
+      value,
+      unit: baseRef?.unit || '',
+      minNormal: demoRange.minNormal,
+      maxNormal: demoRange.maxNormal,
+      flag,
+      deltaPercent,
+      previousValue,
+      panicAlert: isPanic,
+      isCriticalPanic: isPanic,
+      criticalAlertMessageEn,
+      criticalAlertMessageKh,
+    };
+  }
+
   private orders: Map<string, LabOrder> = new Map();
   private historicalResults: Map<string, Record<string, number>> = new Map();
 
