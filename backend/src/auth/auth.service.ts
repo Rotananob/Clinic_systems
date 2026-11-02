@@ -5,6 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { RegisterClinicDto } from './dto/register-clinic.dto';
+import { RegisterWithCodeDto } from './dto/register-with-code.dto';
 import { PlanTier, SubscriptionStatus, Role } from '@prisma/client';
 import { SAAS_PLANS, isRouteAllowedForPlan } from '../common/constants/plans.constant';
 import { PlatformMasterBotService } from '../telegram/platform-master-bot.service';
@@ -523,6 +524,69 @@ export class AuthService {
       },
       message: 'Clinic workspace provisioned successfully.',
     };
+  }
+
+  async registerWithCode(dto: RegisterWithCodeDto) {
+    const normalizedEmail = (dto.email || '').trim().toLowerCase();
+
+    // Check if user account was already provisioned (e.g. rapid retry or double submit)
+    const existingUser = await this.prisma.user.findFirst({
+      where: { email: { equals: normalizedEmail, mode: 'insensitive' } },
+      include: { tenant: true },
+    });
+
+    if (existingUser) {
+      const isPasswordValid = await bcrypt.compare(dto.password, existingUser.passwordHash);
+      if (isPasswordValid) {
+        const tokenPayload = {
+          sub: existingUser.id,
+          email: existingUser.email,
+          role: existingUser.role,
+          tenantId: existingUser.tenantId,
+        };
+
+        const requestedTier = dto.planTier && dto.planTier !== PlanTier.FREE ? dto.planTier : PlanTier.FREE;
+        const tenant = existingUser.tenant;
+
+        return {
+          success: true,
+          accessToken: this.jwtService.sign(tokenPayload),
+          targetRoute: '/dashboard',
+          requirePayment: requestedTier !== PlanTier.FREE && tenant?.planTier === PlanTier.FREE,
+          pendingPlanTier: requestedTier !== PlanTier.FREE ? requestedTier : undefined,
+          permissions: ROLE_PERMISSIONS_MATRIX[existingUser.role] || [],
+          allowedRoutes: ROLE_ALLOWED_ROUTES[existingUser.role] || ['/profile'],
+          user: {
+            id: existingUser.id,
+            email: existingUser.email,
+            fullNameEn: existingUser.fullNameEn,
+            fullNameKh: existingUser.fullNameKh,
+            role: existingUser.role,
+            phone: existingUser.phone,
+            tenantId: existingUser.tenantId,
+          },
+          tenant: tenant
+            ? {
+                id: tenant.id,
+                slug: tenant.slug,
+                clinicNameKh: tenant.clinicNameKh,
+                clinicNameEn: tenant.clinicNameEn,
+                clinicType: tenant.clinicType,
+                planTier: tenant.planTier,
+                subscriptionStatus: tenant.subscriptionStatus,
+                paywayPaymentUrl: tenant.paywayPaymentUrl || null,
+                bakongAccountId: tenant.bakongAccountId || null,
+                maxDailyKhqr: tenant.maxDailyKhqr,
+                maxMonthlyPatients: tenant.maxMonthlyPatients,
+                isOnboarded: Boolean(tenant.clinicNameKh && tenant.paywayPaymentUrl),
+              }
+            : null,
+          message: 'Existing verified account authenticated successfully.',
+        };
+      }
+    }
+
+    return this.registerClinic(dto);
   }
 
   async getCurrentUserWithPermissions(userId: string) {

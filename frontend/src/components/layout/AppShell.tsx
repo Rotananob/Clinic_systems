@@ -33,6 +33,7 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
   const [hasToken, setHasToken] = React.useState<boolean>(false);
   const [mounted, setMounted] = React.useState(false);
   const [isExploreOpen, setIsExploreOpen] = React.useState<boolean>(false);
+  const [setupDismissed, setSetupDismissed] = React.useState<boolean>(false);
 
   useEffect(() => {
     const handleOpenExplore = () => setIsExploreOpen(true);
@@ -45,6 +46,22 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
     const token = typeof window !== 'undefined' ? localStorage.getItem('clinic_access_token') : null;
     setHasToken(Boolean(token));
   }, []);
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined' && user?.tenant?.id) {
+      const dismissed = localStorage.getItem(`clinic_setup_dismissed_${user.tenant.id}`) === 'true';
+      if (dismissed) {
+        setSetupDismissed(true);
+      }
+    }
+  }, [user?.tenant?.id]);
+
+  const handleDismissSetup = React.useCallback(() => {
+    setSetupDismissed(true);
+    if (typeof window !== 'undefined' && user?.tenant?.id) {
+      localStorage.setItem(`clinic_setup_dismissed_${user.tenant.id}`, 'true');
+    }
+  }, [user?.tenant?.id]);
 
   const isPublicRoute =
     pathname === '/login' ||
@@ -284,13 +301,15 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
         <FirstTimeClinicSetupModal
           isOpen={Boolean(
             mounted &&
+            !setupDismissed &&
             user &&
             !isPublicRoute &&
             (user.role === 'ADMIN' || user.role === 'DOCTOR') &&
             user.tenant &&
             (!user.tenant.clinicNameKh || user.tenant.clinicNameEn === 'New Clinic' || (!user.tenant.paywayPaymentUrl && !user.tenant.bakongAccountId))
           )}
-          onComplete={() => {}}
+          onComplete={handleDismissSetup}
+          onClose={handleDismissSetup}
         />
       </div>
     </div>

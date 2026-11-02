@@ -22,11 +22,13 @@ import {
   HelpCircle,
   QrCode,
   RefreshCw,
+  X,
 } from 'lucide-react';
 
 interface FirstTimeClinicSetupModalProps {
   isOpen: boolean;
   onComplete: () => void;
+  onClose?: () => void;
 }
 
 const CLINIC_SPECIALTIES = [
@@ -83,6 +85,7 @@ const CLINIC_SPECIALTIES = [
 export const FirstTimeClinicSetupModal: React.FC<FirstTimeClinicSetupModalProps> = ({
   isOpen,
   onComplete,
+  onClose,
 }) => {
   const router = useRouter();
   const { locale } = useTranslation();
@@ -137,11 +140,31 @@ export const FirstTimeClinicSetupModal: React.FC<FirstTimeClinicSetupModalProps>
     }
   };
 
+  if (!isOpen) return null;
+
+  const handleDismissGuide = () => {
+    setShowPostSetupGuide(false);
+    if (onClose) {
+      onClose();
+    } else {
+      onComplete();
+    }
+  };
+
   if (showPostSetupGuide) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-        <div className="w-full max-w-lg bg-[#FAF8F5] border border-[#DDD5C5] rounded-3xl shadow-2xl p-6 sm:p-7 space-y-5 text-stone-900 animate-in zoom-in-95 duration-200">
-          <div className="flex items-center gap-3">
+        <div className="relative w-full max-w-lg bg-[#FAF8F5] border border-[#DDD5C5] rounded-3xl shadow-2xl p-6 sm:p-7 space-y-5 text-stone-900 animate-in zoom-in-95 duration-200">
+          <button
+            type="button"
+            onClick={handleDismissGuide}
+            className="absolute top-5 right-5 p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-200/60 rounded-xl transition-colors cursor-pointer"
+            title={isKm ? 'បិទផ្ទាំង' : 'Close guide'}
+          >
+            <X className="w-5 h-5" />
+          </button>
+
+          <div className="flex items-center gap-3 pr-8">
             <div className="w-12 h-12 rounded-2xl bg-emerald-100 border border-emerald-200 flex items-center justify-center shrink-0 shadow-2xs">
               <CheckCircle2 className="w-6 h-6 text-emerald-800" />
             </div>
@@ -184,7 +207,7 @@ export const FirstTimeClinicSetupModal: React.FC<FirstTimeClinicSetupModalProps>
             <button
               type="button"
               onClick={() => {
-                onComplete();
+                handleDismissGuide();
                 const typeLower = clinicType.toLowerCase();
                 if (typeLower.includes('dental') || typeLower.includes('ធ្មេញ')) {
                   router.push('/dental');
@@ -202,7 +225,7 @@ export const FirstTimeClinicSetupModal: React.FC<FirstTimeClinicSetupModalProps>
             <button
               type="button"
               onClick={() => {
-                onComplete();
+                handleDismissGuide();
                 router.push('/settings?tab=khqr');
               }}
               className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-teal-800 hover:bg-teal-900 text-white text-xs font-bold transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
@@ -215,8 +238,6 @@ export const FirstTimeClinicSetupModal: React.FC<FirstTimeClinicSetupModalProps>
       </div>
     );
   }
-
-  if (!isOpen) return null;
 
   // Live slug generation
   const liveSlug = clinicNameEn
@@ -326,6 +347,18 @@ export const FirstTimeClinicSetupModal: React.FC<FirstTimeClinicSetupModalProps>
               </p>
             </div>
           </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (onClose) onClose();
+              else onComplete();
+            }}
+            className="p-2 text-stone-400 hover:text-stone-700 hover:bg-stone-200/60 rounded-xl transition-colors cursor-pointer"
+            title={isKm ? 'រំលងសិន' : 'Skip for now'}
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
         {/* Scrollable Form Body */}

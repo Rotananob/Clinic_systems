@@ -539,7 +539,41 @@ function RegisterContent() {
         }
       }
     } catch (err: any) {
-      setErrorMessage(err.message || 'Verification failed. Please check the code and try again.');
+      const msg = err.message || '';
+      if (
+        msg.includes('already registered') ||
+        msg.includes('ត្រូវបានចុះឈ្មោះរួចរាល់ហើយ') ||
+        msg.includes('already exists')
+      ) {
+        try {
+          const loginRes = await api.auth.login({ email: email.trim().toLowerCase(), password });
+          if (loginRes?.accessToken) {
+            clearVerificationSession();
+            localStorage.setItem('clinic_access_token', loginRes.accessToken);
+            localStorage.setItem(
+              'clinic_user',
+              JSON.stringify({ ...loginRes.user, tenant: (loginRes as any).tenant })
+            );
+            if (selectedPlan && selectedPlan !== 'FREE') {
+              setStep('PAYMENT');
+              initPaymentCheckout(selectedPlan, isYearly ? 'ANNUAL' : 'MONTHLY');
+              return;
+            } else {
+              if (typeof window !== 'undefined') {
+                window.history.replaceState(null, '', '/dashboard');
+              }
+              router.replace('/dashboard');
+              return;
+            }
+          }
+        } catch {}
+      }
+      setErrorMessage(
+        msg ||
+          (isKm
+            ? 'ការផ្ទៀងផ្ទាត់មិនទាន់បានជោគជ័យ សូមពិនិត្យលេខកូដ និងព្យាយាមម្តងទៀត។'
+            : 'Verification failed. Please check the code and try again.')
+      );
     } finally {
       setLoading(false);
     }

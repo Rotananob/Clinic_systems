@@ -547,15 +547,21 @@ export class SubscriptionPaymentService {
       }
     }
 
-    // If payment cannot be verified by bank gateway, strictly reject activation
+    // If payment cannot be verified by bank gateway, return pending status gracefully (200 OK)
     if (!isBankPaymentVerified) {
-      this.logger.warn(
-        `Payment verification rejected for tenant ${tenant.slug}. Subscription: ${subscription.id}, TranID: ${dto.tranId || subscription.paymentTranId}`,
+      this.logger.log(
+        `Payment pending settlement for tenant ${tenant.slug}. Subscription: ${subscription.id}, TranID: ${dto.tranId || subscription.paymentTranId}`,
       );
 
-      throw new BadRequestException({
-        statusCode: 400,
-        error: 'PAYMENT_NOT_SETTLED',
+      return {
+        success: true,
+        activated: false,
+        alreadySettled: false,
+        status: 'PENDING',
+        subscriptionId: subscription.id,
+        invoiceNumber: subscription.invoiceNumber,
+        tranId: dto.tranId || subscription.paymentTranId,
+        amountUsd: Number(subscription.amountUsd),
         message:
           'Payment has not been settled in the banking system yet. Please complete the transaction via your mobile banking app.',
         messageKh:
@@ -569,7 +575,7 @@ export class SubscriptionPaymentService {
           tranId: dto.tranId || subscription.paymentTranId,
           amountUsd: Number(subscription.amountUsd),
         },
-      });
+      };
     }
 
     // 3. Settlement confirmed: Perform atomic plan activation and date extension

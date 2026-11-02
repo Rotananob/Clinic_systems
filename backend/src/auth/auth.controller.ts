@@ -61,8 +61,8 @@ export class AuthController {
     // 1. Verify code without consuming prematurely
     this.emailVerificationService.verifyCode(dto.email, dto.verificationCode, false);
 
-    // 2. Provision clinic
-    const result = await this.authService.registerClinic(dto);
+    // 2. Provision clinic or authenticate existing verified account
+    const result = await this.authService.registerWithCode(dto);
 
     // 3. Consume code only upon successful registration
     this.emailVerificationService.consumeCode(dto.email);
