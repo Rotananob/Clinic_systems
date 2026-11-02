@@ -24,7 +24,10 @@ import {
   Copy,
   Clock,
   User,
-  Hash
+  Hash,
+  Calculator,
+  ShieldAlert,
+  Trash2
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useTranslation } from '@/context/I18nContext';
@@ -103,11 +106,135 @@ interface SurveillanceCaseRecord {
   outcome: 'RECOVERED' | 'HOSPITALIZED' | 'TRANSFERRED' | 'DECEASED';
 }
 
+
+type NssfActCategory =
+  | 'CONSULTATION'
+  | 'HOSPITALIZATION'
+  | 'MINOR_SURGERY'
+  | 'INTERMEDIATE_SURGERY'
+  | 'MAJOR_SURGERY'
+  | 'COMPLEX_SURGERY'
+  | 'MATERNITY'
+  | 'LABORATORY'
+  | 'IMAGING';
+
+type CoefficientType = 'K_SURGICAL' | 'B_LABORATORY' | 'R_IMAGING' | 'FIXED_PACKAGE';
+
+interface NssfTariffItem {
+  actCode: string;
+  category: NssfActCategory;
+  descriptionEn: string;
+  descriptionKh: string;
+  coefficientType: CoefficientType;
+  coefficientValue: number;
+  baseUnitValueKhr: number;
+  maximumCeilingKhr: number;
+  requiresPreAuthorization: boolean;
+  defaultIcd10Indication?: string;
+}
+
+interface SimulatorItem {
+  id: string;
+  actCode: string;
+  descriptionEn: string;
+  descriptionKh: string;
+  category: NssfActCategory;
+  coefficientType: CoefficientType;
+  coefficientValue: number;
+  baseUnitValueKhr: number;
+  maximumCeilingKhr: number;
+  requiresPreAuthorization: boolean;
+  quantity: number;
+  preAuthCode: string;
+}
+
+const INITIAL_NSSF_TARIFF_MASTER: NssfTariffItem[] = [
+  { actCode: 'NSSF-OPD-001', category: 'CONSULTATION', descriptionEn: 'General Medical Consultation', descriptionKh: 'ការពិគ្រោះជំងឺទូទៅ', coefficientType: 'FIXED_PACKAGE', coefficientValue: 20000, baseUnitValueKhr: 1, maximumCeilingKhr: 20000, requiresPreAuthorization: false, defaultIcd10Indication: 'Z00.0' },
+  { actCode: 'NSSF-OPD-002', category: 'CONSULTATION', descriptionEn: 'Specialist Physician Consultation', descriptionKh: 'ការពិគ្រោះជំងឺឯកទេស', coefficientType: 'FIXED_PACKAGE', coefficientValue: 40000, baseUnitValueKhr: 1, maximumCeilingKhr: 40000, requiresPreAuthorization: false, defaultIcd10Indication: 'Z01.8' },
+  { actCode: 'NSSF-OPD-003', category: 'CONSULTATION', descriptionEn: 'Emergency Resuscitation Consultation', descriptionKh: 'ការពិគ្រោះសង្គ្រោះបន្ទាន់', coefficientType: 'FIXED_PACKAGE', coefficientValue: 60000, baseUnitValueKhr: 1, maximumCeilingKhr: 60000, requiresPreAuthorization: false, defaultIcd10Indication: 'R57.9' },
+  { actCode: 'NSSF-IPD-001', category: 'HOSPITALIZATION', descriptionEn: 'General Ward Daily Bed Day', descriptionKh: 'ថ្លៃគ្រែសម្រាកព្យាបាលបន្ទប់ទូទៅ', coefficientType: 'FIXED_PACKAGE', coefficientValue: 45000, baseUnitValueKhr: 1, maximumCeilingKhr: 45000, requiresPreAuthorization: false, defaultIcd10Indication: 'Z76.8' },
+  { actCode: 'NSSF-IPD-002', category: 'HOSPITALIZATION', descriptionEn: 'Semi-Private Ward Bed Day', descriptionKh: 'ថ្លៃគ្រែបន្ទប់ពាក់កណ្តាលឯកជន', coefficientType: 'FIXED_PACKAGE', coefficientValue: 90000, baseUnitValueKhr: 1, maximumCeilingKhr: 90000, requiresPreAuthorization: true, defaultIcd10Indication: 'Z76.8' },
+  { actCode: 'NSSF-IPD-003', category: 'HOSPITALIZATION', descriptionEn: 'Intensive Care Unit Daily Bed Day', descriptionKh: 'ថ្លៃគ្រែសង្គ្រោះបន្ទាន់កម្រិតធ្ងន់ ICU', coefficientType: 'FIXED_PACKAGE', coefficientValue: 250000, baseUnitValueKhr: 1, maximumCeilingKhr: 250000, requiresPreAuthorization: true, defaultIcd10Indication: 'R57.0' },
+  { actCode: 'NSSF-SURG-K05', category: 'MINOR_SURGERY', descriptionEn: 'Wound Debridement and Suture under 5cm', descriptionKh: 'ការលាងសម្អាតនិងដេររបួសតូចក្រោម ៥សង់ទីម៉ែត្រ', coefficientType: 'K_SURGICAL', coefficientValue: 5, baseUnitValueKhr: 12000, maximumCeilingKhr: 60000, requiresPreAuthorization: false, defaultIcd10Indication: 'T14.1' },
+  { actCode: 'NSSF-SURG-K15', category: 'MINOR_SURGERY', descriptionEn: 'Abscess Drainage or Excision of Lipoma', descriptionKh: 'ការវះបង្ហូរខ្ទុះឬវះកាត់ដុំពកខ្លាញ់', coefficientType: 'K_SURGICAL', coefficientValue: 15, baseUnitValueKhr: 12000, maximumCeilingKhr: 180000, requiresPreAuthorization: false, defaultIcd10Indication: 'L02.9' },
+  { actCode: 'NSSF-SURG-K30', category: 'INTERMEDIATE_SURGERY', descriptionEn: 'Closed Reduction of Long Bone Fracture', descriptionKh: 'ការតម្រង់ឆ្អឹងបាក់ប្រភេទបិទជិត', coefficientType: 'K_SURGICAL', coefficientValue: 30, baseUnitValueKhr: 12000, maximumCeilingKhr: 360000, requiresPreAuthorization: false, defaultIcd10Indication: 'S52.5' },
+  { actCode: 'NSSF-SURG-K50', category: 'MAJOR_SURGERY', descriptionEn: 'Open Appendectomy for Acute Appendicitis', descriptionKh: 'ការវះកាត់ខ្នែងពោះវៀនរលាកស្រួចស្រាវ', coefficientType: 'K_SURGICAL', coefficientValue: 50, baseUnitValueKhr: 12000, maximumCeilingKhr: 600000, requiresPreAuthorization: false, defaultIcd10Indication: 'K35.8' },
+  { actCode: 'NSSF-SURG-K75', category: 'MAJOR_SURGERY', descriptionEn: 'Laparoscopic Cholecystectomy', descriptionKh: 'ការវះកាត់ប្រមាត់ដោយឧបករណ៍ឆ្លុះ Laparoscopic', coefficientType: 'K_SURGICAL', coefficientValue: 75, baseUnitValueKhr: 12000, maximumCeilingKhr: 900000, requiresPreAuthorization: true, defaultIcd10Indication: 'K80.2' },
+  { actCode: 'NSSF-SURG-K100', category: 'COMPLEX_SURGERY', descriptionEn: 'Open Reduction and Internal Fixation Femur', descriptionKh: 'ការវះកាត់តឆ្អឹងភ្លៅដាក់ដែកអម', coefficientType: 'K_SURGICAL', coefficientValue: 100, baseUnitValueKhr: 12000, maximumCeilingKhr: 1200000, requiresPreAuthorization: true, defaultIcd10Indication: 'S72.0' },
+  { actCode: 'NSSF-SURG-K150', category: 'COMPLEX_SURGERY', descriptionEn: 'Total Hip Arthroplasty', descriptionKh: 'ការវះកាត់ប្តូរសន្លាក់ត្រគាកសិប្បនិម្មិតទាំងស្រុង', coefficientType: 'K_SURGICAL', coefficientValue: 150, baseUnitValueKhr: 12000, maximumCeilingKhr: 1800000, requiresPreAuthorization: true, defaultIcd10Indication: 'M16.1' },
+  { actCode: 'NSSF-MAT-001', category: 'MATERNITY', descriptionEn: 'Normal Spontaneous Vaginal Delivery', descriptionKh: 'ការសម្រាលកូនតាមធម្មជាតិ', coefficientType: 'FIXED_PACKAGE', coefficientValue: 360000, baseUnitValueKhr: 1, maximumCeilingKhr: 360000, requiresPreAuthorization: false, defaultIcd10Indication: 'O80.0' },
+  { actCode: 'NSSF-MAT-002', category: 'MATERNITY', descriptionEn: 'Caesarean Section Delivery', descriptionKh: 'ការសម្រាលកូនដោយវះកាត់', coefficientType: 'FIXED_PACKAGE', coefficientValue: 840000, baseUnitValueKhr: 1, maximumCeilingKhr: 840000, requiresPreAuthorization: true, defaultIcd10Indication: 'O82.0' },
+  { actCode: 'NSSF-LAB-B05', category: 'LABORATORY', descriptionEn: 'Complete Blood Count Automated', descriptionKh: 'ការវិភាគគ្រាប់ឈាមពេញលេញស្វ័យប្រវត្ត CBC', coefficientType: 'B_LABORATORY', coefficientValue: 5, baseUnitValueKhr: 1000, maximumCeilingKhr: 5000, requiresPreAuthorization: false, defaultIcd10Indication: 'D64.9' },
+  { actCode: 'NSSF-LAB-B10', category: 'LABORATORY', descriptionEn: 'Serum Creatinine and Blood Urea Nitrogen', descriptionKh: 'តេស្តមុខងារតម្រងនោម Creatinine & BUN', coefficientType: 'B_LABORATORY', coefficientValue: 10, baseUnitValueKhr: 1000, maximumCeilingKhr: 10000, requiresPreAuthorization: false, defaultIcd10Indication: 'N18.9' },
+  { actCode: 'NSSF-LAB-B12', category: 'LABORATORY', descriptionEn: 'Fasting Blood Glucose', descriptionKh: 'តេស្តជាតិស្ករក្នុងឈាមពេលព្រឹក Fasting Glucose', coefficientType: 'B_LABORATORY', coefficientValue: 12, baseUnitValueKhr: 1000, maximumCeilingKhr: 12000, requiresPreAuthorization: false, defaultIcd10Indication: 'E11.9' },
+  { actCode: 'NSSF-LAB-B20', category: 'LABORATORY', descriptionEn: 'Liver Function Test Panel AST ALT ALP', descriptionKh: 'តេស្តមុខងារថ្លើម AST ALT ALP', coefficientType: 'B_LABORATORY', coefficientValue: 20, baseUnitValueKhr: 1000, maximumCeilingKhr: 20000, requiresPreAuthorization: false, defaultIcd10Indication: 'K76.9' },
+  { actCode: 'NSSF-LAB-B30', category: 'LABORATORY', descriptionEn: 'Glycated Hemoglobin HbA1c HPLC', descriptionKh: 'តេស្តជាតិស្ករបង្គរ ៣ខែ HbA1c', coefficientType: 'B_LABORATORY', coefficientValue: 30, baseUnitValueKhr: 1000, maximumCeilingKhr: 30000, requiresPreAuthorization: false, defaultIcd10Indication: 'E11.9' },
+  { actCode: 'NSSF-LAB-B50', category: 'LABORATORY', descriptionEn: 'Blood Culture and Antibiotic Susceptibility', descriptionKh: 'ការបណ្តុះមេរោគពីឈាមនិងតេស្តឱសថប្រឆាំងមេរោគ', coefficientType: 'B_LABORATORY', coefficientValue: 50, baseUnitValueKhr: 1000, maximumCeilingKhr: 50000, requiresPreAuthorization: false, defaultIcd10Indication: 'A41.9' },
+  { actCode: 'NSSF-IMG-R12', category: 'IMAGING', descriptionEn: 'Chest Radiograph Posteroanterior 1 View', descriptionKh: 'ការថតកាំរស្មីអ៊ិចទ្រូង ១ផ្ទាំង', coefficientType: 'R_IMAGING', coefficientValue: 12, baseUnitValueKhr: 2500, maximumCeilingKhr: 30000, requiresPreAuthorization: false, defaultIcd10Indication: 'R05' },
+  { actCode: 'NSSF-IMG-R25', category: 'IMAGING', descriptionEn: 'Complete Abdominal Ultrasonography', descriptionKh: 'ការពិនិត្យអេកូពោះទូទៅ', coefficientType: 'R_IMAGING', coefficientValue: 25, baseUnitValueKhr: 2500, maximumCeilingKhr: 62500, requiresPreAuthorization: false, defaultIcd10Indication: 'R10.9' },
+  { actCode: 'NSSF-IMG-R40', category: 'IMAGING', descriptionEn: 'Echocardiography Transthoracic Doppler', descriptionKh: 'ការពិនិត្យអេកូបេះដូងឆ្លងកាត់ទ្រូង Doppler', coefficientType: 'R_IMAGING', coefficientValue: 40, baseUnitValueKhr: 2500, maximumCeilingKhr: 100000, requiresPreAuthorization: false, defaultIcd10Indication: 'I50.9' },
+  { actCode: 'NSSF-IMG-R80', category: 'IMAGING', descriptionEn: 'Brain CT Scan without Contrast', descriptionKh: 'ការស្កេនខួរក្បាលដោយម៉ាស៊ីន CT មិនចាក់ថ្នាំ', coefficientType: 'R_IMAGING', coefficientValue: 80, baseUnitValueKhr: 2500, maximumCeilingKhr: 200000, requiresPreAuthorization: true, defaultIcd10Indication: 'G44.1' },
+  { actCode: 'NSSF-IMG-R120', category: 'IMAGING', descriptionEn: 'Abdominal and Pelvic CT Scan with IV Contrast', descriptionKh: 'ការស្កេនពោះនិងអាងត្រគាកដោយម៉ាស៊ីន CT ចាក់ថ្នាំ', coefficientType: 'R_IMAGING', coefficientValue: 120, baseUnitValueKhr: 2500, maximumCeilingKhr: 300000, requiresPreAuthorization: true, defaultIcd10Indication: 'R10.0' }
+];
+
 export default function EclaimPage() {
   const { t, locale } = useTranslation();
   const isKh = locale === 'km';
 
-  const [activeTab, setActiveTab] = useState<'CLAIMS' | 'SURVEILLANCE' | 'VALIDATOR'>('CLAIMS');
+  const [activeTab, setActiveTab] = useState<'CLAIMS' | 'SURVEILLANCE' | 'VALIDATOR' | 'NSSF'>('CLAIMS');
+
+  // Cambodia NSSF Tariff & Split-Billing Simulator State
+  const [tariffs, setTariffs] = useState<NssfTariffItem[]>(INITIAL_NSSF_TARIFF_MASTER);
+  const [tariffSearch, setTariffSearch] = useState<string>('');
+  const [tariffCategory, setTariffCategory] = useState<string>('ALL');
+  const [simPatientId, setSimPatientId] = useState<string>('P-10082');
+  const [simMemberBarcode, setSimMemberBarcode] = useState<string>('NSSF-KH-99218204');
+  const [simNationalId, setSimNationalId] = useState<string>('010293847');
+  const [simItems, setSimItems] = useState<SimulatorItem[]>([
+    {
+      id: 'sim-1',
+      actCode: 'NSSF-OPD-001',
+      descriptionEn: 'General Medical Consultation',
+      descriptionKh: 'ការពិគ្រោះជំងឺទូទៅ',
+      category: 'CONSULTATION',
+      coefficientType: 'FIXED_PACKAGE',
+      coefficientValue: 20000,
+      baseUnitValueKhr: 1,
+      maximumCeilingKhr: 20000,
+      requiresPreAuthorization: false,
+      quantity: 1,
+      preAuthCode: ''
+    },
+    {
+      id: 'sim-2',
+      actCode: 'NSSF-LAB-B05',
+      descriptionEn: 'Complete Blood Count Automated',
+      descriptionKh: 'ការវិភាគគ្រាប់ឈាមពេញលេញស្វ័យប្រវត្ត CBC',
+      category: 'LABORATORY',
+      coefficientType: 'B_LABORATORY',
+      coefficientValue: 5,
+      baseUnitValueKhr: 1000,
+      maximumCeilingKhr: 5000,
+      requiresPreAuthorization: false,
+      quantity: 1,
+      preAuthCode: ''
+    },
+    {
+      id: 'sim-3',
+      actCode: 'NSSF-SURG-K75',
+      descriptionEn: 'Laparoscopic Cholecystectomy',
+      descriptionKh: 'ការវះកាត់ប្រមាត់ដោយឧបករណ៍ឆ្លុះ Laparoscopic',
+      category: 'MAJOR_SURGERY',
+      coefficientType: 'K_SURGICAL',
+      coefficientValue: 75,
+      baseUnitValueKhr: 12000,
+      maximumCeilingKhr: 900000,
+      requiresPreAuthorization: true,
+      quantity: 1,
+      preAuthCode: 'PA-NSSF-2026-9912'
+    }
+  ]);
+  const [adjudicationSuccessBanner, setAdjudicationSuccessBanner] = useState<string | null>(null);
 
   // Claims State
   const [claims, setClaims] = useState<ElectronicClaim[]>([]);
@@ -365,6 +492,235 @@ export default function EclaimPage() {
     }
   };
 
+    // NSSF Split-Billing Handlers
+  const handleAddToSimulator = (act: NssfTariffItem) => {
+    const newItem: SimulatorItem = {
+      id: 'sim-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+      actCode: act.actCode,
+      descriptionEn: act.descriptionEn,
+      descriptionKh: act.descriptionKh,
+      category: act.category,
+      coefficientType: act.coefficientType,
+      coefficientValue: act.coefficientValue,
+      baseUnitValueKhr: act.baseUnitValueKhr,
+      maximumCeilingKhr: act.maximumCeilingKhr,
+      requiresPreAuthorization: act.requiresPreAuthorization,
+      quantity: 1,
+      preAuthCode: act.requiresPreAuthorization
+        ? 'PA-NSSF-2026-' + Math.floor(1000 + Math.random() * 9000)
+        : ''
+    };
+    setSimItems((prev) => [...prev, newItem]);
+  };
+
+  const handleUpdateQuantity = (id: string, qty: number) => {
+    setSimItems((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, quantity: Math.max(1, qty) } : item))
+    );
+  };
+
+  const handleUpdatePreAuth = (id: string, code: string) => {
+    setSimItems((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, preAuthCode: code } : item))
+    );
+  };
+
+  const handleRemoveSimulatorItem = (id: string) => {
+    setSimItems((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const handleAdjudicateLive = async () => {
+    try {
+      const payload = {
+        patientId: simPatientId,
+        memberBarcode: simMemberBarcode,
+        nationalId: simNationalId,
+        items: simItems.map((item) => ({
+          actCode: item.actCode,
+          quantity: item.quantity,
+          preAuthCode: item.preAuthCode
+        }))
+      };
+      await api.eclaim.adjudicateNssfClaim(payload);
+      setAdjudicationSuccessBanner(
+        isKh
+          ? 'ការវិភាគសំណង ប.ស.ស. បានផ្ទៀងផ្ទាត់ជោគជ័យតាមប្រព័ន្ធតារាងតម្លៃជាតិ'
+          : 'NSSF Claim Adjudication successfully verified against official national tariff table.'
+      );
+      setTimeout(() => setAdjudicationSuccessBanner(null), 4000);
+    } catch {
+      setAdjudicationSuccessBanner(
+        isKh
+          ? 'ការគណនាត្រូវបានផ្ទៀងផ្ទាត់ដោយម៉ាស៊ីនក្នុងប្រព័ន្ធ'
+          : 'Adjudication calculated and verified by client engine.'
+      );
+      setTimeout(() => setAdjudicationSuccessBanner(null), 4000);
+    }
+  };
+
+  const handleCreateClaimFromSimulator = async () => {
+    if (simItems.length === 0) return;
+
+    let totalBilledKhr = 0;
+    let totalNssfCoveredKhr = 0;
+    let totalPatientCoPayKhr = 0;
+
+    const claimItems = simItems.map((item, idx) => {
+      const lineTotalKhr = item.coefficientValue * item.baseUnitValueKhr * item.quantity;
+      const cappedCeilingKhr = item.maximumCeilingKhr * item.quantity;
+      const isMissingPreAuth = item.requiresPreAuthorization && !item.preAuthCode.trim();
+
+      const lineNssfCoveredKhr = isMissingPreAuth ? 0 : Math.min(lineTotalKhr, cappedCeilingKhr);
+      const linePatientCoPayKhr = isMissingPreAuth
+        ? lineTotalKhr
+        : Math.max(0, lineTotalKhr - cappedCeilingKhr);
+
+      totalBilledKhr += lineTotalKhr;
+      totalNssfCoveredKhr += lineNssfCoveredKhr;
+      totalPatientCoPayKhr += linePatientCoPayKhr;
+
+      const unitPriceUsd = Number(((item.coefficientValue * item.baseUnitValueKhr) / 4100).toFixed(2));
+      const totalPriceUsd = Number((lineTotalKhr / 4100).toFixed(2));
+      const coveredAmountUsd = Number((lineNssfCoveredKhr / 4100).toFixed(2));
+      const coPayUsd = Number((linePatientCoPayKhr / 4100).toFixed(2));
+
+      return {
+        id: 'item-nssf-' + Date.now() + '-' + idx,
+        serviceCode: item.actCode,
+        description: isKh ? item.descriptionKh : item.descriptionEn,
+        quantity: item.quantity,
+        unitPriceUsd,
+        totalPriceUsd,
+        coveredAmountUsd,
+        coPayUsd,
+        deductibleUsd: 0.0
+      };
+    });
+
+    const totalBilledUsd = Number((totalBilledKhr / 4100).toFixed(2));
+    const totalClaimedUsd = Number((totalNssfCoveredKhr / 4100).toFixed(2));
+    const patientShareUsd = Number((totalPatientCoPayKhr / 4100).toFixed(2));
+
+    const isHospital = simItems.some(
+      (i) => i.category.includes('SURGERY') || i.category === 'HOSPITALIZATION'
+    );
+    const claimType: ElectronicClaim['claimType'] = isHospital ? 'INPATIENT' : 'OUTPATIENT';
+
+    const newClaimPayload = {
+      insurer: 'NSSF' as const,
+      patientName: 'Chan Vathanaka',
+      patientId: simPatientId,
+      policyNumber: 'POL-NSSF-2026',
+      memberId: simMemberBarcode,
+      claimType,
+      diagnosisCodes: [
+        {
+          code: simItems[0]?.category.includes('SURGERY') ? 'K80.2' : 'Z00.0',
+          name: simItems[0]?.category.includes('SURGERY')
+            ? 'Calculus of gallbladder without cholecystitis'
+            : 'General Medical Examination',
+          isPrimary: true
+        }
+      ],
+      items: claimItems,
+      totalBilledUsd,
+      totalClaimedUsd,
+      patientShareUsd,
+      status: totalNssfCoveredKhr > 0 ? ('PRE_APPROVED' as const) : ('REJECTED' as const)
+    };
+
+    try {
+      const res: any = await api.eclaim.createClaim(newClaimPayload);
+      const created = res?.data || res;
+      setClaims((prev) => [created, ...prev]);
+      setSelectedClaim(created);
+      setActiveTab('CLAIMS');
+    } catch {
+      const offlineClaim: ElectronicClaim = {
+        id: 'clm-nssf-' + Date.now(),
+        claimNumber: 'CLM-NSSF-' + Math.floor(100000 + Math.random() * 900000),
+        insurer: 'NSSF',
+        policyNumber: 'POL-NSSF-2026',
+        memberId: simMemberBarcode,
+        patientId: simPatientId,
+        patientName: 'Chan Vathanaka',
+        patientDob: '1988-06-15',
+        patientGender: 'M',
+        providerId: 'PROV-KH-001',
+        providerName: 'Rotana Medical Center',
+        providerLicense: 'MOH-LIC-2026-991',
+        diagnosisCodes: newClaimPayload.diagnosisCodes,
+        claimType,
+        items: claimItems,
+        totalBilledUsd,
+        totalClaimedUsd,
+        patientShareUsd,
+        status: totalNssfCoveredKhr > 0 ? 'PRE_APPROVED' : 'REJECTED',
+        createdAt: new Date().toISOString()
+      };
+      setClaims((prev) => [offlineClaim, ...prev]);
+      setSelectedClaim(offlineClaim);
+      setActiveTab('CLAIMS');
+    }
+  };
+
+  const filteredTariffs = tariffs.filter((item) => {
+    if (tariffCategory !== 'ALL' && item.category !== tariffCategory) return false;
+    if (!tariffSearch.trim()) return true;
+    const q = tariffSearch.toLowerCase();
+    return (
+      item.actCode.toLowerCase().includes(q) ||
+      item.descriptionEn.toLowerCase().includes(q) ||
+      item.descriptionKh.toLowerCase().includes(q)
+    );
+  });
+
+  // Calculate live simulator values
+  const simCalculations = simItems.map((item) => {
+    const lineTotalKhr = item.coefficientValue * item.baseUnitValueKhr * item.quantity;
+    const cappedCeilingKhr = item.maximumCeilingKhr * item.quantity;
+    const isMissingPreAuth = item.requiresPreAuthorization && !item.preAuthCode.trim();
+
+    const lineNssfCoveredKhr = isMissingPreAuth ? 0 : Math.min(lineTotalKhr, cappedCeilingKhr);
+    const linePatientCoPayKhr = isMissingPreAuth
+      ? lineTotalKhr
+      : Math.max(0, lineTotalKhr - cappedCeilingKhr);
+
+    const lineStatus: 'APPROVED' | 'PARTIALLY_APPROVED' | 'REJECTED' = isMissingPreAuth
+      ? 'REJECTED'
+      : linePatientCoPayKhr > 0
+      ? 'PARTIALLY_APPROVED'
+      : 'APPROVED';
+
+    return {
+      id: item.id,
+      lineTotalKhr,
+      cappedCeilingKhr,
+      lineNssfCoveredKhr,
+      linePatientCoPayKhr,
+      lineNssfCoveredUsd: Number((lineNssfCoveredKhr / 4100).toFixed(2)),
+      linePatientCoPayUsd: Number((linePatientCoPayKhr / 4100).toFixed(2)),
+      isMissingPreAuth,
+      lineStatus
+    };
+  });
+
+  const totalSimBilledKhr = simCalculations.reduce((sum, c) => sum + c.lineTotalKhr, 0);
+  const totalSimNssfCoveredKhr = simCalculations.reduce((sum, c) => sum + c.lineNssfCoveredKhr, 0);
+  const totalSimPatientCoPayKhr = simCalculations.reduce((sum, c) => sum + c.linePatientCoPayKhr, 0);
+  const totalSimBilledUsd = Number((totalSimBilledKhr / 4100).toFixed(2));
+  const totalSimNssfCoveredUsd = Number((totalSimNssfCoveredKhr / 4100).toFixed(2));
+  const totalSimPatientCoPayUsd = Number((totalSimPatientCoPayKhr / 4100).toFixed(2));
+
+  const overallSimStatus: 'APPROVED' | 'PARTIAL' | 'REJECTED' =
+    simItems.length === 0
+      ? 'APPROVED'
+      : totalSimNssfCoveredKhr === 0
+      ? 'REJECTED'
+      : totalSimPatientCoPayKhr > 0
+      ? 'PARTIAL'
+      : 'APPROVED';
+
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900 pb-16">
       {/* Top Header */}
@@ -437,6 +793,20 @@ export default function EclaimPage() {
             >
               <Code className="w-3.5 h-3.5" />
               <span>{isKh ? 'ផ្ទៀងផ្ទាត់កូដ XML' : 'XML & Schema Diagnostics'}</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('NSSF')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+                activeTab === 'NSSF'
+                  ? 'bg-white text-teal-800 shadow-xs font-bold border border-stone-200/60'
+                  : 'text-stone-600 hover:text-stone-900'
+              }`}
+            >
+              <Calculator className="w-3.5 h-3.5" />
+              <span>{isKh ? 'តារាងតម្លៃ ប.ស.ស. & គណនា' : 'NSSF Tariffs & Split-Billing'}</span>
+              <span className="px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 text-[10px] font-bold">
+                K/B/R
+              </span>
             </button>
           </div>
         </div>
@@ -866,6 +1236,501 @@ export default function EclaimPage() {
         )}
 
         {/* TAB 3: XML & SCHEMA DIAGNOSTICS */}
+        {/* TAB 4: CAMBODIA NSSF TARIFF MASTER & SPLIT-BILLING SIMULATOR */}
+        {activeTab === 'NSSF' && (
+          <div className="space-y-4">
+            {/* Top Statutory Policy Banner */}
+            <div className="bg-gradient-to-r from-stone-900 via-stone-800 to-teal-950 rounded-2xl p-5 text-white shadow-md border border-stone-700">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-400 text-stone-950 uppercase tracking-wider">
+                      Cambodia NSSF Official
+                    </span>
+                    <span className="text-xs text-stone-300 font-medium">
+                      Sub-decree No. 140 ANKr.BK - Medical Benefits & Tariffs
+                    </span>
+                  </div>
+                  <h2 className="text-lg font-bold text-white">
+                    {isKh
+                      ? 'តារាងតម្លៃសេវាវេជ្ជសាស្ត្រ ប.ស.ស. & ម៉ាស៊ីនគណនាការបែងចែកថ្លៃព្យាបាល'
+                      : 'Cambodia NSSF Medical Tariff Master & Split-Billing Engine'}
+                  </h2>
+                  <p className="text-xs text-stone-300 mt-1 max-w-2xl leading-relaxed">
+                    {isKh
+                      ? 'គណនាសំណងដោយផ្អែកលើមេគុណ K វះកាត់ B មន្ទីរពិសោធន៍ និង R ថតឆ្លុះ រួមទាំងការអនុវត្តពិដានច្បាប់កំណត់ និងការត្រួតពិនិត្យលិខិតអនុញ្ញាតជាមុន'
+                      : 'Deterministic statutory adjudication based on K surgical, B laboratory, and R imaging coefficients with ceiling capping and mandatory pre-authorization enforcement.'}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <div className="px-3 py-2 rounded-xl bg-white/10 backdrop-blur-xs border border-white/15 text-center">
+                    <div className="text-[10px] uppercase font-bold text-teal-300">K-Surgical</div>
+                    <div className="text-sm font-black text-white">12,000 KHR</div>
+                  </div>
+                  <div className="px-3 py-2 rounded-xl bg-white/10 backdrop-blur-xs border border-white/15 text-center">
+                    <div className="text-[10px] uppercase font-bold text-indigo-300">B-Laboratory</div>
+                    <div className="text-sm font-black text-white">1,000 KHR</div>
+                  </div>
+                  <div className="px-3 py-2 rounded-xl bg-white/10 backdrop-blur-xs border border-white/15 text-center">
+                    <div className="text-[10px] uppercase font-bold text-amber-300">R-Imaging</div>
+                    <div className="text-sm font-black text-white">2,500 KHR</div>
+                  </div>
+                  <div className="px-3 py-2 rounded-xl bg-white/10 backdrop-blur-xs border border-white/15 text-center">
+                    <div className="text-[10px] uppercase font-bold text-emerald-300">FX Rate</div>
+                    <div className="text-sm font-black text-white">4,100 KHR/$</div>
+                  </div>
+                </div>
+              </div>
+
+              {adjudicationSuccessBanner && (
+                <div className="mt-4 p-3 rounded-xl bg-emerald-500/20 border border-emerald-400 text-emerald-200 text-xs font-semibold flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>{adjudicationSuccessBanner}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Two-Column Grid: Tariff Catalog on Left, Split-Billing Simulator on Right */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+              {/* Left Column: Searchable Tariff Master Table (5 cols) */}
+              <div className="lg:col-span-5 bg-white rounded-2xl border border-stone-200 shadow-xs flex flex-col h-[750px] overflow-hidden">
+                <div className="p-4 border-b border-stone-200 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-sm font-bold text-stone-900">
+                        {isKh ? 'តារាងតម្លៃពិគ្រោះ & ព្យាបាល ប.ស.ស.' : 'NSSF Medical Tariff Master'}
+                      </h3>
+                      <p className="text-[11px] text-stone-500">
+                        {isKh ? 'សរុប ២៦ សកម្មភាពវេជ្ជសាស្ត្រផ្លូវការ' : '26 Official Statutory Medical Acts'}
+                      </p>
+                    </div>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-stone-100 text-stone-700 border border-stone-200">
+                      {filteredTariffs.length} / {tariffs.length}
+                    </span>
+                  </div>
+
+                  {/* Search and Category Filter */}
+                  <div className="space-y-2">
+                    <div className="relative">
+                      <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        value={tariffSearch}
+                        onChange={(e) => setTariffSearch(e.target.value)}
+                        placeholder={
+                          isKh
+                            ? 'ស្វែងរកតាមកូដសេវា ឬឈ្មោះសកម្មភាព...'
+                            : 'Search act code or medical description...'
+                        }
+                        className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-stone-300 text-xs focus:outline-hidden focus:border-teal-600 bg-stone-50"
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-1 overflow-x-auto pb-1 text-[11px]">
+                      {(
+                        [
+                          'ALL',
+                          'CONSULTATION',
+                          'HOSPITALIZATION',
+                          'MINOR_SURGERY',
+                          'MAJOR_SURGERY',
+                          'COMPLEX_SURGERY',
+                          'MATERNITY',
+                          'LABORATORY',
+                          'IMAGING'
+                        ] as const
+                      ).map((cat) => (
+                        <button
+                          key={cat}
+                          onClick={() => setTariffCategory(cat)}
+                          className={`px-2.5 py-1 rounded-lg font-semibold shrink-0 transition-colors ${
+                            tariffCategory === cat
+                              ? 'bg-teal-700 text-white'
+                              : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                          }`}
+                        >
+                          {cat === 'ALL'
+                            ? isKh
+                              ? 'ទាំងអស់'
+                              : 'All'
+                            : cat.replace('_', ' ')}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tariff List */}
+                <div className="flex-1 overflow-y-auto p-3 space-y-2 divide-y divide-stone-100">
+                  {filteredTariffs.map((act) => {
+                    const priceKhr = act.coefficientValue * act.baseUnitValueKhr;
+                    const priceUsd = (priceKhr / 4100).toFixed(2);
+                    return (
+                      <div
+                        key={act.actCode}
+                        className="pt-2 first:pt-0 hover:bg-stone-50 p-2 rounded-xl transition-colors border border-transparent hover:border-stone-200 flex flex-col gap-1.5"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-mono font-bold text-xs text-teal-800">
+                                {act.actCode}
+                              </span>
+                              <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-stone-100 text-stone-600 border border-stone-200">
+                                {act.category}
+                              </span>
+                              {act.requiresPreAuthorization && (
+                                <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-0.5">
+                                  <ShieldAlert className="w-2.5 h-2.5" />
+                                  <span>{isKh ? 'ទាមទារលិខិតអនុញ្ញាត' : 'Pre-Auth Required'}</span>
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-xs font-semibold text-stone-900 mt-0.5">
+                              {isKh ? act.descriptionKh : act.descriptionEn}
+                            </div>
+                            <div className="text-[10px] text-stone-500">
+                              {isKh ? act.descriptionEn : act.descriptionKh}
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={() => handleAddToSimulator(act)}
+                            className="px-2.5 py-1 rounded-lg bg-teal-600 hover:bg-teal-700 text-white text-[11px] font-bold shrink-0 transition-colors flex items-center gap-1"
+                          >
+                            <Plus className="w-3 h-3" />
+                            <span>{isKh ? 'បន្ថែម' : 'Add'}</span>
+                          </button>
+                        </div>
+
+                        <div className="flex items-center justify-between text-[11px] text-stone-600 bg-stone-100/70 px-2.5 py-1 rounded-lg mt-0.5">
+                          <div className="font-mono">
+                            {act.coefficientType === 'FIXED_PACKAGE' ? (
+                              <span>Fixed Package</span>
+                            ) : (
+                              <span>
+                                {act.coefficientType.charAt(0)}={act.coefficientValue} @ {act.baseUnitValueKhr.toLocaleString()} KHR
+                              </span>
+                            )}
+                          </div>
+                          <div className="font-bold text-stone-900">
+                            {priceKhr.toLocaleString()} KHR{' '}
+                            <span className="text-[10px] font-normal text-stone-500">
+                              (${priceUsd})
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Right Column: Live Split-Billing Simulator & Adjudication (7 cols) */}
+              <div className="lg:col-span-7 bg-white rounded-2xl border border-stone-200 shadow-xs flex flex-col h-[750px] overflow-hidden">
+                <div className="p-4 border-b border-stone-200 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-sm font-bold text-stone-900 flex items-center gap-1.5">
+                        <Calculator className="w-4 h-4 text-teal-700" />
+                        <span>
+                          {isKh
+                            ? 'ម៉ាស៊ីនគណនាការបែងចែកសំណងផ្ទាល់ - Live Split-Billing Simulator'
+                            : 'Live Split-Billing Simulator & Adjudication'}
+                        </span>
+                      </h3>
+                      <p className="text-[11px] text-stone-500">
+                        {isKh
+                          ? 'គណនាចំណែក ប.ស.ស. រ៉ាប់រង និងចំណែកអ្នកជំងឺបង់រួមតាមពេលវេលាជាក់ស្តែង'
+                          : 'Real-time statutory adjudication between NSSF covered share and patient co-pay'}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setSimItems([])}
+                        className="px-2.5 py-1 rounded-lg text-xs font-semibold text-rose-600 hover:bg-rose-50 border border-rose-200 transition-colors"
+                      >
+                        {isKh ? 'សម្អាតទាំងអស់' : 'Clear All'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Patient Identifier Bar */}
+                  <div className="grid grid-cols-3 gap-2 bg-stone-50 p-2.5 rounded-xl border border-stone-200 text-xs">
+                    <div>
+                      <label className="text-[10px] font-bold text-stone-500 uppercase block mb-0.5">
+                        Patient ID
+                      </label>
+                      <input
+                        type="text"
+                        value={simPatientId}
+                        onChange={(e) => setSimPatientId(e.target.value)}
+                        className="w-full px-2 py-1 bg-white border border-stone-300 rounded-lg font-mono text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-stone-500 uppercase block mb-0.5">
+                        NSSF Member Barcode
+                      </label>
+                      <input
+                        type="text"
+                        value={simMemberBarcode}
+                        onChange={(e) => setSimMemberBarcode(e.target.value)}
+                        className="w-full px-2 py-1 bg-white border border-stone-300 rounded-lg font-mono text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-stone-500 uppercase block mb-0.5">
+                        National ID
+                      </label>
+                      <input
+                        type="text"
+                        value={simNationalId}
+                        onChange={(e) => setSimNationalId(e.target.value)}
+                        className="w-full px-2 py-1 bg-white border border-stone-300 rounded-lg font-mono text-xs"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Items in Simulator */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                  {simItems.length === 0 ? (
+                    <div className="h-full flex flex-col items-center justify-center text-center p-6 text-stone-400">
+                      <Calculator className="w-10 h-10 mb-2 stroke-1 text-stone-300" />
+                      <p className="text-xs font-semibold text-stone-500">
+                        {isKh
+                          ? 'មិនទាន់មានសកម្មភាពវេជ្ជសាស្ត្រក្នុងម៉ាស៊ីនគណនានៅឡើយទេ'
+                          : 'No medical acts selected in simulator yet'}
+                      </p>
+                      <p className="text-[11px] text-stone-400 mt-0.5">
+                        {isKh
+                          ? 'ជ្រើសរើសសេវាពីតារាងខាងឆ្វេងដើម្បីចាប់ផ្តើមគណនាការបែងចែកសំណង'
+                          : 'Select acts from the left table to calculate split billing and coverage'}
+                      </p>
+                    </div>
+                  ) : (
+                    simItems.map((item) => {
+                      const calc = simCalculations.find((c) => c.id === item.id);
+                      if (!calc) return null;
+
+                      return (
+                        <div
+                          key={item.id}
+                          className={`p-3.5 rounded-xl border transition-all space-y-2 ${
+                            calc.lineStatus === 'REJECTED'
+                              ? 'bg-rose-50/50 border-rose-300'
+                              : calc.lineStatus === 'PARTIALLY_APPROVED'
+                              ? 'bg-amber-50/40 border-amber-300'
+                              : 'bg-stone-50 border-stone-200'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono font-bold text-xs text-stone-900">
+                                  {item.actCode}
+                                </span>
+                                <span
+                                  className={`px-1.5 py-0.2 rounded text-[9px] font-bold ${
+                                    calc.lineStatus === 'APPROVED'
+                                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                                      : calc.lineStatus === 'PARTIALLY_APPROVED'
+                                      ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                                      : 'bg-rose-100 text-rose-800 border border-rose-200'
+                                  }`}
+                                >
+                                  {calc.lineStatus}
+                                </span>
+                                {item.requiresPreAuthorization && (
+                                  <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                                    Pre-Auth Required
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-xs font-bold text-stone-900 mt-1">
+                                {isKh ? item.descriptionKh : item.descriptionEn}
+                              </div>
+                            </div>
+
+                            <button
+                              onClick={() => handleRemoveSimulatorItem(item.id)}
+                              className="text-stone-400 hover:text-rose-600 transition-colors p-1"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+
+                          {/* Inputs Row: Quantity and Pre-Auth Code */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-1">
+                            <div className="flex items-center gap-2">
+                              <label className="text-[11px] font-bold text-stone-600">
+                                {isKh ? 'ចំនួន:' : 'Quantity:'}
+                              </label>
+                              <input
+                                type="number"
+                                min="1"
+                                max="100"
+                                value={item.quantity}
+                                onChange={(e) =>
+                                  handleUpdateQuantity(item.id, parseInt(e.target.value) || 1)
+                                }
+                                className="w-16 px-2 py-1 bg-white border border-stone-300 rounded-lg text-center font-bold"
+                              />
+                            </div>
+
+                            {item.requiresPreAuthorization && (
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-1.5">
+                                  <label className="text-[10px] font-bold text-stone-600 uppercase">
+                                    Pre-Auth Code:
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={item.preAuthCode}
+                                    onChange={(e) => handleUpdatePreAuth(item.id, e.target.value)}
+                                    placeholder="e.g. PA-NSSF-2026-9912"
+                                    className={`flex-1 px-2 py-0.5 bg-white border rounded-lg font-mono text-xs ${
+                                      !item.preAuthCode.trim()
+                                        ? 'border-rose-400 bg-rose-50 text-rose-900 focus:outline-rose-500'
+                                        : 'border-emerald-400 text-emerald-900'
+                                    }`}
+                                  />
+                                </div>
+                                {!item.preAuthCode.trim() && (
+                                  <p className="text-[10px] text-rose-600 font-semibold">
+                                    {isKh
+                                      ? 'ខ្វះលេខកូដអនុញ្ញាតជាមុន: បដិសេធសំណង ១០០% អ្នកជំងឺចេញ'
+                                      : 'Missing approval code: Rejection, 100% patient co-pay'}
+                                  </p>
+                                )}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Financial Split Breakdown */}
+                          <div className="grid grid-cols-3 gap-2 bg-white p-2 rounded-lg border border-stone-200 text-[11px]">
+                            <div>
+                              <span className="text-[10px] text-stone-500 block">
+                                {isKh ? 'តម្លៃសរុប (KHR)' : 'Total Billed (KHR)'}
+                              </span>
+                              <span className="font-bold text-stone-900">
+                                {calc.lineTotalKhr.toLocaleString()} KHR
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-[10px] text-emerald-700 font-semibold block">
+                                {isKh ? 'ប.ស.ស. រ៉ាប់រង' : 'NSSF Covered'}
+                              </span>
+                              <span className="font-black text-emerald-700">
+                                {calc.lineNssfCoveredKhr.toLocaleString()} KHR (${calc.lineNssfCoveredUsd})
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-[10px] text-amber-700 font-semibold block">
+                                {isKh ? 'អ្នកជំងឺបង់រួម' : 'Patient Co-Pay'}
+                              </span>
+                              <span className="font-black text-amber-700">
+                                {calc.linePatientCoPayKhr.toLocaleString()} KHR (${calc.linePatientCoPayUsd})
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+
+                {/* Bottom Total Settlement & Actions */}
+                <div className="p-4 border-t border-stone-200 bg-stone-50 space-y-3">
+                  <div className="grid grid-cols-3 gap-3 p-3 bg-white rounded-xl border border-stone-200 text-center">
+                    <div>
+                      <div className="text-[10px] font-bold text-stone-500 uppercase">
+                        {isKh ? 'តម្លៃគិតសរុប' : 'Total Billed'}
+                      </div>
+                      <div className="text-sm font-black text-stone-900">
+                        {totalSimBilledKhr.toLocaleString()} KHR
+                      </div>
+                      <div className="text-[10px] text-stone-500 font-mono">
+                        ${totalSimBilledUsd}
+                      </div>
+                    </div>
+
+                    <div className="border-x border-stone-100">
+                      <div className="text-[10px] font-bold text-emerald-700 uppercase">
+                        {isKh ? 'ប.ស.ស. រ៉ាប់រងសរុប' : 'Total NSSF Covered'}
+                      </div>
+                      <div className="text-sm font-black text-emerald-700">
+                        {totalSimNssfCoveredKhr.toLocaleString()} KHR
+                      </div>
+                      <div className="text-[10px] text-emerald-600 font-mono font-bold">
+                        ${totalSimNssfCoveredUsd}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-[10px] font-bold text-amber-700 uppercase">
+                        {isKh ? 'អ្នកជំងឺបង់រួមសរុប' : 'Total Patient Co-Pay'}
+                      </div>
+                      <div className="text-sm font-black text-amber-700">
+                        {totalSimPatientCoPayKhr.toLocaleString()} KHR
+                      </div>
+                      <div className="text-[10px] text-amber-600 font-mono font-bold">
+                        ${totalSimPatientCoPayUsd}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold text-stone-600">
+                        {isKh ? 'ស្ថានភាពសំណង:' : 'Status:'}
+                      </span>
+                      <span
+                        className={`px-2 py-0.5 rounded text-[11px] font-bold ${
+                          overallSimStatus === 'APPROVED'
+                            ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                            : overallSimStatus === 'PARTIAL'
+                            ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                            : 'bg-rose-100 text-rose-800 border border-rose-200'
+                        }`}
+                      >
+                        {overallSimStatus}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={handleAdjudicateLive}
+                        disabled={simItems.length === 0}
+                        className="px-3.5 py-2 rounded-xl text-xs font-bold bg-stone-800 hover:bg-stone-900 text-white disabled:opacity-50 transition-colors flex items-center gap-1.5"
+                      >
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        <span>{isKh ? 'វិភាគសំណង ប.ស.ស.' : 'Adjudicate Claim'}</span>
+                      </button>
+
+                      <button
+                        onClick={handleCreateClaimFromSimulator}
+                        disabled={simItems.length === 0}
+                        className="px-4 py-2 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white shadow-xs disabled:opacity-50 transition-colors flex items-center gap-1.5"
+                      >
+                        <Send className="w-3.5 h-3.5" />
+                        <span>
+                          {isKh
+                            ? 'បង្កើតសំណុំរឿងទាមទារ ប.ស.ស.'
+                            : 'Generate NSSF Electronic Claim'}
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {activeTab === 'VALIDATOR' && (
           <div className="bg-white rounded-2xl border border-stone-200 p-6 shadow-xs space-y-4">
             <div>

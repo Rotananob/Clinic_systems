@@ -1722,6 +1722,12 @@ class ApiClient {
       const q = period ? '?period=' + encodeURIComponent(period) : '';
       return this.request<any>('/eclaim/surveillance/dhis2-json' + q);
     },
+    getNssfTariffs: () => this.request<any>('/eclaim/nssf/tariffs'),
+    adjudicateNssfClaim: (data: any) =>
+      this.request<any>('/eclaim/nssf/adjudicate', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
   };
 };
 

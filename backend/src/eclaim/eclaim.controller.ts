@@ -146,4 +146,30 @@ export class EclaimController {
       data: this.eclaimService.generateMohDhis2Json(p)
     };
   }
+
+  @Get('nssf/tariffs')
+  listNssfTariffs() {
+    return {
+      success: true,
+      data: this.eclaimService.getNssfTariffs()
+    };
+  }
+
+  @Get('nssf/tariffs/:actCode')
+  getNssfTariff(@Param('actCode') actCode: string) {
+    const item = this.eclaimService.getNssfTariff(actCode);
+    if (!item) {
+      return { success: false, error: 'NSSF act code not found' };
+    }
+    return { success: true, data: item };
+  }
+
+  @Post('nssf/adjudicate')
+  adjudicateNssfClaim(@Body() body: any) {
+    return {
+      success: true,
+      data: this.eclaimService.adjudicateNssfClaim(body)
+    };
+  }
+
 }

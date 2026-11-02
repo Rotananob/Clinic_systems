@@ -77,6 +77,399 @@ export interface SurveillanceCaseRecord {
   outcome: 'RECOVERED' | 'HOSPITALIZED' | 'TRANSFERRED' | 'DECEASED';
 }
 
+
+export type NssfActCategory =
+  | 'CONSULTATION'
+  | 'HOSPITALIZATION'
+  | 'MINOR_SURGERY'
+  | 'INTERMEDIATE_SURGERY'
+  | 'MAJOR_SURGERY'
+  | 'COMPLEX_SURGERY'
+  | 'MATERNITY'
+  | 'LABORATORY'
+  | 'IMAGING';
+
+export type CoefficientType = 'K_SURGICAL' | 'B_LABORATORY' | 'R_IMAGING' | 'FIXED_PACKAGE';
+
+export interface NssfTariffItem {
+  actCode: string;
+  category: NssfActCategory;
+  descriptionEn: string;
+  descriptionKh: string;
+  coefficientType: CoefficientType;
+  coefficientValue: number;
+  baseUnitValueKhr: number;
+  maximumCeilingKhr: number;
+  requiresPreAuthorization: boolean;
+  defaultIcd10Indication?: string;
+}
+
+export interface NssfClaimAdjudicationRequest {
+  patientId: string;
+  memberBarcode: string;
+  nationalId: string;
+  items: Array<{
+    actCode: string;
+    quantity: number;
+    requestedPriceKhr?: number;
+    preAuthCode?: string;
+  }>;
+}
+
+export interface NssfAdjudicatedLine {
+  actCode: string;
+  descriptionEn: string;
+  descriptionKh: string;
+  quantity: number;
+  coefficientType: CoefficientType;
+  coefficientValue: number;
+  baseUnitValueKhr: number;
+  calculatedTariffKhr: number;
+  cappedCeilingKhr: number;
+  nssfCoveredKhr: number;
+  patientCoPayKhr: number;
+  nssfCoveredUsd: number;
+  patientCoPayUsd: number;
+  status: 'APPROVED' | 'PARTIALLY_APPROVED' | 'REJECTED';
+  rejectionReason?: string;
+}
+
+export interface NssfAdjudicationResult {
+  adjudicationReference: string;
+  patientId: string;
+  memberBarcode: string;
+  lines: NssfAdjudicatedLine[];
+  totalBilledKhr: number;
+  totalNssfCoveredKhr: number;
+  totalPatientCoPayKhr: number;
+  totalNssfCoveredUsd: number;
+  totalPatientCoPayUsd: number;
+  overallStatus: 'APPROVED' | 'PARTIAL' | 'REJECTED';
+  adjudicatedAt: string;
+}
+
+export const NSSF_BASE_UNIT_VALUES_KHR = {
+  K_SURGICAL: 12000,
+  B_LABORATORY: 1000,
+  R_IMAGING: 2500,
+  FIXED_PACKAGE: 1,
+};
+
+export const NSSF_TARIFF_MASTER: NssfTariffItem[] = [
+  {
+    actCode: 'NSSF-OPD-001',
+    category: 'CONSULTATION',
+    descriptionEn: 'General Medical Consultation',
+    descriptionKh: 'ការពិគ្រោះជំងឺទូទៅ',
+    coefficientType: 'FIXED_PACKAGE',
+    coefficientValue: 20000,
+    baseUnitValueKhr: 1,
+    maximumCeilingKhr: 20000,
+    requiresPreAuthorization: false,
+    defaultIcd10Indication: 'Z00.0',
+  },
+  {
+    actCode: 'NSSF-OPD-002',
+    category: 'CONSULTATION',
+    descriptionEn: 'Specialist Physician Consultation',
+    descriptionKh: 'ការពិគ្រោះជំងឺឯកទេស',
+    coefficientType: 'FIXED_PACKAGE',
+    coefficientValue: 40000,
+    baseUnitValueKhr: 1,
+    maximumCeilingKhr: 40000,
+    requiresPreAuthorization: false,
+    defaultIcd10Indication: 'Z01.8',
+  },
+  {
+    actCode: 'NSSF-OPD-003',
+    category: 'CONSULTATION',
+    descriptionEn: 'Emergency Resuscitation Consultation',
+    descriptionKh: 'ការពិគ្រោះសង្គ្រោះបន្ទាន់',
+    coefficientType: 'FIXED_PACKAGE',
+    coefficientValue: 60000,
+    baseUnitValueKhr: 1,
+    maximumCeilingKhr: 60000,
+    requiresPreAuthorization: false,
+    defaultIcd10Indication: 'R57.9',
+  },
+  {
+    actCode: 'NSSF-IPD-001',
+    category: 'HOSPITALIZATION',
+    descriptionEn: 'General Ward Daily Bed Day',
+    descriptionKh: 'ថ្លៃគ្រែសម្រាកព្យាបាលបន្ទប់ទូទៅ',
+    coefficientType: 'FIXED_PACKAGE',
+    coefficientValue: 45000,
+    baseUnitValueKhr: 1,
+    maximumCeilingKhr: 45000,
+    requiresPreAuthorization: false,
+    defaultIcd10Indication: 'Z76.8',
+  },
+  {
+    actCode: 'NSSF-IPD-002',
+    category: 'HOSPITALIZATION',
+    descriptionEn: 'Semi-Private Ward Bed Day',
+    descriptionKh: 'ថ្លៃគ្រែបន្ទប់ពាក់កណ្តាលឯកជន',
+    coefficientType: 'FIXED_PACKAGE',
+    coefficientValue: 90000,
+    baseUnitValueKhr: 1,
+    maximumCeilingKhr: 90000,
+    requiresPreAuthorization: true,
+    defaultIcd10Indication: 'Z76.8',
+  },
+  {
+    actCode: 'NSSF-IPD-003',
+    category: 'HOSPITALIZATION',
+    descriptionEn: 'Intensive Care Unit Daily Bed Day',
+    descriptionKh: 'ថ្លៃគ្រែសង្គ្រោះបន្ទាន់កម្រិតធ្ងន់ ICU',
+    coefficientType: 'FIXED_PACKAGE',
+    coefficientValue: 250000,
+    baseUnitValueKhr: 1,
+    maximumCeilingKhr: 250000,
+    requiresPreAuthorization: true,
+    defaultIcd10Indication: 'R57.0',
+  },
+  {
+    actCode: 'NSSF-SURG-K05',
+    category: 'MINOR_SURGERY',
+    descriptionEn: 'Wound Debridement and Suture under 5cm',
+    descriptionKh: 'ការលាងសម្អាតនិងដេររបួសតូចក្រោម ៥សង់ទីម៉ែត្រ',
+    coefficientType: 'K_SURGICAL',
+    coefficientValue: 5,
+    baseUnitValueKhr: 12000,
+    maximumCeilingKhr: 60000,
+    requiresPreAuthorization: false,
+    defaultIcd10Indication: 'T14.1',
+  },
+  {
+    actCode: 'NSSF-SURG-K15',
+    category: 'MINOR_SURGERY',
+    descriptionEn: 'Abscess Drainage or Excision of Lipoma',
+    descriptionKh: 'ការវះបង្ហូរខ្ទុះឬវះកាត់ដុំពកខ្លាញ់',
+    coefficientType: 'K_SURGICAL',
+    coefficientValue: 15,
+    baseUnitValueKhr: 12000,
+    maximumCeilingKhr: 18000,
+    requiresPreAuthorization: false,
+    defaultIcd10Indication: 'L02.9',
+  },
+  {
+    actCode: 'NSSF-SURG-K30',
+    category: 'INTERMEDIATE_SURGERY',
+    descriptionEn: 'Closed Reduction of Long Bone Fracture',
+    descriptionKh: 'ការតម្រង់ឆ្អឹងបាក់ប្រភេទបិទជិត',
+    coefficientType: 'K_SURGICAL',
+    coefficientValue: 30,
+    baseUnitValueKhr: 12000,
+    maximumCeilingKhr: 360000,
+    requiresPreAuthorization: false,
+    defaultIcd10Indication: 'S52.5',
+  },
+  {
+    actCode: 'NSSF-SURG-K50',
+    category: 'MAJOR_SURGERY',
+    descriptionEn: 'Open Appendectomy',
+    descriptionKh: 'ការវះកាត់ខ្នែងពោះវៀនធម្មតា',
+    coefficientType: 'K_SURGICAL',
+    coefficientValue: 50,
+    baseUnitValueKhr: 12000,
+    maximumCeilingKhr: 600000,
+    requiresPreAuthorization: false,
+    defaultIcd10Indication: 'K35.8',
+  },
+  {
+    actCode: 'NSSF-SURG-K75',
+    category: 'MAJOR_SURGERY',
+    descriptionEn: 'Laparoscopic Cholecystectomy',
+    descriptionKh: 'ការវះកាត់ប្រមាត់ដោយឧបករណ៍ចោះ Laparoscopy',
+    coefficientType: 'K_SURGICAL',
+    coefficientValue: 75,
+    baseUnitValueKhr: 12000,
+    maximumCeilingKhr: 900000,
+    requiresPreAuthorization: true,
+    defaultIcd10Indication: 'K80.2',
+  },
+  {
+    actCode: 'NSSF-SURG-K100',
+    category: 'COMPLEX_SURGERY',
+    descriptionEn: 'Open Reduction Internal Fixation Femur',
+    descriptionKh: 'ការវះកាត់ភ្ជាប់ឆ្អឹងភ្លៅដោយដែកអ័រតូពេទិក',
+    coefficientType: 'K_SURGICAL',
+    coefficientValue: 100,
+    baseUnitValueKhr: 12000,
+    maximumCeilingKhr: 1200000,
+    requiresPreAuthorization: true,
+    defaultIcd10Indication: 'S72.0',
+  },
+  {
+    actCode: 'NSSF-SURG-K150',
+    category: 'COMPLEX_SURGERY',
+    descriptionEn: 'Total Hip Arthroplasty',
+    descriptionKh: 'ការវះកាត់ប្តូរសន្លាក់ត្រគាកសិប្បនិម្មិត',
+    coefficientType: 'K_SURGICAL',
+    coefficientValue: 150,
+    baseUnitValueKhr: 12000,
+    maximumCeilingKhr: 1800000,
+    requiresPreAuthorization: true,
+    defaultIcd10Indication: 'M16.1',
+  },
+  {
+    actCode: 'NSSF-MAT-001',
+    category: 'MATERNITY',
+    descriptionEn: 'Normal Vaginal Delivery Eutocic',
+    descriptionKh: 'ការសម្រាលកូនធម្មតាដោយសុវត្ថិភាព',
+    coefficientType: 'FIXED_PACKAGE',
+    coefficientValue: 400000,
+    baseUnitValueKhr: 1,
+    maximumCeilingKhr: 400000,
+    requiresPreAuthorization: false,
+    defaultIcd10Indication: 'O80.0',
+  },
+  {
+    actCode: 'NSSF-MAT-002',
+    category: 'MATERNITY',
+    descriptionEn: 'Caesarean Section Delivery Dystocic',
+    descriptionKh: 'ការសម្រាលកូនដោយវះកាត់',
+    coefficientType: 'K_SURGICAL',
+    coefficientValue: 70,
+    baseUnitValueKhr: 12000,
+    maximumCeilingKhr: 840000,
+    requiresPreAuthorization: true,
+    defaultIcd10Indication: 'O82.0',
+  },
+  {
+    actCode: 'NSSF-LAB-B05',
+    category: 'LABORATORY',
+    descriptionEn: 'Fasting Blood Glucose GLU',
+    descriptionKh: 'វិភាគជាតិស្ករក្នុងឈាម',
+    coefficientType: 'B_LABORATORY',
+    coefficientValue: 5,
+    baseUnitValueKhr: 1000,
+    maximumCeilingKhr: 5000,
+    requiresPreAuthorization: false,
+    defaultIcd10Indication: 'E11.9',
+  },
+  {
+    actCode: 'NSSF-LAB-B12',
+    category: 'LABORATORY',
+    descriptionEn: 'Complete Blood Count CBC 5-Diff',
+    descriptionKh: 'វិភាគគ្រាប់ឈាមពេញលេញ CBC',
+    coefficientType: 'B_LABORATORY',
+    coefficientValue: 12,
+    baseUnitValueKhr: 1000,
+    maximumCeilingKhr: 12000,
+    requiresPreAuthorization: false,
+    defaultIcd10Indication: 'D64.9',
+  },
+  {
+    actCode: 'NSSF-LAB-B15',
+    category: 'LABORATORY',
+    descriptionEn: 'Serum Creatinine and Urea',
+    descriptionKh: 'វិភាគក្រេអាទីនីននិងអ៊ុយរ៉េ',
+    coefficientType: 'B_LABORATORY',
+    coefficientValue: 15,
+    baseUnitValueKhr: 1000,
+    maximumCeilingKhr: 15000,
+    requiresPreAuthorization: false,
+    defaultIcd10Indication: 'N18.9',
+  },
+  {
+    actCode: 'NSSF-LAB-B20',
+    category: 'LABORATORY',
+    descriptionEn: 'Serum Electrolytes Na K Cl',
+    descriptionKh: 'វិភាគអេឡិចត្រូលីតឈាម',
+    coefficientType: 'B_LABORATORY',
+    coefficientValue: 20,
+    baseUnitValueKhr: 1000,
+    maximumCeilingKhr: 20000,
+    requiresPreAuthorization: false,
+    defaultIcd10Indication: 'E87.8',
+  },
+  {
+    actCode: 'NSSF-LAB-B30',
+    category: 'LABORATORY',
+    descriptionEn: 'Liver Function Panel ALT AST Bilirubin',
+    descriptionKh: 'វិភាគមុខងារថ្លើមពេញលេញ',
+    coefficientType: 'B_LABORATORY',
+    coefficientValue: 30,
+    baseUnitValueKhr: 1000,
+    maximumCeilingKhr: 30000,
+    requiresPreAuthorization: false,
+    defaultIcd10Indication: 'K76.9',
+  },
+  {
+    actCode: 'NSSF-LAB-B50',
+    category: 'LABORATORY',
+    descriptionEn: 'Automated Blood Culture and Susceptibility',
+    descriptionKh: 'វិភាគបណ្តុះមេរោគក្នុងឈាមនិងតេស្តថ្នាំ',
+    coefficientType: 'B_LABORATORY',
+    coefficientValue: 50,
+    baseUnitValueKhr: 1000,
+    maximumCeilingKhr: 50000,
+    requiresPreAuthorization: false,
+    defaultIcd10Indication: 'A41.9',
+  },
+  {
+    actCode: 'NSSF-IMG-R12',
+    category: 'IMAGING',
+    descriptionEn: 'Chest Radiography PA Standing View',
+    descriptionKh: 'ថតកាំរស្មីអ៊ិចទ្រូងទិដ្ឋភាពឈរ',
+    coefficientType: 'R_IMAGING',
+    coefficientValue: 12,
+    baseUnitValueKhr: 2500,
+    maximumCeilingKhr: 30000,
+    requiresPreAuthorization: false,
+    defaultIcd10Indication: 'R05.9',
+  },
+  {
+    actCode: 'NSSF-IMG-R20',
+    category: 'IMAGING',
+    descriptionEn: 'Plain Radiography of Extremity 2 Views',
+    descriptionKh: 'ថតកាំរស្មីអ៊ិចឆ្អឹងអវយវៈពីរទិដ្ឋភាព',
+    coefficientType: 'R_IMAGING',
+    coefficientValue: 20,
+    baseUnitValueKhr: 2500,
+    maximumCeilingKhr: 50000,
+    requiresPreAuthorization: false,
+    defaultIcd10Indication: 'M79.6',
+  },
+  {
+    actCode: 'NSSF-IMG-R30',
+    category: 'IMAGING',
+    descriptionEn: 'Complete Diagnostic Abdominal Ultrasound',
+    descriptionKh: 'ពិនិត្យអេកូសាស្ត្រពោះពេញលេញ',
+    coefficientType: 'R_IMAGING',
+    coefficientValue: 30,
+    baseUnitValueKhr: 2500,
+    maximumCeilingKhr: 75000,
+    requiresPreAuthorization: false,
+    defaultIcd10Indication: 'R10.9',
+  },
+  {
+    actCode: 'NSSF-IMG-R80',
+    category: 'IMAGING',
+    descriptionEn: 'Non-Contrast Brain CT Scan',
+    descriptionKh: 'ស្កេនខួរក្បាល CT មិនប្រើជាតិពណ៌',
+    coefficientType: 'R_IMAGING',
+    coefficientValue: 80,
+    baseUnitValueKhr: 2500,
+    maximumCeilingKhr: 200000,
+    requiresPreAuthorization: true,
+    defaultIcd10Indication: 'G44.1',
+  },
+  {
+    actCode: 'NSSF-IMG-R120',
+    category: 'IMAGING',
+    descriptionEn: 'Contrast-Enhanced Abdominal CT Scan',
+    descriptionKh: 'ស្កេនពោះ CT បញ្ចូលជាតិពណ៌កម្រិតខ្ពស់',
+    coefficientType: 'R_IMAGING',
+    coefficientValue: 120,
+    baseUnitValueKhr: 2500,
+    maximumCeilingKhr: 300000,
+    requiresPreAuthorization: true,
+    defaultIcd10Indication: 'R10.0',
+  },
+];
+
 export class EclaimService {
   claims: Map<string, ElectronicClaim>;
   surveillanceCases: Map<string, SurveillanceCaseRecord>;
@@ -620,4 +1013,146 @@ ${dataValuesXml}
       }))
     };
   }
+
+  // List all standard Cambodia NSSF medical tariff acts
+  getNssfTariffs(): NssfTariffItem[] {
+    return NSSF_TARIFF_MASTER;
+  }
+
+  // Get single NSSF tariff act by code
+  getNssfTariff(actCode: string): NssfTariffItem | null {
+    return NSSF_TARIFF_MASTER.find((t) => t.actCode === actCode) || null;
+  }
+
+  // Adjudicate NSSF claim lines against tariff ceilings, coefficients, and pre-auth rules
+  adjudicateNssfClaim(req: NssfClaimAdjudicationRequest): NssfAdjudicationResult {
+    const exchangeRateKhrPerUsd = 4100;
+    const ref = `ADJ-NSSF-${Date.now().toString(36).toUpperCase()}`;
+    const lines: NssfAdjudicatedLine[] = [];
+    let totalBilledKhr = 0;
+    let totalNssfCoveredKhr = 0;
+    let totalPatientCoPayKhr = 0;
+
+    for (const item of req.items) {
+      const tariff = this.getNssfTariff(item.actCode);
+      const qty = Math.max(1, item.quantity || 1);
+
+      if (!tariff) {
+        // Unknown act code
+        lines.push({
+          actCode: item.actCode,
+          descriptionEn: 'Unlisted medical procedure',
+          descriptionKh: 'សេវាកម្មក្រៅតារាងកំណត់តម្លៃ ប.ស.ស.',
+          quantity: qty,
+          coefficientType: 'FIXED_PACKAGE',
+          coefficientValue: 0,
+          baseUnitValueKhr: 0,
+          calculatedTariffKhr: 0,
+          cappedCeilingKhr: 0,
+          nssfCoveredKhr: 0,
+          patientCoPayKhr: item.requestedPriceKhr || 0,
+          nssfCoveredUsd: 0,
+          patientCoPayUsd: parseFloat(((item.requestedPriceKhr || 0) / exchangeRateKhrPerUsd).toFixed(2)),
+          status: 'REJECTED',
+          rejectionReason: 'ACT_CODE_NOT_FOUND_IN_NSSF_MASTER',
+        });
+        totalBilledKhr += item.requestedPriceKhr || 0;
+        totalPatientCoPayKhr += item.requestedPriceKhr || 0;
+        continue;
+      }
+
+      // Check pre-authorization requirement
+      if (tariff.requiresPreAuthorization && !item.preAuthCode) {
+        const billed = item.requestedPriceKhr || (tariff.maximumCeilingKhr * qty);
+        lines.push({
+          actCode: tariff.actCode,
+          descriptionEn: tariff.descriptionEn,
+          descriptionKh: tariff.descriptionKh,
+          quantity: qty,
+          coefficientType: tariff.coefficientType,
+          coefficientValue: tariff.coefficientValue,
+          baseUnitValueKhr: tariff.baseUnitValueKhr,
+          calculatedTariffKhr: tariff.maximumCeilingKhr * qty,
+          cappedCeilingKhr: tariff.maximumCeilingKhr * qty,
+          nssfCoveredKhr: 0,
+          patientCoPayKhr: billed,
+          nssfCoveredUsd: 0,
+          patientCoPayUsd: parseFloat((billed / exchangeRateKhrPerUsd).toFixed(2)),
+          status: 'REJECTED',
+          rejectionReason: 'PREAUTH_REQUIRED_MISSING_APPROVAL',
+        });
+        totalBilledKhr += billed;
+        totalPatientCoPayKhr += billed;
+        continue;
+      }
+
+      // Calculate tariff: coefficient * baseUnitValue * quantity
+      const calculatedTariff = tariff.coefficientType === 'FIXED_PACKAGE'
+        ? tariff.coefficientValue * qty
+        : tariff.coefficientValue * tariff.baseUnitValueKhr * qty;
+
+      const cappedCeiling = tariff.maximumCeilingKhr * qty;
+      const billed = item.requestedPriceKhr !== undefined ? item.requestedPriceKhr : calculatedTariff;
+
+      let covered = 0;
+      let coPay = 0;
+      let status: 'APPROVED' | 'PARTIALLY_APPROVED' | 'REJECTED' = 'APPROVED';
+
+      if (billed <= cappedCeiling) {
+        covered = billed;
+        coPay = 0;
+        status = 'APPROVED';
+      } else {
+        covered = cappedCeiling;
+        coPay = billed - cappedCeiling;
+        status = 'PARTIALLY_APPROVED';
+      }
+
+      totalBilledKhr += billed;
+      totalNssfCoveredKhr += covered;
+      totalPatientCoPayKhr += coPay;
+
+      lines.push({
+        actCode: tariff.actCode,
+        descriptionEn: tariff.descriptionEn,
+        descriptionKh: tariff.descriptionKh,
+        quantity: qty,
+        coefficientType: tariff.coefficientType,
+        coefficientValue: tariff.coefficientValue,
+        baseUnitValueKhr: tariff.baseUnitValueKhr,
+        calculatedTariffKhr: calculatedTariff,
+        cappedCeilingKhr: cappedCeiling,
+        nssfCoveredKhr: covered,
+        patientCoPayKhr: coPay,
+        nssfCoveredUsd: parseFloat((covered / exchangeRateKhrPerUsd).toFixed(2)),
+        patientCoPayUsd: parseFloat((coPay / exchangeRateKhrPerUsd).toFixed(2)),
+        status,
+      });
+    }
+
+    const totalNssfCoveredUsd = parseFloat((totalNssfCoveredKhr / exchangeRateKhrPerUsd).toFixed(2));
+    const totalPatientCoPayUsd = parseFloat((totalPatientCoPayKhr / exchangeRateKhrPerUsd).toFixed(2));
+
+    let overallStatus: 'APPROVED' | 'PARTIAL' | 'REJECTED' = 'APPROVED';
+    if (lines.every((l) => l.status === 'REJECTED')) {
+      overallStatus = 'REJECTED';
+    } else if (lines.some((l) => l.status === 'PARTIALLY_APPROVED' || l.status === 'REJECTED')) {
+      overallStatus = 'PARTIAL';
+    }
+
+    return {
+      adjudicationReference: ref,
+      patientId: req.patientId,
+      memberBarcode: req.memberBarcode,
+      lines,
+      totalBilledKhr,
+      totalNssfCoveredKhr,
+      totalPatientCoPayKhr,
+      totalNssfCoveredUsd,
+      totalPatientCoPayUsd,
+      overallStatus,
+      adjudicatedAt: new Date().toISOString(),
+    };
+  }
+
 }

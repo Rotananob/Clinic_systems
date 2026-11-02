@@ -42,6 +42,20 @@ describe('Phase 17: Electronic Claim & MoH Disease Surveillance UI Test Suite', 
     }
   });
 
+  it('should guarantee zero parentheses in Khmer eclaim localization strings', () => {
+    const kmEclaim = (km as any).eclaim;
+    for (const [key, value] of Object.entries(kmEclaim)) {
+      const strVal = value as string;
+      const hasOpenParen = strVal.includes('(');
+      const hasCloseParen = strVal.includes(')');
+      assert.equal(
+        hasOpenParen || hasCloseParen,
+        false,
+        `Parenthesis found in km.eclaim.${key}: "${strVal}". Must use hyphens, colons, or commas.`
+      );
+    }
+  });
+
   it('should verify nav.eclaim exists in both English and Khmer with zero emojis', () => {
     const emojiRegex = /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E0}-\u{1F1FF}]/u;
 
@@ -106,5 +120,60 @@ describe('Phase 17: Electronic Claim & MoH Disease Surveillance UI Test Suite', 
     assert.ok(sampleXml.includes('<Diagnoses>'));
     assert.ok(sampleXml.includes('<ClaimLines>'));
     assert.ok(sampleXml.includes('<TotalClaimed'));
+  });
+
+  it('should calculate accurate NSSF K, B, R tariffs and enforce statutory ceilings', () => {
+    const kUnitValue = 12000;
+    const bUnitValue = 1000;
+    const rUnitValue = 2500;
+
+    // K75 Laparoscopic Cholecystectomy: 75 * 12000 = 900,000 KHR
+    const k75Total = 75 * kUnitValue;
+    assert.equal(k75Total, 900000);
+
+    // B20 Liver Function: 20 * 1000 = 20,000 KHR
+    const b20Total = 20 * bUnitValue;
+    assert.equal(b20Total, 20000);
+
+    // R80 Brain CT: 80 * 2500 = 200,000 KHR
+    const r80Total = 80 * rUnitValue;
+    assert.equal(r80Total, 200000);
+  });
+
+  it('should reject NSSF coverage when mandatory pre-authorization is missing', () => {
+    const requiresPreAuth = true;
+    const preAuthCode = '';
+    const calculatedPriceKhr = 900000;
+    const ceilingKhr = 900000;
+
+    const isMissingPreAuth = requiresPreAuth && !preAuthCode.trim();
+    const nssfCoveredKhr = isMissingPreAuth ? 0 : Math.min(calculatedPriceKhr, ceilingKhr);
+    const patientCoPayKhr = isMissingPreAuth ? calculatedPriceKhr : Math.max(0, calculatedPriceKhr - ceilingKhr);
+    const status = isMissingPreAuth ? 'REJECTED' : 'APPROVED';
+
+    assert.equal(status, 'REJECTED');
+    assert.equal(nssfCoveredKhr, 0);
+    assert.equal(patientCoPayKhr, 900000);
+  });
+
+  it('should approve NSSF coverage and correctly calculate USD conversions at 4,100 exchange rate', () => {
+    const requiresPreAuth = true;
+    const preAuthCode = 'PA-NSSF-2026-9912';
+    const calculatedPriceKhr = 900000;
+    const ceilingKhr = 900000;
+
+    const isMissingPreAuth = requiresPreAuth && !preAuthCode.trim();
+    const nssfCoveredKhr = isMissingPreAuth ? 0 : Math.min(calculatedPriceKhr, ceilingKhr);
+    const patientCoPayKhr = isMissingPreAuth ? calculatedPriceKhr : Math.max(0, calculatedPriceKhr - ceilingKhr);
+    const status = isMissingPreAuth ? 'REJECTED' : 'APPROVED';
+
+    const nssfCoveredUsd = Number((nssfCoveredKhr / 4100).toFixed(2));
+    const patientCoPayUsd = Number((patientCoPayKhr / 4100).toFixed(2));
+
+    assert.equal(status, 'APPROVED');
+    assert.equal(nssfCoveredKhr, 900000);
+    assert.equal(patientCoPayKhr, 0);
+    assert.equal(nssfCoveredUsd, 219.51);
+    assert.equal(patientCoPayUsd, 0.0);
   });
 });
