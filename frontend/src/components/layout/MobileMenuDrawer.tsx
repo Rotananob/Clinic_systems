@@ -296,7 +296,11 @@ export const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({ isOpen, onCl
                   ? (isKh ? '$5 - ១២ មុខងារសកម្ម' : '$5 - 12 Active')
                   : tenantPlanTier === 'PRO_8'
                   ? (isKh ? '$8 - ២៤ មុខងារសកម្ម' : '$8 - 24 Active')
-                  : (isKh ? '$12 - ២៦ មុខងារពេញលេញ' : '$12 - 26 Active')}
+                  : tenantPlanTier === 'ENTERPRISE_12'
+                  ? (isKh ? '$12 - ២៦ មុខងារពេញលេញ' : '$12 - 26 Active')
+                  : tenantPlanTier === 'SPECIALIST_15'
+                  ? (isKh ? '$15 - ២៨ មុខងារឯកទេស' : '$15 - 28 Specialist')
+                  : (isKh ? '$20 - គ្មានដែនកំណត់' : '$20 - Unlimited PaaS')}
               </span>
             </div>
           </div>

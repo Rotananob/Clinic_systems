@@ -464,6 +464,10 @@ export function getRequiredPlanForRoute(pathname: string): {
       return { tier, nameKh: 'គម្រោងវិជ្ជាជីវៈ - Polyclinic Pro', nameEn: 'Polyclinic Pro', priceUsd: 8 };
     case 'ENTERPRISE_12':
       return { tier, nameKh: 'គម្រោងមន្ទីរពេទ្យ - Hospital Enterprise', nameEn: 'Hospital Enterprise', priceUsd: 12 };
+    case 'SPECIALIST_15':
+      return { tier, nameKh: 'គម្រោងឯកទេស - Specialist Clinic', nameEn: 'Specialist Clinic', priceUsd: 15 };
+    case 'UNLIMITED_20':
+      return { tier, nameKh: 'គម្រោងគ្មានដែនកំណត់ - Unlimited PaaS', nameEn: 'Unlimited PaaS', priceUsd: 20 };
     default:
       return { tier: 'FREE', nameKh: 'គម្រោងសាកល្បង - Free Starter', nameEn: 'Free Starter', priceUsd: 0 };
   }

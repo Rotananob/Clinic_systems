@@ -116,6 +116,26 @@ export const Sidebar: React.FC = () => {
     return true;
   });
 
+  const CORE_10_ROUTES = [
+    '/dashboard',
+    '/patients',
+    '/visits',
+    '/queue',
+    '/prescriptions',
+    '/inventory',
+    '/billing',
+    '/reports',
+    '/certificates',
+    '/settings',
+  ];
+
+  const coreNavItems = allowedItems.filter((item) => CORE_10_ROUTES.includes(item.href));
+  const activeExtraItem = allowedItems.find(
+    (item) =>
+      !CORE_10_ROUTES.includes(item.href) &&
+      (pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href)))
+  );
+
   return (
     <aside className="hidden md:flex flex-col w-64 border-r border-[#E7E1D4] bg-[#FDFBF7] min-h-[calc(100vh-4rem)] p-4 shadow-2xs select-none">
       {/* Brand Badge in Sidebar */}
@@ -202,21 +222,26 @@ export const Sidebar: React.FC = () => {
                 ? (isKh ? '$5 - ១២ មុខងារសកម្ម' : '$5 - 12 Active')
                 : tenantPlanTier === 'PRO_8'
                 ? (isKh ? '$8 - ២៤ មុខងារសកម្ម' : '$8 - 24 Active')
-                : (isKh ? '$12 - ២៦ មុខងារពេញលេញ' : '$12 - 26 Active')}
+                : tenantPlanTier === 'ENTERPRISE_12'
+                ? (isKh ? '$12 - ២៦ មុខងារពេញលេញ' : '$12 - 26 Active')
+                : tenantPlanTier === 'SPECIALIST_15'
+                ? (isKh ? '$15 - ២៨ មុខងារឯកទេស' : '$15 - 28 Specialist')
+                : (isKh ? '$20 - គ្មានដែនកំណត់' : '$20 - Unlimited PaaS')}
             </span>
           </div>
         </button>
       </div>
 
-      <div className="text-[11px] font-bold text-stone-400 uppercase tracking-wider px-3 mb-1.5 font-mono">
-        {isSuperAdmin
-          ? (isKh ? 'ម៉ូឌុលទាំងអស់ - All Modules' : 'All Clinic Modules')
-          : (isKh ? 'ម៉ូឌុលអនុញ្ញាត - Allowed' : 'Allowed Modules')}
+      <div className="text-[11px] font-bold text-stone-400 uppercase tracking-wider px-3 mb-1.5 font-mono flex items-center justify-between">
+        <span>{isKh ? '១០ ឧបករណ៍សំខាន់ៗ' : 'Core Daily Tools'}</span>
+        <span className="text-[10px] text-teal-800 bg-teal-50 px-1.5 py-0.5 rounded border border-teal-200/60 font-semibold">
+          {coreNavItems.length}/10
+        </span>
       </div>
 
-      {/* Allowed Modules */}
+      {/* Allowed Core Modules */}
       <nav className="space-y-1">
-        {allowedItems.map((item) => {
+        {coreNavItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
           return (
@@ -238,6 +263,25 @@ export const Sidebar: React.FC = () => {
             </Link>
           );
         })}
+
+        {/* Active Specialty Module if navigating outside core 10 */}
+        {activeExtraItem && (
+          <div className="pt-2 mt-2 border-t border-[#E7E1D4]">
+            <div className="text-[10px] font-bold text-amber-800 uppercase tracking-wider px-3 mb-1 font-mono">
+              {isKh ? 'ឧបករណ៍ឯកទេសកំពុងបើក' : 'Active Specialty Tool'}
+            </div>
+            <Link
+              href={activeExtraItem.href}
+              className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold bg-amber-50 text-amber-950 border border-amber-300 shadow-2xs"
+            >
+              <activeExtraItem.icon className="w-4 h-4 text-amber-700 shrink-0" />
+              <span className="truncate">{activeExtraItem.label}</span>
+              <span className="ml-auto px-1.5 py-0.5 rounded bg-amber-200 text-amber-900 text-[9px] font-bold font-mono">
+                {isKh ? 'សកម្ម' : 'Active'}
+              </span>
+            </Link>
+          </div>
+        )}
       </nav>
 
       {/* SaaS Progressive Plan Tier Card at bottom */}
@@ -256,7 +300,11 @@ export const Sidebar: React.FC = () => {
                     ? 'bg-teal-100 text-teal-800 border-teal-300'
                     : tenantPlanTier === 'PRO_8'
                     ? 'bg-amber-100 text-amber-900 border-amber-300'
-                    : 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                    : tenantPlanTier === 'ENTERPRISE_12'
+                    ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                    : tenantPlanTier === 'SPECIALIST_15'
+                    ? 'bg-indigo-100 text-indigo-900 border-indigo-300'
+                    : 'bg-purple-100 text-purple-900 border-purple-300'
                 }`}
               >
                 {tenantPlanTier === 'FREE'
@@ -265,19 +313,27 @@ export const Sidebar: React.FC = () => {
                   ? '$5/mo'
                   : tenantPlanTier === 'PRO_8'
                   ? '$8/mo'
-                  : '$12/mo'}
+                  : tenantPlanTier === 'ENTERPRISE_12'
+                  ? '$12/mo'
+                  : tenantPlanTier === 'SPECIALIST_15'
+                  ? '$15/mo'
+                  : '$20/mo'}
               </span>
             </div>
 
             <div>
               <div className="text-xs font-bold text-stone-900 font-sans">
                 {tenantPlanTier === 'FREE'
-                  ? (isKh ? 'Free Starter' : 'Free Starter')
+                  ? 'Free Starter'
                   : tenantPlanTier === 'STARTER_5'
-                  ? (isKh ? 'Clinic Starter' : 'Clinic Starter')
+                  ? 'Clinic Starter'
                   : tenantPlanTier === 'PRO_8'
-                  ? (isKh ? 'Polyclinic Pro' : 'Polyclinic Pro')
-                  : (isKh ? 'Hospital Enterprise' : 'Hospital Enterprise')}
+                  ? 'Polyclinic Pro'
+                  : tenantPlanTier === 'ENTERPRISE_12'
+                  ? 'Hospital Enterprise'
+                  : tenantPlanTier === 'SPECIALIST_15'
+                  ? 'Specialist Clinic'
+                  : 'Unlimited PaaS'}
               </div>
               <p className="text-[10px] text-stone-600 mt-0.5 leading-relaxed">
                 {tenantPlanTier === 'FREE'
@@ -292,13 +348,21 @@ export const Sidebar: React.FC = () => {
                   ? (isKh
                       ? 'រួមមាន ឃ្លាំងស្តុក, PACS, LIS, IPD & Signage'
                       : 'Includes Warehouse, PACS, LIS & IPD')
-                  : (isKh
+                  : tenantPlanTier === 'ENTERPRISE_12'
+                  ? (isKh
                       ? 'បើកដំណើរការគ្រប់ម៉ូឌុលទាំងអស់ក្នុងប្រព័ន្ធ'
-                      : 'Full platform unlimited access')}
+                      : 'Full platform unlimited access')
+                  : tenantPlanTier === 'SPECIALIST_15'
+                  ? (isKh
+                      ? 'កញ្ចប់គ្លីនិកឯកទេស និងបញ្ជាសំឡេង AI'
+                      : 'Specialist suite with AI voice dictation')
+                  : (isKh
+                      ? 'គម្រោងគ្មានដែនកំណត់ ដំឡើង White-label'
+                      : 'Unlimited PaaS with white-label domain')}
               </p>
             </div>
 
-            {tenantPlanTier !== 'ENTERPRISE_12' && (
+            {tenantPlanTier !== 'UNLIMITED_20' && (
               <Link
                 href="/pricing"
                 className="w-full mt-1.5 py-1.5 px-2.5 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-[11px] font-bold shadow-2xs transition-colors flex items-center justify-center gap-1.5"
@@ -309,7 +373,11 @@ export const Sidebar: React.FC = () => {
                     ? (isKh ? 'ដំឡើងទៅ Starter - $5/mo' : 'Upgrade to Starter ($5/mo)')
                     : tenantPlanTier === 'STARTER_5'
                     ? (isKh ? 'ដំឡើងទៅ Pro - $8/mo' : 'Upgrade to Pro ($8/mo)')
-                    : (isKh ? 'ដំឡើងទៅ Enterprise - $12/mo' : 'Upgrade to Enterprise ($12/mo)')}
+                    : tenantPlanTier === 'PRO_8'
+                    ? (isKh ? 'ដំឡើងទៅ Enterprise - $12/mo' : 'Upgrade to Enterprise ($12/mo)')
+                    : tenantPlanTier === 'ENTERPRISE_12'
+                    ? (isKh ? 'ដំឡើងទៅ Specialist - $15/mo' : 'Upgrade to Specialist ($15/mo)')
+                    : (isKh ? 'ដំឡើងទៅ Unlimited - $20/mo' : 'Upgrade to Unlimited ($20/mo)')}
                 </span>
               </Link>
             )}

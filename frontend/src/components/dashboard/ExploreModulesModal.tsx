@@ -46,6 +46,7 @@ import {
   Globe,
   UserCheck,
 } from 'lucide-react';
+import { SubscriptionCheckoutModal } from '../subscriptions/SubscriptionCheckoutModal';
 
 interface ExploreModulesModalProps {
   isOpen: boolean;
@@ -76,6 +77,8 @@ export const ExploreModulesModal: React.FC<ExploreModulesModalProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [moduleVersion, setModuleVersion] = useState(0);
+  const [selectedPlanForCheckout, setSelectedPlanForCheckout] = useState<'STARTER_5' | 'PRO_8' | 'ENTERPRISE_12' | 'SPECIALIST_15' | 'UNLIMITED_20' | null>(null);
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
 
   React.useEffect(() => {
     const handler = () => setModuleVersion((v) => v + 1);
@@ -395,9 +398,11 @@ export const ExploreModulesModal: React.FC<ExploreModulesModalProps> = ({
       router.push(item.href);
       onClose();
     } else {
-      // Direct user to pricing upgrade page with target note
-      router.push('/pricing');
-      onClose();
+      const required = getRequiredPlanForRoute(item.href);
+      if (required.tier !== 'FREE') {
+        setSelectedPlanForCheckout(required.tier as 'STARTER_5' | 'PRO_8' | 'ENTERPRISE_12' | 'SPECIALIST_15' | 'UNLIMITED_20');
+        setShowCheckoutModal(true);
+      }
     }
   };
 
@@ -626,6 +631,22 @@ export const ExploreModulesModal: React.FC<ExploreModulesModalProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Instant Dynamic KHQR PaaS Upgrade Modal */}
+      {showCheckoutModal && selectedPlanForCheckout && (
+        <SubscriptionCheckoutModal
+          isOpen={showCheckoutModal}
+          onClose={() => setShowCheckoutModal(false)}
+          initialPlanTier={selectedPlanForCheckout}
+          onActivated={() => {
+            setShowCheckoutModal(false);
+            onClose();
+            if (typeof window !== 'undefined') {
+              window.location.reload();
+            }
+          }}
+        />
+      )}
     </div>
   );
 };
