@@ -38,6 +38,7 @@ import { EdgeFleetSyncModule } from './sync/fleet-sync.module.ts';
 import { BedsideInfusionModule } from './infusion/infusion.module.ts';
 import { BedsideMonitorModule } from './telemetry/bedside-monitor.module.ts';
 import { PkPdModule } from './pkpd/pkpd.module.ts';
+import { AspModule } from './asp/asp.module.ts';
 import { RateLimiterMiddleware } from './common/middleware/rate-limiter.middleware';
 import { TenantContextMiddleware } from './common/middleware/tenant-context.middleware';
 import { CommonModule } from './common/common.module';
@@ -92,6 +93,7 @@ import { CommonModule } from './common/common.module';
     BedsideInfusionModule,
     BedsideMonitorModule,
     PkPdModule,
+    AspModule,
   ],
 })
 export class AppModule implements NestModule {

@@ -49,6 +49,7 @@ export const ALL_SYSTEM_MODULE_ROUTES = [
   '/infusion',
   '/telemetry',
   '/pkpd',
+  '/asp',
   '/staff',
   '/super-admin',
   '/owner',

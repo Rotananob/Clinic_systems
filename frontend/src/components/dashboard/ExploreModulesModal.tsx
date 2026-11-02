@@ -198,6 +198,17 @@ export const ExploreModulesModal: React.FC<ExploreModulesModalProps> = ({
         icon: Scale,
         tags: ['pkpd', 'tdm', 'vancomycin', 'gentamicin', 'amikacin', 'digoxin', 'creatinine', 'crcl', 'bayesian', 'dosing', 'កម្រិតថ្នាំ', 'តម្រងនោម'],
       },
+      {
+        id: 'asp',
+        category: 'clinical',
+        titleKh: 'កម្មវិធីគ្រប់គ្រងថ្នាំផ្សះ ASP',
+        titleEn: 'Antimicrobial Stewardship Program',
+        descKh: 'តាមដានចំនួនថ្ងៃប្រើថ្នាំផ្សះ DOT និង LOT គណនាសូចនាករ SAAR ការបញ្ឈប់ថ្នាំតាម Procalcitonin និងទប់ស្កាត់ការស៊ាំថ្នាំ',
+        descEn: 'Days of Therapy (DOT), SAAR ratio, Procalcitonin kinetics, IV-to-PO switch, and bug-drug intrinsic resistance guards',
+        href: '/asp',
+        icon: ShieldAlert,
+        tags: ['asp', 'antimicrobial', 'stewardship', 'antibiotic', 'saar', 'dot', 'lot', 'procalcitonin', 'antibiogram', 'meropenem', 'colistin', 'ថ្នាំផ្សះ', 'ស៊ាំថ្នាំ'],
+      },
 
       // Inpatient & Care
       {

@@ -1987,6 +1987,66 @@ class ApiClient {
     getConsultationById: (id: string) =>
       this.request<any>(`/pkpd/consultations/${encodeURIComponent(id)}`),
   };
+
+  asp = {
+    getMetrics: (params?: { unit?: string; patientDays?: number; predictedDot?: number }) => {
+      const q = new URLSearchParams();
+      if (params?.unit) q.set('unit', params.unit);
+      if (params?.patientDays) q.set('patientDays', String(params.patientDays));
+      if (params?.predictedDot) q.set('predictedDot', String(params.predictedDot));
+      const qs = q.toString() ? `?${q.toString()}` : '';
+      return this.request<any>(`/asp/metrics${qs}`);
+    },
+    getAntibiogram: () => this.request<any[]>('/asp/antibiogram'),
+    getAgents: () => this.request<any[]>('/asp/agents'),
+    getPatients: (patientId?: string) => {
+      const qs = patientId ? `?patientId=${encodeURIComponent(patientId)}` : '';
+      return this.request<any>(`/asp/patients${qs}`);
+    },
+    evaluatePct: (data: {
+      baselinePct: number;
+      currentPct: number;
+      afebrileHours: number;
+      meanArterialPressure: number;
+    }) =>
+      this.request<any>('/asp/evaluate-pct', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    evaluateStepDown: (data: {
+      agentCode: string;
+      daysOnIv: number;
+      afebrileHours: number;
+      meanArterialPressure: number;
+      wbcCount: number;
+      functionalGiTract: boolean;
+    }) =>
+      this.request<any>('/asp/evaluate-stepdown', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    checkMismatch: (data: { pathogenCode: string; antibioticCode: string }) =>
+      this.request<any>('/asp/check-mismatch', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    getApprovals: () => this.request<any[]>('/asp/approvals'),
+    requestApproval: (data: any) =>
+      this.request<any>('/asp/request-approval', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    reviewApproval: (data: {
+      id: string;
+      decision: string;
+      comments: string;
+      reviewer: string;
+    }) =>
+      this.request<any>('/asp/review-approval', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+  };
 };
 
 export const api = new ApiClient();

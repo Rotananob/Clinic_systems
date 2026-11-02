@@ -233,6 +233,14 @@ export const ROUTE_PERMISSIONS: RoutePermission[] = [
     descriptionKh: 'ប្រព័ន្ធតាមដានកំហាប់ថ្នាំក្នុងឈាម TDM គណនាកម្រិតតម្រងនោម Cockcroft-Gault និងព្យាករណ៍កម្រិតថ្នាំតាមក្បួន Bayesian',
   },
   {
+    path: '/asp',
+    allowedRoles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR', 'PHARMACIST'],
+    labelEn: 'Antimicrobial Stewardship Program',
+    labelKh: 'កម្មវិធីគ្រប់គ្រងការប្រើប្រាស់ថ្នាំផ្សះ ASP',
+    descriptionEn: 'DOT & LOT metrics, SAAR ratio, Procalcitonin kinetics, IV-to-PO conversion, and bug-drug intrinsic resistance guards',
+    descriptionKh: 'តាមដានចំនួនថ្ងៃប្រើថ្នាំផ្សះ DOT និង LOT គណនាសូចនាករ SAAR ការបញ្ឈប់ថ្នាំតាមកម្រិត Procalcitonin និងទប់ស្កាត់ការស៊ាំថ្នាំ',
+  },
+  {
     path: '/staff',
     allowedRoles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR'],
     labelEn: 'Staff & Role Management',
@@ -447,6 +455,7 @@ export const ROUTE_MINIMUM_PLAN: Record<string, PlanTier> = {
   '/infusion': 'ENTERPRISE_12',
   '/telemetry': 'ENTERPRISE_12',
   '/pkpd': 'ENTERPRISE_12',
+  '/asp': 'ENTERPRISE_12',
 
   '/narcotics': 'UNLIMITED_20',
   '/fleet-sync': 'UNLIMITED_20',
