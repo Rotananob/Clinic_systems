@@ -1831,6 +1831,29 @@ class ApiClient {
       return this.request<{ xml: string }>(`/narcotics/safes/${encodeURIComponent(safeId)}/moh-ddf-xml${query}`);
     },
   };
+
+  // Phase 7: Multi-Branch Edge Fleet Sync & Vector Clocks Replication
+  sync = {
+    getHealth: () => this.request<any>('/sync/health'),
+    getNodes: () => this.request<any[]>('/sync/nodes'),
+    getStockBalances: () => this.request<any[]>('/sync/stock-balances'),
+    getJournal: () => this.request<any[]>('/sync/journal'),
+    triggerSync: () =>
+      this.request<any>('/sync/trigger-sync', {
+        method: 'POST',
+      }),
+    transferStock: (data: {
+      substanceCode: string;
+      fromBranchId: string;
+      toBranchId: string;
+      quantity: number;
+      witnessStaffId: string;
+    }) =>
+      this.request<any>('/sync/transfer-stock', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+  };
 };
 
 export const api = new ApiClient();

@@ -34,6 +34,7 @@ import { DentalModule } from './dental/dental.module';
 import { TeleconsultModule } from './teleconsult/teleconsult.module';
 import { EclaimModule } from './eclaim/eclaim.module';
 import { NarcoticsModule } from './narcotics/narcotics.module';
+import { EdgeFleetSyncModule } from './sync/fleet-sync.module.ts';
 import { RateLimiterMiddleware } from './common/middleware/rate-limiter.middleware';
 import { TenantContextMiddleware } from './common/middleware/tenant-context.middleware';
 import { CommonModule } from './common/common.module';
@@ -84,6 +85,7 @@ import { CommonModule } from './common/common.module';
     TeleconsultModule,
     EclaimModule,
     NarcoticsModule,
+    EdgeFleetSyncModule,
   ],
 })
 export class AppModule implements NestModule {

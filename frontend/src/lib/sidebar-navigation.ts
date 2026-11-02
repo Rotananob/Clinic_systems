@@ -45,6 +45,7 @@ export const ALL_SYSTEM_MODULE_ROUTES = [
   '/teleconsult',
   '/eclaim',
   '/narcotics',
+  '/fleet-sync',
   '/staff',
   '/super-admin',
   '/owner',

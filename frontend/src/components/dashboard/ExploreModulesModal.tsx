@@ -46,6 +46,7 @@ import {
   Building2,
   Globe,
   UserCheck,
+  Network,
 } from 'lucide-react';
 import { SubscriptionCheckoutModal } from '../subscriptions/SubscriptionCheckoutModal';
 
@@ -344,6 +345,17 @@ export const ExploreModulesModal: React.FC<ExploreModulesModalProps> = ({
         href: '/staff',
         icon: ShieldCheck,
         tags: ['staff', 'team', 'doctor', 'nurse', 'cashier', 'users', 'បុគ្គលិក'],
+      },
+      {
+        id: 'fleet-sync',
+        category: 'admin',
+        titleKh: 'សមកាលកម្ម Edge & Vector Clocks',
+        titleEn: 'Multi-Branch Fleet Sync & CRDT',
+        descKh: 'ប្រព័ន្ធចម្លងទិន្នន័យរវាងសាខាដោយស្វ័យប្រវត្ត គណនាកម្រិតទំនាស់ទិន្នន័យ CRDT និងសុវត្ថិភាព HMAC-SHA256',
+        descEn: 'Offline-first peer-to-peer data replication, vector clocks, and Brotli wire protocol for multi-branch clinics',
+        href: '/fleet-sync',
+        icon: Network,
+        tags: ['sync', 'fleet', 'edge', 'vector clock', 'crdt', 'branch', 'replication', 'សមកាលកម្ម', 'សាខា', 'បណ្តាញ'],
       },
       {
         id: 'invoice-template',

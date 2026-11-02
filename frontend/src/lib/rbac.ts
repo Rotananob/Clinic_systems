@@ -201,6 +201,14 @@ export const ROUTE_PERMISSIONS: RoutePermission[] = [
     descriptionKh: 'ផ្ទៀងផ្ទាត់សាក្សីពីររូប កត់ត្រាកាកសំណល់បំផ្លាញចោលភ្លាមៗ និងរបាយការណ៍ Merkle Hash ជូនក្រសួងសុខាភិបាល',
   },
   {
+    path: '/fleet-sync',
+    allowedRoles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR', 'PHARMACIST'],
+    labelEn: 'Multi-Branch Edge Fleet Sync & Vector Clocks',
+    labelKh: 'ការធ្វើសមកាលកម្មបណ្តាញសាខា Edge & Vector Clocks',
+    descriptionEn: 'Offline-first multi-branch replication, CRDT conflict resolution, and HMAC-SHA256 authenticated wire protocol',
+    descriptionKh: 'ប្រព័ន្ធចម្លងទិន្នន័យរវាងសាខាដោយស្វ័យប្រវត្ត គណនាកម្រិតទំនាស់ទិន្នន័យ CRDT និងការបញ្ជូនទិន្នន័យសុវត្ថិភាពខ្ពស់',
+  },
+  {
     path: '/staff',
     allowedRoles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR'],
     labelEn: 'Staff & Role Management',
@@ -414,6 +422,7 @@ export const ROUTE_MINIMUM_PLAN: Record<string, PlanTier> = {
   '/invoice-template': 'ENTERPRISE_12',
 
   '/narcotics': 'UNLIMITED_20',
+  '/fleet-sync': 'UNLIMITED_20',
 };
 
 export const PLAN_TIER_RANK: Record<PlanTier, number> = {
