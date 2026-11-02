@@ -346,8 +346,12 @@ export class DentalService {
     return [...this.procedures];
   }
 
-  getDentalChart(patientId: string): DentalChart {
-    let chart = this.charts.get(patientId);
+  getDentalChart(patientId: string, tenantId?: string): DentalChart {
+    const key = tenantId ? `${tenantId}:${patientId}` : patientId;
+    let chart = this.charts.get(key);
+    if (!chart && tenantId && this.charts.has(patientId)) {
+      chart = this.charts.get(patientId);
+    }
     if (!chart) {
       // Create empty default adult chart
       const teeth: Record<number, ToothState> = {};
@@ -377,13 +381,14 @@ export class DentalService {
         generalNotes: 'Standard initial oral examination',
         updatedAt: new Date().toISOString()
       };
-      this.charts.set(patientId, chart);
+      this.charts.set(key, chart);
     }
     return chart;
   }
 
-  saveDentalChart(patientId: string, updates: Partial<DentalChart>): DentalChart {
-    const existing = this.getDentalChart(patientId);
+  saveDentalChart(patientId: string, updates: Partial<DentalChart>, tenantId?: string): DentalChart {
+    const key = tenantId ? `${tenantId}:${patientId}` : patientId;
+    const existing = this.getDentalChart(patientId, tenantId);
     const updatedTeeth = updates.teeth || existing.teeth;
     const dmft = this.calculateDmft(updatedTeeth);
 
@@ -395,12 +400,13 @@ export class DentalService {
       updatedAt: new Date().toISOString()
     };
 
-    this.charts.set(patientId, updatedChart);
+    this.charts.set(key, updatedChart);
     return updatedChart;
   }
 
-  updateToothCondition(patientId: string, toothNumber: number, data: Partial<ToothState>): DentalChart {
-    const chart = this.getDentalChart(patientId);
+  updateToothCondition(patientId: string, toothNumber: number, data: Partial<ToothState>, tenantId?: string): DentalChart {
+    const key = tenantId ? `${tenantId}:${patientId}` : patientId;
+    const chart = this.getDentalChart(patientId, tenantId);
     if (!chart.teeth[toothNumber]) {
       throw new Error(`Invalid tooth number ${toothNumber}. Expected standard FDI two-digit identifier.`);
     }
@@ -417,12 +423,12 @@ export class DentalService {
     chart.dmftIndex = this.calculateDmft(chart.teeth);
     chart.updatedAt = new Date().toISOString();
 
-    this.charts.set(patientId, chart);
+    this.charts.set(key, chart);
     return chart;
   }
 
-  getTreatmentPlans(patientId: string): DentalTreatmentPlan[] {
-    return this.treatmentPlans.filter(p => p.patientId === patientId);
+  getTreatmentPlans(patientId: string, tenantId?: string): DentalTreatmentPlan[] {
+    return this.treatmentPlans.filter((p: any) => p.patientId === patientId && (!tenantId || !p.tenantId || p.tenantId === tenantId));
   }
 
   createTreatmentPlan(patientId: string, data: {
