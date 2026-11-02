@@ -48,6 +48,7 @@ import {
   UserCheck,
   Network,
   Activity,
+  HeartPulse,
 } from 'lucide-react';
 import { SubscriptionCheckoutModal } from '../subscriptions/SubscriptionCheckoutModal';
 
@@ -173,6 +174,17 @@ export const ExploreModulesModal: React.FC<ExploreModulesModalProps> = ({
         href: '/infusion',
         icon: Activity,
         tags: ['infusion', 'pump', 'ders', 'iv', 'drip', 'titration', 'potassium', 'norepinephrine', 'pca', 'សេរ៉ូម', 'ចាក់ថ្នាំ'],
+      },
+      {
+        id: 'telemetry',
+        category: 'clinical',
+        titleKh: 'ម៉ាស៊ីនតាមដានសញ្ញាជីវិត Telemetry - ICU/OR',
+        titleEn: 'ICU Telemetry & Waveform Monitor',
+        descKh: 'តាមដានសញ្ញាជីវិតអ្នកជំងឺផ្ទាល់តាមប្រព័ន្ធ Telemetry បង្ហាញរលកបេះដូង ECG និងប្រព័ន្ធសញ្ញាអាសន្ន IEC 60601-1-8',
+        descEn: 'Real-time multi-parameter vital signs, continuous ECG Lead II vector waveform, SpO2 plethysmography, and IEC 60601-1-8 arrhythmia alarm engine',
+        href: '/telemetry',
+        icon: HeartPulse,
+        tags: ['telemetry', 'ecg', 'spo2', 'arrhythmia', 'vitals', 'icu', 'heart', 'waveform', 'asystole', 'stemi', 'សញ្ញាជីវិត', 'បេះដូង'],
       },
 
       // Inpatient & Care

@@ -1925,6 +1925,39 @@ class ApiClient {
         method: 'POST',
       }),
   };
+
+  telemetry = {
+    getAllBeds: () => this.request<any[]>('/telemetry/beds'),
+    getBedById: (id: string) => this.request<any>(`/telemetry/beds/${encodeURIComponent(id)}`),
+    updateVitals: (id: string, vitals: any) =>
+      this.request<any>(`/telemetry/beds/${encodeURIComponent(id)}/vitals`, {
+        method: 'POST',
+        body: JSON.stringify(vitals),
+      }),
+    silenceAlarm: (id: string, data: { clinicianId: string; durationSeconds?: number }) =>
+      this.request<any>(`/telemetry/beds/${encodeURIComponent(id)}/silence`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    acknowledgeAlarm: (id: string, alarmId: string, data: { clinicianId: string }) =>
+      this.request<any>(
+        `/telemetry/beds/${encodeURIComponent(id)}/alarms/${encodeURIComponent(alarmId)}/acknowledge`,
+        {
+          method: 'POST',
+          body: JSON.stringify(data),
+        }
+      ),
+    simulateArrhythmia: (id: string, data: { arrhythmiaType: string; clinicianId: string }) =>
+      this.request<any>(`/telemetry/beds/${encodeURIComponent(id)}/simulate`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    getWaveforms: (id: string, points: number = 60, sampleRate: number = 60) =>
+      this.request<any>(
+        `/telemetry/beds/${encodeURIComponent(id)}/waveforms?points=${points}&sampleRate=${sampleRate}`
+      ),
+    getAuditLogs: () => this.request<any[]>('/telemetry/audit-logs'),
+  };
 };
 
 export const api = new ApiClient();

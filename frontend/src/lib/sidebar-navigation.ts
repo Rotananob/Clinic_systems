@@ -47,6 +47,7 @@ export const ALL_SYSTEM_MODULE_ROUTES = [
   '/narcotics',
   '/fleet-sync',
   '/infusion',
+  '/telemetry',
   '/staff',
   '/super-admin',
   '/owner',

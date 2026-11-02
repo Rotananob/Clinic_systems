@@ -3,6 +3,14 @@ node_modules/
 .pnp
 .pnp.js
 
+# Documentation & Spec Files (STRICT EXCLUSION - DO NOT PUSH)
+docs/
+doc/
+**/docs/
+**/doc/
+*.spec.md
+roadmap.md
+
 # Build Outputs
 dist/
 build/
@@ -29,7 +37,7 @@ docker/.env
 docker/.env.*
 !docker/.env.example
 
-# Cryptographic Keys, Certificates, and Tokens
+# Cryptographic Keys, Certificates, Tokens & Credentials
 *.pem
 *.key
 *.cert
@@ -40,8 +48,12 @@ docker/.env.*
 *.secret
 secrets/
 credentials/
+*credentials*
 id_rsa*
 id_ed25519*
+*.jwt
+*.token
+tokens/
 
 # Runtime Secrets & Data Stores (STRICT EXCLUSION)
 data/

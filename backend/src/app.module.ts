@@ -36,6 +36,7 @@ import { EclaimModule } from './eclaim/eclaim.module';
 import { NarcoticsModule } from './narcotics/narcotics.module';
 import { EdgeFleetSyncModule } from './sync/fleet-sync.module.ts';
 import { BedsideInfusionModule } from './infusion/infusion.module.ts';
+import { BedsideMonitorModule } from './telemetry/bedside-monitor.module.ts';
 import { RateLimiterMiddleware } from './common/middleware/rate-limiter.middleware';
 import { TenantContextMiddleware } from './common/middleware/tenant-context.middleware';
 import { CommonModule } from './common/common.module';
@@ -88,6 +89,7 @@ import { CommonModule } from './common/common.module';
     NarcoticsModule,
     EdgeFleetSyncModule,
     BedsideInfusionModule,
+    BedsideMonitorModule,
   ],
 })
 export class AppModule implements NestModule {

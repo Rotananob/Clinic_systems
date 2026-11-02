@@ -217,6 +217,14 @@ export const ROUTE_PERMISSIONS: RoutePermission[] = [
     descriptionKh: 'ប្រព័ន្ធទប់ស្កាត់កំហុសកម្រិតថ្នាំ DERS គណនាល្បឿនតំណក់ទឹកសេរ៉ូម និងតាមដានសម្ពាធទុយោតាមប្រព័ន្ធ IoT ផ្ទាល់',
   },
   {
+    path: '/telemetry',
+    allowedRoles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR'],
+    labelEn: 'ICU Bedside Multi-Parameter Monitor',
+    labelKh: 'ម៉ាស៊ីនតាមដានសញ្ញាជីវិត Telemetry - ICU/OR',
+    descriptionEn: 'Real-time multi-parameter vital signs, continuous ECG Lead II vector waveform, SpO2 plethysmography, and IEC 60601-1-8 arrhythmia alarm engine',
+    descriptionKh: 'តាមដានសញ្ញាជីវិតអ្នកជំងឺផ្ទាល់តាមប្រព័ន្ធ Telemetry បង្ហាញរលកបេះដូង ECG និងប្រព័ន្ធសញ្ញាអាសន្ន IEC 60601-1-8',
+  },
+  {
     path: '/staff',
     allowedRoles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR'],
     labelEn: 'Staff & Role Management',
@@ -429,6 +437,7 @@ export const ROUTE_MINIMUM_PLAN: Record<string, PlanTier> = {
   '/eclaim': 'ENTERPRISE_12',
   '/invoice-template': 'ENTERPRISE_12',
   '/infusion': 'ENTERPRISE_12',
+  '/telemetry': 'ENTERPRISE_12',
 
   '/narcotics': 'UNLIMITED_20',
   '/fleet-sync': 'UNLIMITED_20',
