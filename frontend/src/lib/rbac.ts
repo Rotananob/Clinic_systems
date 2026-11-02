@@ -209,6 +209,14 @@ export const ROUTE_PERMISSIONS: RoutePermission[] = [
     descriptionKh: 'ប្រព័ន្ធចម្លងទិន្នន័យរវាងសាខាដោយស្វ័យប្រវត្ត គណនាកម្រិតទំនាស់ទិន្នន័យ CRDT និងការបញ្ជូនទិន្នន័យសុវត្ថិភាពខ្ពស់',
   },
   {
+    path: '/infusion',
+    allowedRoles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR'],
+    labelEn: 'Smart Infusion Pump & DERS Engine',
+    labelKh: 'ម៉ាស៊ីនចាក់ថ្នាំសេរ៉ូមឆ្លាតវៃ DERS & IV Drip',
+    descriptionEn: 'Dose Error Reduction System, weight-based titration, vascular route guardrails, and real-time bedside IoT telemetry',
+    descriptionKh: 'ប្រព័ន្ធទប់ស្កាត់កំហុសកម្រិតថ្នាំ DERS គណនាល្បឿនតំណក់ទឹកសេរ៉ូម និងតាមដានសម្ពាធទុយោតាមប្រព័ន្ធ IoT ផ្ទាល់',
+  },
+  {
     path: '/staff',
     allowedRoles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR'],
     labelEn: 'Staff & Role Management',
@@ -420,6 +428,7 @@ export const ROUTE_MINIMUM_PLAN: Record<string, PlanTier> = {
   '/teleconsult': 'ENTERPRISE_12',
   '/eclaim': 'ENTERPRISE_12',
   '/invoice-template': 'ENTERPRISE_12',
+  '/infusion': 'ENTERPRISE_12',
 
   '/narcotics': 'UNLIMITED_20',
   '/fleet-sync': 'UNLIMITED_20',

@@ -47,6 +47,7 @@ import {
   Globe,
   UserCheck,
   Network,
+  Activity,
 } from 'lucide-react';
 import { SubscriptionCheckoutModal } from '../subscriptions/SubscriptionCheckoutModal';
 
@@ -161,6 +162,17 @@ export const ExploreModulesModal: React.FC<ExploreModulesModalProps> = ({
         href: '/lab',
         icon: FlaskConical,
         tags: ['lab', 'laboratory', 'blood', 'test', 'lis', 'astm', 'hl7', 'ឈាម', 'ពិសោធន៍'],
+      },
+      {
+        id: 'infusion',
+        category: 'clinical',
+        titleKh: 'ម៉ាស៊ីនចាក់ថ្នាំសេរ៉ូម DERS & IoT',
+        titleEn: 'Smart Infusion Pump & DERS',
+        descKh: 'ប្រព័ន្ធទប់ស្កាត់កំហុសកម្រិតថ្នាំ DERS គណនាល្បឿនតំណក់ទឹកសេរ៉ូម និងតាមដានសម្ពាធទុយោ IoT',
+        descEn: 'Dose Error Reduction System, weight-based titration, vascular route guardrails, and real-time bedside IoT telemetry',
+        href: '/infusion',
+        icon: Activity,
+        tags: ['infusion', 'pump', 'ders', 'iv', 'drip', 'titration', 'potassium', 'norepinephrine', 'pca', 'សេរ៉ូម', 'ចាក់ថ្នាំ'],
       },
 
       // Inpatient & Care

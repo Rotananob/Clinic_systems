@@ -46,6 +46,7 @@ export const ALL_SYSTEM_MODULE_ROUTES = [
   '/eclaim',
   '/narcotics',
   '/fleet-sync',
+  '/infusion',
   '/staff',
   '/super-admin',
   '/owner',

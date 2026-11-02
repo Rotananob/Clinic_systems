@@ -1854,6 +1854,77 @@ class ApiClient {
         body: JSON.stringify(data),
       }),
   };
+
+  // Phase 8: Smart Bedside Infusion Pump & DERS Engine
+  infusion = {
+    getLibrary: () => this.request<any[]>('/infusion/library'),
+    getDrug: (code: string) => this.request<any>(`/infusion/drugs/${encodeURIComponent(code)}`),
+    calculate: (data: {
+      substanceCode: string;
+      prescribedDose: number;
+      patientWeightKg?: number;
+      concentrationId?: string;
+      route?: string;
+    }) =>
+      this.request<any>('/infusion/calculate', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    getPumps: () => this.request<any[]>('/infusion/pumps'),
+    getPump: (id: string) => this.request<any>(`/infusion/pumps/${encodeURIComponent(id)}`),
+    start: (data: {
+      pumpId: string;
+      patientId: string;
+      patientNameKh: string;
+      patientNameEn: string;
+      patientWeightKg?: number;
+      vascularRoute: string;
+      substanceCode: string;
+      prescribedDose: number;
+      concentrationId?: string;
+      volumeToBeInfusedMl: number;
+      nurseStaffId: string;
+      physicianOverrideReason?: string;
+    }) =>
+      this.request<any>('/infusion/pumps/start', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    titrate: (data: {
+      pumpId: string;
+      newDose: number;
+      nurseStaffId: string;
+      physicianOverrideReason?: string;
+    }) =>
+      this.request<any>('/infusion/pumps/titrate', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    requestPca: (data: { pumpId: string; requestedBolusMcg: number }) =>
+      this.request<any>('/infusion/pumps/pca-demand', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    updateTelemetry: (id: string, data: {
+      linePressureMmHg: number;
+      airBubbleDetected: boolean;
+      clampClosed?: boolean;
+      batteryPercentage: number;
+      volumeInfusedIncrementMl?: number;
+    }) =>
+      this.request<any>(`/infusion/pumps/${encodeURIComponent(id)}/telemetry`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    togglePause: (id: string) =>
+      this.request<any>(`/infusion/pumps/${encodeURIComponent(id)}/pause`, {
+        method: 'POST',
+      }),
+    stop: (id: string) =>
+      this.request<any>(`/infusion/pumps/${encodeURIComponent(id)}/stop`, {
+        method: 'POST',
+      }),
+  };
 };
 
 export const api = new ApiClient();
