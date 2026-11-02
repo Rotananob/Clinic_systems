@@ -193,6 +193,14 @@ export const ROUTE_PERMISSIONS: RoutePermission[] = [
     descriptionKh: 'បង្កើតឯកសារទាមទារធានារ៉ាប់រង XML/FHIR និងរាយការណ៍ជំងឺឆ្លងតាមប្រព័ន្ធ MoH DHIS2',
   },
   {
+    path: '/narcotics',
+    allowedRoles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR', 'PHARMACIST'],
+    labelEn: 'MoH Controlled Substances & Narcotic Register',
+    labelKh: 'សៀវភៅបញ្ជីសារធាតុញៀន និងឱសថគ្រោះថ្នាក់ MoH',
+    descriptionEn: 'Statutory double-signoff witness verification, SHA-256 Merkle ledger, and MoH DDF monthly reconciliation',
+    descriptionKh: 'ផ្ទៀងផ្ទាត់សាក្សីពីររូប កត់ត្រាកាកសំណល់បំផ្លាញចោលភ្លាមៗ និងរបាយការណ៍ Merkle Hash ជូនក្រសួងសុខាភិបាល',
+  },
+  {
     path: '/staff',
     allowedRoles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR'],
     labelEn: 'Staff & Role Management',
@@ -404,6 +412,8 @@ export const ROUTE_MINIMUM_PLAN: Record<string, PlanTier> = {
   '/teleconsult': 'ENTERPRISE_12',
   '/eclaim': 'ENTERPRISE_12',
   '/invoice-template': 'ENTERPRISE_12',
+
+  '/narcotics': 'UNLIMITED_20',
 };
 
 export const PLAN_TIER_RANK: Record<PlanTier, number> = {

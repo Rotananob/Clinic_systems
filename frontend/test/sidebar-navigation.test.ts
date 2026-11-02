@@ -68,7 +68,7 @@ describe('10-Button Primary Sidebar Navigation Architecture Suite', () => {
     assert.equal(navOnDashboard.activeSpecialtyButton, undefined, 'No specialty button active on core route');
     assert.equal(navOnDashboard.exploreButtonPresent, true, 'Explore button must be present as 10th button');
     assert.equal(navOnDashboard.totalPrimaryCount, 10, 'Total primary buttons must equal 10');
-    assert.equal(navOnDashboard.remainingToolsCount, 17, 'Remaining tools badge count must be 17');
+    assert.equal(navOnDashboard.remainingToolsCount, ALL_SYSTEM_MODULE_ROUTES.length - CORE_9_ROUTES.length, 'Remaining tools badge count must be accurate');
 
     // Case 2: When user navigates to an advanced specialty route (/pacs)
     const navOnPacs = computeSidebarNavigation(mockAllowedItems, '/pacs');

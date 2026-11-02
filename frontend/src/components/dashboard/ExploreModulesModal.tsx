@@ -37,6 +37,7 @@ import {
   Video,
   FileSpreadsheet,
   ShieldCheck,
+  ShieldAlert,
   Settings,
   LayoutTemplate,
   ShieldPlus,
@@ -229,6 +230,17 @@ export const ExploreModulesModal: React.FC<ExploreModulesModalProps> = ({
         href: '/inventory',
         icon: Boxes,
         tags: ['inventory', 'warehouse', 'fefo', 'stock', 'batch', 'expiry', 'ឃ្លាំង', 'ស្តុក'],
+      },
+      {
+        id: 'narcotics',
+        category: 'pharmacy',
+        titleKh: 'សារធាតុញៀន & ឱសថគ្រោះថ្នាក់ MoH',
+        titleEn: 'MoH Controlled Substances & Narcotics',
+        descKh: 'ផ្ទៀងផ្ទាត់សាក្សីពីររូប កត់ត្រាកាកសំណល់បំផ្លាញចោលភ្លាមៗ និងរបាយការណ៍ Merkle Hash ជូនក្រសួងសុខាភិបាល',
+        descEn: 'Dual-witness verification, SHA-256 Merkle ledger, fractional wastage destruction, and MoH DDF monthly reconciliation',
+        href: '/narcotics',
+        icon: ShieldAlert,
+        tags: ['narcotics', 'controlled', 'morphine', 'fentanyl', 'pethidine', 'ketamine', 'moh', 'ddf', 'merkle', 'សារធាតុញៀន', 'ឱសថគ្រោះថ្នាក់'],
       },
 
       // Finance & Analytics

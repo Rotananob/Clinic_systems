@@ -44,6 +44,7 @@ export const ALL_SYSTEM_MODULE_ROUTES = [
   '/dental',
   '/teleconsult',
   '/eclaim',
+  '/narcotics',
   '/staff',
   '/super-admin',
   '/owner',

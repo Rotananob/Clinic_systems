@@ -1767,6 +1767,70 @@ class ApiClient {
         body: JSON.stringify(data),
       }),
   };
+
+  narcotics = {
+    getSafes: () => this.request<any[]>('/narcotics/safes'),
+    getMasterCatalog: () => this.request<any[]>('/narcotics/catalog'),
+    getSafeLedger: (safeId: string) => this.request<any[]>(`/narcotics/safes/${encodeURIComponent(safeId)}/ledger`),
+    unlockSession: (data: {
+      safeId: string;
+      tenantId: string;
+      primaryClinician: { staffId: string; staffName: string; role: string; licenseNumber: string; pin: string };
+      witnessClinician: { staffId: string; staffName: string; role: string; licenseNumber: string; pin: string };
+      reasonForAccess: string;
+    }) =>
+      this.request<any>('/narcotics/safes/unlock-session', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    dispense: (data: {
+      unlockSessionToken: string;
+      unitSerialBarcode: string;
+      substanceCode: string;
+      patientId: string;
+      patientName: string;
+      visitId: string;
+      prescriptionId: string;
+      prescribedDoseMg: number;
+      administeredDoseMg: number;
+      wastedDoseMg: number;
+      wastageDestructionMethod?: string;
+      wastageClinicalReason?: string;
+    }) =>
+      this.request<any>('/narcotics/dispense', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    shiftHandover: (data: {
+      safeId: string;
+      tenantId: string;
+      shiftIdentifier: string;
+      outgoingNurse: { staffId: string; staffName: string; licenseNumber: string; pin: string };
+      incomingNurse: { staffId: string; staffName: string; licenseNumber: string; pin: string };
+      counts: Array<{ substanceCode: string; physicalCount: number }>;
+      notes?: string;
+    }) =>
+      this.request<any>('/narcotics/safes/shift-handover', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    verifyIntegrity: (safeId: string) =>
+      this.request<any>(`/narcotics/safes/${encodeURIComponent(safeId)}/verify-merkle`),
+    getDiscrepancies: (safeId: string) =>
+      this.request<any[]>(`/narcotics/safes/${encodeURIComponent(safeId)}/discrepancies`),
+    resolveDiscrepancy: (data: { discrepancyId: string; chiefPharmacistSign: string; summary: string }) =>
+      this.request<any>('/narcotics/safes/resolve-discrepancy', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    exportMohXml: (safeId: string, year?: number, month?: number) => {
+      const q = new URLSearchParams();
+      if (year) q.set('year', year.toString());
+      if (month) q.set('month', month.toString());
+      const query = q.toString() ? '?' + q.toString() : '';
+      return this.request<{ xml: string }>(`/narcotics/safes/${encodeURIComponent(safeId)}/moh-ddf-xml${query}`);
+    },
+  };
 };
 
 export const api = new ApiClient();
