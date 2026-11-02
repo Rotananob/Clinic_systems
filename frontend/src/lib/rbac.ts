@@ -241,6 +241,14 @@ export const ROUTE_PERMISSIONS: RoutePermission[] = [
     descriptionKh: 'តាមដានចំនួនថ្ងៃប្រើថ្នាំផ្សះ DOT និង LOT គណនាសូចនាករ SAAR ការបញ្ឈប់ថ្នាំតាមកម្រិត Procalcitonin និងទប់ស្កាត់ការស៊ាំថ្នាំ',
   },
   {
+    path: '/chemo',
+    allowedRoles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR', 'PHARMACIST'],
+    labelEn: 'Chemotherapy Oncology Protocol',
+    labelKh: 'ពិធីការព្យាបាលជំងឺមហារីក Chemo-Oncology',
+    descriptionEn: 'Mosteller & DuBois BSA, Calvert Carboplatin dosing, cumulative anthracycline cardiotoxicity tracking, and ASCO/NCCN lab gates',
+    descriptionKh: 'គណនាផ្ទៃក្រឡារាងកាយ BSA កម្រិតថ្នាំ Carboplatin តាមរូបមន្ត Calvert តាមដានកម្រិតពុលបេះដូង Anthracycline និងត្រួតពិនិត្យសុវត្ថិភាពឈាមមុនចាក់ថ្នាំគីមី',
+  },
+  {
     path: '/staff',
     allowedRoles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR'],
     labelEn: 'Staff & Role Management',
@@ -456,6 +464,7 @@ export const ROUTE_MINIMUM_PLAN: Record<string, PlanTier> = {
   '/telemetry': 'ENTERPRISE_12',
   '/pkpd': 'ENTERPRISE_12',
   '/asp': 'ENTERPRISE_12',
+  '/chemo': 'ENTERPRISE_12',
 
   '/narcotics': 'UNLIMITED_20',
   '/fleet-sync': 'UNLIMITED_20',

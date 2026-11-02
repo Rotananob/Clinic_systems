@@ -209,6 +209,17 @@ export const ExploreModulesModal: React.FC<ExploreModulesModalProps> = ({
         icon: ShieldAlert,
         tags: ['asp', 'antimicrobial', 'stewardship', 'antibiotic', 'saar', 'dot', 'lot', 'procalcitonin', 'antibiogram', 'meropenem', 'colistin', 'ថ្នាំផ្សះ', 'ស៊ាំថ្នាំ'],
       },
+      {
+        id: 'chemo',
+        category: 'clinical',
+        titleKh: 'ពិធីការព្យាបាលជំងឺមហារីក Chemo-Oncology',
+        titleEn: 'Chemotherapy Oncology Protocol',
+        descKh: 'គណនាផ្ទៃក្រឡារាងកាយ BSA កម្រិតថ្នាំ Carboplatin តាមរូបមន្ត Calvert តាមដានកម្រិតពុលបេះដូង Anthracycline និងត្រួតពិនិត្យសុវត្ថិភាពឈាមមុនចាក់ថ្នាំគីមី',
+        descEn: 'Mosteller BSA, Calvert Carboplatin dosing, cumulative anthracycline cardiotoxicity tracking, and ASCO/NCCN pre-chemo lab safety gates',
+        href: '/chemo',
+        icon: FlaskConical,
+        tags: ['chemo', 'oncology', 'cancer', 'bsa', 'calvert', 'carboplatin', 'doxorubicin', 'folfox', 'rchop', 'paclitaxel', 'anthracycline', 'ថ្នាំគីមី', 'មហារីក'],
+      },
 
       // Inpatient & Care
       {

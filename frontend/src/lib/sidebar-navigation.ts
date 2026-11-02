@@ -50,6 +50,7 @@ export const ALL_SYSTEM_MODULE_ROUTES = [
   '/telemetry',
   '/pkpd',
   '/asp',
+  '/chemo',
   '/staff',
   '/super-admin',
   '/owner',

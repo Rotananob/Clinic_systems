@@ -2047,6 +2047,50 @@ class ApiClient {
         body: JSON.stringify(data),
       }),
   };
+
+  chemo = {
+    getRegimens: (code?: string) => {
+      const qs = code ? `?code=${encodeURIComponent(code)}` : '';
+      return this.request<any[]>(`/chemo/regimens${qs}`);
+    },
+    getPatients: (patientId?: string) => {
+      const qs = patientId ? `?patientId=${encodeURIComponent(patientId)}` : '';
+      return this.request<any>(`/chemo/patients${qs}`);
+    },
+    calculateBsa: (data: { heightCm: number; weightKg: number; capAt2_0?: boolean }) =>
+      this.request<any>('/chemo/calculate-bsa', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    calculateCalvert: (data: { targetAuc: number; measuredGfr: number }) =>
+      this.request<any>('/chemo/calculate-calvert', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    checkAnthracycline: (data: { currentCumulative: number; newDoseMgM2: number; agentCode?: string }) =>
+      this.request<any>('/chemo/check-anthracycline', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    checkLabSafety: (data: {
+      wbc: number;
+      neutrophilPercent: number;
+      bandPercent: number;
+      platelets: number;
+      totalBilirubin: number;
+      astAltRatio: number;
+      crCl: number;
+    }) =>
+      this.request<any>('/chemo/check-lab-safety', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    getPatientCycleDosing: (data: { patientId: string; regimenCode: string }) =>
+      this.request<any>('/chemo/patient-cycle-dosing', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+  };
 };
 
 export const api = new ApiClient();
