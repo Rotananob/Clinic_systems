@@ -232,6 +232,18 @@ export const ExploreModulesModal: React.FC<ExploreModulesModalProps> = ({
         tags: ['pediatric', 'neonatal', 'child', 'infant', 'clark', 'young', 'gentamicin', 'pma', 'phototherapy', 'bilirubin', 'nomogram', 'paracetamol', 'កុមារ', 'ទារក', 'ពន្លឺ'],
       },
 
+      {
+        id: 'resuscitation',
+        category: 'clinical',
+        titleKh: 'សង្គ្រោះបន្ទាន់ Sepsis និងរបួសធ្ងន់ Resuscitation',
+        titleEn: 'Emergency Sepsis & Trauma Resuscitation',
+        descKh: 'កញ្ចប់សង្គ្រោះ Sepsis Hour-1 រូបមន្តរលាកភ្លើង Parkland ឧបករណ៍កុមារ Broselow និងពិធីការបញ្ចូលឈាមបន្ទាន់ MTP',
+        descEn: 'Surviving Sepsis Hour-1 bundle, Parkland burn formula, pediatric Broselow equipment, and massive transfusion protocol',
+        href: '/resuscitation',
+        icon: ShieldAlert,
+        tags: ['sepsis', 'sofa', 'qsofa', 'parkland', 'burn', 'trauma', 'broselow', 'mtp', 'transfusion', 'lactate', 'crystalloid', 'shock', 'សង្គ្រោះ', 'រលាក', 'ឈាម'],
+      },
+
       // Inpatient & Care
       {
         id: 'ipd',

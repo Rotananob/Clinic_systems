@@ -2092,6 +2092,30 @@ class ApiClient {
       }),
   };
 
+  resuscitation = {
+    evaluateSepsis: (data: any) =>
+      this.request<any>('/resuscitation/evaluate-sepsis', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    calculateParkland: (data: any) =>
+      this.request<any>('/resuscitation/calculate-parkland', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    calculatePediatricBroselow: (data: any) =>
+      this.request<any>('/resuscitation/pediatric-broselow', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    evaluateMtp: (data: any) =>
+      this.request<any>('/resuscitation/evaluate-mtp', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    getProtocols: () => this.request<any>('/resuscitation/protocols'),
+  };
+
   pediatric = {
     getMedications: (code?: string) => {
       const qs = code ? `?code=${encodeURIComponent(code)}` : '';

@@ -257,6 +257,14 @@ export const ROUTE_PERMISSIONS: RoutePermission[] = [
     descriptionKh: 'គណនាកម្រិតថ្នាំកុមារតាមទម្ងន់ កំណត់ពិដានមិនឱ្យលើសកម្រិតមនុស្សពេញវ័យ កាលវិភាគ Gentamicin សម្រាប់ទារក និងតារាងពន្លឺព្យាបាលជាតិលឿង Bhutani',
   },
   {
+    path: '/resuscitation',
+    allowedRoles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR', 'PHARMACIST'],
+    labelEn: 'Emergency Sepsis & Trauma Resuscitation',
+    labelKh: 'សង្គ្រោះបន្ទាន់ Sepsis និងរបួសធ្ងន់ Resuscitation',
+    descriptionEn: 'Surviving Sepsis Hour-1 bundle, Parkland burn formula, pediatric Broselow equipment, and massive transfusion protocol',
+    descriptionKh: 'កញ្ចប់សង្គ្រោះ Sepsis Hour-1 រូបមន្តរលាកភ្លើង Parkland ឧបករណ៍កុមារ Broselow និងពិធីការបញ្ចូលឈាមបន្ទាន់ MTP',
+  },
+  {
     path: '/staff',
     allowedRoles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR'],
     labelEn: 'Staff & Role Management',
@@ -474,6 +482,7 @@ export const ROUTE_MINIMUM_PLAN: Record<string, PlanTier> = {
   '/asp': 'ENTERPRISE_12',
   '/chemo': 'ENTERPRISE_12',
   '/pediatric': 'ENTERPRISE_12',
+  '/resuscitation': 'ENTERPRISE_12',
 
   '/narcotics': 'UNLIMITED_20',
   '/fleet-sync': 'UNLIMITED_20',

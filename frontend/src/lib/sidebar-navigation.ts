@@ -52,6 +52,7 @@ export const ALL_SYSTEM_MODULE_ROUTES = [
   '/asp',
   '/chemo',
   '/pediatric',
+  '/resuscitation',
   '/staff',
   '/super-admin',
   '/owner',
