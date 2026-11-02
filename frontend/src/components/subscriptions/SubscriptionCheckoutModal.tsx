@@ -80,8 +80,8 @@ const PLAN_OPTIONS: PlanOption[] = [
     patientQuotaEn: '8,000 patients / account',
     toolsCountKh: '២០ ឧបករណ៍ទំនើប',
     toolsCountEn: '20 Advanced Modules',
-    highlightKh: '២០ ឧបករណ៍ទំនើប: 1,500 KHQR, ធ្មេញ Odontogram, WebGL PACS DICOM, ឃ្លាំង FEFO, LIS Lab, គ្រែ IPD, CDSS, TV Signage',
-    highlightEn: '20 Advanced Modules: 1,500 KHQR, Dental Odontogram, PACS DICOM, FEFO Inventory, LIS Lab, IPD, CDSS, TV Signage',
+    highlightKh: 'ណែនាំពិសេស - RECOMMENDED: 1,500 KHQR, ធ្មេញ Odontogram, WebGL PACS DICOM, ឃ្លាំង FEFO, LIS Lab, គ្រែ IPD, CDSS, TV Signage',
+    highlightEn: 'RECOMMENDED - Best Value: 1,500 KHQR, Dental Odontogram, PACS DICOM, FEFO Inventory, LIS Lab, IPD, CDSS, TV Signage',
   },
   {
     id: 'ENTERPRISE_12',
@@ -95,8 +95,8 @@ const PLAN_OPTIONS: PlanOption[] = [
     patientQuotaEn: 'Unlimited patients',
     toolsCountKh: '២៦ មុខងារពេញលេញ',
     toolsCountEn: '26 Complete Modules',
-    highlightKh: '២៦ មុខងារពេញលេញ: Unlimited KHQR, វីដេអូខល Teleconsult, QR e-Prescription, MoH DHIS2, Subdomain, 24/7 VIP SLA',
-    highlightEn: '26 Complete Modules: Unlimited KHQR, WebRTC Teleconsult, QR e-Prescription, MoH DHIS2, Subdomain, VIP 24/7 SLA',
+    highlightKh: 'ល្បីបំផុត - MOST POPULAR: Unlimited KHQR, វីដេអូខល Teleconsult, QR e-Prescription, MoH DHIS2, Subdomain, 24/7 VIP SLA',
+    highlightEn: 'MOST POPULAR - Enterprise Hospital: Unlimited KHQR, WebRTC Teleconsult, QR e-Prescription, MoH DHIS2, Subdomain, VIP 24/7 SLA',
   },
   {
     id: 'SPECIALIST_15',
@@ -125,8 +125,8 @@ const PLAN_OPTIONS: PlanOption[] = [
     patientQuotaEn: 'Unlimited patients',
     toolsCountKh: '៣០+ គ្មានដែនកំណត់',
     toolsCountEn: '30+ Unlimited PaaS',
-    highlightKh: '៣០+ គ្មានដែនកំណត់: Unlimited All, ប្រើប្រាស់ដូមេនគ្លីនិកផ្ទាល់, ទិន្នន័យដាច់ដោយឡែក, Telegram VIP Master Bot, 24/7 SLA',
-    highlightEn: '30+ Unlimited PaaS: Unlimited All, Custom White-label Domain, Dedicated DB, Telegram Master Bot, 24/7 Priority SLA',
+    highlightKh: '៣០+ គ្មានដែនកំណត់: MoH DDF Narcotic Register សាក្សីពីររូប, PACS Caliper, Multi-Branch Fleet, White-label Domain, Dedicated DB, AI Voice Dictation, 24/7 SLA',
+    highlightEn: '30+ Unlimited PaaS: MoH DDF Dual-Signoff Narcotic Register, PACS Caliper, Multi-Branch Fleet Sync, White-label Domain, Dedicated DB, AI Voice Dictation, 24/7 SLA',
   },
 ];
 
@@ -461,6 +461,16 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
                           <span className="absolute -top-2.5 right-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-100 text-teal-800 border border-teal-200 flex items-center gap-1 shadow-2xs">
                             <ShieldCheck className="w-2.5 h-2.5" />
                             <span>{isKm ? 'គម្រោងបច្ចុប្បន្ន' : 'Current Plan'}</span>
+                          </span>
+                        ) : plan.id === 'PRO_8' ? (
+                          <span className="absolute -top-2.5 right-2 px-2 py-0.5 rounded-full text-[10px] font-black bg-teal-800 text-amber-300 border border-teal-700 ring-2 ring-amber-400/30 flex items-center gap-1 shadow-2xs">
+                            <Sparkles className="w-2.5 h-2.5 text-amber-300" />
+                            <span>{isKm ? 'ណែនាំពិសេស' : 'RECOMMENDED'}</span>
+                          </span>
+                        ) : plan.id === 'ENTERPRISE_12' ? (
+                          <span className="absolute -top-2.5 right-2 px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-600 text-white border border-amber-500 ring-2 ring-amber-300/40 flex items-center gap-1 shadow-2xs">
+                            <Sparkles className="w-2.5 h-2.5 text-amber-200" />
+                            <span>{isKm ? 'ល្បីបំផុត' : 'MOST POPULAR'}</span>
                           </span>
                         ) : isUpgrade ? (
                           <span className="absolute -top-2.5 right-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300 flex items-center gap-1 shadow-2xs">

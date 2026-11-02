@@ -5,6 +5,7 @@ import {
   DicomStudy,
   RadiologistReportInput,
   PacsModality,
+  PacsMeasurement,
 } from './pacs.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 
@@ -98,5 +99,76 @@ export class PacsController {
   @Get('presets')
   getWindowPresets(@Query('modality') modality?: string) {
     return this.pacsService.getWindowPresets(modality);
+  }
+
+  @ApiOperation({ summary: 'Calculate calibrated linear caliper distance using DICOM pixel spacing metric tensor' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Post('measurements/caliper')
+  calculateCaliper(
+    @Body()
+    body: {
+      x1: number;
+      y1: number;
+      x2: number;
+      y2: number;
+      pixelSpacingRow?: number;
+      pixelSpacingCol?: number;
+      label?: string;
+    },
+  ) {
+    return this.pacsService.calculateCaliperDistance(
+      body.x1,
+      body.y1,
+      body.x2,
+      body.y2,
+      body.pixelSpacingRow,
+      body.pixelSpacingCol,
+      body.label,
+    );
+  }
+
+  @ApiOperation({ summary: 'Calculate Region of Interest (ROI) densitometry and tissue categorization' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Post('measurements/roi')
+  calculateRoi(
+    @Body()
+    body: {
+      meanHu: number;
+      radiusMm: number;
+      pixelSpacing?: number;
+    },
+  ) {
+    return this.pacsService.calculateRoiDensitometry(
+      body.meanHu,
+      body.radiusMm,
+      body.pixelSpacing,
+    );
+  }
+
+  @ApiOperation({ summary: 'Add a new measurement to a DICOM study' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Post('studies/:studyInstanceUid/measurements')
+  addMeasurement(
+    @Req() req: any,
+    @Param('studyInstanceUid') studyInstanceUid: string,
+    @Body() body: Omit<PacsMeasurement, 'id' | 'calculatedAt'>,
+  ) {
+    const tenantId = req.user?.tenantId || req.headers?.['x-tenant-id'] || 'default-tenant';
+    return this.pacsService.addMeasurement(studyInstanceUid, tenantId, body);
+  }
+
+  @ApiOperation({ summary: 'Get all measurements for a DICOM study' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Get('studies/:studyInstanceUid/measurements')
+  getMeasurements(
+    @Req() req: any,
+    @Param('studyInstanceUid') studyInstanceUid: string,
+  ) {
+    const tenantId = req.user?.tenantId || req.headers?.['x-tenant-id'] || 'default-tenant';
+    return this.pacsService.getMeasurements(studyInstanceUid, tenantId);
   }
 }

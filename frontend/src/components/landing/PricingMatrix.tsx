@@ -55,6 +55,7 @@ export interface PricingPlan {
   yearlySavingsUsd: number;
   equivalentMonthlyUsd: string;
   isPopular?: boolean;
+  isRecommended?: boolean;
   khqrLimitKh: string;
   khqrLimitEn: string;
   patientLimitKh: string;
@@ -174,8 +175,9 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
       id: 'PRO_8',
       nameKh: 'គម្រោងវិជ្ជាជីវៈ Polyclinic Pro',
       nameEn: 'Polyclinic Pro 8$/mo',
-      badgeKh: 'ពេញនិយមបំផុត - Best Value',
-      badgeEn: 'Most Popular - Best Value',
+      badgeKh: 'ណែនាំពិសេស - RECOMMENDED',
+      badgeEn: 'RECOMMENDED - Best Value',
+      isRecommended: true,
       moduleCountKh: '២០ ឧបករណ៍ទំនើប',
       moduleCountEn: '20 Advanced Modules',
       descKh: 'គម្រោងពេញនិយមបំផុតសម្រាប់មជ្ឈមណ្ឌលវេជ្ជសាស្ត្រ និងគ្លីនិកពហុព្យាបាល - គ្រប់គ្រង ២០ ឧបករណ៍ទំនើបរួមមានធ្មេញ Odontogram, រូបភាព PACS DICOM, ឃ្លាំងឱសថ FEFO, មន្ទីរពិសោធន៍ LIS, គ្រែសម្រាក IPD និង CDSS ការពារអន្តរកម្មថ្នាំ',
@@ -225,8 +227,9 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
       id: 'ENTERPRISE_12',
       nameKh: 'គម្រោងមន្ទីរពេទ្យ Hospital Enterprise',
       nameEn: 'Hospital Enterprise 12$/mo',
-      badgeKh: 'កម្លាំងខ្លាំងបំផុត - Ultimate Power',
-      badgeEn: 'Ultimate Hospital Tier',
+      badgeKh: 'ល្បីបំផុត - MOST POPULAR',
+      badgeEn: 'MOST POPULAR - Hospital Enterprise',
+      isPopular: true,
       moduleCountKh: '២៦ មុខងារពេញលេញ',
       moduleCountEn: '26 Complete Modules',
       descKh: 'អំណាចប្រតិបត្តិការពេញលេញសម្រាប់មន្ទីរសម្រាកព្យាបាល និងបណ្តាញគ្លីនិក - គ្មានដែនកំណត់ KHQR និងអ្នកជំងឺ, ពិគ្រោះវីដេអូ Teleconsult, ចេញវេជ្ជបញ្ជាឌីជីថល e-Prescription, បញ្ជូនរបាយការណ៍ MoH DHIS2 និងទទួលបាន Subdomain ផ្លូវការផ្ទាល់ខ្លួន',
@@ -336,8 +339,12 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
       staffLimitEn: 'Unlimited staff accounts',
       featuresKh: [
         'ដំណោះស្រាយ PaaS ពេញលេញសម្រាប់បណ្តាញមន្ទីរពេទ្យ',
+        'សៀវភៅតាមដានឱសថញៀន MoH DDF Narcotic Register ផ្ទៀងផ្ទាត់សាក្សីពីររូប',
+        'ប្រព័ន្ធវាស់វែង PACS Caliper & Densitometry HU Tissue Classification',
+        'បណ្តាញសាខាច្រើន Multi-Branch Cloud Fleet Real-time Replication',
         'White-label Custom Domain ប្រើប្រាស់ដូមេនផ្ទាល់ខ្លួនរបស់គ្លីនិក',
         'Dedicated Cloud Database Instance ឯករាជ្យសុវត្ថិភាពខ្ពស់',
+        'AI Voice Dictation សំឡេងខ្មែរ កត់ត្រាពិគ្រោះជំងឺ និង SOAP Structuring',
         'Telegram Super Admin Master Bot គ្រប់គ្រងសាខា និងប្រតិបត្តិការ',
         'មិនកំណត់ចំនួនសាខា និងមិនកំណត់ចំនួនបុគ្គលិក Unlimited Fleet',
         'មិនកំណត់ចំនួនអ្នកជំងឺ និង Unlimited KHQR',
@@ -346,8 +353,12 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
       ],
       featuresEn: [
         'Complete Hospital PaaS operating infrastructure',
+        'MoH DDF Statutory Controlled Substances & Narcotic Register with Dual-Signoff Witness',
+        'PACS WebGL Caliper & Densitometry Engine with HU Tissue Attenuation',
+        'Multi-Branch Cloud Fleet Real-time Replication & Central Audit Lake',
         'White-label custom domain - e.g. emr.yourhospital.com',
         'Dedicated isolated cloud database instance',
+        'AI Khmer Voice Clinical Dictation & Automated SOAP Structuring',
         'Telegram Master Super Admin Bot for remote executive control',
         'Unlimited hospital branches and unlimited staff accounts',
         'Unlimited patient records & unlimited KHQR transactions',
@@ -638,6 +649,39 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
       minTier: 'PRO_8',
       icon: Settings,
     },
+    {
+      id: 'narcotics_register',
+      category: 'enterprise',
+      titleKh: 'សៀវភៅតាមដានឱសថញៀន MoH DDF Statutory Narcotic Register',
+      titleEn: 'MoH DDF Statutory Controlled Substances & Narcotic Register',
+      descKh: 'តាមដានឱសថញៀន និងសារធាតុគ្រោះថ្នាក់ ផ្ទៀងផ្ទាត់សាក្សីពីររូប Dual-Signoff Witness, Merkle Chain SHA-256 និងកត់ត្រាកម្ទេចសំណល់ឱសថ',
+      descEn: 'Statutory narcotic tracking with mandatory dual-clinician witness verification, tamper-evident SHA-256 Merkle ledger, and residual destruction logs.',
+      minTier: 'UNLIMITED_20',
+      icon: ShieldCheck,
+      isSpecial: true,
+    },
+    {
+      id: 'pacs_caliper',
+      category: 'clinical',
+      titleKh: 'ប្រព័ន្ធវាស់វែង PACS Caliper & Densitometry',
+      titleEn: 'PACS WebGL Linear Caliper & ROI Tissue Densitometry',
+      descKh: 'វាស់ប្រវែង Caliper កម្រិតមីលីម៉ែត្រ Pixel Spacing Tensor និងវិភាគដង់ស៊ីតេជាលិកា Hounsfield Units ដោយស្វ័យប្រវត្ត',
+      descEn: 'Calibrated millimeter distance measurement tensor and automated Hounsfield Unit ROI tissue densitometry classification.',
+      minTier: 'UNLIMITED_20',
+      icon: Film,
+      isSpecial: true,
+    },
+    {
+      id: 'fleet_sync',
+      category: 'enterprise',
+      titleKh: 'បណ្តាញសាខាច្រើន Multi-Branch Cloud Fleet Sync',
+      titleEn: 'Multi-Branch Cloud Fleet Real-Time Sync & Data Lake',
+      descKh: 'ធ្វើសមកាលកម្មទិន្នន័យរវាងសាខាមន្ទីរពេទ្យទាំងអស់ក្នុងពេល Real-Time ជាមួយ Central Audit Lake គ្មានការកកស្ទះ',
+      descEn: 'Real-time multi-branch synchronization and central operational data lake for hospital group fleets.',
+      minTier: 'UNLIMITED_20',
+      icon: Building2,
+      isSpecial: true,
+    },
   ];
 
   // Filter tools by category and search
@@ -799,26 +843,32 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
                   : 'bg-[#FDFBF7] border border-[#E3DBCB] shadow-2xs hover:shadow-md hover:border-stone-400'
               }`}
             >
-              {isSelected ? (
-                <div className="absolute -top-3.5 right-6 px-3 py-1 bg-teal-800 text-white text-[10px] font-black rounded-full uppercase tracking-wider shadow-md flex items-center gap-1 border border-teal-900 animate-in fade-in zoom-in duration-150">
+              {/* Selected Pill on Top Right */}
+              {isSelected && (
+                <div className="absolute -top-3.5 right-4 px-2.5 py-0.5 bg-teal-900 text-white text-[10px] font-black rounded-full uppercase tracking-wider shadow-md flex items-center gap-1 border border-teal-700 z-10">
                   <Check className="w-3 h-3 stroke-[3]" />
                   <span>{isKm ? 'បានជ្រើសរើស' : 'Selected'}</span>
                 </div>
-              ) : p.badgeKh ? (
+              )}
+
+              {/* Plan Badge Centered on Top */}
+              {p.badgeKh && (
                 <div
-                  className={`absolute -top-3.5 left-1/2 -translate-x-1/2 px-3 py-1 text-[10px] font-bold rounded-full uppercase tracking-wider shadow-xs ${
-                    p.id === 'ENTERPRISE_12'
-                      ? 'bg-amber-600 text-white'
+                  className={`absolute -top-3.5 left-1/2 -translate-x-1/2 px-3 py-1 text-[10px] font-black rounded-full uppercase tracking-wider shadow-sm z-10 ${
+                    p.id === 'PRO_8'
+                      ? 'bg-teal-800 text-amber-300 border border-teal-600 ring-2 ring-amber-400/30'
+                      : p.id === 'ENTERPRISE_12'
+                      ? 'bg-amber-600 text-white border border-amber-500 ring-2 ring-amber-300/40'
                       : p.id === 'SPECIALIST_15'
-                      ? 'bg-purple-700 text-white'
+                      ? 'bg-purple-700 text-white border border-purple-500'
                       : p.id === 'UNLIMITED_20'
-                      ? 'bg-blue-800 text-white'
-                      : 'bg-teal-800 text-white'
+                      ? 'bg-blue-800 text-white border border-blue-600'
+                      : 'bg-teal-800 text-white border border-teal-700'
                   }`}
                 >
                   {isKm ? p.badgeKh : p.badgeEn}
                 </div>
-              ) : null}
+              )}
 
               <div className="space-y-4">
                 <div>

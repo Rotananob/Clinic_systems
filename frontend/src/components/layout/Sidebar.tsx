@@ -39,6 +39,7 @@ import { useTranslation } from '../../context/I18nContext';
 import { ClinicLogo } from '../common/ClinicLogo';
 import { isRouteAllowed, getRoleDisplayName, isModuleRelevantForClinic, isRouteAllowedForPlan } from '../../lib/rbac';
 import { isModuleHidden } from '../../lib/module-visibility';
+import { CORE_9_ROUTES } from '../../lib/sidebar-navigation';
 import { Sparkles as SparklesIcon } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
@@ -116,25 +117,15 @@ export const Sidebar: React.FC = () => {
     return true;
   });
 
-  const CORE_10_ROUTES = [
-    '/dashboard',
-    '/patients',
-    '/visits',
-    '/queue',
-    '/prescriptions',
-    '/inventory',
-    '/billing',
-    '/reports',
-    '/certificates',
-    '/settings',
-  ];
+  // Core 9 daily routes imported from sidebar-navigation
 
-  const coreNavItems = allowedItems.filter((item) => CORE_10_ROUTES.includes(item.href));
+  const coreNavItems = allowedItems.filter((item) => (CORE_9_ROUTES as readonly string[]).includes(item.href));
   const activeExtraItem = allowedItems.find(
     (item) =>
-      !CORE_10_ROUTES.includes(item.href) &&
+      !(CORE_9_ROUTES as readonly string[]).includes(item.href) &&
       (pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href)))
   );
+  const remainingCount = Math.max(0, allNavItems.length - CORE_9_ROUTES.length);
 
   return (
     <aside className="hidden md:flex flex-col w-64 border-r border-[#E7E1D4] bg-[#FDFBF7] min-h-[calc(100vh-4rem)] p-4 shadow-2xs select-none">
@@ -167,75 +158,10 @@ export const Sidebar: React.FC = () => {
         )}
       </div>
 
-      {/* Eye-catching Explore All Tools & Features Button */}
-      <div className="mb-4">
-        <button
-          type="button"
-          onClick={() => window.dispatchEvent(new CustomEvent('open-explore-modules'))}
-          className="group relative w-full p-3 rounded-2xl bg-gradient-to-br from-teal-900 via-teal-800 to-emerald-900 text-white shadow-md hover:shadow-xl hover:from-teal-800 hover:to-emerald-800 border border-teal-700/60 transition-all duration-200 text-left overflow-hidden active:scale-98"
-        >
-          {/* Subtle decorative glow orb */}
-          <div className="absolute -right-4 -top-4 w-16 h-16 bg-emerald-400/20 rounded-full blur-xl pointer-events-none group-hover:scale-125 transition-transform" />
-
-          {/* Top Row: Badge with Pulse & Count */}
-          <div className="flex items-center justify-between gap-1 mb-1.5 relative z-10">
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-400/20 border border-amber-300/40 text-amber-300 text-[10px] font-black uppercase tracking-wider font-mono">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-400"></span>
-              </span>
-              <span>{isKh ? '២៦ ម៉ូឌុលពេញលេញ' : 'All 26 Modules'}</span>
-            </span>
-
-            <span className="text-[10px] font-mono text-teal-200/90 font-bold group-hover:text-white transition-colors flex items-center gap-0.5">
-              <span>{isKh ? 'ពិនិត្យសិទ្ធិ' : 'Access Hub'}</span>
-              <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
-            </span>
-          </div>
-
-          {/* Main Title */}
-          <div className="relative z-10 flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-white/15 border border-white/20 flex items-center justify-center shrink-0 group-hover:rotate-6 group-hover:scale-110 transition-transform">
-              <Compass className="w-4 h-4 text-amber-300" />
-            </div>
-            <div className="min-w-0">
-              <div className="text-xs font-black tracking-tight leading-snug text-white group-hover:text-amber-100 transition-colors">
-                {isKh ? 'រុករកឧបករណ៍ & មុខងារទាំងអស់' : 'Explore All Tools & Features'}
-              </div>
-              <div className="text-[10px] text-teal-100/80 truncate mt-0.5">
-                {isKh ? 'ដឹងភ្លាមថាគ្លីនិកប្រើបានឬអត់' : 'Check which tools are unlocked'}
-              </div>
-            </div>
-          </div>
-
-          {/* Plan Status Pill at Bottom */}
-          <div className="mt-2.5 pt-2 border-t border-white/10 flex items-center justify-between text-[10px] relative z-10">
-            <span className="text-teal-200/90 font-medium">
-              {isKh ? 'ស្ថានភាពគម្រោង៖' : 'Plan Status:'}
-            </span>
-            <span className="px-1.5 py-0.5 rounded bg-black/25 text-amber-300 font-mono font-bold text-[9px] border border-amber-300/30">
-              {isSuperAdmin
-                ? (isKh ? 'ម្ចាស់ប្រព័ន្ធ - All Active' : 'Owner - All Unlocked')
-                : tenantPlanTier === 'FREE'
-                ? (isKh ? 'Free - ដំឡើងប្រើ Pro' : 'Free - Upgrade to Pro')
-                : tenantPlanTier === 'STARTER_5'
-                ? (isKh ? '$5 - ១២ មុខងារសកម្ម' : '$5 - 12 Active')
-                : tenantPlanTier === 'PRO_8'
-                ? (isKh ? '$8 - ២៤ មុខងារសកម្ម' : '$8 - 24 Active')
-                : tenantPlanTier === 'ENTERPRISE_12'
-                ? (isKh ? '$12 - ២៦ មុខងារពេញលេញ' : '$12 - 26 Active')
-                : tenantPlanTier === 'SPECIALIST_15'
-                ? (isKh ? '$15 - ២៨ មុខងារឯកទេស' : '$15 - 28 Specialist')
-                : (isKh ? '$20 - គ្មានដែនកំណត់' : '$20 - Unlimited PaaS')}
-            </span>
-          </div>
-        </button>
-      </div>
-
       <div className="text-[11px] font-bold text-stone-400 uppercase tracking-wider px-3 mb-1.5 font-mono flex items-center justify-between">
-        <span>{isKh ? '១០ ឧបករណ៍សំខាន់ៗ' : 'Core Daily Tools'}</span>
-        <span className="text-[10px] text-teal-800 bg-teal-50 px-1.5 py-0.5 rounded border border-teal-200/60 font-semibold">
-          {coreNavItems.length}/10
+        <span>{isKh ? '១០ ឧបករណ៍សំខាន់ៗ' : '10 Primary Tools'}</span>
+        <span className="text-[10px] text-teal-800 bg-teal-50 px-1.5 py-0.5 rounded border border-teal-200/60 font-semibold font-mono">
+          10/10
         </span>
       </div>
 
@@ -264,9 +190,9 @@ export const Sidebar: React.FC = () => {
           );
         })}
 
-        {/* Active Specialty Module if navigating outside core 10 */}
+        {/* Active Specialty Module if navigating outside core 9 */}
         {activeExtraItem && (
-          <div className="pt-2 mt-2 border-t border-[#E7E1D4]">
+          <div className="pt-1.5 mt-1 border-t border-[#E7E1D4]">
             <div className="text-[10px] font-bold text-amber-800 uppercase tracking-wider px-3 mb-1 font-mono">
               {isKh ? 'ឧបករណ៍ឯកទេសកំពុងបើក' : 'Active Specialty Tool'}
             </div>
@@ -282,6 +208,32 @@ export const Sidebar: React.FC = () => {
             </Link>
           </div>
         )}
+
+        {/* Button 10: Explore All Tools with dynamic +Count badge */}
+        <div className="pt-1.5">
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent('open-explore-modules'))}
+            className="group relative w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all bg-gradient-to-r from-teal-900 via-teal-800 to-emerald-900 text-white shadow-xs hover:shadow-md hover:from-teal-800 hover:to-emerald-800 border border-teal-700/60 active:scale-98"
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-5 h-5 rounded-md bg-white/20 flex items-center justify-center shrink-0 group-hover:rotate-12 transition-transform">
+                <Compass className="w-3.5 h-3.5 text-amber-300" />
+              </div>
+              <span className="truncate tracking-tight">
+                {isKh ? 'រុករកឧបករណ៍ទាំងអស់' : 'Explore All Tools'}
+              </span>
+            </div>
+
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-400/25 text-amber-200 border border-amber-300/40 text-[10px] font-mono font-black shrink-0">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-400"></span>
+              </span>
+              <span>+{remainingCount}</span>
+            </span>
+          </button>
+        </div>
       </nav>
 
       {/* SaaS Progressive Plan Tier Card at bottom */}

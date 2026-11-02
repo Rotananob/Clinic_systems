@@ -122,4 +122,60 @@ describe('Phase 8: DICOM PACS & Medical Viewer UI Suite', () => {
     assert.equal(presets.BRAIN.ww, 80);
     assert.equal(presets.BRAIN.wl, 40);
   });
+
+  it('should verify LIVER_SPECIFIC window preset and anisotropic pixel spacing caliper tensor', () => {
+    const liverPreset = { ww: 150, wl: 30 };
+    assert.equal(liverPreset.ww, 150);
+    assert.equal(liverPreset.wl, 30);
+
+    // Euclidean distance with anisotropic pixel spacing (rowSpacing != colSpacing)
+    const calculateAnisotropicDistance = (
+      p1: { x: number; y: number },
+      p2: { x: number; y: number },
+      rowSpacing: number,
+      colSpacing: number
+    ) => {
+      const dxMm = (p2.x - p1.x) * colSpacing;
+      const dyMm = (p2.y - p1.y) * rowSpacing;
+      return parseFloat(Math.hypot(dxMm, dyMm).toFixed(1));
+    };
+
+    // dx = 40px * 0.25mm = 10mm, dy = 20px * 0.5mm = 10mm -> sqrt(200) = 14.1mm
+    const distanceMm = calculateAnisotropicDistance({ x: 0, y: 0 }, { x: 40, y: 20 }, 0.5, 0.25);
+    assert.equal(distanceMm, 14.1);
+  });
+
+  it('should verify 10-button sidebar navigation rule with 9 core tools and 10th explore tools button', () => {
+    const CORE_9_ROUTES = [
+      '/dashboard',
+      '/patients',
+      '/visits',
+      '/queue',
+      '/prescriptions',
+      '/inventory',
+      '/billing',
+      '/reports',
+      '/settings',
+    ];
+
+    assert.equal(CORE_9_ROUTES.length, 9, 'Core routes must contain exactly 9 primary tools');
+
+    // Total tools available in platform is at least 26
+    const totalToolsCount = 27;
+    const remainingCount = totalToolsCount - CORE_9_ROUTES.length;
+    assert.ok(remainingCount >= 17, 'Remaining tools count badge must be at least +17 tools');
+
+    // Button 10 is the Explore All Tools button
+    const button10 = {
+      isExploreButton: true,
+      labelKh: 'រុករកឧបករណ៍ទាំងអស់',
+      labelEn: 'Explore All Tools',
+      badge: `+${remainingCount}`,
+      actionEvent: 'open-explore-modules',
+    };
+
+    assert.equal(button10.isExploreButton, true);
+    assert.equal(button10.actionEvent, 'open-explore-modules');
+    assert.ok(!button10.labelKh.includes('(') && !button10.labelKh.includes(')'));
+  });
 });

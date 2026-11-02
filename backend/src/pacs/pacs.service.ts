@@ -120,7 +120,36 @@ export const PACS_WINDOW_PRESETS: Record<string, WindowLevelPreset> = {
     windowCenter: 128,
     recommendedModalities: ['US'],
   },
+  LIVER_SPECIFIC: {
+    name: 'Liver Specific Window',
+    description: 'High dynamic sensitivity for focal hypodense liver lesions against fatty parenchyma',
+    windowWidth: 150,
+    windowCenter: 30,
+    recommendedModalities: ['CT'],
+  },
 };
+
+export interface CaliperResult {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  pixelDistance: number;
+  distanceMm: number;
+  pixelSpacingRow: number;
+  pixelSpacingCol: number;
+  label: string;
+}
+
+export interface RoiDensitometryResult {
+  meanHu: number;
+  radiusMm: number;
+  areaMm2: number;
+  pixelCount: number;
+  tissueTypeEn: string;
+  tissueTypeKh: string;
+  clinicalSignificance: string;
+}
 
 export class PacsService {
   private studies: Map<string, DicomStudy> = new Map();
@@ -515,5 +544,137 @@ export class PacsService {
     }
     const targetModality = modality.toUpperCase() as PacsModality;
     return allPresets.filter((preset) => preset.recommendedModalities.includes(targetModality));
+  }
+
+  public calculateCaliperDistance(
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
+    pixelSpacingRow: number = 0.143,
+    pixelSpacingCol: number = 0.143,
+    label?: string,
+  ): CaliperResult {
+    if (pixelSpacingRow <= 0 || pixelSpacingCol <= 0) {
+      throw new BadRequestException('Pixel spacing must be greater than zero');
+    }
+    if (x1 === x2 && y1 === y2) {
+      throw new BadRequestException('Caliper start and end points cannot be identical');
+    }
+
+    const dx = Math.abs(x2 - x1);
+    const dy = Math.abs(y2 - y1);
+    const pixelDistance = Math.round(Math.sqrt(dx * dx + dy * dy) * 10) / 10;
+    const distanceMm =
+      Math.round(
+        Math.sqrt(
+          Math.pow(dx * pixelSpacingCol, 2) + Math.pow(dy * pixelSpacingRow, 2),
+        ) * 10,
+      ) / 10;
+
+    return {
+      x1,
+      y1,
+      x2,
+      y2,
+      pixelDistance,
+      distanceMm,
+      pixelSpacingRow,
+      pixelSpacingCol,
+      label: label || `Caliper: ${distanceMm} mm`,
+    };
+  }
+
+  public calculateRoiDensitometry(
+    meanHu: number,
+    radiusMm: number,
+    pixelSpacing: number = 0.143,
+  ): RoiDensitometryResult {
+    if (radiusMm <= 0) {
+      throw new BadRequestException('ROI radius must be greater than zero');
+    }
+    if (pixelSpacing <= 0) {
+      throw new BadRequestException('Pixel spacing must be greater than zero');
+    }
+
+    const areaMm2 = Math.round(Math.PI * Math.pow(radiusMm, 2) * 10) / 10;
+    const pixelCount = Math.round(areaMm2 / (pixelSpacing * pixelSpacing));
+
+    let tissueTypeEn = 'Soft Tissue Parenchyma';
+    let tissueTypeKh = 'ជាលិកាទន់សរីរាង្គ';
+    let clinicalSignificance = 'Standard soft tissue organ attenuation';
+
+    if (meanHu <= -850) {
+      tissueTypeEn = 'Air / Free Air / Pneumothorax';
+      tissueTypeKh = 'បរិមាណខ្យល់ ឬការដក់ខ្យល់ស្រោមសួត';
+      clinicalSignificance = 'Extremely low radiodensity typical of free air or pneumothorax';
+    } else if (meanHu <= -400) {
+      tissueTypeEn = 'Lung Parenchyma';
+      tissueTypeKh = 'ជាលិកាសួត';
+      clinicalSignificance = 'Low attenuation lung parenchyma aerated alveoli';
+    } else if (meanHu <= -150) {
+      tissueTypeEn = 'Air / Pneumothorax / Cavitation';
+      tissueTypeKh = 'បរិមាណខ្យល់ ឬការដក់ខ្យល់ស្រោមសួត';
+      clinicalSignificance = 'Low radiodensity typical of lungs, trachea, or free air';
+    } else if (meanHu <= -30) {
+      tissueTypeEn = 'Adipose Tissue / Fat';
+      tissueTypeKh = 'ជាលិកាខ្លាញ់';
+      clinicalSignificance = 'Hypodense fat attenuation -100 to -30 HU';
+    } else if (meanHu <= 15) {
+      tissueTypeEn = 'Simple Fluid / Water';
+      tissueTypeKh = 'អង្គធាតុរាវ ឬទឹកដក់';
+      clinicalSignificance = 'Near-water density typical of cysts, urine, or simple ascites';
+    } else if (meanHu <= 50) {
+      tissueTypeEn = 'Soft Tissue Parenchyma';
+      tissueTypeKh = 'ជាលិកាទន់សរីរាង្គ';
+      clinicalSignificance = 'Normal visceral attenuation liver, spleen, muscles';
+    } else if (meanHu <= 85) {
+      tissueTypeEn = 'Acute Hemorrhage / High-Protein Exudate';
+      tissueTypeKh = 'ការហូរឈាមស្រួចស្រាវ ឬទឹករងៃខាប់';
+      clinicalSignificance = 'Hyperdense acute blood collection requiring clinical correlation';
+    } else {
+      tissueTypeEn = 'Dense Cortical Bone / Calcification';
+      tissueTypeKh = 'ឆ្អឹងរឹងក្រាស់ ឬកាល់ស្យូមកកកុញ';
+      clinicalSignificance = 'High radiopaque mineralized bone matrix or vascular calcification';
+    }
+
+    return {
+      meanHu,
+      radiusMm,
+      areaMm2,
+      pixelCount,
+      tissueTypeEn,
+      tissueTypeKh,
+      clinicalSignificance,
+    };
+  }
+
+  public addMeasurement(
+    studyInstanceUid: string,
+    tenantId: string,
+    measurement: Omit<PacsMeasurement, 'id' | 'calculatedAt'>,
+  ): PacsMeasurement {
+    const study = this.getStudyByUid(studyInstanceUid, tenantId);
+    const newMeas: PacsMeasurement = {
+      id: `meas-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
+      type: measurement.type,
+      value: measurement.value,
+      unit: measurement.unit,
+      label: measurement.label,
+      calculatedAt: new Date().toISOString(),
+    };
+
+    if (!study.measurements) {
+      study.measurements = [];
+    }
+    study.measurements.push(newMeas);
+    study.updatedAt = new Date().toISOString();
+    this.studies.set(studyInstanceUid, study);
+    return newMeas;
+  }
+
+  public getMeasurements(studyInstanceUid: string, tenantId: string): PacsMeasurement[] {
+    const study = this.getStudyByUid(studyInstanceUid, tenantId);
+    return study.measurements || [];
   }
 }

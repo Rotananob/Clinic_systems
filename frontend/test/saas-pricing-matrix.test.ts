@@ -116,6 +116,44 @@ const SAAS_PLANS: Record<string, PlanConfig> = {
       '24/7 VIP Phone and Telegram SLA support',
     ],
   },
+  UNLIMITED_20: {
+    id: 'UNLIMITED_20',
+    nameKh: 'គម្រោងគ្មានដែនកំណត់ Unlimited PaaS',
+    nameEn: 'Unlimited PaaS 20$/mo',
+    monthlyUsd: 20,
+    yearlyUsd: 192,
+    khqrDailyLimit: -1,
+    monthlyPatients: -1,
+    staffAccounts: -1,
+    featuresKh: [
+      'ដំណោះស្រាយ PaaS ពេញលេញសម្រាប់បណ្តាញមន្ទីរពេទ្យ',
+      'សៀវភៅតាមដានឱសថញៀន MoH DDF Narcotic Register ផ្ទៀងផ្ទាត់សាក្សីពីររូប',
+      'ប្រព័ន្ធវាស់វែង PACS Caliper & Densitometry HU Tissue Classification',
+      'បណ្តាញសាខាច្រើន Multi-Branch Cloud Fleet Real-time Replication',
+      'White-label Custom Domain ប្រើប្រាស់ដូមេនផ្ទាល់ខ្លួនរបស់គ្លីនិក',
+      'Dedicated Cloud Database Instance ឯករាជ្យសុវត្ថិភាពខ្ពស់',
+      'AI Voice Dictation សំឡេងខ្មែរ កត់ត្រាពិគ្រោះជំងឺ និង SOAP Structuring',
+      'Telegram Super Admin Master Bot គ្រប់គ្រងសាខា និងប្រតិបត្តិការ',
+      'មិនកំណត់ចំនួនសាខា និងមិនកំណត់ចំនួនបុគ្គលិក Unlimited Fleet',
+      'មិនកំណត់ចំនួនអ្នកជំងឺ និង Unlimited KHQR',
+      'រួមបញ្ចូលរាល់ឧបករណ៍ និងមុខងារទាំងអស់ក្នុងប្រព័ន្ធ ១០០%',
+      '24/7 Dedicated Engineering Support & VIP SLA 15-minute response',
+    ],
+    featuresEn: [
+      'Complete Hospital PaaS operating infrastructure',
+      'MoH DDF Statutory Controlled Substances & Narcotic Register with Dual-Signoff Witness',
+      'PACS WebGL Caliper & Densitometry Engine with HU Tissue Attenuation',
+      'Multi-Branch Cloud Fleet Real-time Replication & Central Audit Lake',
+      'White-label custom domain - e.g. emr.yourhospital.com',
+      'Dedicated isolated cloud database instance',
+      'AI Khmer Voice Clinical Dictation & Automated SOAP Structuring',
+      'Telegram Master Super Admin Bot for remote executive control',
+      'Unlimited hospital branches and unlimited staff accounts',
+      'Unlimited patient records & unlimited KHQR transactions',
+      'Full 100% platform feature access across all present & future modules',
+      '24/7 Dedicated engineering team & 15-minute response SLA',
+    ],
+  },
 };
 
 describe('Step 11 & Step 12: SaaS Landing Page & Pricing Matrix Test Suite', () => {
@@ -144,6 +182,35 @@ describe('Step 11 & Step 12: SaaS Landing Page & Pricing Matrix Test Suite', () 
     assert.equal(SAAS_PLANS.ENTERPRISE_12.khqrDailyLimit, -1);
     assert.equal(SAAS_PLANS.ENTERPRISE_12.monthlyPatients, -1);
     assert.equal(SAAS_PLANS.ENTERPRISE_12.staffAccounts, -1);
+
+    // Unlimited $20: Unlimited KHQR, unlimited patients, unlimited staff
+    assert.equal(SAAS_PLANS.UNLIMITED_20.monthlyUsd, 20);
+    assert.equal(SAAS_PLANS.UNLIMITED_20.yearlyUsd, 192);
+    assert.equal(SAAS_PLANS.UNLIMITED_20.khqrDailyLimit, -1);
+    assert.equal(SAAS_PLANS.UNLIMITED_20.monthlyPatients, -1);
+    assert.equal(SAAS_PLANS.UNLIMITED_20.staffAccounts, -1);
+  });
+
+  it('should verify $20 tier includes advanced clinical and platform tools', () => {
+    const khFeatures = SAAS_PLANS.UNLIMITED_20.featuresKh.join(' ');
+    const enFeatures = SAAS_PLANS.UNLIMITED_20.featuresEn.join(' ');
+
+    assert.ok(khFeatures.includes('MoH DDF Narcotic Register'));
+    assert.ok(enFeatures.includes('Controlled Substances & Narcotic Register'));
+    assert.ok(khFeatures.includes('PACS Caliper & Densitometry'));
+    assert.ok(enFeatures.includes('PACS WebGL Caliper'));
+    assert.ok(khFeatures.includes('Multi-Branch Cloud Fleet'));
+    assert.ok(enFeatures.includes('Multi-Branch Cloud Fleet'));
+  });
+
+  it('should guarantee zero parentheses in all Khmer language strings for pricing plans', () => {
+    const khmerParenRegex = /[ក-៿].*[()]/;
+    for (const plan of Object.values(SAAS_PLANS)) {
+      assert.equal(khmerParenRegex.test(plan.nameKh), false, 'Parentheses found in nameKh: ' + plan.nameKh);
+      for (const feat of plan.featuresKh) {
+        assert.equal(khmerParenRegex.test(feat), false, 'Parentheses found in Khmer feature: ' + feat);
+      }
+    }
   });
 
   it('should verify annual billing discount is at least 20% on all paid plans', () => {

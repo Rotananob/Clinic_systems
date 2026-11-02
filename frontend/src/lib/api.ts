@@ -1296,6 +1296,23 @@ class ApiClient {
       const q = modality ? '?modality=' + encodeURIComponent(modality) : '';
       return this.request<any[]>('/pacs/presets' + q);
     },
+    calculateCaliper: (data: { x1: number; y1: number; x2: number; y2: number; pixelSpacingRow?: number; pixelSpacingCol?: number; label?: string }) =>
+      this.request<any>('/pacs/measurements/caliper', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    calculateRoiDensitometry: (data: { meanHu: number; radiusMm: number; pixelSpacing?: number }) =>
+      this.request<any>('/pacs/measurements/roi', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    addMeasurement: (studyInstanceUid: string, data: any) =>
+      this.request<any>('/pacs/studies/' + encodeURIComponent(studyInstanceUid) + '/measurements', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    getMeasurements: (studyInstanceUid: string) =>
+      this.request<any[]>('/pacs/studies/' + encodeURIComponent(studyInstanceUid) + '/measurements'),
   };
   // Cambodian NSSF & Commercial Insurance (Phase 9)
   insurance = {
