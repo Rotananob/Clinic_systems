@@ -220,6 +220,17 @@ export const ExploreModulesModal: React.FC<ExploreModulesModalProps> = ({
         icon: FlaskConical,
         tags: ['chemo', 'oncology', 'cancer', 'bsa', 'calvert', 'carboplatin', 'doxorubicin', 'folfox', 'rchop', 'paclitaxel', 'anthracycline', 'ថ្នាំគីមី', 'មហារីក'],
       },
+      {
+        id: 'pediatric',
+        category: 'clinical',
+        titleKh: 'វេជ្ជសាស្ត្រកុមារ & ទារកទើបកើត Pediatric-Neonatal',
+        titleEn: 'Pediatric & Neonatal Precision Care',
+        descKh: 'គណនាកម្រិតថ្នាំកុមារតាមទម្ងន់ កំណត់ពិដានមិនឱ្យលើសកម្រិតមនុស្សពេញវ័យ កាលវិភាគ Gentamicin សម្រាប់ទារក និងតារាងពន្លឺព្យាបាលជាតិលឿង Bhutani',
+        descEn: 'Clark & Young rule, weight-based dose clamping, neonatal Gentamicin PMA interval, and AAP Bhutani phototherapy nomogram',
+        href: '/pediatric',
+        icon: HeartPulse,
+        tags: ['pediatric', 'neonatal', 'child', 'infant', 'clark', 'young', 'gentamicin', 'pma', 'phototherapy', 'bilirubin', 'nomogram', 'paracetamol', 'កុមារ', 'ទារក', 'ពន្លឺ'],
+      },
 
       // Inpatient & Care
       {

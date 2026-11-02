@@ -2091,6 +2091,47 @@ class ApiClient {
         body: JSON.stringify(data),
       }),
   };
+
+  pediatric = {
+    getMedications: (code?: string) => {
+      const qs = code ? `?code=${encodeURIComponent(code)}` : '';
+      return this.request<any[]>(`/pediatric/medications${qs}`);
+    },
+    getPatients: (patientId?: string) => {
+      const qs = patientId ? `?patientId=${encodeURIComponent(patientId)}` : '';
+      return this.request<any>(`/pediatric/patients${qs}`);
+    },
+    calculateDosing: (data: {
+      medicationCode: string;
+      weightKg: number;
+      ageYears: number;
+      ageMonths: number;
+      concentrationMgPerMl?: number;
+    }) =>
+      this.request<any>('/pediatric/calculate-dosing', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    calculateNeonatalGentamicin: (data: {
+      gestationalAgeWeeks: number;
+      postnatalAgeDays: number;
+      weightKg: number;
+    }) =>
+      this.request<any>('/pediatric/neonatal-gentamicin', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    evaluatePhototherapy: (data: {
+      postnatalHours: number;
+      totalSerumBilirubinMgDl: number;
+      gestationalAgeWeeks: number;
+      hasNeurotoxicityRiskFactors?: boolean;
+    }) =>
+      this.request<any>('/pediatric/evaluate-phototherapy', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+  };
 };
 
 export const api = new ApiClient();

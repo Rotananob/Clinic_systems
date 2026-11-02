@@ -249,6 +249,14 @@ export const ROUTE_PERMISSIONS: RoutePermission[] = [
     descriptionKh: 'គណនាផ្ទៃក្រឡារាងកាយ BSA កម្រិតថ្នាំ Carboplatin តាមរូបមន្ត Calvert តាមដានកម្រិតពុលបេះដូង Anthracycline និងត្រួតពិនិត្យសុវត្ថិភាពឈាមមុនចាក់ថ្នាំគីមី',
   },
   {
+    path: '/pediatric',
+    allowedRoles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR', 'PHARMACIST'],
+    labelEn: 'Pediatric & Neonatal Precision Care',
+    labelKh: 'វេជ្ជសាស្ត្រកុមារ & ទារកទើបកើត Pediatric-Neonatal',
+    descriptionEn: 'Clark & Young rule, weight-based dose clamping, neonatal Gentamicin PMA interval, and AAP Bhutani phototherapy nomogram',
+    descriptionKh: 'គណនាកម្រិតថ្នាំកុមារតាមទម្ងន់ កំណត់ពិដានមិនឱ្យលើសកម្រិតមនុស្សពេញវ័យ កាលវិភាគ Gentamicin សម្រាប់ទារក និងតារាងពន្លឺព្យាបាលជាតិលឿង Bhutani',
+  },
+  {
     path: '/staff',
     allowedRoles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR'],
     labelEn: 'Staff & Role Management',
@@ -465,6 +473,7 @@ export const ROUTE_MINIMUM_PLAN: Record<string, PlanTier> = {
   '/pkpd': 'ENTERPRISE_12',
   '/asp': 'ENTERPRISE_12',
   '/chemo': 'ENTERPRISE_12',
+  '/pediatric': 'ENTERPRISE_12',
 
   '/narcotics': 'UNLIMITED_20',
   '/fleet-sync': 'UNLIMITED_20',

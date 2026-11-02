@@ -51,6 +51,7 @@ export const ALL_SYSTEM_MODULE_ROUTES = [
   '/pkpd',
   '/asp',
   '/chemo',
+  '/pediatric',
   '/staff',
   '/super-admin',
   '/owner',

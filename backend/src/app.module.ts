@@ -40,6 +40,7 @@ import { BedsideMonitorModule } from './telemetry/bedside-monitor.module.ts';
 import { PkPdModule } from './pkpd/pkpd.module.ts';
 import { AspModule } from './asp/asp.module.ts';
 import { ChemoModule } from './chemo/chemo.module.ts';
+import { PediatricModule } from './pediatric/pediatric.module.ts';
 import { RateLimiterMiddleware } from './common/middleware/rate-limiter.middleware';
 import { TenantContextMiddleware } from './common/middleware/tenant-context.middleware';
 import { CommonModule } from './common/common.module';
@@ -96,6 +97,7 @@ import { CommonModule } from './common/common.module';
     PkPdModule,
     AspModule,
     ChemoModule,
+    PediatricModule,
   ],
 })
 export class AppModule implements NestModule {
