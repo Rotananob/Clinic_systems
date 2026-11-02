@@ -49,6 +49,7 @@ import {
   Network,
   Activity,
   HeartPulse,
+  Scale,
 } from 'lucide-react';
 import { SubscriptionCheckoutModal } from '../subscriptions/SubscriptionCheckoutModal';
 
@@ -185,6 +186,17 @@ export const ExploreModulesModal: React.FC<ExploreModulesModalProps> = ({
         href: '/telemetry',
         icon: HeartPulse,
         tags: ['telemetry', 'ecg', 'spo2', 'arrhythmia', 'vitals', 'icu', 'heart', 'waveform', 'asystole', 'stemi', 'សញ្ញាជីវិត', 'បេះដូង'],
+      },
+      {
+        id: 'pkpd',
+        category: 'clinical',
+        titleKh: 'ការគណនាកម្រិតថ្នាំច្បាស់លាស់ PK-PD & TDM',
+        titleEn: 'Clinical PK/PD Dosing & Bayesian TDM',
+        descKh: 'តាមដានកំហាប់ថ្នាំក្នុងឈាម TDM គណនាកម្រិតតម្រងនោម Cockcroft-Gault និងព្យាករណ៍កម្រិតថ្នាំតាមក្បួន Bayesian',
+        descEn: 'Therapeutic Drug Monitoring, Cockcroft-Gault CrCl renal clearance, one-compartment steady-state kinetics, and Bayesian forecasting',
+        href: '/pkpd',
+        icon: Scale,
+        tags: ['pkpd', 'tdm', 'vancomycin', 'gentamicin', 'amikacin', 'digoxin', 'creatinine', 'crcl', 'bayesian', 'dosing', 'កម្រិតថ្នាំ', 'តម្រងនោម'],
       },
 
       // Inpatient & Care

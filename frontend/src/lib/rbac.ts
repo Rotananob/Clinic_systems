@@ -225,6 +225,14 @@ export const ROUTE_PERMISSIONS: RoutePermission[] = [
     descriptionKh: 'តាមដានសញ្ញាជីវិតអ្នកជំងឺផ្ទាល់តាមប្រព័ន្ធ Telemetry បង្ហាញរលកបេះដូង ECG និងប្រព័ន្ធសញ្ញាអាសន្ន IEC 60601-1-8',
   },
   {
+    path: '/pkpd',
+    allowedRoles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR', 'PHARMACIST'],
+    labelEn: 'Clinical PK/PD Precision Dosing & TDM',
+    labelKh: 'ការគណនាកម្រិតថ្នាំច្បាស់លាស់ PK-PD និង TDM',
+    descriptionEn: 'Therapeutic Drug Monitoring, Cockcroft-Gault CrCl renal clearance, one-compartment steady-state kinetics, and Bayesian forecasting',
+    descriptionKh: 'ប្រព័ន្ធតាមដានកំហាប់ថ្នាំក្នុងឈាម TDM គណនាកម្រិតតម្រងនោម Cockcroft-Gault និងព្យាករណ៍កម្រិតថ្នាំតាមក្បួន Bayesian',
+  },
+  {
     path: '/staff',
     allowedRoles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR'],
     labelEn: 'Staff & Role Management',
@@ -438,6 +446,7 @@ export const ROUTE_MINIMUM_PLAN: Record<string, PlanTier> = {
   '/invoice-template': 'ENTERPRISE_12',
   '/infusion': 'ENTERPRISE_12',
   '/telemetry': 'ENTERPRISE_12',
+  '/pkpd': 'ENTERPRISE_12',
 
   '/narcotics': 'UNLIMITED_20',
   '/fleet-sync': 'UNLIMITED_20',

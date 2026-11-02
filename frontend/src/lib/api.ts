@@ -1958,6 +1958,35 @@ class ApiClient {
       ),
     getAuditLogs: () => this.request<any[]>('/telemetry/audit-logs'),
   };
+
+  pkpd = {
+    getDrugs: () => this.request<any[]>('/pkpd/drugs'),
+    getDrugByCode: (code: string) => this.request<any>(`/pkpd/drugs/${encodeURIComponent(code)}`),
+    calculateBiometrics: (patient: any) =>
+      this.request<any>('/pkpd/biometrics', {
+        method: 'POST',
+        body: JSON.stringify(patient),
+      }),
+    optimizeDosing: (data: { drugCode: string; patient: any }) =>
+      this.request<any>('/pkpd/optimize', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    runBayesianFit: (data: {
+      drugCode: string;
+      patient: any;
+      currentDoseMg: number;
+      intervalHours: number;
+      measuredLevels: any[];
+    }) =>
+      this.request<any>('/pkpd/bayesian-fit', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    getConsultations: () => this.request<any[]>('/pkpd/consultations'),
+    getConsultationById: (id: string) =>
+      this.request<any>(`/pkpd/consultations/${encodeURIComponent(id)}`),
+  };
 };
 
 export const api = new ApiClient();

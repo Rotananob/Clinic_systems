@@ -48,6 +48,7 @@ export const ALL_SYSTEM_MODULE_ROUTES = [
   '/fleet-sync',
   '/infusion',
   '/telemetry',
+  '/pkpd',
   '/staff',
   '/super-admin',
   '/owner',
