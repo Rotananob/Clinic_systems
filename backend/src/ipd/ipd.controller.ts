@@ -146,6 +146,63 @@ export class IpdController {
 
   @ApiOperation({ summary: 'Calculate IV infusion flow rate and drip rate (gtt/min)' })
   @Post('calculator/iv-drip')
+
+  @ApiOperation({ summary: 'Get Braden Scale pressure ulcer risk assessments for admission' })
+  @Get('admissions/:admissionId/braden')
+  getBradenAssessments(@Param('admissionId') admissionId: string) {
+    return this.ipdService.getBradenAssessments(admissionId);
+  }
+
+  @ApiOperation({ summary: 'Assess inpatient Braden Scale pressure ulcer risk' })
+  @Post('admissions/:admissionId/braden')
+  assessBradenScale(
+    @Param('admissionId') admissionId: string,
+    @Body()
+    body: {
+      sensoryPerception: 1 | 2 | 3 | 4;
+      moisture: 1 | 2 | 3 | 4;
+      activity: 1 | 2 | 3 | 4;
+      mobility: 1 | 2 | 3 | 4;
+      nutrition: 1 | 2 | 3 | 4;
+      frictionShear: 1 | 2 | 3;
+      nurseName: string;
+    }
+  ) {
+    return this.ipdService.assessBradenScale(admissionId, body);
+  }
+
+  @ApiOperation({ summary: 'Get vital signs flowsheet and NEWS2 score history for admission' })
+  @Get('admissions/:admissionId/vitals')
+  getVitalFlowsheet(@Param('admissionId') admissionId: string) {
+    return this.ipdService.getVitalFlowsheet(admissionId);
+  }
+
+  @ApiOperation({ summary: 'Record nursing vital signs with real-time NEWS2 calculation' })
+  @Post('admissions/:admissionId/vitals')
+  recordVitalFlowsheet(
+    @Param('admissionId') admissionId: string,
+    @Body()
+    body: {
+      respiratoryRate: number;
+      spo2Percent: number;
+      onSupplementalOxygen: boolean;
+      systolicBp: number;
+      diastolicBp: number;
+      pulseRate: number;
+      consciousnessAvpu: 'ALERT' | 'VOICE' | 'PAIN' | 'UNRESPONSIVE';
+      temperatureCelsius: number;
+      nurseName: string;
+    }
+  ) {
+    return this.ipdService.recordVitalFlowsheet(admissionId, body);
+  }
+
+  @ApiOperation({ summary: 'Calculate stay charges and balance due for inpatient' })
+  @Get('admissions/:admissionId/stay-charges')
+  getStayCharges(@Param('admissionId') admissionId: string, @Query('asOfDate') asOfDate?: string) {
+    return this.ipdService.calculateStayCharges(admissionId, asOfDate);
+  }
+
   calculateIvDrip(
     @Body()
     body: {

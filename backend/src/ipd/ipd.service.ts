@@ -87,11 +87,52 @@ export interface FluidBalanceRecord {
   recordedByNurse: string;
 }
 
+
+export interface BradenScaleAssessment {
+  id: string;
+  admissionId: string;
+  patientId: string;
+  assessedAt: string;
+  assessedByNurse: string;
+  sensoryPerception: 1 | 2 | 3 | 4;
+  moisture: 1 | 2 | 3 | 4;
+  activity: 1 | 2 | 3 | 4;
+  mobility: 1 | 2 | 3 | 4;
+  nutrition: 1 | 2 | 3 | 4;
+  frictionShear: 1 | 2 | 3;
+  totalScore: number;
+  riskLevel: 'VERY_HIGH_RISK' | 'HIGH_RISK' | 'MODERATE_RISK' | 'MILD_RISK' | 'NO_RISK';
+  riskLevelKh: string;
+  protocols: string[];
+}
+
+export interface NursingVitalFlowsheetEntry {
+  id: string;
+  admissionId: string;
+  patientId: string;
+  recordedAt: string;
+  recordedByNurse: string;
+  respiratoryRate: number;
+  spo2Percent: number;
+  onSupplementalOxygen: boolean;
+  systolicBp: number;
+  diastolicBp: number;
+  pulseRate: number;
+  consciousnessAvpu: 'ALERT' | 'VOICE' | 'PAIN' | 'UNRESPONSIVE';
+  temperatureCelsius: number;
+  news2Score: number;
+  clinicalRisk: 'LOW' | 'LOW_MEDIUM' | 'MEDIUM' | 'HIGH_CRITICAL';
+  monitoringFrequencyEn: string;
+  monitoringFrequencyKh: string;
+}
+
 export class IpdService {
   private beds: Map<string, Bed> = new Map();
   private admissions: Map<string, InpatientAdmission> = new Map();
   private emarRecords: Map<string, MedicationAdminRecord[]> = new Map();
   private fluidRecords: Map<string, FluidBalanceRecord[]> = new Map();
+  private bradenRecords: Map<string, BradenScaleAssessment[]> = new Map();
+  private vitalRecords: Map<string, NursingVitalFlowsheetEntry[]> = new Map();
 
   constructor() {
     this.seedDefaultWardsAndBeds();
@@ -264,6 +305,51 @@ export class IpdService {
       },
     ];
     this.fluidRecords.set(admissionId, fluidList);
+    // Seed default Braden assessment
+    const defaultBraden: BradenScaleAssessment = {
+      id: 'braden-01',
+      admissionId,
+      patientId: 'PT-1001',
+      assessedAt: '2026-10-20T08:30:00Z',
+      assessedByNurse: 'Nurse Sreymom',
+      sensoryPerception: 3,
+      moisture: 3,
+      activity: 2,
+      mobility: 2,
+      nutrition: 3,
+      frictionShear: 2,
+      totalScore: 15,
+      riskLevel: 'MILD_RISK',
+      riskLevelKh: 'ហានិភ័យទាប',
+      protocols: [
+        'លើកទឹកចិត្តឱ្យចលនាខ្លួនតាមដែលអាចធ្វើបាន',
+        'ត្រួតពិនិត្យស្បែកជារៀងរាល់ថ្ងៃ',
+        'រក្សាស្បែកឱ្យស្អាតនិងស្ងួតជានិច្ច'
+      ]
+    };
+    this.bradenRecords.set(admissionId, [defaultBraden]);
+
+    // Seed default Vital Flowsheet entry
+    const defaultVital: NursingVitalFlowsheetEntry = {
+      id: 'vital-01',
+      admissionId,
+      patientId: 'PT-1001',
+      recordedAt: '2026-10-20T08:15:00Z',
+      recordedByNurse: 'Nurse Sreymom',
+      respiratoryRate: 22,
+      spo2Percent: 94,
+      onSupplementalOxygen: true,
+      systolicBp: 118,
+      diastolicBp: 76,
+      pulseRate: 98,
+      consciousnessAvpu: 'ALERT',
+      temperatureCelsius: 38.2,
+      news2Score: 6,
+      clinicalRisk: 'MEDIUM',
+      monitoringFrequencyEn: 'Minimum 1 hourly monitoring & urgent clinical review',
+      monitoringFrequencyKh: 'តាមដានយ៉ាងតិចរៀងរាល់ ១ម៉ោងម្តង និងជូនដំណឹងគ្រូពេទ្យពិនិត្យបន្ទាន់'
+    };
+    this.vitalRecords.set(admissionId, [defaultVital]);
   }
 
   // Get all beds in clinic with occupancy stats
@@ -690,6 +776,214 @@ export class IpdService {
   }
 
   // IV Infusion Drip Rate Calculator (gtt/min)
+
+  // Braden Scale Assessment for Inpatient Pressure Ulcer Prevention
+  assessBradenScale(
+    admissionId: string,
+    data: {
+      sensoryPerception: 1 | 2 | 3 | 4;
+      moisture: 1 | 2 | 3 | 4;
+      activity: 1 | 2 | 3 | 4;
+      mobility: 1 | 2 | 3 | 4;
+      nutrition: 1 | 2 | 3 | 4;
+      frictionShear: 1 | 2 | 3;
+      nurseName: string;
+    }
+  ): BradenScaleAssessment {
+    const admission = this.admissions.get(admissionId);
+    if (!admission) {
+      throw new NotFoundException(`Admission ${admissionId} not found`);
+    }
+
+    const totalScore =
+      data.sensoryPerception +
+      data.moisture +
+      data.activity +
+      data.mobility +
+      data.nutrition +
+      data.frictionShear;
+
+    let riskLevel: BradenScaleAssessment['riskLevel'] = 'NO_RISK';
+    let riskLevelKh = 'គ្មានហានិភ័យ';
+    let protocols: string[] = ['ការថែទាំអនាម័យស្តង់ដារតាមវួដ'];
+
+    if (totalScore <= 9) {
+      riskLevel = 'VERY_HIGH_RISK';
+      riskLevelKh = 'ហានិភ័យធ្ងន់ធ្ងរខ្លាំង';
+      protocols = [
+        'ប្តូរឥរិយាបថរៀងរាល់ ២ម៉ោងម្តងជាកំហិត',
+        'ប្រើពូកខ្យល់បញ្ចៀសសម្ពាធសង្កត់កម្រិតខ្ពស់ Low Air Loss Mattress',
+        'ទ្រកែងជើងមិនឱ្យប៉ះផ្ទាល់ជាមួយពូក Heel Suspension',
+        'លាបក្រែមការពារស្បែកសំណើម Barrier Cream',
+        'ពិគ្រោះជាមួយអ្នកឯកទេសអាហារូបត្ថម្ភ'
+      ];
+    } else if (totalScore <= 12) {
+      riskLevel = 'HIGH_RISK';
+      riskLevelKh = 'ហានិភ័យខ្ពស់';
+      protocols = [
+        'តារាងប្តូរឥរិយាបថរៀងរាល់ ២ ទៅ ៣ម៉ោងម្តង',
+        'ប្រើពូកអេប៉ុងទន់កម្រិតខ្ពស់ High-Density Foam',
+        'ប្រើខ្នើយកល់ត្រគាកនិងខ្នង Foam Wedge',
+        'លាបថ្នាំការពារស្បែកសំណើម'
+      ];
+    } else if (totalScore <= 14) {
+      riskLevel = 'MODERATE_RISK';
+      riskLevelKh = 'ហានិភ័យមធ្យម';
+      protocols = [
+        'ប្តូរឥរិយាបថរៀងរាល់ ៤ម៉ោងម្តង',
+        'លាបក្រែមការពារសំណើមលើស្បែក',
+        'ផ្តល់ជាតិទឹកនិងអាហារបំប៉នសមស្រប'
+      ];
+    } else if (totalScore <= 18) {
+      riskLevel = 'MILD_RISK';
+      riskLevelKh = 'ហានិភ័យទាប';
+      protocols = [
+        'លើកទឹកចិត្តឱ្យចលនាខ្លួនតាមដែលអាចធ្វើបាន',
+        'ត្រួតពិនិត្យស្បែកជារៀងរាល់ថ្ងៃ',
+        'រក្សាស្បែកឱ្យស្អាតនិងស្ងួតជានិច្ច'
+      ];
+    }
+
+    const assessment: BradenScaleAssessment = {
+      id: `braden-${Date.now()}`,
+      admissionId,
+      patientId: admission.patientId,
+      assessedAt: new Date().toISOString(),
+      assessedByNurse: data.nurseName,
+      sensoryPerception: data.sensoryPerception,
+      moisture: data.moisture,
+      activity: data.activity,
+      mobility: data.mobility,
+      nutrition: data.nutrition,
+      frictionShear: data.frictionShear,
+      totalScore,
+      riskLevel,
+      riskLevelKh,
+      protocols
+    };
+
+    const currentList = this.bradenRecords.get(admissionId) || [];
+    currentList.unshift(assessment);
+    this.bradenRecords.set(admissionId, currentList);
+
+    return assessment;
+  }
+
+  getBradenAssessments(admissionId: string): BradenScaleAssessment[] {
+    return this.bradenRecords.get(admissionId) || [];
+  }
+
+  // Vital Signs Nursing Flowsheet with Deterministic NEWS2 Clinical Score
+  recordVitalFlowsheet(
+    admissionId: string,
+    data: {
+      respiratoryRate: number;
+      spo2Percent: number;
+      onSupplementalOxygen: boolean;
+      systolicBp: number;
+      diastolicBp: number;
+      pulseRate: number;
+      consciousnessAvpu: 'ALERT' | 'VOICE' | 'PAIN' | 'UNRESPONSIVE';
+      temperatureCelsius: number;
+      nurseName: string;
+    }
+  ): NursingVitalFlowsheetEntry {
+    const admission = this.admissions.get(admissionId);
+    if (!admission) {
+      throw new NotFoundException(`Admission ${admissionId} not found`);
+    }
+
+    let respScore = 0;
+    if (data.respiratoryRate <= 8) respScore = 3;
+    else if (data.respiratoryRate <= 11) respScore = 1;
+    else if (data.respiratoryRate <= 20) respScore = 0;
+    else if (data.respiratoryRate <= 24) respScore = 2;
+    else respScore = 3;
+
+    let spo2Score = 0;
+    if (data.spo2Percent <= 91) spo2Score = 3;
+    else if (data.spo2Percent <= 93) spo2Score = 2;
+    else if (data.spo2Percent <= 95) spo2Score = 1;
+    else spo2Score = 0;
+
+    const o2Score = data.onSupplementalOxygen ? 2 : 0;
+
+    let sbpScore = 0;
+    if (data.systolicBp <= 90) sbpScore = 3;
+    else if (data.systolicBp <= 100) sbpScore = 2;
+    else if (data.systolicBp <= 110) sbpScore = 1;
+    else if (data.systolicBp <= 219) sbpScore = 0;
+    else sbpScore = 3;
+
+    let pulseScore = 0;
+    if (data.pulseRate <= 40) pulseScore = 3;
+    else if (data.pulseRate <= 50) pulseScore = 1;
+    else if (data.pulseRate <= 90) pulseScore = 0;
+    else if (data.pulseRate <= 110) pulseScore = 1;
+    else if (data.pulseRate <= 130) pulseScore = 2;
+    else pulseScore = 3;
+
+    const avpuScore = data.consciousnessAvpu === 'ALERT' ? 0 : 3;
+
+    let tempScore = 0;
+    if (data.temperatureCelsius <= 35.0) tempScore = 3;
+    else if (data.temperatureCelsius <= 36.0) tempScore = 1;
+    else if (data.temperatureCelsius <= 38.0) tempScore = 0;
+    else if (data.temperatureCelsius <= 39.0) tempScore = 1;
+    else tempScore = 2;
+
+    const news2Score = respScore + spo2Score + o2Score + sbpScore + pulseScore + avpuScore + tempScore;
+    const hasSingle3 = [respScore, spo2Score, sbpScore, pulseScore, avpuScore, tempScore].some((s) => s === 3);
+
+    let clinicalRisk: NursingVitalFlowsheetEntry['clinicalRisk'] = 'LOW';
+    let monitoringFrequencyEn = '12 hourly routine monitoring';
+    let monitoringFrequencyKh = 'តាមដានរៀងរាល់ ១២ម៉ោងម្តង';
+
+    if (news2Score >= 7) {
+      clinicalRisk = 'HIGH_CRITICAL';
+      monitoringFrequencyEn = 'Continuous monitoring & Emergency MET Call';
+      monitoringFrequencyKh = 'តាមដានបន្តជាប់មិនឈប់ និងហៅក្រុមសង្គ្រោះបន្ទាន់ MET';
+    } else if (news2Score >= 5 || hasSingle3) {
+      clinicalRisk = 'MEDIUM';
+      monitoringFrequencyEn = 'Minimum 1 hourly monitoring & urgent clinical review';
+      monitoringFrequencyKh = 'តាមដានយ៉ាងតិចរៀងរាល់ ១ម៉ោងម្តង និងជូនដំណឹងគ្រូពេទ្យពិនិត្យបន្ទាន់';
+    } else if (news2Score >= 1) {
+      clinicalRisk = 'LOW_MEDIUM';
+      monitoringFrequencyEn = '4-6 hourly monitoring';
+      monitoringFrequencyKh = 'តាមដានរៀងរាល់ ៤ ទៅ ៦ម៉ោងម្តង';
+    }
+
+    const entry: NursingVitalFlowsheetEntry = {
+      id: `vital-${Date.now()}`,
+      admissionId,
+      patientId: admission.patientId,
+      recordedAt: new Date().toISOString(),
+      recordedByNurse: data.nurseName,
+      respiratoryRate: data.respiratoryRate,
+      spo2Percent: data.spo2Percent,
+      onSupplementalOxygen: data.onSupplementalOxygen,
+      systolicBp: data.systolicBp,
+      diastolicBp: data.diastolicBp,
+      pulseRate: data.pulseRate,
+      consciousnessAvpu: data.consciousnessAvpu,
+      temperatureCelsius: data.temperatureCelsius,
+      news2Score,
+      clinicalRisk,
+      monitoringFrequencyEn,
+      monitoringFrequencyKh
+    };
+
+    const currentList = this.vitalRecords.get(admissionId) || [];
+    currentList.unshift(entry);
+    this.vitalRecords.set(admissionId, currentList);
+
+    return entry;
+  }
+
+  getVitalFlowsheet(admissionId: string): NursingVitalFlowsheetEntry[] {
+    return this.vitalRecords.get(admissionId) || [];
+  }
+
   calculateIvDripRate(
     volumeMl: number,
     durationHours: number,

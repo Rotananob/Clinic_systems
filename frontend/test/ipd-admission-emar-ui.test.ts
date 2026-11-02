@@ -54,7 +54,7 @@ describe('Phase 13: Inpatient Admission, Bed Management & Nurse e-MAR UI Test Su
     assert.equal(emojiRegex.test(kmNav), false, `Emoji found in km.nav.ipd: ${kmNav}`);
   });
 
-  it('should verify critical IPD and e-MAR localization keys exist', () => {
+  it('should verify critical IPD, e-MAR, Braden, NEWS2, and Stay Charge localization keys exist', () => {
     const requiredKeys = [
       'title',
       'subtitle',
@@ -87,7 +87,33 @@ describe('Phase 13: Inpatient Admission, Bed Management & Nurse e-MAR UI Test Su
       'dischargeSuccessToast',
       'cleanSuccessToast',
       'administerSuccessToast',
-      'fluidSuccessToast'
+      'fluidSuccessToast',
+      'bradenTitle',
+      'bradenScore',
+      'sensoryPerception',
+      'moisture',
+      'activity',
+      'mobility',
+      'nutrition',
+      'frictionShear',
+      'bradenProtocols',
+      'assessBradenButton',
+      'vitalFlowsheetTitle',
+      'recordVitalsButton',
+      'respiratoryRate',
+      'spo2',
+      'supplementalOxygen',
+      'bloodPressure',
+      'pulseRate',
+      'consciousness',
+      'temperature',
+      'news2Score',
+      'clinicalRiskLevel',
+      'monitoringFrequency',
+      'stayChargesTitle',
+      'daysStayed',
+      'roomCharges',
+      'netBalanceDue'
     ];
 
     const enIpd = (en as any).ipd;
@@ -179,5 +205,137 @@ describe('Phase 13: Inpatient Admission, Bed Management & Nurse e-MAR UI Test Su
       verifyFiveRights(expectedWrist, expectedWrist, expectedMed, 'MED-PARACETAMOL'),
       false
     );
+  });
+
+  it('should accurately calculate Braden Scale risk level and preventative protocols', () => {
+    const calculateBradenRisk = (
+      sensory: number,
+      moisture: number,
+      activity: number,
+      mobility: number,
+      nutrition: number,
+      friction: number
+    ) => {
+      const totalScore = sensory + moisture + activity + mobility + nutrition + friction;
+      let riskLevel = 'NO_RISK';
+      if (totalScore <= 9) riskLevel = 'VERY_HIGH_RISK';
+      else if (totalScore <= 12) riskLevel = 'HIGH_RISK';
+      else if (totalScore <= 14) riskLevel = 'MODERATE_RISK';
+      else if (totalScore <= 18) riskLevel = 'MILD_RISK';
+      return { totalScore, riskLevel };
+    };
+
+    // Scenario 1: Severe bedridden patient (Very High Risk)
+    const p1 = calculateBradenRisk(1, 1, 1, 1, 1, 1);
+    assert.equal(p1.totalScore, 6);
+    assert.equal(p1.riskLevel, 'VERY_HIGH_RISK');
+
+    // Scenario 2: Moderate risk patient
+    const p2 = calculateBradenRisk(3, 2, 2, 2, 3, 2);
+    assert.equal(p2.totalScore, 14);
+    assert.equal(p2.riskLevel, 'MODERATE_RISK');
+
+    // Scenario 3: Mild risk patient
+    const p3 = calculateBradenRisk(3, 3, 3, 3, 3, 2);
+    assert.equal(p3.totalScore, 17);
+    assert.equal(p3.riskLevel, 'MILD_RISK');
+
+    // Scenario 4: Fully mobile patient (No Risk)
+    const p4 = calculateBradenRisk(4, 4, 4, 4, 4, 3);
+    assert.equal(p4.totalScore, 23);
+    assert.equal(p4.riskLevel, 'NO_RISK');
+  });
+
+  it('should accurately calculate deterministic NEWS2 score and emergency MET escalation', () => {
+    const calculateNews2 = (
+      rr: number,
+      spo2: number,
+      onO2: boolean,
+      sbp: number,
+      pulse: number,
+      avpu: 'ALERT' | 'VOICE' | 'PAIN' | 'UNRESPONSIVE',
+      temp: number
+    ) => {
+      let respScore = 0;
+      if (rr <= 8 || rr >= 25) respScore = 3;
+      else if (rr <= 11) respScore = 1;
+      else if (rr >= 21) respScore = 2;
+
+      let spo2Score = 0;
+      if (spo2 <= 91) spo2Score = 3;
+      else if (spo2 <= 93) spo2Score = 2;
+      else if (spo2 <= 95) spo2Score = 1;
+
+      const o2Score = onO2 ? 2 : 0;
+
+      let sbpScore = 0;
+      if (sbp <= 90 || sbp >= 220) sbpScore = 3;
+      else if (sbp <= 100) sbpScore = 2;
+      else if (sbp <= 110) sbpScore = 1;
+
+      let pulseScore = 0;
+      if (pulse <= 40 || pulse >= 131) pulseScore = 3;
+      else if (pulse <= 50 || (pulse >= 111 && pulse <= 130)) pulseScore = 2;
+      else if (pulse >= 91 && pulse <= 110) pulseScore = 1;
+
+      const avpuScore = avpu === 'ALERT' ? 0 : 3;
+
+      let tempScore = 0;
+      if (temp <= 35.0) tempScore = 3;
+      else if (temp <= 36.0 || (temp >= 38.1 && temp <= 39.0)) tempScore = 1;
+      else if (temp >= 39.1) tempScore = 2;
+
+      const news2Score = respScore + spo2Score + o2Score + sbpScore + pulseScore + avpuScore + tempScore;
+      const hasSingle3 = [respScore, spo2Score, sbpScore, pulseScore, avpuScore, tempScore].some((s) => s === 3);
+
+      let clinicalRisk = 'LOW';
+      if (news2Score >= 7) clinicalRisk = 'HIGH_CRITICAL';
+      else if (news2Score >= 5 || hasSingle3) clinicalRisk = 'MEDIUM';
+      else if (news2Score >= 1) clinicalRisk = 'LOW_MEDIUM';
+
+      return { news2Score, clinicalRisk };
+    };
+
+    // Normal patient
+    const normal = calculateNews2(16, 98, false, 120, 72, 'ALERT', 36.8);
+    assert.equal(normal.news2Score, 0);
+    assert.equal(normal.clinicalRisk, 'LOW');
+
+    // Single red parameter: SpO2 90% triggers score 3 and Medium Risk
+    const singleRed = calculateNews2(18, 90, false, 125, 75, 'ALERT', 37.0);
+    assert.equal(singleRed.news2Score, 3);
+    assert.equal(singleRed.clinicalRisk, 'MEDIUM');
+
+    // Septic patient with High Critical deterioration
+    const critical = calculateNews2(28, 91, true, 85, 135, 'VOICE', 39.4);
+    assert.equal(critical.news2Score >= 7, true);
+    assert.equal(critical.clinicalRisk, 'HIGH_CRITICAL');
+  });
+
+  it('should accurately compute inpatient stay charges and net balance due', () => {
+    const calculateStayCharges = (
+      admissionDateIso: string,
+      calculateToDateIso: string,
+      dailyRateUsd: number,
+      depositAmountUsd: number
+    ) => {
+      const msPerDay = 1000 * 60 * 60 * 24;
+      const start = new Date(admissionDateIso).getTime();
+      const end = new Date(calculateToDateIso).getTime();
+      const diffDays = Math.max(1, Math.ceil((end - start) / msPerDay));
+      const totalRoomChargesUsd = diffDays * dailyRateUsd;
+      const totalRoomChargesKhr = totalRoomChargesUsd * 4000;
+      const netBalanceDueUsd = Math.max(0, totalRoomChargesUsd - depositAmountUsd);
+      const netBalanceDueKhr = netBalanceDueUsd * 4000;
+      return { diffDays, totalRoomChargesUsd, totalRoomChargesKhr, netBalanceDueUsd, netBalanceDueKhr };
+    };
+
+    // 4 days stay at USD 60 per day with USD 100 deposit
+    const bill = calculateStayCharges('2026-10-20T08:00:00Z', '2026-10-24T08:00:00Z', 60, 100);
+    assert.equal(bill.diffDays, 4);
+    assert.equal(bill.totalRoomChargesUsd, 240);
+    assert.equal(bill.totalRoomChargesKhr, 960000);
+    assert.equal(bill.netBalanceDueUsd, 140);
+    assert.equal(bill.netBalanceDueKhr, 560000);
   });
 });

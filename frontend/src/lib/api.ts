@@ -1501,6 +1501,27 @@ class ApiClient {
         method: 'POST',
         body: JSON.stringify(data),
       }),
+    getBradenAssessments: (admissionId: string) =>
+      this.request<any[]>('/ipd/admissions/' + encodeURIComponent(admissionId) + '/braden'),
+    assessBradenScale: (admissionId: string, data: any) =>
+      this.request<any>('/ipd/admissions/' + encodeURIComponent(admissionId) + '/braden', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    getVitalFlowsheet: (admissionId: string) =>
+      this.request<any[]>('/ipd/admissions/' + encodeURIComponent(admissionId) + '/vitals'),
+    recordVitalFlowsheet: (admissionId: string, data: any) =>
+      this.request<any>('/ipd/admissions/' + encodeURIComponent(admissionId) + '/vitals', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    getStayCharges: (admissionId: string, asOfDate?: string) =>
+      this.request<any>(
+        '/ipd/admissions/' +
+          encodeURIComponent(admissionId) +
+          '/stay-charges' +
+          (asOfDate ? '?asOfDate=' + encodeURIComponent(asOfDate) : '')
+      ),
   };
   // Doctor Commission & Real-Time Clinic P&L Financial Engine (Phase 14)
   finance = {
