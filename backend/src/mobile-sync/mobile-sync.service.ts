@@ -2,12 +2,15 @@
 // Strictly ZERO emojis in code and text. Strictly NO parentheses in Khmer text.
 
 import { BadRequestException, Logger } from '@nestjs/common';
+import { Subject, Observable, interval, merge, from } from 'rxjs';
+import { filter, map, finalize } from 'rxjs/operators';
 import {
   _typeStripping,
   MIN_SUPPORTED_APP_VERSION,
   DEFAULT_SYNC_LIMIT,
   DEFAULT_RURAL_CHUNK_SIZE,
   MAX_RURAL_CHUNK_SIZE,
+  DEFAULT_HEARTBEAT_INTERVAL_MS,
 } from './mobile-sync.types.ts';
 import type {
   HandshakeRequestDto,
@@ -23,6 +26,13 @@ import type {
   MutationResultDto,
   RegisteredDevice,
   CausalRelation,
+  TelemetryStreamEvent,
+  TelemetryStreamFilterDto,
+  TelemetryBroadcastDto,
+  SseMessageEvent,
+  TelemetryBedVitalsData,
+  TelemetryEcgData,
+  TelemetryLabPanicData,
 } from './mobile-sync.types.ts';
 
 /**
@@ -84,10 +94,20 @@ export class MobileSyncService {
     timestamp: string;
   }> = [];
 
+  // Real-Time Telemetry & Alert Broadcasting Engine
+  private readonly telemetrySubject = new Subject<TelemetryStreamEvent>();
+  private readonly bedTelemetryCache: Map<string, TelemetryStreamEvent> = new Map();
+  private readonly activePanicAlerts: Map<string, TelemetryStreamEvent> = new Map();
+  private readonly activeSubscribers: Map<
+    string,
+    { deviceId?: string; department?: string; ward?: string; connectedAt: string }
+  > = new Map();
+
   constructor(prisma?: any) {
     this.prisma = prisma;
     this.seedFormularyCatalog();
     this.seedInitialClinicalData();
+    this.seedTelemetryBedsAndAlerts();
   }
 
   /**
@@ -250,9 +270,9 @@ export class MobileSyncService {
     }
 
     // Prisma fallback if connected
-    if (this.prisma && typeof (this.prisma as any).patient?.findMany === 'function') {
+    if (this.prisma && typeof this.prisma.patient?.findMany === 'function') {
       try {
-        const prismaPatients = await (this.prisma as any).patient.findMany({
+        const prismaPatients = await this.prisma.patient.findMany({
           where: {
             ...(dto.tenantId ? { tenantId: dto.tenantId } : {}),
             updatedAt: { gt: new Date(sinceTimeMs) },
@@ -425,7 +445,6 @@ export class MobileSyncService {
         }))
       : slicedFormulary;
 
-    // Approximate JSON payload size in bytes for bandwidth monitoring
     const approximateBytes = JSON.stringify({
       finalPatients,
       finalVitals,
@@ -598,7 +617,6 @@ export class MobileSyncService {
     const existing = this.patientsStore.get(mutation.entityId);
 
     if (!existing) {
-      // New patient created offline
       const monotonicVersion = this.getNextMonotonicSequence();
       const entityClock = GatewayVectorClockEngine.merge(
         { SERVER: 1 },
@@ -636,7 +654,6 @@ export class MobileSyncService {
       };
     }
 
-    // Existing patient: evaluate causality
     const existingClock = existing.vectorClock || { SERVER: existing.monotonicVersion || 1 };
     const clientClock = mutation.vectorClock;
     let winner: 'CLIENT' | 'SERVER' = 'SERVER';
@@ -656,7 +673,6 @@ export class MobileSyncService {
         winner = 'SERVER';
         reason = 'Client mutation is causally superseded or duplicate via vector clock';
       } else {
-        // Concurrent divergence: Monotonic / Lamport timestamp tie-breaker
         const clientMonotonic = mutation.monotonicTimestamp || mutation.lamportTime || 0;
         const serverMonotonic = existing.monotonicVersion || 0;
 
@@ -669,7 +685,6 @@ export class MobileSyncService {
           strategy = 'MONOTONIC_SEQUENCE';
           reason = 'Concurrent divergence resolved by server monotonic sequence priority';
         } else {
-          // Fallback to wall-clock LWW
           const serverTimestampMs = Date.parse(existing.updatedAt);
           if (clientTimestampMs >= serverTimestampMs) {
             winner = 'CLIENT';
@@ -681,7 +696,6 @@ export class MobileSyncService {
         }
       }
     } else {
-      // Legacy client without vector clock: evaluate monotonic timestamp or wall-clock LWW
       const clientMonotonic = mutation.monotonicTimestamp || mutation.lamportTime;
       const serverMonotonic = existing.monotonicVersion;
 
@@ -1070,6 +1084,222 @@ export class MobileSyncService {
     }
   }
 
+  // -------------------------------------------------------------
+  // REAL-TIME TELEMETRY & VITAL ALERT STREAMING BROADCASTER
+  // -------------------------------------------------------------
+
+  /**
+   * Broadcasts real-time telemetry event to all connected mobile clients
+   */
+  public broadcastTelemetryEvent(dto: TelemetryBroadcastDto | TelemetryStreamEvent): TelemetryStreamEvent {
+    const event: TelemetryStreamEvent = {
+      eventId:
+        (dto as any).eventId ||
+        `EVT-${Date.now()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
+      eventType: dto.eventType,
+      timestamp: (dto as any).timestamp || new Date().toISOString(),
+      department: (dto.department || 'ALL').toUpperCase(),
+      ward: dto.ward,
+      bedId: dto.bedId,
+      patientId: dto.patientId,
+      patientName: dto.patientName,
+      data: dto.data || {},
+    };
+
+    // Cache latest status per bed and active panic alerts
+    if (event.bedId) {
+      this.bedTelemetryCache.set(event.bedId, event);
+    }
+    if (event.eventType === 'LAB_PANIC_ALERT') {
+      this.activePanicAlerts.set(event.eventId, event);
+    }
+
+    this.telemetrySubject.next(event);
+    return event;
+  }
+
+  /**
+   * Helper to broadcast patient bed vital signs update
+   */
+  public broadcastBedVitals(params: {
+    bedId: string;
+    patientId: string;
+    patientName: string;
+    department: string;
+    ward?: string;
+    vitals: TelemetryBedVitalsData;
+  }): TelemetryStreamEvent {
+    return this.broadcastTelemetryEvent({
+      eventType: 'VITAL_SIGNS_UPDATE',
+      department: params.department,
+      ward: params.ward || params.department,
+      bedId: params.bedId,
+      patientId: params.patientId,
+      patientName: params.patientName,
+      data: params.vitals,
+    });
+  }
+
+  /**
+   * Helper to broadcast ECG telemetry events
+   */
+  public broadcastEcgTelemetry(params: {
+    bedId: string;
+    patientId: string;
+    patientName: string;
+    department: string;
+    ward?: string;
+    ecg: TelemetryEcgData;
+  }): TelemetryStreamEvent {
+    return this.broadcastTelemetryEvent({
+      eventType: 'ECG_TELEMETRY',
+      department: params.department,
+      ward: params.ward || params.department,
+      bedId: params.bedId,
+      patientId: params.patientId,
+      patientName: params.patientName,
+      data: params.ecg,
+    });
+  }
+
+  /**
+   * Helper to broadcast critical lab panic value alert
+   */
+  public broadcastLabPanicAlert(params: {
+    patientId: string;
+    patientName: string;
+    department: string;
+    ward?: string;
+    bedId?: string;
+    alert: TelemetryLabPanicData;
+  }): TelemetryStreamEvent {
+    return this.broadcastTelemetryEvent({
+      eventType: 'LAB_PANIC_ALERT',
+      department: params.department,
+      ward: params.ward || params.department,
+      bedId: params.bedId,
+      patientId: params.patientId,
+      patientName: params.patientName,
+      data: params.alert,
+    });
+  }
+
+  /**
+   * Creates Server-Sent Events (SSE) observable stream for mobile clients
+   * Supports department/ward channel filtering and 15s rural heartbeat keep-alives
+   */
+  public getTelemetryStream(filterDto?: TelemetryStreamFilterDto): Observable<SseMessageEvent> {
+    const targetDept = filterDto?.department ? filterDto.department.toUpperCase() : 'ALL';
+    const targetWard = filterDto?.ward;
+    const intervalMs = filterDto?.heartbeatIntervalMs || DEFAULT_HEARTBEAT_INTERVAL_MS;
+
+    const clientId = `SUB-${filterDto?.deviceId || 'MOBILE'}-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+    this.activeSubscribers.set(clientId, {
+      deviceId: filterDto?.deviceId,
+      department: targetDept,
+      ward: targetWard,
+      connectedAt: new Date().toISOString(),
+    });
+
+    // 1. Initial snapshot of current ward bed vitals and active panic alerts
+    const initialEvents: TelemetryStreamEvent[] = [];
+    for (const cached of this.bedTelemetryCache.values()) {
+      if (this.matchesFilter(cached, targetDept, targetWard)) {
+        initialEvents.push(cached);
+      }
+    }
+    for (const alert of this.activePanicAlerts.values()) {
+      if (this.matchesFilter(alert, targetDept, targetWard)) {
+        initialEvents.push(alert);
+      }
+    }
+
+    const snapshot$ = from(initialEvents);
+
+    // 2. Filtered real-time broadcast stream
+    const live$ = this.telemetrySubject.asObservable().pipe(
+      filter((evt) => this.matchesFilter(evt, targetDept, targetWard))
+    );
+
+    // 3. Periodic client heartbeat keep-alive (every 15s default on rural links)
+    const heartbeat$ = interval(intervalMs).pipe(
+      map(() => {
+        const now = new Date();
+        const hbEvent: TelemetryStreamEvent = {
+          eventId: `HB-${now.getTime()}`,
+          eventType: 'HEARTBEAT',
+          timestamp: now.toISOString(),
+          department: 'ALL',
+          data: {
+            status: 'PING',
+            heartbeatIntervalSeconds: Math.round(intervalMs / 1000),
+            serverTimeUtc: now.toISOString(),
+            serverTimeMs: now.getTime(),
+            activeSubscribersCount: this.activeSubscribers.size,
+          },
+        };
+        return hbEvent;
+      })
+    );
+
+    // Merge initial snapshot, live broadcast, and heartbeat stream
+    return merge(snapshot$, live$, heartbeat$).pipe(
+      map((evt) => ({
+        id: evt.eventId,
+        type: evt.eventType,
+        data: JSON.stringify(evt),
+      })),
+      finalize(() => {
+        this.activeSubscribers.delete(clientId);
+      })
+    );
+  }
+
+  private matchesFilter(event: TelemetryStreamEvent, targetDept: string, targetWard?: string): boolean {
+    if (event.eventType === 'HEARTBEAT') return true;
+    if (event.department === 'ALL') return true;
+
+    if (targetDept !== 'ALL') {
+      if (event.department.toUpperCase() !== targetDept) {
+        return false;
+      }
+    }
+
+    if (targetWard && event.ward) {
+      if (event.ward.toUpperCase() !== targetWard.toUpperCase()) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  public getActiveSubscribersCount(): number {
+    return this.activeSubscribers.size;
+  }
+
+  public getBedTelemetrySnapshot(department?: string): TelemetryStreamEvent[] {
+    const list: TelemetryStreamEvent[] = [];
+    const dept = department ? department.toUpperCase() : 'ALL';
+    for (const item of this.bedTelemetryCache.values()) {
+      if (dept === 'ALL' || item.department === dept) {
+        list.push(item);
+      }
+    }
+    return list;
+  }
+
+  public getActivePanicAlerts(department?: string): TelemetryStreamEvent[] {
+    const list: TelemetryStreamEvent[] = [];
+    const dept = department ? department.toUpperCase() : 'ALL';
+    for (const item of this.activePanicAlerts.values()) {
+      if (dept === 'ALL' || item.department === dept) {
+        list.push(item);
+      }
+    }
+    return list;
+  }
+
   /**
    * Gateway Health & Diagnostics
    */
@@ -1084,6 +1314,9 @@ export class MobileSyncService {
       cachedPatientsCount: this.patientsStore.size,
       cachedVitalSignsCount: this.vitalSignsStore.size,
       cachedFormularyItemsCount: this.formularyStore.size,
+      activeTelemetrySubscribersCount: this.activeSubscribers.size,
+      cachedBedsCount: this.bedTelemetryCache.size,
+      activePanicAlertsCount: this.activePanicAlerts.size,
       totalMutationsIngested: this.mutationAuditLog.length,
       serverTimeUtc: new Date().toISOString(),
     };
@@ -1107,6 +1340,148 @@ export class MobileSyncService {
 
   public getFormularyItem(itemId: string): SyncFormularyItemDto | undefined {
     return this.formularyStore.get(itemId);
+  }
+
+  /**
+   * Seed Initial Bedside Telemetry Monitors and Active Lab Panic Alerts
+   */
+  private seedTelemetryBedsAndAlerts(): void {
+    const nowIso = new Date().toISOString();
+
+    // 1. ICU Bed 01: Adult Post-CABG
+    this.broadcastTelemetryEvent({
+      eventId: 'INIT-ICU-BED-01',
+      eventType: 'VITAL_SIGNS_UPDATE',
+      timestamp: nowIso,
+      department: 'ICU',
+      ward: 'ICU',
+      bedId: 'ICU-BED-01',
+      patientId: 'PAT-MOH-2026-0001',
+      patientName: 'Sokha Chea',
+      data: {
+        heartRate: 74,
+        systolicBp: 122,
+        diastolicBp: 78,
+        calculatedMap: 92.7,
+        spo2: 98,
+        respirationRate: 14,
+        temperature: 37.0,
+        severity: 'NORMAL',
+      },
+    });
+
+    // 2. ICU Bed 02: Septic Shock with Lab Panic Alert
+    this.broadcastTelemetryEvent({
+      eventId: 'INIT-ICU-BED-02',
+      eventType: 'VITAL_SIGNS_UPDATE',
+      timestamp: nowIso,
+      department: 'ICU',
+      ward: 'ICU',
+      bedId: 'ICU-BED-02',
+      patientId: 'PAT-MOH-2026-0002',
+      patientName: 'Bopha Vann',
+      data: {
+        heartRate: 118,
+        systolicBp: 85,
+        diastolicBp: 52,
+        calculatedMap: 63.0,
+        spo2: 93,
+        respirationRate: 24,
+        temperature: 38.8,
+        severity: 'WARNING',
+      },
+    });
+
+    this.broadcastTelemetryEvent({
+      eventId: 'INIT-PANIC-01',
+      eventType: 'LAB_PANIC_ALERT',
+      timestamp: nowIso,
+      department: 'ICU',
+      ward: 'ICU',
+      bedId: 'ICU-BED-02',
+      patientId: 'PAT-MOH-2026-0002',
+      patientName: 'Bopha Vann',
+      data: {
+        testName: 'Serum Potassium K+',
+        measuredValue: 6.8,
+        unit: 'mmol/L',
+        referenceLow: 3.5,
+        referenceHigh: 5.0,
+        severity: 'PANIC_CRITICAL',
+        labTechnicianId: 'STAFF-LIS-01',
+        requiresImmediateReview: true,
+        notificationMessageKh: 'ការព្រមានកម្រិតអាសន្នពីមន្ទីរពិសោធន៍: ប៉ូតាស្យូមខ្ពស់ខ្លាំង',
+        notificationMessageEn: 'Critical Panic Lab Alert: Serum Potassium severely elevated above critical threshold',
+      },
+    });
+
+    // 3. ER Bed 01: Ventricular Tachycardia Emergency
+    this.broadcastTelemetryEvent({
+      eventId: 'INIT-ER-BED-01',
+      eventType: 'ECG_TELEMETRY',
+      timestamp: nowIso,
+      department: 'ER',
+      ward: 'ER',
+      bedId: 'ER-BED-01',
+      patientId: 'PAT-MOH-2026-0003',
+      patientName: 'Rithy Chan',
+      data: {
+        rhythm: 'VENTRICULAR_TACHYCARDIA',
+        arrhythmiaType: 'VENTRICULAR_TACHYCARDIA',
+        stDeviationMm: 2.4,
+        prIntervalMs: 140,
+        qrsDurationMs: 145,
+        calculatedQtcMs: 480,
+        leadStatus: 'CONNECTED',
+        arrhythmiaDetected: true,
+        alarmActive: true,
+      },
+    });
+
+    this.broadcastTelemetryEvent({
+      eventId: 'INIT-PANIC-02',
+      eventType: 'LAB_PANIC_ALERT',
+      timestamp: nowIso,
+      department: 'ER',
+      ward: 'ER',
+      bedId: 'ER-BED-01',
+      patientId: 'PAT-MOH-2026-0003',
+      patientName: 'Rithy Chan',
+      data: {
+        testName: 'High Sensitivity Troponin I',
+        measuredValue: 1.85,
+        unit: 'ng/mL',
+        referenceLow: 0.0,
+        referenceHigh: 0.04,
+        severity: 'PANIC_CRITICAL',
+        labTechnicianId: 'STAFF-LIS-02',
+        requiresImmediateReview: true,
+        notificationMessageKh: 'ការព្រមានកម្រិតអាសន្នពីមន្ទីរពិសោធន៍: សារធាតុត្រូប៉ូនីនខ្ពស់ខ្លាំង',
+        notificationMessageEn: 'Critical Panic Lab Alert: High Sensitivity Troponin I severely elevated indicating acute myocardial infarction',
+      },
+    });
+
+    // 4. WARD_A Bed 05: General Ward
+    this.broadcastTelemetryEvent({
+      eventId: 'INIT-WARD-A-BED-05',
+      eventType: 'VITAL_SIGNS_UPDATE',
+      timestamp: nowIso,
+      department: 'WARD_A',
+      ward: 'WARD_A',
+      bedId: 'WARD-A-BED-05',
+      patientId: 'PAT-OFFLINE-9999',
+      patientName: 'Vichhai Keo',
+      data: {
+        heartRate: 68,
+        systolicBp: 118,
+        diastolicBp: 74,
+        calculatedMap: 88.7,
+        spo2: 99,
+        respirationRate: 16,
+        temperature: 36.6,
+        severity: 'NORMAL',
+      },
+    });
   }
 
   /**

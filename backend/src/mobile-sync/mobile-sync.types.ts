@@ -6,6 +6,7 @@ export const MIN_SUPPORTED_APP_VERSION = '1.0.0';
 export const DEFAULT_SYNC_LIMIT = 100;
 export const DEFAULT_RURAL_CHUNK_SIZE = 25;
 export const MAX_RURAL_CHUNK_SIZE = 50;
+export const DEFAULT_HEARTBEAT_INTERVAL_MS = 15000;
 
 export type SyncEntityType = 'PATIENT' | 'VITAL_SIGNS' | 'FORMULARY_ITEM';
 export type MutationOperation = 'CREATE' | 'UPDATE' | 'DELETE';
@@ -14,6 +15,100 @@ export type MutationStatus = 'APPLIED' | 'CONFLICT_IGNORED' | 'ERROR';
 export type DeviceStatus = 'ACTIVE' | 'REGISTERED' | 'SUSPENDED';
 export type NetworkTier = '2G' | '3G' | '4G' | 'BROADBAND' | 'OFFLINE';
 export type CausalRelation = 'BEFORE' | 'AFTER' | 'EQUAL' | 'CONCURRENT';
+
+// Real-Time Telemetry & Alert Types
+export type TelemetryEventType =
+  | 'VITAL_SIGNS_UPDATE'
+  | 'ECG_TELEMETRY'
+  | 'LAB_PANIC_ALERT'
+  | 'HEARTBEAT';
+
+export type AlertSeverity = 'NORMAL' | 'WARNING' | 'CRITICAL' | 'PANIC_CRITICAL';
+
+export interface TelemetryBedVitalsData {
+  heartRate: number;
+  systolicBp: number;
+  diastolicBp: number;
+  calculatedMap: number;
+  spo2: number;
+  respirationRate: number;
+  temperature: number;
+  severity: AlertSeverity;
+}
+
+export interface TelemetryEcgData {
+  rhythm: string;
+  arrhythmiaType: string;
+  stDeviationMm: number;
+  prIntervalMs: number;
+  qrsDurationMs: number;
+  calculatedQtcMs: number;
+  leadStatus: string;
+  arrhythmiaDetected: boolean;
+  alarmActive: boolean;
+}
+
+export interface TelemetryLabPanicData {
+  testName: string;
+  measuredValue: number;
+  unit: string;
+  referenceLow: number;
+  referenceHigh: number;
+  severity: AlertSeverity;
+  labTechnicianId: string;
+  requiresImmediateReview: boolean;
+  notificationMessageKh: string;
+  notificationMessageEn: string;
+}
+
+export interface TelemetryHeartbeatData {
+  status: string;
+  heartbeatIntervalSeconds: number;
+  serverTimeUtc: string;
+  serverTimeMs: number;
+  activeSubscribersCount: number;
+}
+
+export interface TelemetryStreamEvent {
+  eventId: string;
+  eventType: TelemetryEventType;
+  timestamp: string;
+  department: string;
+  ward?: string;
+  bedId?: string;
+  patientId?: string;
+  patientName?: string;
+  data:
+    | TelemetryBedVitalsData
+    | TelemetryEcgData
+    | TelemetryLabPanicData
+    | TelemetryHeartbeatData
+    | Record<string, any>;
+}
+
+export interface TelemetryStreamFilterDto {
+  department?: string;
+  ward?: string;
+  deviceId?: string;
+  heartbeatIntervalMs?: number;
+}
+
+export interface TelemetryBroadcastDto {
+  eventType: TelemetryEventType;
+  department: string;
+  ward?: string;
+  bedId?: string;
+  patientId?: string;
+  patientName?: string;
+  data: Record<string, any>;
+}
+
+export interface SseMessageEvent {
+  data: string;
+  id?: string;
+  type?: string;
+  retry?: number;
+}
 
 export interface RegisteredDevice {
   deviceId: string;
@@ -226,6 +321,16 @@ export const MutationStatus = {};
 export const DeviceStatus = {};
 export const NetworkTier = {};
 export const CausalRelation = {};
+export const TelemetryEventType = {};
+export const AlertSeverity = {};
+export const TelemetryBedVitalsData = {};
+export const TelemetryEcgData = {};
+export const TelemetryLabPanicData = {};
+export const TelemetryHeartbeatData = {};
+export const TelemetryStreamEvent = {};
+export const TelemetryStreamFilterDto = {};
+export const TelemetryBroadcastDto = {};
+export const SseMessageEvent = {};
 export const RegisteredDevice = {};
 export const HandshakeRequestDto = {};
 export const HandshakeResponseDto = {};
