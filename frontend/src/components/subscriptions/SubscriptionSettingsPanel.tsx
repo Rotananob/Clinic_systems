@@ -36,7 +36,7 @@ export const SubscriptionSettingsPanel: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isViewPlansModalOpen, setIsViewPlansModalOpen] = useState<boolean>(false);
   const [selectedPlanForModal, setSelectedPlanForModal] = useState<
-    'STARTER_5' | 'PRO_8' | 'ENTERPRISE_12'
+    'STARTER_5' | 'PRO_8' | 'ENTERPRISE_12' | 'SPECIALIST_15' | 'UNLIMITED_20'
   >('PRO_8');
   const [selectedInvoiceIdForReceipt, setSelectedInvoiceIdForReceipt] = useState<string | null>(
     null,
@@ -68,7 +68,7 @@ export const SubscriptionSettingsPanel: React.FC = () => {
     fetchSubscriptionDetails();
   }, []);
 
-  const openUpgradeModal = (planTier?: 'STARTER_5' | 'PRO_8' | 'ENTERPRISE_12') => {
+  const openUpgradeModal = (planTier?: 'STARTER_5' | 'PRO_8' | 'ENTERPRISE_12' | 'SPECIALIST_15' | 'UNLIMITED_20') => {
     const currentTier = subData?.planTier || 'FREE';
     if (planTier) {
       if (isPlanDowngrade(currentTier, planTier)) {
@@ -76,8 +76,12 @@ export const SubscriptionSettingsPanel: React.FC = () => {
       }
       setSelectedPlanForModal(planTier);
     } else {
-      if (currentTier === 'ENTERPRISE_12') {
-        setSelectedPlanForModal('ENTERPRISE_12');
+      if (currentTier === 'UNLIMITED_20') {
+        setSelectedPlanForModal('UNLIMITED_20');
+      } else if (currentTier === 'SPECIALIST_15') {
+        setSelectedPlanForModal('UNLIMITED_20');
+      } else if (currentTier === 'ENTERPRISE_12') {
+        setSelectedPlanForModal('SPECIALIST_15');
       } else if (currentTier === 'PRO_8') {
         setSelectedPlanForModal('ENTERPRISE_12');
       } else if (currentTier === 'STARTER_5') {
@@ -592,7 +596,7 @@ export const SubscriptionSettingsPanel: React.FC = () => {
       {/* View All Plans Modal */}
       {isViewPlansModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-950/60 backdrop-blur-xs font-sans animate-in fade-in duration-150">
-          <div className="bg-[#FAF7F2] border border-stone-300 rounded-3xl max-w-4xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+          <div className="bg-[#FAF7F2] border border-stone-300 rounded-3xl max-w-6xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
             {/* Modal Header */}
             <div className="p-6 bg-white border-b border-stone-200 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -620,9 +624,9 @@ export const SubscriptionSettingsPanel: React.FC = () => {
               </button>
             </div>
 
-            {/* Modal Body: 4 Plan Columns */}
+            {/* Modal Body: 6 Plan Columns */}
             <div className="p-6 overflow-y-auto space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
                 {/* 1. FREE FOREVER */}
                 <div
                   className={`p-4 rounded-2xl border flex flex-col justify-between ${
@@ -786,7 +790,7 @@ export const SubscriptionSettingsPanel: React.FC = () => {
                           <div>• 1,500 Dynamic KHQR / ថ្ងៃ</div>
                           <div>• 8,000 អ្នកជំងឺ / គណនី & 15 បុគ្គលិក</div>
                           <div>• ពេទ្យធ្មេញ FDI Odontogram ៣២ ធ្មេញ</div>
-                          <div>• WebGL PACS DICOM (X-Ray, CT)</div>
+                          <div>• WebGL PACS DICOM - X-Ray, CT</div>
                           <div>• LIS មន្ទីរពិសោធន៍ & Panic Alerts</div>
                           <div>• ឃ្លាំង FEFO ច្រើនសាខា & Batch No</div>
                           <div>• គ្រែ IPD & e-MAR 5-Rights Bedside</div>
@@ -876,6 +880,147 @@ export const SubscriptionSettingsPanel: React.FC = () => {
                         {isCurrent
                           ? isKm ? 'បន្តគម្រោងនេះ' : 'Renew Plan'
                           : isKm ? 'Upgrade ទៅ $12' : 'Upgrade to $12'}
+                      </button>
+                    </div>
+                  );
+                })()}
+
+                {/* 5. SPECIALIST_15 */}
+                {(() => {
+                  const cardTier = 'SPECIALIST_15';
+                  const isCurrent = planTier === cardTier;
+                  const isDowngrade = isPlanDowngrade(planTier, cardTier);
+                  return (
+                    <div
+                      className={`p-4 rounded-2xl border flex flex-col justify-between ${
+                        isCurrent
+                          ? 'bg-teal-50/70 border-teal-600 ring-2 ring-teal-600/30'
+                          : isDowngrade
+                          ? 'bg-white border-stone-200 opacity-60'
+                          : 'bg-white border-purple-200 hover:border-purple-400'
+                      }`}
+                    >
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-xs text-stone-900">Specialist Clinic</span>
+                          {isCurrent ? (
+                            <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-teal-800 text-white">
+                              CURRENT
+                            </span>
+                          ) : isDowngrade ? (
+                            <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-stone-200 text-stone-600 flex items-center gap-1">
+                              <Lock className="w-2.5 h-2.5" />
+                              <span>LOCKED</span>
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-purple-700 text-white">
+                              SPECIALIST
+                            </span>
+                          )}
+                        </div>
+                        <div>
+                          <div className="text-2xl font-black text-purple-950">$15<span className="text-xs font-normal text-stone-500">/mo</span></div>
+                          <div className="text-[10px] text-emerald-700 font-bold">$144/yr - Save 20%</div>
+                        </div>
+                        <div className="text-[10px] text-purple-800 font-bold uppercase tracking-wider">
+                          {isKm ? '២៨ មុខងារឯកទេស' : '28 Specialist Modules'}
+                        </div>
+                        <div className="text-[11px] text-stone-500 space-y-1.5 pt-2 border-t border-stone-100">
+                          <div>• Unlimited KHQR & 50 គណនីបុគ្គលិក</div>
+                          <div>• AI Voice Dictation សំឡេងខ្មែរ</div>
+                          <div>• Automated SOAP Structuring</div>
+                          <div>• CDSS ពិនិត្យអន្តរកម្មថ្នាំ DDI Guard</div>
+                          <div>• ឃ្លាំងស្តុកច្រើនសាខា Depot Sync</div>
+                          <div>• វិបផតថលសមាគមវេជ្ជសាស្ត្រ TMA</div>
+                          <div>• គ្រប់មុខងារនៃ Enterprise ទាំងអស់</div>
+                          <div>• 24/7 Priority Engineering SLA</div>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        disabled={isDowngrade}
+                        onClick={() => {
+                          setIsViewPlansModalOpen(false);
+                          openUpgradeModal('SPECIALIST_15');
+                        }}
+                        className={`mt-4 w-full py-2 rounded-xl text-xs font-bold transition-colors ${
+                          isDowngrade
+                            ? 'bg-stone-100 text-stone-400 border border-stone-200 cursor-not-allowed'
+                            : isCurrent
+                            ? 'bg-teal-800 hover:bg-teal-700 text-white shadow-xs'
+                            : 'bg-purple-700 hover:bg-purple-800 text-white shadow-xs'
+                        }`}
+                      >
+                        {isDowngrade
+                          ? isKm ? 'មិនអាចទម្លាក់គម្រោង' : 'Cannot Downgrade'
+                          : isCurrent
+                          ? isKm ? 'បន្តគម្រោងនេះ' : 'Renew Plan'
+                          : isKm ? 'Upgrade ទៅ $15' : 'Upgrade to $15'}
+                      </button>
+                    </div>
+                  );
+                })()}
+
+                {/* 6. UNLIMITED_20 */}
+                {(() => {
+                  const cardTier = 'UNLIMITED_20';
+                  const isCurrent = planTier === cardTier;
+                  return (
+                    <div
+                      className={`p-4 rounded-2xl border flex flex-col justify-between ${
+                        isCurrent
+                          ? 'bg-teal-50/70 border-teal-600 ring-2 ring-teal-600/30'
+                          : 'bg-white border-blue-200 hover:border-blue-400'
+                      }`}
+                    >
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-xs text-stone-900">Unlimited PaaS</span>
+                          {isCurrent ? (
+                            <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-teal-800 text-white">
+                              CURRENT
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-blue-800 text-white">
+                              FLAGSHIP PAAS
+                            </span>
+                          )}
+                        </div>
+                        <div>
+                          <div className="text-2xl font-black text-blue-950">$20<span className="text-xs font-normal text-stone-500">/mo</span></div>
+                          <div className="text-[10px] text-emerald-700 font-bold">$192/yr - Save 20%</div>
+                        </div>
+                        <div className="text-[10px] text-blue-800 font-bold uppercase tracking-wider">
+                          {isKm ? '៣០+ គ្មានដែនកំណត់' : '30+ Unlimited PaaS'}
+                        </div>
+                        <div className="text-[11px] text-stone-500 space-y-1.5 pt-2 border-t border-stone-100">
+                          <div>• MoH DDF Statutory Narcotic Register</div>
+                          <div>• PACS Caliper & Densitometry ROI</div>
+                          <div>• Multi-Branch Real-Time Fleet Sync</div>
+                          <div>• White-label Custom Domain ផ្ទាល់ខ្លួន</div>
+                          <div>• Dedicated Cloud DB Instance</div>
+                          <div>• Telegram Super Admin Master Bot</div>
+                          <div>• Unlimited សាខា បុគ្គលិក & KHQR</div>
+                          <div>• VIP SLA 15-Minute Response</div>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsViewPlansModalOpen(false);
+                          openUpgradeModal('UNLIMITED_20');
+                        }}
+                        className={`mt-4 w-full py-2 rounded-xl text-xs font-bold transition-colors ${
+                          isCurrent
+                            ? 'bg-teal-800 hover:bg-teal-700 text-white shadow-xs'
+                            : 'bg-blue-800 hover:bg-blue-900 text-white shadow-xs'
+                        }`}
+                      >
+                        {isCurrent
+                          ? isKm ? 'បន្តគម្រោងនេះ' : 'Renew Plan'
+                          : isKm ? 'Upgrade ទៅ $20' : 'Upgrade to $20'}
                       </button>
                     </div>
                   );

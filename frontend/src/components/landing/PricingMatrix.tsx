@@ -3,6 +3,8 @@
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useTranslation } from '../../context/I18nContext';
+import { useAuth } from '../../context/AuthContext';
+import { SubscriptionCheckoutModal } from '../subscriptions/SubscriptionCheckoutModal';
 import {
   Check,
   X,
@@ -19,6 +21,7 @@ import {
   Pill,
   Boxes,
   CreditCard,
+  QrCode,
   Film,
   FlaskConical,
   BedDouble,
@@ -81,12 +84,18 @@ export interface SystemToolItem {
 export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false }) => {
   const { locale } = useTranslation();
   const isKm = locale === 'km';
+  const { user } = useAuth();
+  const currentTenantPlanTier = user?.tenant?.planTier || 'FREE';
 
   const [isAnnual, setIsAnnual] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
   const [selectedPlanId, setSelectedPlanId] = useState<string>('PRO_8');
   const [activeToolCategory, setActiveToolCategory] = useState<string>('all');
   const [toolSearchQuery, setToolSearchQuery] = useState<string>('');
+  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
+  const [checkoutTier, setCheckoutTier] = useState<
+    'STARTER_5' | 'PRO_8' | 'ENTERPRISE_12' | 'SPECIALIST_15' | 'UNLIMITED_20'
+  >('PRO_8');
 
   const plans: PricingPlan[] = [
     {
@@ -1032,53 +1041,114 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
                 </div>
               </div>
 
-              {/* Action Button */}
+              {/* Action Buttons */}
               <div className="pt-6 space-y-2">
-                <Link
-                  href={`/register?plan=${p.id}${isAnnual ? '&billing=yearly' : '&billing=monthly'}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedPlanId(p.id);
-                  }}
-                  className={`w-full py-2.5 px-4 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-95 cursor-pointer ${
-                    isSelected
-                      ? 'bg-teal-800 hover:bg-teal-900 text-white shadow-md ring-2 ring-teal-700/30'
-                      : p.isPopular
-                      ? 'bg-teal-700 hover:bg-teal-800 text-white shadow-xs'
-                      : 'bg-[#FAF7F2] hover:bg-[#F2ECE1] text-stone-800 border border-[#DFD6C6]'
-                  }`}
-                >
-                  {isSelected ? (
-                    <>
-                      <Check className="w-3.5 h-3.5 stroke-[3]" />
-                      <span className="font-black">
-                        {p.id === 'FREE'
-                          ? isKm ? 'បានជ្រើសរើស ចាប់ផ្ដើម Free' : 'Selected Start Free'
-                          : isAnnual
-                          ? isKm ? `បានជ្រើសរើស ចុះឈ្មោះ $${p.yearlyUsd}/ឆ្នាំ` : `Selected Register ($${p.yearlyUsd}/yr)`
-                          : isKm ? `បានជ្រើសរើស ចុះឈ្មោះ $${p.monthlyUsd}/ខែ` : `Selected Register ($${p.monthlyUsd}/mo)`}
-                      </span>
-                    </>
+                {p.id === 'FREE' ? (
+                  user ? (
+                    <div className="w-full py-2.5 px-3 rounded-xl text-xs font-bold text-center bg-[#FAF7F2] border border-[#E0D7C7] text-stone-600">
+                      {currentTenantPlanTier === 'FREE'
+                        ? isKm
+                          ? 'គម្រោងបច្ចុប្បន្នរបស់អ្នក'
+                          : 'Your Current Plan'
+                        : isKm
+                        ? 'គម្រោងមូលដ្ឋាន'
+                        : 'Starter Base Plan'}
+                    </div>
                   ) : (
-                    <>
-                      <span className="font-bold">
-                        {p.id === 'FREE'
-                          ? isKm ? 'ចាប់ផ្ដើម Free រហូត' : 'Start Free Forever'
-                          : isAnnual
-                          ? isKm ? `ជ្រើសរើស $${p.yearlyUsd}/ឆ្នាំ` : `Select Plan ($${p.yearlyUsd}/yr)`
-                          : isKm ? `ជ្រើសរើស $${p.monthlyUsd}/ខែ` : `Select Plan ($${p.monthlyUsd}/mo)`}
-                      </span>
+                    <Link
+                      href="/register?plan=FREE"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedPlanId(p.id);
+                      }}
+                      className={`w-full py-2.5 px-4 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-95 cursor-pointer ${
+                        isSelected
+                          ? 'bg-teal-800 hover:bg-teal-900 text-white shadow-md ring-2 ring-teal-700/30'
+                          : 'bg-[#FAF7F2] hover:bg-[#F2ECE1] text-stone-800 border border-[#DFD6C6]'
+                      }`}
+                    >
+                      <span>{isKm ? 'ចុះឈ្មោះប្រើ Free រហូត' : 'Start Free Forever'}</span>
                       <ArrowRight className="w-3.5 h-3.5" />
-                    </>
-                  )}
-                </Link>
+                    </Link>
+                  )
+                ) : user ? (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedPlanId(p.id);
+                      setCheckoutTier(p.id as any);
+                      setIsCheckoutModalOpen(true);
+                    }}
+                    className={`w-full py-2.5 px-3 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-95 cursor-pointer ${
+                      currentTenantPlanTier === p.id
+                        ? 'bg-teal-800 hover:bg-teal-900 text-white shadow-md ring-2 ring-teal-700/30'
+                        : isSelected
+                        ? 'bg-teal-800 hover:bg-teal-900 text-white shadow-md'
+                        : 'bg-teal-700 hover:bg-teal-800 text-white'
+                    }`}
+                  >
+                    {currentTenantPlanTier === p.id ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 stroke-[3]" />
+                        <span>{isKm ? 'បន្តសុពលភាពតាម KHQR' : 'Renew with Bakong KHQR'}</span>
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="w-3.5 h-3.5" />
+                        <span>
+                          {isAnnual
+                            ? isKm
+                              ? `ដំឡើងគម្រោង $${p.yearlyUsd}/ឆ្នាំ`
+                              : `Upgrade Plan ($${p.yearlyUsd}/yr)`
+                            : isKm
+                            ? `ដំឡើងគម្រោង $${p.monthlyUsd}/ខែ`
+                            : `Upgrade Plan ($${p.monthlyUsd}/mo)`}
+                        </span>
+                      </>
+                    )}
+                  </button>
+                ) : (
+                  <div className="space-y-1.5">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedPlanId(p.id);
+                        setCheckoutTier(p.id as any);
+                        setIsCheckoutModalOpen(true);
+                      }}
+                      className={`w-full py-2.5 px-3 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-95 cursor-pointer ${
+                        isSelected
+                          ? 'bg-teal-800 hover:bg-teal-900 text-white shadow-md ring-2 ring-teal-700/30'
+                          : p.isPopular
+                          ? 'bg-teal-700 hover:bg-teal-800 text-white shadow-xs'
+                          : 'bg-teal-800 hover:bg-teal-900 text-white'
+                      }`}
+                    >
+                      <QrCode className="w-3.5 h-3.5" />
+                      <span>{isKm ? 'បង់ប្រាក់តាម Bakong KHQR' : 'Pay with Bakong KHQR'}</span>
+                    </button>
+
+                    <Link
+                      href={`/register?plan=${p.id}${isAnnual ? '&billing=yearly' : '&billing=monthly'}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedPlanId(p.id);
+                      }}
+                      className="w-full py-1.5 px-2 rounded-lg text-[11px] font-bold text-center block text-stone-600 hover:text-stone-900 hover:bg-stone-100 transition-colors"
+                    >
+                      {isKm ? 'ចុះឈ្មោះគ្លីនិកថ្មី' : 'Register New Clinic'}
+                    </Link>
+                  </div>
+                )}
 
                 <a
                   href="#system-tools"
                   onClick={(e) => {
                     e.stopPropagation();
                   }}
-                  className="block text-center text-[10px] font-bold text-stone-500 hover:text-teal-800 transition-colors py-1"
+                  className="block text-center text-[10px] font-bold text-stone-500 hover:text-teal-800 transition-colors py-0.5"
                 >
                   {isKm ? 'រុករកឧបករណ៍ និងមុខងារទាំងអស់' : 'Explore all included tools'}
                 </a>
@@ -1244,215 +1314,317 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
               <table className="w-full text-left text-xs text-stone-700">
                 <thead className="bg-[#FAF7F2] border-b border-[#EAE3D5] text-[11px] font-bold text-stone-600 uppercase">
                   <tr>
-                    <th className="p-4 w-1/3">{isKm ? 'លក្ខណៈពិសេស & ឧបករណ៍' : 'Capability & Module'}</th>
-                    <th className="p-4 text-center">Free Forever</th>
-                    <th className="p-4 text-center">Clinic Starter $5</th>
-                    <th className="p-4 text-center bg-teal-50/50 text-teal-900 font-extrabold">Polyclinic Pro $8</th>
-                    <th className="p-4 text-center">Hospital Enterprise $12</th>
+                    <th className="p-4 w-1/4">{isKm ? 'លក្ខណៈពិសេស & ឧបករណ៍' : 'Capability & Module'}</th>
+                    <th className="p-3 text-center">Free Forever</th>
+                    <th className="p-3 text-center">Clinic Starter $5</th>
+                    <th className="p-3 text-center bg-teal-50/50 text-teal-900 font-extrabold">Polyclinic Pro $8</th>
+                    <th className="p-3 text-center">Hospital Enterprise $12</th>
+                    <th className="p-3 text-center">Specialist $15</th>
+                    <th className="p-3 text-center bg-blue-50/40 text-blue-950 font-bold">Unlimited PaaS $20</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#EAE3D5]">
                   {/* Category: Quotas */}
                   <tr className="bg-[#F5EFE3]/60">
-                    <td colSpan={5} className="py-2.5 px-4 font-black text-stone-800 uppercase text-[10px] tracking-wider">
+                    <td colSpan={7} className="py-2.5 px-4 font-black text-stone-800 uppercase text-[10px] tracking-wider">
                       {isKm ? '១. កូតាប្រតិបត្តិការ & សមត្ថភាពប្រព័ន្ធ' : '1. Operational Quotas & Capacity'}
                     </td>
                   </tr>
                   <tr>
                     <td className="p-4 font-semibold">{isKm ? 'កូតាប្រតិបត្តិការ Dynamic KHQR' : 'Dynamic KHQR Limit / Day'}</td>
-                    <td className="p-4 text-center font-mono">5 / ថ្ងៃ</td>
-                    <td className="p-4 text-center font-mono font-bold text-teal-800">250 / ថ្ងៃ</td>
-                    <td className="p-4 text-center font-mono font-bold text-teal-800 bg-teal-50/30">1,500 / ថ្ងៃ</td>
-                    <td className="p-4 text-center font-mono font-bold text-teal-800">Unlimited</td>
+                    <td className="p-3 text-center font-mono">5 / ថ្ងៃ</td>
+                    <td className="p-3 text-center font-mono font-bold text-teal-800">250 / ថ្ងៃ</td>
+                    <td className="p-3 text-center font-mono font-bold text-teal-800 bg-teal-50/30">1,500 / ថ្ងៃ</td>
+                    <td className="p-3 text-center font-mono font-bold text-teal-800">Unlimited</td>
+                    <td className="p-3 text-center font-mono font-bold text-teal-800">Unlimited</td>
+                    <td className="p-3 text-center font-mono font-bold text-blue-900 bg-blue-50/20">Unlimited</td>
                   </tr>
                   <tr>
                     <td className="p-4 font-semibold">{isKm ? 'កូតាអ្នកជំងឺក្នុងមួយគណនី' : 'Patient Records / Account'}</td>
-                    <td className="p-4 text-center font-mono">50 នាក់ / គណនី</td>
-                    <td className="p-4 text-center font-mono">1,000 នាក់ / គណនី</td>
-                    <td className="p-4 text-center font-mono font-bold text-teal-800 bg-teal-50/30">៨,០០០ នាក់ / គណនី</td>
-                    <td className="p-4 text-center font-mono font-bold text-teal-800">Unlimited</td>
+                    <td className="p-3 text-center font-mono">50 នាក់ / គណនី</td>
+                    <td className="p-3 text-center font-mono">1,000 នាក់ / គណនី</td>
+                    <td className="p-3 text-center font-mono font-bold text-teal-800 bg-teal-50/30">៨,០០០ នាក់ / គណនី</td>
+                    <td className="p-3 text-center font-mono font-bold text-teal-800">Unlimited</td>
+                    <td className="p-3 text-center font-mono font-bold text-teal-800">Unlimited</td>
+                    <td className="p-3 text-center font-mono font-bold text-blue-900 bg-blue-50/20">Unlimited</td>
                   </tr>
                   <tr>
                     <td className="p-4 font-semibold">{isKm ? 'ចំនួនគណនីបុគ្គលិក RBAC' : 'Staff Accounts (RBAC)'}</td>
-                    <td className="p-4 text-center font-mono">2</td>
-                    <td className="p-4 text-center font-mono">5</td>
-                    <td className="p-4 text-center font-mono bg-teal-50/30 font-bold text-teal-800">15</td>
-                    <td className="p-4 text-center font-mono font-bold text-teal-800">Unlimited</td>
+                    <td className="p-3 text-center font-mono">2</td>
+                    <td className="p-3 text-center font-mono">5</td>
+                    <td className="p-3 text-center font-mono bg-teal-50/30 font-bold text-teal-800">15</td>
+                    <td className="p-3 text-center font-mono font-bold text-teal-800">Unlimited</td>
+                    <td className="p-3 text-center font-mono font-bold text-teal-800">50</td>
+                    <td className="p-3 text-center font-mono font-bold text-blue-900 bg-blue-50/20">Unlimited</td>
                   </tr>
 
                   {/* Category: Clinical & Diagnostics */}
                   <tr className="bg-[#F5EFE3]/60">
-                    <td colSpan={5} className="py-2.5 px-4 font-black text-stone-800 uppercase text-[10px] tracking-wider">
+                    <td colSpan={7} className="py-2.5 px-4 font-black text-stone-800 uppercase text-[10px] tracking-wider">
                       {isKm ? '២. ឧបករណ៍ពិគ្រោះ & រោគវិនិច្ឆ័យ' : '2. Clinical Consultation & Diagnostics'}
                     </td>
                   </tr>
                   <tr>
                     <td className="p-4 font-semibold">{isKm ? 'ប្រវត្តិអ្នកជំងឺ Master EMR & Vitals SOAP' : 'Master Patient EMR & SOAP Notes'}</td>
-                    <td className="p-4 text-center text-teal-800"><Check className="w-4 h-4 mx-auto font-bold" /></td>
-                    <td className="p-4 text-center text-teal-800"><Check className="w-4 h-4 mx-auto font-bold" /></td>
-                    <td className="p-4 text-center text-teal-800 bg-teal-50/30"><Check className="w-4 h-4 mx-auto font-bold" /></td>
-                    <td className="p-4 text-center text-teal-800"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800 bg-teal-50/30"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-blue-900 bg-blue-50/20"><Check className="w-4 h-4 mx-auto font-bold" /></td>
                   </tr>
                   <tr>
                     <td className="p-4 font-semibold">{isKm ? 'ហៅអ្នកជំងឺជាសំឡេងខ្មែរស្វ័យប្រវត្តិ' : 'Khmer Audio Voice Queue Calling'}</td>
-                    <td className="p-4 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-teal-800"><Check className="w-4 h-4 mx-auto font-bold" /></td>
-                    <td className="p-4 text-center text-teal-800 bg-teal-50/30"><Check className="w-4 h-4 mx-auto font-bold" /></td>
-                    <td className="p-4 text-center text-teal-800"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-teal-800"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800 bg-teal-50/30"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-blue-900 bg-blue-50/20"><Check className="w-4 h-4 mx-auto font-bold" /></td>
                   </tr>
                   <tr>
                     <td className="p-4 font-semibold">{isKm ? 'ពេទ្យធ្មេញ FDI Odontogram ៣២ ធ្មេញ & DMFT' : 'Dental FDI 32-Tooth Odontogram'}</td>
-                    <td className="p-4 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-teal-800 font-bold bg-teal-50/30"><Check className="w-4 h-4 mx-auto font-bold" /></td>
-                    <td className="p-4 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold bg-teal-50/30"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-blue-900 font-bold bg-blue-50/20"><Check className="w-4 h-4 mx-auto font-bold" /></td>
                   </tr>
                   <tr>
                     <td className="p-4 font-semibold">{isKm ? 'រូបភាពវេជ្ជសាស្ត្រ WebGL PACS DICOM' : 'WebGL PACS DICOM Viewer'}</td>
-                    <td className="p-4 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-teal-800 font-bold bg-teal-50/30"><Check className="w-4 h-4 mx-auto font-bold" /></td>
-                    <td className="p-4 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold bg-teal-50/30"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-blue-900 font-bold bg-blue-50/20"><Check className="w-4 h-4 mx-auto font-bold" /></td>
                   </tr>
                   <tr>
                     <td className="p-4 font-semibold">{isKm ? 'មន្ទីរពិសោធន៍ LIS & Panic Value Alerts' : 'Laboratory Information System (LIS)'}</td>
-                    <td className="p-4 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-teal-800 font-bold bg-teal-50/30"><Check className="w-4 h-4 mx-auto font-bold" /></td>
-                    <td className="p-4 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold bg-teal-50/30"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-blue-900 font-bold bg-blue-50/20"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                  </tr>
+                  <tr>
+                    <td className="p-4 font-semibold">{isKm ? 'AI Khmer Voice Dictation & SOAP Structuring' : 'AI Khmer Voice Dictation & SOAP'}</td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300 bg-teal-50/30"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-blue-900 font-bold bg-blue-50/20"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                  </tr>
+                  <tr>
+                    <td className="p-4 font-semibold">{isKm ? 'PACS WebGL Linear Caliper & ROI Densitometry' : 'PACS Caliper & ROI Densitometry'}</td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300 bg-teal-50/30"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-blue-900 font-bold bg-blue-50/20"><Check className="w-4 h-4 mx-auto font-bold" /></td>
                   </tr>
 
                   {/* Category: Inpatient & Care */}
                   <tr className="bg-[#F5EFE3]/60">
-                    <td colSpan={5} className="py-2.5 px-4 font-black text-stone-800 uppercase text-[10px] tracking-wider">
+                    <td colSpan={7} className="py-2.5 px-4 font-black text-stone-800 uppercase text-[10px] tracking-wider">
                       {isKm ? '៣. ការថែទាំ & សម្រាកពេទ្យឯកទេស' : '3. Inpatient Wards & Specialized Care'}
                     </td>
                   </tr>
                   <tr>
                     <td className="p-4 font-semibold">{isKm ? 'គ្រែសម្រាកពេទ្យ IPD & e-MAR 5-Rights' : 'Inpatient Bed Management & e-MAR'}</td>
-                    <td className="p-4 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-teal-800 font-bold bg-teal-50/30"><Check className="w-4 h-4 mx-auto font-bold" /></td>
-                    <td className="p-4 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold bg-teal-50/30"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-blue-900 font-bold bg-blue-50/20"><Check className="w-4 h-4 mx-auto font-bold" /></td>
                   </tr>
                   <tr>
                     <td className="p-4 font-semibold">{isKm ? 'វីដេអូខលពីចម្ងាយ WebRTC Teleconsultation' : 'WebRTC HD Video Teleconsultation'}</td>
-                    <td className="p-4 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-stone-300 bg-teal-50/30"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300 bg-teal-50/30"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-blue-900 font-bold bg-blue-50/20"><Check className="w-4 h-4 mx-auto font-bold" /></td>
                   </tr>
                   <tr>
                     <td className="p-4 font-semibold">{isKm ? 'Care Concierge & Adherence Tracking' : 'Care Concierge & Medication Reminders'}</td>
-                    <td className="p-4 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-teal-800 font-bold bg-teal-50/30"><Check className="w-4 h-4 mx-auto font-bold" /></td>
-                    <td className="p-4 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold bg-teal-50/30"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-blue-900 font-bold bg-blue-50/20"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                  </tr>
+                  <tr>
+                    <td className="p-4 font-semibold">{isKm ? 'សៀវភៅតាមដានឱសថញៀន MoH DDF Dual-Signoff Witness' : 'Controlled Substances Narcotic Register'}</td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300 bg-teal-50/30"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-blue-900 font-bold bg-blue-50/20"><Check className="w-4 h-4 mx-auto font-bold" /></td>
                   </tr>
 
                   {/* Category: Pharmacy & Inventory */}
                   <tr className="bg-[#F5EFE3]/60">
-                    <td colSpan={5} className="py-2.5 px-4 font-black text-stone-800 uppercase text-[10px] tracking-wider">
+                    <td colSpan={7} className="py-2.5 px-4 font-black text-stone-800 uppercase text-[10px] tracking-wider">
                       {isKm ? '៤. ឱសថស្ថាន & ឃ្លាំងស្តុក FEFO' : '4. Pharmacy & FEFO Warehouse'}
                     </td>
                   </tr>
                   <tr>
                     <td className="p-4 font-semibold">{isKm ? 'ចេញថ្នាំ & បោះពុម្ពស្លាកណែនាំ' : 'Pharmacy Dispensing & Label Printing'}</td>
-                    <td className="p-4 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-teal-800"><Check className="w-4 h-4 mx-auto font-bold" /></td>
-                    <td className="p-4 text-center text-teal-800 bg-teal-50/30"><Check className="w-4 h-4 mx-auto font-bold" /></td>
-                    <td className="p-4 text-center text-teal-800"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-teal-800"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800 bg-teal-50/30"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-blue-900 bg-blue-50/20"><Check className="w-4 h-4 mx-auto font-bold" /></td>
                   </tr>
                   <tr>
                     <td className="p-4 font-semibold">{isKm ? 'CDSS ការពារអន្តរកម្មថ្នាំ Drug-Drug Interaction' : 'CDSS Drug Interaction Safety Engine'}</td>
-                    <td className="p-4 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-teal-800 font-bold bg-teal-50/30"><Check className="w-4 h-4 mx-auto font-bold" /></td>
-                    <td className="p-4 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold bg-teal-50/30"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-blue-900 font-bold bg-blue-50/20"><Check className="w-4 h-4 mx-auto font-bold" /></td>
                   </tr>
                   <tr>
                     <td className="p-4 font-semibold">{isKm ? 'ឃ្លាំងឱសថ FEFO ច្រើនសាខា & Batch No' : 'Multi-Branch FEFO Warehouse & Batch Lots'}</td>
-                    <td className="p-4 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-teal-800 font-bold bg-teal-50/30"><Check className="w-4 h-4 mx-auto font-bold" /></td>
-                    <td className="p-4 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold bg-teal-50/30"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-blue-900 font-bold bg-blue-50/20"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                  </tr>
+                  <tr>
+                    <td className="p-4 font-semibold">{isKm ? 'ឃ្លាំងកណ្តាល & ផ្ទេរស្តុកអន្តរសាខា Central Depot' : 'Central Depot & Inter-Branch Depot Sync'}</td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300 bg-teal-50/30"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-blue-900 font-bold bg-blue-50/20"><Check className="w-4 h-4 mx-auto font-bold" /></td>
                   </tr>
 
                   {/* Category: Finance & Hardware */}
                   <tr className="bg-[#F5EFE3]/60">
-                    <td colSpan={5} className="py-2.5 px-4 font-black text-stone-800 uppercase text-[10px] tracking-wider">
+                    <td colSpan={7} className="py-2.5 px-4 font-black text-stone-800 uppercase text-[10px] tracking-wider">
                       {isKm ? '៥. ហិរញ្ញវត្ថុ & ម៉ាស៊ីនព្រីន POS' : '5. Financial Settlement & POS Peripherals'}
                     </td>
                   </tr>
                   <tr>
                     <td className="p-4 font-semibold">{isKm ? 'ម៉ាស៊ីនព្រីន 80mm & កេះទាញថតលុយ' : '80mm POS Thermal Printing & Cash Drawer'}</td>
-                    <td className="p-4 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-teal-800"><Check className="w-4 h-4 mx-auto font-bold" /></td>
-                    <td className="p-4 text-center text-teal-800 bg-teal-50/30"><Check className="w-4 h-4 mx-auto font-bold" /></td>
-                    <td className="p-4 text-center text-teal-800"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-teal-800"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800 bg-teal-50/30"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-blue-900 bg-blue-50/20"><Check className="w-4 h-4 mx-auto font-bold" /></td>
                   </tr>
                   <tr>
                     <td className="p-4 font-semibold">{isKm ? 'គណនេយ្យកម្រៃគ្រូពេទ្យ & EBITDA P&L' : 'Doctor Split Commission & EBITDA Ledger'}</td>
-                    <td className="p-4 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-teal-800 font-bold bg-teal-50/30"><Check className="w-4 h-4 mx-auto font-bold" /></td>
-                    <td className="p-4 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold bg-teal-50/30"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-blue-900 font-bold bg-blue-50/20"><Check className="w-4 h-4 mx-auto font-bold" /></td>
                   </tr>
                   <tr>
                     <td className="p-4 font-semibold">{isKm ? 'បេឡាជាតិ ប.ស.ស NSSF & ធានារ៉ាប់រង' : 'NSSF Integration & Co-Pay Processing'}</td>
-                    <td className="p-4 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-teal-800 font-bold bg-teal-50/30"><Check className="w-4 h-4 mx-auto font-bold" /></td>
-                    <td className="p-4 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold bg-teal-50/30"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-blue-900 font-bold bg-blue-50/20"><Check className="w-4 h-4 mx-auto font-bold" /></td>
                   </tr>
                   <tr>
                     <td className="p-4 font-semibold">{isKm ? 'រចនាម៉ូតវិក្កយបត្រ Custom Invoice Designer' : 'Visual Custom Invoice Designer'}</td>
-                    <td className="p-4 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-stone-300 bg-teal-50/30"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300 bg-teal-50/30"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-blue-900 font-bold bg-blue-50/20"><Check className="w-4 h-4 mx-auto font-bold" /></td>
                   </tr>
 
                   {/* Category: Enterprise & Support */}
                   <tr className="bg-[#F5EFE3]/60">
-                    <td colSpan={5} className="py-2.5 px-4 font-black text-stone-800 uppercase text-[10px] tracking-wider">
+                    <td colSpan={7} className="py-2.5 px-4 font-black text-stone-800 uppercase text-[10px] tracking-wider">
                       {isKm ? '៦. ស្តង់ដារជាតិ & ហេដ្ឋារចនាសម្ព័ន្ធ' : '6. Compliance & Enterprise Infrastructure'}
                     </td>
                   </tr>
                   <tr>
                     <td className="p-4 font-semibold">{isKm ? 'MoH DHIS2 របាយការណ៍ជំងឺឆ្លង & eClaim' : 'MoH DHIS2 National Surveillance & eClaim'}</td>
-                    <td className="p-4 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-stone-300 bg-teal-50/30"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300 bg-teal-50/30"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-blue-900 font-bold bg-blue-50/20"><Check className="w-4 h-4 mx-auto font-bold" /></td>
                   </tr>
                   <tr>
                     <td className="p-4 font-semibold">{isKm ? 'វេជ្ជបញ្ជា QR Cryptographic Signed' : 'Digitally Signed QR e-Prescription'}</td>
-                    <td className="p-4 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-stone-300 bg-teal-50/30"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300 bg-teal-50/30"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-blue-900 font-bold bg-blue-50/20"><Check className="w-4 h-4 mx-auto font-bold" /></td>
                   </tr>
                   <tr>
                     <td className="p-4 font-semibold">{isKm ? 'Custom Subdomain ផ្ទាល់ខ្លួន - yourclinic' : 'Dedicated Clinic Subdomain'}</td>
-                    <td className="p-4 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-stone-300 bg-teal-50/30"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300 bg-teal-50/30"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-teal-800 font-bold"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                    <td className="p-3 text-center text-blue-900 font-bold bg-blue-50/20"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                  </tr>
+                  <tr>
+                    <td className="p-4 font-semibold">{isKm ? 'White-label Custom Domain ផ្ទាល់ខ្លួន' : 'White-label Custom Domain'}</td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300 bg-teal-50/30"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-blue-900 font-bold bg-blue-50/20"><Check className="w-4 h-4 mx-auto font-bold" /></td>
+                  </tr>
+                  <tr>
+                    <td className="p-4 font-semibold">{isKm ? 'Dedicated Isolated Cloud Database Instance' : 'Dedicated Isolated Database'}</td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300 bg-teal-50/30"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-blue-900 font-bold bg-blue-50/20"><Check className="w-4 h-4 mx-auto font-bold" /></td>
                   </tr>
                   <tr>
                     <td className="p-4 font-semibold">{isKm ? 'Telegram Forum Topics Bridge' : 'Telegram Forum Topics Bridge'}</td>
-                    <td className="p-4 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
-                    <td className="p-4 text-center text-stone-600 font-medium">Standard Alert</td>
-                    <td className="p-4 text-center text-teal-800 font-bold bg-teal-50/30">4 Topics (Full)</td>
-                    <td className="p-4 text-center text-teal-800 font-bold">4 Topics (Full)</td>
+                    <td className="p-3 text-center text-stone-300"><X className="w-4 h-4 mx-auto" /></td>
+                    <td className="p-3 text-center text-stone-600 font-medium">Standard Alert</td>
+                    <td className="p-3 text-center text-teal-800 font-bold bg-teal-50/30">4 Topics (Full)</td>
+                    <td className="p-3 text-center text-teal-800 font-bold">4 Topics (Full)</td>
+                    <td className="p-3 text-center text-teal-800 font-bold">4 Topics (Full)</td>
+                    <td className="p-3 text-center text-blue-900 font-bold bg-blue-50/20">Master Super Admin Bot</td>
                   </tr>
                   <tr>
                     <td className="p-4 font-semibold">{isKm ? 'កម្រិតសេវាគាំទ្របច្ចេកទេស SLA' : 'Support SLA Level'}</td>
-                    <td className="p-4 text-center text-stone-500">Community</td>
-                    <td className="p-4 text-center text-stone-700">Email & Docs</td>
-                    <td className="p-4 text-center text-teal-800 font-bold bg-teal-50/30">Priority 24/7</td>
-                    <td className="p-4 text-center text-teal-800 font-bold">VIP 24/7 Phone & Telegram</td>
+                    <td className="p-3 text-center text-stone-500">Community</td>
+                    <td className="p-3 text-center text-stone-700">Email & Docs</td>
+                    <td className="p-3 text-center text-teal-800 font-bold bg-teal-50/30">Priority 24/7</td>
+                    <td className="p-3 text-center text-teal-800 font-bold">VIP 24/7 Phone & Telegram</td>
+                    <td className="p-3 text-center text-teal-800 font-bold">Priority Engineering 24/7</td>
+                    <td className="p-3 text-center text-blue-900 font-bold bg-blue-50/20">Dedicated Team 15-min SLA</td>
                   </tr>
                 </tbody>
               </table>
@@ -1505,6 +1677,22 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
             })}
           </div>
         </div>
+      )}
+
+      {/* Direct Subscription Checkout Modal with Live Bakong KHQR */}
+      {isCheckoutModalOpen && (
+        <SubscriptionCheckoutModal
+          isOpen={isCheckoutModalOpen}
+          onClose={() => setIsCheckoutModalOpen(false)}
+          initialPlanTier={checkoutTier}
+          currentTenantPlanTier={currentTenantPlanTier}
+          onActivated={() => {
+            setIsCheckoutModalOpen(false);
+            if (typeof window !== 'undefined') {
+              window.location.reload();
+            }
+          }}
+        />
       )}
     </div>
   );
