@@ -70,6 +70,10 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
     implementation("androidx.activity:activity-compose:1.9.3")
 
+    // AndroidX Room Database
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+
     // Jetpack Compose BOM & UI
     val composeBom = platform("androidx.compose:compose-bom:2024.10.01")
     implementation(composeBom)

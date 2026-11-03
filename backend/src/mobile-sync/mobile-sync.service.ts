@@ -2,11 +2,12 @@
 // Strictly ZERO emojis in code and text. Strictly NO parentheses in Khmer text.
 
 import { BadRequestException, Logger } from '@nestjs/common';
-import type { PrismaService } from '../prisma/prisma.service.ts';
 import {
   _typeStripping,
   MIN_SUPPORTED_APP_VERSION,
   DEFAULT_SYNC_LIMIT,
+  DEFAULT_RURAL_CHUNK_SIZE,
+  MAX_RURAL_CHUNK_SIZE,
 } from './mobile-sync.types.ts';
 import type {
   HandshakeRequestDto,
@@ -21,10 +22,53 @@ import type {
   OfflineMutationDto,
   MutationResultDto,
   RegisteredDevice,
+  CausalRelation,
 } from './mobile-sync.types.ts';
+
+/**
+ * Vector Clock Causality Engine for Distributed Clinical State Sync
+ */
+class GatewayVectorClockEngine {
+  static increment(clock: Record<string, number>, nodeId: string): Record<string, number> {
+    const updated = { ...(clock || {}) };
+    updated[nodeId] = (updated[nodeId] || 0) + 1;
+    return updated;
+  }
+
+  static merge(clockA: Record<string, number>, clockB: Record<string, number>): Record<string, number> {
+    const merged: Record<string, number> = { ...(clockA || {}) };
+    for (const [nodeId, count] of Object.entries(clockB || {})) {
+      merged[nodeId] = Math.max(merged[nodeId] || 0, count);
+    }
+    return merged;
+  }
+
+  static compare(clockA: Record<string, number>, clockB: Record<string, number>): CausalRelation {
+    let aHasGreater = false;
+    let bHasGreater = false;
+    const allKeys = new Set([...Object.keys(clockA || {}), ...Object.keys(clockB || {})]);
+
+    for (const key of allKeys) {
+      const valA = clockA?.[key] || 0;
+      const valB = clockB?.[key] || 0;
+      if (valA > valB) aHasGreater = true;
+      if (valB > valA) bHasGreater = true;
+    }
+
+    if (aHasGreater && !bHasGreater) return 'AFTER';
+    if (!aHasGreater && bHasGreater) return 'BEFORE';
+    if (!aHasGreater && !bHasGreater) return 'EQUAL';
+    return 'CONCURRENT';
+  }
+}
 
 export class MobileSyncService {
   private readonly logger = new Logger(MobileSyncService.name);
+  private readonly prisma?: any;
+
+  // Vector clock and monotonic Lamport logical sequence
+  private serverVectorClock: Record<string, number> = { SERVER: 1 };
+  private serverMonotonicSequence: number = 1000;
 
   // In-memory repositories for high-throughput gateway caching and offline reconciliation
   private readonly registeredDevices: Map<string, RegisteredDevice> = new Map();
@@ -40,12 +84,26 @@ export class MobileSyncService {
     timestamp: string;
   }> = [];
 
-  private readonly prisma?: PrismaService;
-
-  constructor(prisma?: PrismaService) {
+  constructor(prisma?: any) {
     this.prisma = prisma;
     this.seedFormularyCatalog();
     this.seedInitialClinicalData();
+  }
+
+  /**
+   * Generates next monotonic sequence counter for strict causal ordering
+   */
+  public getNextMonotonicSequence(): number {
+    this.serverMonotonicSequence += 1;
+    this.serverVectorClock = GatewayVectorClockEngine.increment(this.serverVectorClock, 'SERVER');
+    return this.serverMonotonicSequence;
+  }
+
+  /**
+   * Current server vector clock
+   */
+  public getServerVectorClock(): Record<string, number> {
+    return { ...this.serverVectorClock };
   }
 
   /**
@@ -95,6 +153,19 @@ export class MobileSyncService {
     const serverTimeMs = now.getTime();
     const syncSessionId = `SESS-${dto.deviceId}-${serverTimeMs}`;
 
+    // Low bandwidth check for rural 2G/3G health centers
+    const isLowBandwidth =
+      dto.networkTier === '2G' || dto.networkTier === '3G' || dto.networkTier === 'OFFLINE';
+    const recommendedChunkSize = isLowBandwidth ? DEFAULT_RURAL_CHUNK_SIZE : DEFAULT_SYNC_LIMIT;
+
+    // Merge client vector clock if provided
+    if (dto.clientVectorClock) {
+      this.serverVectorClock = GatewayVectorClockEngine.merge(
+        this.serverVectorClock,
+        dto.clientVectorClock
+      );
+    }
+
     // Device registration / update
     const existingDevice = this.registeredDevices.get(dto.deviceId);
     const registeredDevice: RegisteredDevice = {
@@ -105,9 +176,11 @@ export class MobileSyncService {
       appVersion: dto.appVersion,
       tenantId: dto.tenantId || existingDevice?.tenantId,
       userId: dto.userId || existingDevice?.userId,
+      networkTier: dto.networkTier || existingDevice?.networkTier || '4G',
       registeredAt: existingDevice ? existingDevice.registeredAt : serverTimeUtc,
       lastHandshakeAt: serverTimeUtc,
       lastSyncAt: existingDevice?.lastSyncAt,
+      vectorClock: dto.clientVectorClock || existingDevice?.vectorClock || { [dto.deviceId]: 0 },
       status: 'ACTIVE',
     };
 
@@ -119,18 +192,22 @@ export class MobileSyncService {
       deviceId: dto.deviceId,
       serverTimeUtc,
       serverTimeMs,
+      serverVectorClock: { ...this.serverVectorClock },
+      serverMonotonicSequence: this.serverMonotonicSequence,
       minSupportedVersion: MIN_SUPPORTED_APP_VERSION,
       clientAppVersion: dto.appVersion,
       isUpgradeRequired: false,
       syncSessionId,
       supportedEntities: ['PATIENT', 'VITAL_SIGNS', 'FORMULARY_ITEM'],
-      heartbeatIntervalSeconds: 60,
+      heartbeatIntervalSeconds: isLowBandwidth ? 120 : 60,
+      recommendedChunkSize,
+      lowBandwidthOptimized: isLowBandwidth,
       message: 'Mobile client successfully registered and server time synchronized',
     };
   }
 
   /**
-   * Endpoint 2: Delta Sync Returning Patients, Vital Signs, and Formulary Items
+   * Endpoint 2: Low-Bandwidth Optimized Delta Sync with Cursors and Batch Chunking
    */
   public async pullDelta(dto: PullDeltaRequestDto): Promise<PullDeltaResponseDto> {
     let sinceTimeMs = 0;
@@ -141,11 +218,26 @@ export class MobileSyncService {
       sinceTimeMs = isNaN(parsed) ? 0 : parsed;
     }
 
-    const limit = dto.limit && dto.limit > 0 ? dto.limit : DEFAULT_SYNC_LIMIT;
+    // Rural 3G/4G connectivity chunk budget calculation
+    const isLowBandwidth =
+      dto.lowBandwidthMode === true ||
+      dto.networkTier === '2G' ||
+      dto.networkTier === '3G' ||
+      dto.networkTier === 'OFFLINE';
+
+    let chunkSize = DEFAULT_SYNC_LIMIT;
+    if (dto.chunkSize && dto.chunkSize > 0) {
+      chunkSize = Math.min(dto.chunkSize, MAX_RURAL_CHUNK_SIZE);
+    } else if (isLowBandwidth) {
+      chunkSize = DEFAULT_RURAL_CHUNK_SIZE;
+    } else if (dto.limit && dto.limit > 0) {
+      chunkSize = dto.limit;
+    }
+
     const now = new Date();
     const currentServerTimestamp = now.toISOString();
 
-    // 1. Pull updated Patients
+    // 1. Gather all updated Patients
     const updatedPatients: SyncPatientDto[] = [];
     for (const patient of this.patientsStore.values()) {
       if (dto.tenantId && patient.tenantId && patient.tenantId !== dto.tenantId) {
@@ -157,7 +249,7 @@ export class MobileSyncService {
       }
     }
 
-    // Attempt Prisma fetch if connected
+    // Prisma fallback if connected
     if (this.prisma && typeof (this.prisma as any).patient?.findMany === 'function') {
       try {
         const prismaPatients = await (this.prisma as any).patient.findMany({
@@ -165,7 +257,7 @@ export class MobileSyncService {
             ...(dto.tenantId ? { tenantId: dto.tenantId } : {}),
             updatedAt: { gt: new Date(sinceTimeMs) },
           },
-          take: limit,
+          take: chunkSize * 2,
           orderBy: { updatedAt: 'asc' },
         });
 
@@ -186,6 +278,8 @@ export class MobileSyncService {
             emergencyContactName: p.emergencyContactName || undefined,
             emergencyContactPhone: p.emergencyContactPhone || undefined,
             updatedAt: p.updatedAt.toISOString(),
+            monotonicVersion: this.serverMonotonicSequence,
+            vectorClock: { SERVER: 1 },
           };
           this.patientsStore.set(syncP.id, syncP);
           if (!updatedPatients.some((item) => item.id === syncP.id)) {
@@ -197,7 +291,7 @@ export class MobileSyncService {
       }
     }
 
-    // 2. Pull updated Vital Signs
+    // 2. Gather all updated Vital Signs
     const updatedVitals: SyncVitalSignsDto[] = [];
     for (const vitals of this.vitalSignsStore.values()) {
       if (dto.tenantId && vitals.tenantId && vitals.tenantId !== dto.tenantId) {
@@ -209,7 +303,7 @@ export class MobileSyncService {
       }
     }
 
-    // 3. Pull updated Formulary Items
+    // 3. Gather all updated Formulary Items
     const updatedFormulary: SyncFormularyItemDto[] = [];
     for (const item of this.formularyStore.values()) {
       if (dto.tenantId && item.tenantId && item.tenantId !== dto.tenantId) {
@@ -221,17 +315,124 @@ export class MobileSyncService {
       }
     }
 
-    // Apply pagination limit
-    const slicedPatients = updatedPatients.slice(0, limit);
-    const slicedVitals = updatedVitals.slice(0, limit);
-    const slicedFormulary = updatedFormulary.slice(0, limit);
+    // Parse cursor for low-bandwidth resumable pagination
+    // Format: CURSOR-<pIndex>-<vIndex>-<fIndex>-<chunkIndex>
+    let pOffset = 0;
+    let vOffset = 0;
+    let fOffset = 0;
+    let chunkIndex = 0;
 
-    const hasMore =
-      updatedPatients.length > limit ||
-      updatedVitals.length > limit ||
-      updatedFormulary.length > limit;
+    if (dto.cursor && typeof dto.cursor === 'string' && dto.cursor.startsWith('CURSOR-')) {
+      const parts = dto.cursor.replace('CURSOR-', '').split('-');
+      pOffset = parseInt(parts[0], 10) || 0;
+      vOffset = parseInt(parts[1], 10) || 0;
+      fOffset = parseInt(parts[2], 10) || 0;
+      chunkIndex = parseInt(parts[3], 10) || 0;
+    }
 
-    // Update lastSyncAt for calling device
+    // Slice using sequential chunk budget across entities
+    const slicedPatients: SyncPatientDto[] = [];
+    const slicedVitals: SyncVitalSignsDto[] = [];
+    const slicedFormulary: SyncFormularyItemDto[] = [];
+
+    let budget = chunkSize;
+
+    // 1. Take Patients
+    if (pOffset < updatedPatients.length && budget > 0) {
+      const takeP = Math.min(budget, updatedPatients.length - pOffset);
+      slicedPatients.push(...updatedPatients.slice(pOffset, pOffset + takeP));
+      pOffset += takeP;
+      budget -= takeP;
+    }
+
+    // 2. Take Vitals
+    if (vOffset < updatedVitals.length && budget > 0) {
+      const takeV = Math.min(budget, updatedVitals.length - vOffset);
+      slicedVitals.push(...updatedVitals.slice(vOffset, vOffset + takeV));
+      vOffset += takeV;
+      budget -= takeV;
+    }
+
+    // 3. Take Formulary
+    if (fOffset < updatedFormulary.length && budget > 0) {
+      const takeF = Math.min(budget, updatedFormulary.length - fOffset);
+      slicedFormulary.push(...updatedFormulary.slice(fOffset, fOffset + takeF));
+      fOffset += takeF;
+      budget -= takeF;
+    }
+
+    const remainingP = Math.max(0, updatedPatients.length - pOffset);
+    const remainingV = Math.max(0, updatedVitals.length - vOffset);
+    const remainingF = Math.max(0, updatedFormulary.length - fOffset);
+    const remainingRecordsCount = remainingP + remainingV + remainingF;
+
+    const hasMore = remainingRecordsCount > 0;
+    const nextCursor = hasMore
+      ? `CURSOR-${pOffset}-${vOffset}-${fOffset}-${chunkIndex + 1}`
+      : undefined;
+
+    // Optional lightweight payload compression/stripping for low-bandwidth mode
+    const finalPatients = isLowBandwidth
+      ? slicedPatients.map((p) => ({
+          id: p.id,
+          patientCode: p.patientCode,
+          nameEn: p.nameEn,
+          nameKh: p.nameKh,
+          gender: p.gender,
+          phone: p.phone,
+          bloodType: p.bloodType,
+          allergies: p.allergies,
+          updatedAt: p.updatedAt,
+          vectorClock: p.vectorClock,
+          monotonicVersion: p.monotonicVersion,
+        }))
+      : slicedPatients;
+
+    const finalVitals = isLowBandwidth
+      ? slicedVitals.map((v) => ({
+          id: v.id,
+          patientId: v.patientId,
+          bloodPressure: v.bloodPressure,
+          heartRate: v.heartRate,
+          temperature: v.temperature,
+          respiratoryRate: v.respiratoryRate,
+          spO2: v.spO2,
+          weightKg: v.weightKg,
+          recordedAt: v.recordedAt,
+          updatedAt: v.updatedAt,
+          vectorClock: v.vectorClock,
+          monotonicVersion: v.monotonicVersion,
+        }))
+      : slicedVitals;
+
+    const finalFormulary = isLowBandwidth
+      ? slicedFormulary.map((f) => ({
+          id: f.id,
+          code: f.code,
+          nameEn: f.nameEn,
+          nameKh: f.nameKh,
+          genericName: f.genericName,
+          dosageForm: f.dosageForm,
+          strength: f.strength,
+          category: f.category,
+          unitPriceKhr: f.unitPriceKhr,
+          unitPriceUsd: f.unitPriceUsd,
+          isInStock: f.isInStock,
+          stockQuantity: f.stockQuantity,
+          updatedAt: f.updatedAt,
+          vectorClock: f.vectorClock,
+          monotonicVersion: f.monotonicVersion,
+        }))
+      : slicedFormulary;
+
+    // Approximate JSON payload size in bytes for bandwidth monitoring
+    const approximateBytes = JSON.stringify({
+      finalPatients,
+      finalVitals,
+      finalFormulary,
+    }).length;
+
+    // Auto-register device or update lastSyncAt
     if (dto.deviceId) {
       let dev = this.registeredDevices.get(dto.deviceId);
       if (!dev) {
@@ -246,26 +447,40 @@ export class MobileSyncService {
         this.registeredDevices.set(dto.deviceId, dev);
       }
       dev.lastSyncAt = currentServerTimestamp;
+      if (dto.clientVectorClock) {
+        dev.vectorClock = GatewayVectorClockEngine.merge(
+          dev.vectorClock || {},
+          dto.clientVectorClock
+        );
+      }
     }
 
     return {
       sinceTimestamp: new Date(sinceTimeMs).toISOString(),
       currentServerTimestamp,
       hasMore,
-      patients: slicedPatients,
-      vitalSigns: slicedVitals,
-      formularyItems: slicedFormulary,
+      cursor: dto.cursor,
+      nextCursor,
+      chunkIndex,
+      remainingRecordsCount,
+      isBandwidthOptimized: isLowBandwidth,
+      payloadSizeBytes: approximateBytes,
+      serverVectorClock: { ...this.serverVectorClock },
+      serverMonotonicSequence: this.serverMonotonicSequence,
+      patients: finalPatients,
+      vitalSigns: finalVitals,
+      formularyItems: finalFormulary,
       counts: {
-        patients: slicedPatients.length,
-        vitalSigns: slicedVitals.length,
-        formularyItems: slicedFormulary.length,
-        total: slicedPatients.length + slicedVitals.length + slicedFormulary.length,
+        patients: finalPatients.length,
+        vitalSigns: finalVitals.length,
+        formularyItems: finalFormulary.length,
+        total: finalPatients.length + finalVitals.length + finalFormulary.length,
       },
     };
   }
 
   /**
-   * Endpoint 3: Batch Offline Mutation Ingest with Latest Timestamp Wins Conflict Resolution
+   * Endpoint 3: Offline Mutation Ingest with Vector Clock and Monotonic Timestamp Conflict Resolution
    */
   public async pushMutations(dto: PushMutationsRequestDto): Promise<PushMutationsResponseDto> {
     if (!dto.deviceId || typeof dto.deviceId !== 'string') {
@@ -279,6 +494,14 @@ export class MobileSyncService {
     const serverTimeUtc = now.toISOString();
     const serverTimeMs = now.getTime();
     const batchId = dto.batchId || `BATCH-${dto.deviceId}-${serverTimeMs}`;
+
+    // Merge batch-level vector clock if provided
+    if (dto.clientVectorClock) {
+      this.serverVectorClock = GatewayVectorClockEngine.merge(
+        this.serverVectorClock,
+        dto.clientVectorClock
+      );
+    }
 
     const results: MutationResultDto[] = [];
     let appliedCount = 0;
@@ -318,10 +541,16 @@ export class MobileSyncService {
       }
     }
 
-    // Update device timestamp
+    // Update device timestamp and vector clock
     const dev = this.registeredDevices.get(dto.deviceId);
     if (dev) {
       dev.lastSyncAt = serverTimeUtc;
+      if (dto.clientVectorClock) {
+        dev.vectorClock = GatewayVectorClockEngine.merge(
+          dev.vectorClock || {},
+          dto.clientVectorClock
+        );
+      }
     }
 
     return {
@@ -329,6 +558,8 @@ export class MobileSyncService {
       batchId,
       serverTimeUtc,
       serverTimeMs,
+      serverVectorClock: { ...this.serverVectorClock },
+      serverMonotonicSequence: this.serverMonotonicSequence,
       totalProcessed: dto.mutations.length,
       appliedCount,
       conflictCount,
@@ -338,7 +569,7 @@ export class MobileSyncService {
   }
 
   /**
-   * Conflict Resolution Logic: Latest Timestamp Wins (LWW)
+   * Conflict Resolution Logic: Vector Clock Causality with Monotonic Timestamp Tie-Breaker
    */
   private async processSingleMutation(
     mutation: OfflineMutationDto,
@@ -367,7 +598,14 @@ export class MobileSyncService {
     const existing = this.patientsStore.get(mutation.entityId);
 
     if (!existing) {
-      // New patient entity created offline
+      // New patient created offline
+      const monotonicVersion = this.getNextMonotonicSequence();
+      const entityClock = GatewayVectorClockEngine.merge(
+        { SERVER: 1 },
+        mutation.vectorClock || { [mutation.deviceId]: 1 }
+      );
+      this.serverVectorClock = GatewayVectorClockEngine.merge(this.serverVectorClock, entityClock);
+
       const newPatient: SyncPatientDto = {
         id: mutation.entityId,
         tenantId: mutation.tenantId || mutation.payload.tenantId,
@@ -385,6 +623,8 @@ export class MobileSyncService {
         emergencyContactPhone: mutation.payload.emergencyContactPhone,
         updatedAt: mutation.clientTimestamp || serverTimeUtc,
         isDeleted: mutation.operation === 'DELETE',
+        vectorClock: entityClock,
+        monotonicVersion,
       };
 
       this.patientsStore.set(mutation.entityId, newPatient);
@@ -396,16 +636,92 @@ export class MobileSyncService {
       };
     }
 
-    // Existing patient: apply Latest Timestamp Wins
-    const serverTimestampMs = Date.parse(existing.updatedAt);
+    // Existing patient: evaluate causality
+    const existingClock = existing.vectorClock || { SERVER: existing.monotonicVersion || 1 };
+    const clientClock = mutation.vectorClock;
+    let winner: 'CLIENT' | 'SERVER' = 'SERVER';
+    let causalRelation: CausalRelation = 'CONCURRENT';
+    let strategy: 'VECTOR_CLOCK_LWW' | 'MONOTONIC_SEQUENCE' | 'LATEST_TIMESTAMP_WINS' =
+      'LATEST_TIMESTAMP_WINS';
+    let reason = '';
 
-    if (clientTimestampMs >= serverTimestampMs) {
-      // Client modification timestamp is equal or newer: Client Wins
+    if (clientClock) {
+      causalRelation = GatewayVectorClockEngine.compare(clientClock, existingClock);
+      strategy = 'VECTOR_CLOCK_LWW';
+
+      if (causalRelation === 'AFTER') {
+        winner = 'CLIENT';
+        reason = 'Client mutation causally succeeds server state via vector clock';
+      } else if (causalRelation === 'BEFORE' || causalRelation === 'EQUAL') {
+        winner = 'SERVER';
+        reason = 'Client mutation is causally superseded or duplicate via vector clock';
+      } else {
+        // Concurrent divergence: Monotonic / Lamport timestamp tie-breaker
+        const clientMonotonic = mutation.monotonicTimestamp || mutation.lamportTime || 0;
+        const serverMonotonic = existing.monotonicVersion || 0;
+
+        if (clientMonotonic > serverMonotonic) {
+          winner = 'CLIENT';
+          strategy = 'MONOTONIC_SEQUENCE';
+          reason = 'Concurrent divergence resolved by client monotonic sequence priority';
+        } else if (clientMonotonic < serverMonotonic && clientMonotonic > 0) {
+          winner = 'SERVER';
+          strategy = 'MONOTONIC_SEQUENCE';
+          reason = 'Concurrent divergence resolved by server monotonic sequence priority';
+        } else {
+          // Fallback to wall-clock LWW
+          const serverTimestampMs = Date.parse(existing.updatedAt);
+          if (clientTimestampMs >= serverTimestampMs) {
+            winner = 'CLIENT';
+            reason = 'Concurrent divergence resolved by client latest wall-clock timestamp';
+          } else {
+            winner = 'SERVER';
+            reason = 'Concurrent divergence resolved by server latest wall-clock timestamp';
+          }
+        }
+      }
+    } else {
+      // Legacy client without vector clock: evaluate monotonic timestamp or wall-clock LWW
+      const clientMonotonic = mutation.monotonicTimestamp || mutation.lamportTime;
+      const serverMonotonic = existing.monotonicVersion;
+
+      if (clientMonotonic !== undefined && serverMonotonic !== undefined && clientMonotonic !== serverMonotonic) {
+        strategy = 'MONOTONIC_SEQUENCE';
+        if (clientMonotonic > serverMonotonic) {
+          winner = 'CLIENT';
+          reason = 'Client monotonic counter exceeds server sequence';
+        } else {
+          winner = 'SERVER';
+          reason = 'Server monotonic sequence exceeds client counter';
+        }
+      } else {
+        strategy = 'LATEST_TIMESTAMP_WINS';
+        const serverTimestampMs = Date.parse(existing.updatedAt);
+        if (clientTimestampMs >= serverTimestampMs) {
+          winner = 'CLIENT';
+          reason = 'Client mutation timestamp is equal or newer than server record';
+        } else {
+          winner = 'SERVER';
+          reason = 'Server record has newer timestamp than incoming client mutation';
+        }
+      }
+    }
+
+    if (winner === 'CLIENT') {
+      const nextMonotonic = this.getNextMonotonicSequence();
+      const updatedClock = GatewayVectorClockEngine.increment(
+        GatewayVectorClockEngine.merge(existingClock, clientClock || {}),
+        'SERVER'
+      );
+      this.serverVectorClock = GatewayVectorClockEngine.merge(this.serverVectorClock, updatedClock);
+
       const updated: SyncPatientDto = {
         ...existing,
         ...mutation.payload,
         updatedAt: mutation.clientTimestamp || serverTimeUtc,
         isDeleted: mutation.operation === 'DELETE',
+        vectorClock: updatedClock,
+        monotonicVersion: nextMonotonic,
       };
 
       this.patientsStore.set(mutation.entityId, updated);
@@ -416,26 +732,35 @@ export class MobileSyncService {
         entityId: mutation.entityId,
         status: 'APPLIED',
         conflictDetails: {
-          strategy: 'LATEST_TIMESTAMP_WINS',
+          strategy,
           serverTimestamp: existing.updatedAt,
           clientTimestamp: mutation.clientTimestamp || new Date(clientTimestampMs).toISOString(),
           winner: 'CLIENT',
-          reason: 'Client mutation timestamp is equal or newer than server record',
+          causalRelation,
+          serverVectorClock: existingClock,
+          clientVectorClock: clientClock,
+          serverMonotonicVersion: existing.monotonicVersion,
+          clientMonotonicVersion: mutation.monotonicTimestamp,
+          reason,
         },
       };
     } else {
-      // Server record has newer timestamp: Server Wins, Ignore stale client modification
       return {
         mutationId: mutation.mutationId,
         entityType: 'PATIENT',
         entityId: mutation.entityId,
         status: 'CONFLICT_IGNORED',
         conflictDetails: {
-          strategy: 'LATEST_TIMESTAMP_WINS',
+          strategy,
           serverTimestamp: existing.updatedAt,
           clientTimestamp: mutation.clientTimestamp || new Date(clientTimestampMs).toISOString(),
           winner: 'SERVER',
-          reason: 'Server record has newer timestamp than incoming client mutation',
+          causalRelation,
+          serverVectorClock: existingClock,
+          clientVectorClock: clientClock,
+          serverMonotonicVersion: existing.monotonicVersion,
+          clientMonotonicVersion: mutation.monotonicTimestamp,
+          reason,
         },
       };
     }
@@ -449,6 +774,13 @@ export class MobileSyncService {
     const existing = this.vitalSignsStore.get(mutation.entityId);
 
     if (!existing) {
+      const monotonicVersion = this.getNextMonotonicSequence();
+      const entityClock = GatewayVectorClockEngine.merge(
+        { SERVER: 1 },
+        mutation.vectorClock || { [mutation.deviceId]: 1 }
+      );
+      this.serverVectorClock = GatewayVectorClockEngine.merge(this.serverVectorClock, entityClock);
+
       const newVitals: SyncVitalSignsDto = {
         id: mutation.entityId,
         tenantId: mutation.tenantId || mutation.payload.tenantId,
@@ -465,6 +797,8 @@ export class MobileSyncService {
         recordedByStaffId: mutation.payload.recordedByStaffId,
         updatedAt: mutation.clientTimestamp || serverTimeUtc,
         isDeleted: mutation.operation === 'DELETE',
+        vectorClock: entityClock,
+        monotonicVersion,
       };
 
       this.vitalSignsStore.set(mutation.entityId, newVitals);
@@ -476,14 +810,70 @@ export class MobileSyncService {
       };
     }
 
-    const serverTimestampMs = Date.parse(existing.updatedAt);
+    const existingClock = existing.vectorClock || { SERVER: existing.monotonicVersion || 1 };
+    const clientClock = mutation.vectorClock;
+    let winner: 'CLIENT' | 'SERVER' = 'SERVER';
+    let causalRelation: CausalRelation = 'CONCURRENT';
+    let strategy: 'VECTOR_CLOCK_LWW' | 'MONOTONIC_SEQUENCE' | 'LATEST_TIMESTAMP_WINS' =
+      'LATEST_TIMESTAMP_WINS';
+    let reason = '';
 
-    if (clientTimestampMs >= serverTimestampMs) {
+    if (clientClock) {
+      causalRelation = GatewayVectorClockEngine.compare(clientClock, existingClock);
+      strategy = 'VECTOR_CLOCK_LWW';
+
+      if (causalRelation === 'AFTER') {
+        winner = 'CLIENT';
+        reason = 'Client mutation causally succeeds server vital signs state';
+      } else if (causalRelation === 'BEFORE' || causalRelation === 'EQUAL') {
+        winner = 'SERVER';
+        reason = 'Client mutation is causally superseded by server vital signs state';
+      } else {
+        const clientMonotonic = mutation.monotonicTimestamp || mutation.lamportTime || 0;
+        const serverMonotonic = existing.monotonicVersion || 0;
+
+        if (clientMonotonic > serverMonotonic) {
+          winner = 'CLIENT';
+          strategy = 'MONOTONIC_SEQUENCE';
+          reason = 'Concurrent divergence resolved by client monotonic counter';
+        } else {
+          const serverTimestampMs = Date.parse(existing.updatedAt);
+          if (clientTimestampMs >= serverTimestampMs) {
+            winner = 'CLIENT';
+            reason = 'Concurrent divergence resolved by client latest timestamp';
+          } else {
+            winner = 'SERVER';
+            reason = 'Concurrent divergence resolved by server latest timestamp';
+          }
+        }
+      }
+    } else {
+      strategy = 'LATEST_TIMESTAMP_WINS';
+      const serverTimestampMs = Date.parse(existing.updatedAt);
+      if (clientTimestampMs >= serverTimestampMs) {
+        winner = 'CLIENT';
+        reason = 'Client mutation timestamp is equal or newer than server record';
+      } else {
+        winner = 'SERVER';
+        reason = 'Server record has newer timestamp than incoming client mutation';
+      }
+    }
+
+    if (winner === 'CLIENT') {
+      const nextMonotonic = this.getNextMonotonicSequence();
+      const updatedClock = GatewayVectorClockEngine.increment(
+        GatewayVectorClockEngine.merge(existingClock, clientClock || {}),
+        'SERVER'
+      );
+      this.serverVectorClock = GatewayVectorClockEngine.merge(this.serverVectorClock, updatedClock);
+
       const updated: SyncVitalSignsDto = {
         ...existing,
         ...mutation.payload,
         updatedAt: mutation.clientTimestamp || serverTimeUtc,
         isDeleted: mutation.operation === 'DELETE',
+        vectorClock: updatedClock,
+        monotonicVersion: nextMonotonic,
       };
 
       this.vitalSignsStore.set(mutation.entityId, updated);
@@ -494,11 +884,16 @@ export class MobileSyncService {
         entityId: mutation.entityId,
         status: 'APPLIED',
         conflictDetails: {
-          strategy: 'LATEST_TIMESTAMP_WINS',
+          strategy,
           serverTimestamp: existing.updatedAt,
           clientTimestamp: mutation.clientTimestamp || new Date(clientTimestampMs).toISOString(),
           winner: 'CLIENT',
-          reason: 'Client mutation timestamp is equal or newer than server record',
+          causalRelation,
+          serverVectorClock: existingClock,
+          clientVectorClock: clientClock,
+          serverMonotonicVersion: existing.monotonicVersion,
+          clientMonotonicVersion: mutation.monotonicTimestamp,
+          reason,
         },
       };
     } else {
@@ -508,11 +903,16 @@ export class MobileSyncService {
         entityId: mutation.entityId,
         status: 'CONFLICT_IGNORED',
         conflictDetails: {
-          strategy: 'LATEST_TIMESTAMP_WINS',
+          strategy,
           serverTimestamp: existing.updatedAt,
           clientTimestamp: mutation.clientTimestamp || new Date(clientTimestampMs).toISOString(),
           winner: 'SERVER',
-          reason: 'Server record has newer timestamp than incoming client mutation',
+          causalRelation,
+          serverVectorClock: existingClock,
+          clientVectorClock: clientClock,
+          serverMonotonicVersion: existing.monotonicVersion,
+          clientMonotonicVersion: mutation.monotonicTimestamp,
+          reason,
         },
       };
     }
@@ -526,6 +926,13 @@ export class MobileSyncService {
     const existing = this.formularyStore.get(mutation.entityId);
 
     if (!existing) {
+      const monotonicVersion = this.getNextMonotonicSequence();
+      const entityClock = GatewayVectorClockEngine.merge(
+        { SERVER: 1 },
+        mutation.vectorClock || { [mutation.deviceId]: 1 }
+      );
+      this.serverVectorClock = GatewayVectorClockEngine.merge(this.serverVectorClock, entityClock);
+
       const newItem: SyncFormularyItemDto = {
         id: mutation.entityId,
         tenantId: mutation.tenantId || mutation.payload.tenantId,
@@ -542,6 +949,8 @@ export class MobileSyncService {
         stockQuantity: mutation.payload.stockQuantity || 100,
         updatedAt: mutation.clientTimestamp || serverTimeUtc,
         isDeleted: mutation.operation === 'DELETE',
+        vectorClock: entityClock,
+        monotonicVersion,
       };
 
       this.formularyStore.set(mutation.entityId, newItem);
@@ -553,14 +962,70 @@ export class MobileSyncService {
       };
     }
 
-    const serverTimestampMs = Date.parse(existing.updatedAt);
+    const existingClock = existing.vectorClock || { SERVER: existing.monotonicVersion || 1 };
+    const clientClock = mutation.vectorClock;
+    let winner: 'CLIENT' | 'SERVER' = 'SERVER';
+    let causalRelation: CausalRelation = 'CONCURRENT';
+    let strategy: 'VECTOR_CLOCK_LWW' | 'MONOTONIC_SEQUENCE' | 'LATEST_TIMESTAMP_WINS' =
+      'LATEST_TIMESTAMP_WINS';
+    let reason = '';
 
-    if (clientTimestampMs >= serverTimestampMs) {
+    if (clientClock) {
+      causalRelation = GatewayVectorClockEngine.compare(clientClock, existingClock);
+      strategy = 'VECTOR_CLOCK_LWW';
+
+      if (causalRelation === 'AFTER') {
+        winner = 'CLIENT';
+        reason = 'Client mutation causally succeeds server formulary state';
+      } else if (causalRelation === 'BEFORE' || causalRelation === 'EQUAL') {
+        winner = 'SERVER';
+        reason = 'Client mutation is causally superseded by server formulary state';
+      } else {
+        const clientMonotonic = mutation.monotonicTimestamp || mutation.lamportTime || 0;
+        const serverMonotonic = existing.monotonicVersion || 0;
+
+        if (clientMonotonic > serverMonotonic) {
+          winner = 'CLIENT';
+          strategy = 'MONOTONIC_SEQUENCE';
+          reason = 'Concurrent divergence resolved by client monotonic sequence';
+        } else {
+          const serverTimestampMs = Date.parse(existing.updatedAt);
+          if (clientTimestampMs >= serverTimestampMs) {
+            winner = 'CLIENT';
+            reason = 'Concurrent divergence resolved by client latest timestamp';
+          } else {
+            winner = 'SERVER';
+            reason = 'Concurrent divergence resolved by server latest timestamp';
+          }
+        }
+      }
+    } else {
+      strategy = 'LATEST_TIMESTAMP_WINS';
+      const serverTimestampMs = Date.parse(existing.updatedAt);
+      if (clientTimestampMs >= serverTimestampMs) {
+        winner = 'CLIENT';
+        reason = 'Client mutation timestamp is equal or newer than server record';
+      } else {
+        winner = 'SERVER';
+        reason = 'Server record has newer timestamp than incoming client mutation';
+      }
+    }
+
+    if (winner === 'CLIENT') {
+      const nextMonotonic = this.getNextMonotonicSequence();
+      const updatedClock = GatewayVectorClockEngine.increment(
+        GatewayVectorClockEngine.merge(existingClock, clientClock || {}),
+        'SERVER'
+      );
+      this.serverVectorClock = GatewayVectorClockEngine.merge(this.serverVectorClock, updatedClock);
+
       const updated: SyncFormularyItemDto = {
         ...existing,
         ...mutation.payload,
         updatedAt: mutation.clientTimestamp || serverTimeUtc,
         isDeleted: mutation.operation === 'DELETE',
+        vectorClock: updatedClock,
+        monotonicVersion: nextMonotonic,
       };
 
       this.formularyStore.set(mutation.entityId, updated);
@@ -571,11 +1036,16 @@ export class MobileSyncService {
         entityId: mutation.entityId,
         status: 'APPLIED',
         conflictDetails: {
-          strategy: 'LATEST_TIMESTAMP_WINS',
+          strategy,
           serverTimestamp: existing.updatedAt,
           clientTimestamp: mutation.clientTimestamp || new Date(clientTimestampMs).toISOString(),
           winner: 'CLIENT',
-          reason: 'Client mutation timestamp is equal or newer than server record',
+          causalRelation,
+          serverVectorClock: existingClock,
+          clientVectorClock: clientClock,
+          serverMonotonicVersion: existing.monotonicVersion,
+          clientMonotonicVersion: mutation.monotonicTimestamp,
+          reason,
         },
       };
     } else {
@@ -585,11 +1055,16 @@ export class MobileSyncService {
         entityId: mutation.entityId,
         status: 'CONFLICT_IGNORED',
         conflictDetails: {
-          strategy: 'LATEST_TIMESTAMP_WINS',
+          strategy,
           serverTimestamp: existing.updatedAt,
           clientTimestamp: mutation.clientTimestamp || new Date(clientTimestampMs).toISOString(),
           winner: 'SERVER',
-          reason: 'Server record has newer timestamp than incoming client mutation',
+          causalRelation,
+          serverVectorClock: existingClock,
+          clientVectorClock: clientClock,
+          serverMonotonicVersion: existing.monotonicVersion,
+          clientMonotonicVersion: mutation.monotonicTimestamp,
+          reason,
         },
       };
     }
@@ -603,6 +1078,8 @@ export class MobileSyncService {
       status: 'HEALTHY',
       service: 'MobileSyncGateway',
       minSupportedAppVersion: MIN_SUPPORTED_APP_VERSION,
+      serverMonotonicSequence: this.serverMonotonicSequence,
+      serverVectorClock: { ...this.serverVectorClock },
       activeDevicesCount: this.registeredDevices.size,
       cachedPatientsCount: this.patientsStore.size,
       cachedVitalSignsCount: this.vitalSignsStore.size,
@@ -651,6 +1128,8 @@ export class MobileSyncService {
         isInStock: true,
         stockQuantity: 1500,
         updatedAt: '2026-11-01T00:00:00.000Z',
+        vectorClock: { SERVER: 1 },
+        monotonicVersion: 1001,
       },
       {
         id: 'FORM-MED-002',
@@ -666,6 +1145,8 @@ export class MobileSyncService {
         isInStock: true,
         stockQuantity: 800,
         updatedAt: '2026-11-01T00:00:00.000Z',
+        vectorClock: { SERVER: 1 },
+        monotonicVersion: 1002,
       },
       {
         id: 'FORM-MED-003',
@@ -681,6 +1162,8 @@ export class MobileSyncService {
         isInStock: true,
         stockQuantity: 650,
         updatedAt: '2026-11-01T00:00:00.000Z',
+        vectorClock: { SERVER: 1 },
+        monotonicVersion: 1003,
       },
       {
         id: 'FORM-MED-004',
@@ -696,6 +1179,8 @@ export class MobileSyncService {
         isInStock: true,
         stockQuantity: 1200,
         updatedAt: '2026-11-01T00:00:00.000Z',
+        vectorClock: { SERVER: 1 },
+        monotonicVersion: 1004,
       },
       {
         id: 'FORM-MED-005',
@@ -711,6 +1196,8 @@ export class MobileSyncService {
         isInStock: true,
         stockQuantity: 400,
         updatedAt: '2026-11-01T00:00:00.000Z',
+        vectorClock: { SERVER: 1 },
+        monotonicVersion: 1005,
       },
       {
         id: 'FORM-MED-006',
@@ -726,6 +1213,8 @@ export class MobileSyncService {
         isInStock: true,
         stockQuantity: 950,
         updatedAt: '2026-11-01T00:00:00.000Z',
+        vectorClock: { SERVER: 1 },
+        monotonicVersion: 1006,
       },
       {
         id: 'FORM-MED-007',
@@ -741,6 +1230,8 @@ export class MobileSyncService {
         isInStock: true,
         stockQuantity: 700,
         updatedAt: '2026-11-01T00:00:00.000Z',
+        vectorClock: { SERVER: 1 },
+        monotonicVersion: 1007,
       },
       {
         id: 'FORM-MED-008',
@@ -756,6 +1247,8 @@ export class MobileSyncService {
         isInStock: true,
         stockQuantity: 300,
         updatedAt: '2026-11-01T00:00:00.000Z',
+        vectorClock: { SERVER: 1 },
+        monotonicVersion: 1008,
       },
     ];
 
@@ -784,6 +1277,8 @@ export class MobileSyncService {
         emergencyContactName: 'Bopha Chea',
         emergencyContactPhone: '012345679',
         updatedAt: '2026-11-01T08:00:00.000Z',
+        vectorClock: { SERVER: 1 },
+        monotonicVersion: 1009,
       },
       {
         id: 'PAT-MOH-2026-0002',
@@ -800,6 +1295,8 @@ export class MobileSyncService {
         emergencyContactName: 'Vanna Vann',
         emergencyContactPhone: '098765430',
         updatedAt: '2026-11-02T09:30:00.000Z',
+        vectorClock: { SERVER: 1 },
+        monotonicVersion: 1010,
       },
       {
         id: 'PAT-MOH-2026-0003',
@@ -816,6 +1313,8 @@ export class MobileSyncService {
         emergencyContactName: 'Kanya Chan',
         emergencyContactPhone: '077889901',
         updatedAt: '2026-11-03T02:00:00.000Z',
+        vectorClock: { SERVER: 1 },
+        monotonicVersion: 1011,
       },
     ];
 
@@ -838,6 +1337,8 @@ export class MobileSyncService {
         recordedAt: '2026-11-01T08:30:00.000Z',
         recordedByStaffId: 'STAFF-DR-01',
         updatedAt: '2026-11-01T08:30:00.000Z',
+        vectorClock: { SERVER: 1 },
+        monotonicVersion: 1012,
       },
       {
         id: 'VIT-2026-0002',
@@ -853,6 +1354,8 @@ export class MobileSyncService {
         recordedAt: '2026-11-02T10:00:00.000Z',
         recordedByStaffId: 'STAFF-RN-02',
         updatedAt: '2026-11-02T10:00:00.000Z',
+        vectorClock: { SERVER: 1 },
+        monotonicVersion: 1013,
       },
       {
         id: 'VIT-2026-0003',
@@ -868,6 +1371,8 @@ export class MobileSyncService {
         recordedAt: '2026-11-03T02:15:00.000Z',
         recordedByStaffId: 'STAFF-DR-02',
         updatedAt: '2026-11-03T02:15:00.000Z',
+        vectorClock: { SERVER: 1 },
+        monotonicVersion: 1014,
       },
     ];
 

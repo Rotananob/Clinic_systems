@@ -67,7 +67,31 @@ describe('Phase 8: Mobile Sync & Device Gateway Concurrency and Parity Test Suit
       assert.ok(res.syncSessionId.startsWith('SESS-DEV-TAB-002-'));
       assert.ok(typeof res.serverTimeMs === 'number');
       assert.ok(res.serverTimeUtc.length > 0);
+      assert.ok(res.serverMonotonicSequence >= 1000);
+      assert.ok(res.serverVectorClock.SERVER >= 1);
       assert.deepEqual(res.supportedEntities, ['PATIENT', 'VITAL_SIGNS', 'FORMULARY_ITEM']);
+    });
+
+    it('should configure low-bandwidth optimization flags for rural 3G connections', async () => {
+      const dto: HandshakeRequestDto = {
+        deviceId: 'DEV-RURAL-MIDWIFE-01',
+        deviceName: 'Ratanakiri Outpost Tablet',
+        appVersion: '1.1.2',
+        networkTier: '3G',
+        clientVectorClock: { 'DEV-RURAL-MIDWIFE-01': 5 },
+      };
+
+      const res = await service.handshake(dto);
+
+      assert.equal(res.success, true);
+      assert.equal(res.lowBandwidthOptimized, true);
+      assert.equal(res.recommendedChunkSize, 25);
+      assert.equal(res.heartbeatIntervalSeconds, 120);
+      assert.equal(res.serverVectorClock['DEV-RURAL-MIDWIFE-01'], 5);
+
+      const device = service.getDevice('DEV-RURAL-MIDWIFE-01');
+      assert.ok(device);
+      assert.equal(device.networkTier, '3G');
     });
 
     it('should synchronize server time and calculate clock offset for mobile client', async () => {
@@ -108,7 +132,7 @@ describe('Phase 8: Mobile Sync & Device Gateway Concurrency and Parity Test Suit
     });
   });
 
-  describe('2. Pull Delta Sync (Patients, Vitals, and Formulary Items)', () => {
+  describe('2. Pull Delta Sync with Low-Bandwidth 3G/4G Chunking & Resumable Cursors', () => {
     it('should return initial baseline dataset when sinceTimestamp is 0', async () => {
       const dto: PullDeltaRequestDto = {
         sinceTimestamp: 0,
@@ -127,6 +151,8 @@ describe('Phase 8: Mobile Sync & Device Gateway Concurrency and Parity Test Suit
         delta.counts.total,
         delta.patients.length + delta.vitalSigns.length + delta.formularyItems.length
       );
+      assert.ok(delta.serverMonotonicSequence >= 1000);
+      assert.ok(delta.serverVectorClock.SERVER >= 1);
 
       const paracetamol = delta.formularyItems.find((f) => f.code === 'PARACETAMOL-500MG');
       assert.ok(paracetamol);
@@ -135,6 +161,71 @@ describe('Phase 8: Mobile Sync & Device Gateway Concurrency and Parity Test Suit
 
       const dev = service.getDevice('DEV-TAB-002');
       assert.ok(dev?.lastSyncAt);
+    });
+
+    it('should paginate delta responses in small sequential chunks for rural 3G connectivity', async () => {
+      // Total items in baseline = 3 patients + 3 vitals + 8 formulary = 14 items
+      // Request chunkSize: 4
+      const chunk1 = await service.pullDelta({
+        sinceTimestamp: 0,
+        chunkSize: 4,
+        lowBandwidthMode: true,
+      });
+
+      assert.equal(chunk1.isBandwidthOptimized, true);
+      assert.equal(chunk1.counts.total, 4);
+      assert.equal(chunk1.hasMore, true);
+      assert.ok(chunk1.nextCursor);
+      assert.equal(chunk1.chunkIndex, 0);
+      assert.equal(chunk1.remainingRecordsCount, 10);
+      assert.ok(chunk1.payloadSizeBytes > 0);
+
+      // Fetch Chunk 2 with nextCursor
+      const chunk2 = await service.pullDelta({
+        sinceTimestamp: 0,
+        chunkSize: 4,
+        cursor: chunk1.nextCursor,
+        lowBandwidthMode: true,
+      });
+
+      assert.equal(chunk2.counts.total, 4);
+      assert.equal(chunk2.hasMore, true);
+      assert.ok(chunk2.nextCursor);
+      assert.equal(chunk2.chunkIndex, 1);
+      assert.equal(chunk2.remainingRecordsCount, 6);
+
+      // Verify no duplicate items across chunk1 and chunk2
+      const chunk1PatientIds = chunk1.patients.map((p) => p.id);
+      const chunk2PatientIds = chunk2.patients.map((p) => p.id);
+      for (const id of chunk2PatientIds) {
+        assert.ok(!chunk1PatientIds.includes(id));
+      }
+
+      // Fetch Chunk 3 with nextCursor
+      const chunk3 = await service.pullDelta({
+        sinceTimestamp: 0,
+        chunkSize: 4,
+        cursor: chunk2.nextCursor,
+        lowBandwidthMode: true,
+      });
+
+      assert.equal(chunk3.counts.total, 4);
+      assert.equal(chunk3.hasMore, true);
+      assert.equal(chunk3.chunkIndex, 2);
+      assert.equal(chunk3.remainingRecordsCount, 2);
+
+      // Fetch Final Chunk 4
+      const chunk4 = await service.pullDelta({
+        sinceTimestamp: 0,
+        chunkSize: 4,
+        cursor: chunk3.nextCursor,
+        lowBandwidthMode: true,
+      });
+
+      assert.equal(chunk4.counts.total, 2);
+      assert.equal(chunk4.hasMore, false);
+      assert.equal(chunk4.nextCursor, undefined);
+      assert.equal(chunk4.remainingRecordsCount, 0);
     });
 
     it('should return empty collections when sinceTimestamp is in the future', async () => {
@@ -161,8 +252,7 @@ describe('Phase 8: Mobile Sync & Device Gateway Concurrency and Parity Test Suit
       const delta = await service.pullDelta(dto);
 
       assert.equal(delta.patients.length, 2);
-      assert.equal(delta.vitalSigns.length, 2);
-      assert.equal(delta.formularyItems.length, 2);
+      assert.equal(delta.vitalSigns.length, 0); // sequential budget: limit 2 filled by 2 patients
       assert.equal(delta.hasMore, true);
     });
 
@@ -183,8 +273,8 @@ describe('Phase 8: Mobile Sync & Device Gateway Concurrency and Parity Test Suit
     });
   });
 
-  describe('3. Batch Offline Mutation Ingestion & Conflict Resolution (LWW)', () => {
-    it('should ingest new offline patient record created by mobile clinician', async () => {
+  describe('3. Batch Offline Mutation Ingestion & Vector Clock Conflict Resolution', () => {
+    it('should ingest new offline patient record and assign monotonic sequence', async () => {
       const newPatientMutation: OfflineMutationDto = {
         mutationId: 'MUT-PAT-OFFLINE-001',
         deviceId: 'DEV-MOBILE-01',
@@ -202,6 +292,7 @@ describe('Phase 8: Mobile Sync & Device Gateway Concurrency and Parity Test Suit
         },
         clientTimestamp: '2026-11-03T10:00:00.000Z',
         clientTimestampMs: Date.parse('2026-11-03T10:00:00.000Z'),
+        vectorClock: { 'DEV-MOBILE-01': 1 },
       };
 
       const batchDto: PushMutationsRequestDto = {
@@ -216,24 +307,24 @@ describe('Phase 8: Mobile Sync & Device Gateway Concurrency and Parity Test Suit
       assert.equal(response.appliedCount, 1);
       assert.equal(response.conflictCount, 0);
       assert.equal(response.results[0].status, 'APPLIED');
+      assert.ok(response.serverMonotonicSequence >= 1001);
 
       const saved = service.getPatient('PAT-OFFLINE-9999');
       assert.ok(saved);
       assert.equal(saved.nameEn, 'Vichhai Keo');
       assert.equal(saved.nameKh, 'កែវ វិច្ឆ័យ');
       assert.equal(saved.allergies, 'Aspirin');
+      assert.ok(saved.monotonicVersion >= 1001);
+      assert.equal(saved.vectorClock?.['DEV-MOBILE-01'], 1);
     });
 
-    it('should resolve conflict with Client Wins when client timestamp is newer than server record', async () => {
+    it('should resolve conflict with Client Wins when vector clock causally succeeds server (AFTER)', async () => {
       const existing = service.getPatient('PAT-MOH-2026-0001');
       assert.ok(existing);
-      const serverTimeMs = Date.parse(existing.updatedAt);
 
-      const clientTimeMs = serverTimeMs + 3600000;
-      const clientIso = new Date(clientTimeMs).toISOString();
-
+      // Client knows server state (SERVER: 1) and advanced its own counter to 3
       const mutation: OfflineMutationDto = {
-        mutationId: 'MUT-UPDATE-LWW-CLIENT',
+        mutationId: 'MUT-CAUSAL-SUCCESSOR-01',
         deviceId: 'DEV-MOBILE-01',
         entityType: 'PATIENT',
         entityId: 'PAT-MOH-2026-0001',
@@ -242,8 +333,9 @@ describe('Phase 8: Mobile Sync & Device Gateway Concurrency and Parity Test Suit
           phone: '099000111',
           allergies: 'Penicillin, Cephalosporins',
         },
-        clientTimestamp: clientIso,
-        clientTimestampMs: clientTimeMs,
+        clientTimestamp: new Date().toISOString(),
+        clientTimestampMs: Date.now(),
+        vectorClock: { SERVER: 1, 'DEV-MOBILE-01': 3 },
       };
 
       const response = await service.pushMutations({
@@ -255,37 +347,36 @@ describe('Phase 8: Mobile Sync & Device Gateway Concurrency and Parity Test Suit
       assert.equal(response.appliedCount, 1);
       assert.equal(response.results[0].status, 'APPLIED');
       assert.equal(response.results[0].conflictDetails?.winner, 'CLIENT');
-      assert.equal(response.results[0].conflictDetails?.strategy, 'LATEST_TIMESTAMP_WINS');
+      assert.equal(response.results[0].conflictDetails?.causalRelation, 'AFTER');
+      assert.equal(response.results[0].conflictDetails?.strategy, 'VECTOR_CLOCK_LWW');
 
       const updated = service.getPatient('PAT-MOH-2026-0001');
       assert.equal(updated?.phone, '099000111');
       assert.equal(updated?.allergies, 'Penicillin, Cephalosporins');
     });
 
-    it('should resolve conflict with Server Wins (ignore client) when server timestamp is newer than client mutation', async () => {
+    it('should resolve conflict with Server Wins when vector clock is causally superseded (BEFORE)', async () => {
       const existing = service.getPatient('PAT-MOH-2026-0002');
       assert.ok(existing);
-      const serverTimeMs = Date.parse(existing.updatedAt);
 
-      const staleClientTimeMs = serverTimeMs - 7200000;
-      const staleClientIso = new Date(staleClientTimeMs).toISOString();
-
+      // Client has stale vector clock: SERVER is 0, while server is already 1
       const staleMutation: OfflineMutationDto = {
-        mutationId: 'MUT-STALE-OFFLINE-002',
-        deviceId: 'DEV-OFFLINE-STALE',
+        mutationId: 'MUT-STALE-VECTOR-01',
+        deviceId: 'DEV-STALE-01',
         entityType: 'PATIENT',
         entityId: 'PAT-MOH-2026-0002',
         operation: 'UPDATE',
         payload: {
           phone: '000000000',
-          allergies: 'Outdated Allergy Information',
+          allergies: 'Stale Allergy Data',
         },
-        clientTimestamp: staleClientIso,
-        clientTimestampMs: staleClientTimeMs,
+        clientTimestamp: '2026-10-01T00:00:00.000Z',
+        clientTimestampMs: Date.parse('2026-10-01T00:00:00.000Z'),
+        vectorClock: { SERVER: 0 },
       };
 
       const response = await service.pushMutations({
-        deviceId: 'DEV-OFFLINE-STALE',
+        deviceId: 'DEV-STALE-01',
         mutations: [staleMutation],
       });
 
@@ -294,11 +385,49 @@ describe('Phase 8: Mobile Sync & Device Gateway Concurrency and Parity Test Suit
       assert.equal(response.conflictCount, 1);
       assert.equal(response.results[0].status, 'CONFLICT_IGNORED');
       assert.equal(response.results[0].conflictDetails?.winner, 'SERVER');
-      assert.equal(response.results[0].conflictDetails?.strategy, 'LATEST_TIMESTAMP_WINS');
+      assert.equal(response.results[0].conflictDetails?.causalRelation, 'BEFORE');
 
       const patient = service.getPatient('PAT-MOH-2026-0002');
       assert.equal(patient?.phone, '098765432');
       assert.equal(patient?.allergies, 'None');
+    });
+
+    it('should resolve concurrent divergence using monotonic sequence priority tie-breaker', async () => {
+      const existing = service.getPatient('PAT-MOH-2026-0003');
+      assert.ok(existing);
+      const serverVersion = existing.monotonicVersion || 1011;
+
+      // Concurrent divergence: Client clock { 'DEV-CHW-01': 4 } vs Server { SERVER: 1 }
+      // Client has higher monotonic timestamp (1050 > serverVersion)
+      const concurrentClientWins: OfflineMutationDto = {
+        mutationId: 'MUT-CONCURRENT-01',
+        deviceId: 'DEV-CHW-01',
+        entityType: 'PATIENT',
+        entityId: 'PAT-MOH-2026-0003',
+        operation: 'UPDATE',
+        payload: {
+          phone: '077112233',
+        },
+        clientTimestamp: new Date().toISOString(),
+        clientTimestampMs: Date.now(),
+        vectorClock: { 'DEV-CHW-01': 4 },
+        monotonicTimestamp: 1050,
+      };
+
+      const response = await service.pushMutations({
+        deviceId: 'DEV-CHW-01',
+        mutations: [concurrentClientWins],
+      });
+
+      assert.equal(response.success, true);
+      assert.equal(response.appliedCount, 1);
+      assert.equal(response.results[0].status, 'APPLIED');
+      assert.equal(response.results[0].conflictDetails?.winner, 'CLIENT');
+      assert.equal(response.results[0].conflictDetails?.causalRelation, 'CONCURRENT');
+      assert.equal(response.results[0].conflictDetails?.strategy, 'MONOTONIC_SEQUENCE');
+
+      const updated = service.getPatient('PAT-MOH-2026-0003');
+      assert.equal(updated?.phone, '077112233');
     });
 
     it('should process batch with mixed entity types: patient, vitals, and formulary updates', async () => {
@@ -321,6 +450,8 @@ describe('Phase 8: Mobile Sync & Device Gateway Concurrency and Parity Test Suit
           },
           clientTimestamp: new Date().toISOString(),
           clientTimestampMs: Date.now(),
+          vectorClock: { 'DEV-NURSE-TABLET-03': 1 },
+          monotonicTimestamp: 1060,
         },
         {
           mutationId: 'BATCH-MUT-2',
@@ -333,6 +464,8 @@ describe('Phase 8: Mobile Sync & Device Gateway Concurrency and Parity Test Suit
           },
           clientTimestamp: new Date(Date.now() + 1000).toISOString(),
           clientTimestampMs: Date.now() + 1000,
+          vectorClock: { SERVER: 1, 'DEV-NURSE-TABLET-03': 2 },
+          monotonicTimestamp: 1061,
         },
       ];
 
@@ -357,13 +490,15 @@ describe('Phase 8: Mobile Sync & Device Gateway Concurrency and Parity Test Suit
     });
   });
 
-  describe('4. Gateway Health & Diagnostics Endpoints', () => {
-    it('should return healthy status and comprehensive statistics', async () => {
+  describe('4. Gateway Health & Controller REST API Endpoint Contract Parity', () => {
+    it('should return healthy status, monotonic sequence, and vector clock metrics', async () => {
       const health = await service.getGatewayHealth();
 
       assert.equal(health.status, 'HEALTHY');
       assert.equal(health.service, 'MobileSyncGateway');
       assert.equal(health.minSupportedAppVersion, '1.0.0');
+      assert.ok(health.serverMonotonicSequence >= 1000);
+      assert.ok(health.serverVectorClock.SERVER >= 1);
       assert.ok(health.cachedPatientsCount >= 3);
       assert.ok(health.cachedVitalSignsCount >= 3);
       assert.ok(health.cachedFormularyItemsCount >= 8);
@@ -385,6 +520,26 @@ describe('Phase 8: Mobile Sync & Device Gateway Concurrency and Parity Test Suit
       const single = await service.getDevice('DEV-DIAG-001');
       assert.ok(single);
       assert.equal(single.deviceId, 'DEV-DIAG-001');
+    });
+
+    it('should verify gateway delta sync returns expected response structure', async () => {
+      const handshakeRes = await service.handshake({
+        deviceId: 'DEV-CTRL-TEST',
+        deviceName: 'Test Controller Terminal',
+        appVersion: '1.0.0',
+      });
+      assert.equal(handshakeRes.success, true);
+
+      const deltaRes = await service.pullDelta({
+        sinceTimestamp: 0,
+        chunkSize: 10,
+      });
+      assert.ok(deltaRes.counts.total > 0);
+      assert.ok(deltaRes.serverVectorClock.SERVER >= 1);
+      assert.ok(deltaRes.serverMonotonicSequence >= 1000);
+
+      const healthRes = await service.getGatewayHealth();
+      assert.equal(healthRes.status, 'HEALTHY');
     });
   });
 });
