@@ -47,7 +47,8 @@ fun DashboardScreen(
     onNavigateToSurgical: () -> Unit = {},
     onNavigateToNarcotics: () -> Unit = {},
     onNavigateToWarehouse: () -> Unit = {},
-    onNavigateToNssf: () -> Unit = {}
+    onNavigateToNssf: () -> Unit = {},
+    onNavigateToChemo: () -> Unit = {}
 ) {
     var selectedBranch by remember { mutableStateOf("រាជធានីភ្នំពេញ - មន្ទីរពេទ្យកណ្ដាល") }
 
@@ -584,7 +585,8 @@ fun DashboardScreen(
             DepartmentModule("ពិគ្រោះពីចម្ងាយ Teleconsult", "WebRTC Video & e-Prescription", "ការពិគ្រោះជំងឺក្រៅបណ្ដាញ", "TLC", Color(0xFF0277BD), onNavigateToTeleconsult),
             DepartmentModule("សំណុំរឿងអ្នកជំងឺ EHR", "Patient Dossier & Records", "ប្រវត្តិជំងឺ និង ការព្យាបាល", "EHR", MedicalDeepTeal, onNavigateToPatient),
             DepartmentModule("គិតលុយ Bakong KHQR POS", "Bakong USD/KHR Dual Engine", "ទូទាត់ភ្លាមៗតាម KHQR និង ABA", "POS", BankBakongRed, onNavigateToBilling),
-            DepartmentModule("សំណើសងប្រាក់ ប.ស.ស.", "NSSF e-Claim Portal", "CamDX K, B, R Tariff Engine", "NSF", Color(0xFF00695C), onNavigateToNssf)
+            DepartmentModule("សំណើសងប្រាក់ ប.ស.ស.", "NSSF e-Claim Portal", "CamDX K, B, R Tariff Engine", "NSF", Color(0xFF00695C), onNavigateToNssf),
+            DepartmentModule("បញ្ចូលថ្នាំគីមីមហារីក Chemo", "Oncology Infusion Station", "Calvert AUC, BSA & Dual-Nurse", "CHM", Color(0xFF4A148C), onNavigateToChemo)
         )
 
         val allCategories = listOf(
