@@ -195,7 +195,7 @@ fun DentalScreen(
             clinicalNotes = "Intact occlusal amalgam restoration"
         )
 
-        mutableStateOf(initialMap)
+        mutableStateOf<Map<Int, ToothState>>(initialMap)
     }
 
     val selectedTooth = toothRecords[selectedToothNum] ?: ToothState(fdiNumber = selectedToothNum)
