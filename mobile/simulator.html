@@ -1,1082 +1,1995 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="km">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KruPet Mobile Clinical Station - 2026 Interactive Simulator</title>
-  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>KruPet Enterprise Medical Station - 2026 Flagship Mobile App</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Kantumruy+Pro:wght@400;600;700&display=swap');
-    body { font-family: 'Inter', 'Kantumruy Pro', sans-serif; }
-    .mono { font-family: 'JetBrains Mono', monospace; }
-    .hide-scrollbar::-webkit-scrollbar { display: none; }
-    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    :root {
+      --primary: #006A6A;
+      --primary-dark: #004D40;
+      --primary-light: #4D9999;
+      --primary-container: #E0F2F1;
+      --on-primary-container: #002020;
+      --surface: #FFFFFF;
+      --surface-variant: #F4F7F6;
+      --surface-tint: #E8EEED;
+      --outline: #C2CDCB;
+      --outline-variant: #E0E7E6;
+      --text-main: #191C1C;
+      --text-muted: #3F4948;
+      --text-sub: #707978;
+      --critical: #BA1A1A;
+      --critical-container: #FFDAD6;
+      --warning: #B26A00;
+      --warning-container: #FFE082;
+      --success: #1E6B37;
+      --success-container: #C8E6C9;
+      --aba-blue: #055E7C;
+      --bakong-red: #E21A1A;
+      --card-shadow: 0 4px 20px -2px rgba(0, 32, 32, 0.08), 0 2px 6px -1px rgba(0, 32, 32, 0.04);
+      --card-shadow-hover: 0 10px 25px -4px rgba(0, 32, 32, 0.12), 0 4px 10px -2px rgba(0, 32, 32, 0.06);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      background: #091514;
+      font-family: 'Kantumruy Pro', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+      color: #E1E3E1;
+      overflow-x: hidden;
+    }
+
+    /* Ambient Medical Studio Backdrop */
+    .studio-bg {
+      position: fixed;
+      inset: 0;
+      background: 
+        radial-gradient(circle at 20% 15%, rgba(0, 106, 106, 0.25) 0%, transparent 50%),
+        radial-gradient(circle at 80% 85%, rgba(5, 94, 124, 0.2) 0%, transparent 55%),
+        #06100F;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Studio Header */
+    .studio-header {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      margin-bottom: 20px;
+      max-width: 800px;
+    }
+
+    .studio-badge-row {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .pill-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .pill-badge.primary { background: rgba(0, 106, 106, 0.3); color: #4DD0E1; border: 1px solid rgba(77, 208, 225, 0.3); }
+    .pill-badge.success { background: rgba(30, 107, 55, 0.3); color: #81C784; border: 1px solid rgba(129, 199, 132, 0.3); }
+    .pill-badge.aba { background: rgba(5, 94, 124, 0.4); color: #26C6DA; border: 1px solid rgba(38, 198, 218, 0.4); }
+    .pill-badge.bakong { background: rgba(226, 26, 26, 0.25); color: #EF5350; border: 1px solid rgba(239, 83, 80, 0.3); }
+
+    .studio-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: #FFFFFF;
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .studio-subtitle {
+      font-size: 13px;
+      color: #A0B2B0;
+      font-weight: 400;
+    }
+
+    /* Device Chassis: Flagship Titanium Medical Tablet/Phone */
+    .device-wrapper {
+      position: relative;
+      z-index: 10;
+      perspective: 1000px;
+    }
+
+    .device-chassis {
+      width: 412px;
+      height: 870px;
+      background: #020C0B;
+      border-radius: 54px;
+      padding: 12px;
+      position: relative;
+      box-shadow: 
+        0 0 0 1px rgba(255, 255, 255, 0.15),
+        0 0 0 4px #1A2E2C,
+        0 0 0 6px #0D1A19,
+        0 30px 80px -10px rgba(0, 0, 0, 0.9),
+        0 20px 40px -5px rgba(0, 106, 106, 0.35);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Screen Inside Bezel */
+    .screen-content {
+      width: 100%;
+      height: 100%;
+      background: #F8FAF9;
+      border-radius: 44px;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      color: var(--text-main);
+    }
+
+    /* Dynamic Island Notch */
+    .dynamic-island {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 125px;
+      height: 28px;
+      background: #000000;
+      border-radius: 20px;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+    .dynamic-island:hover {
+      width: 180px;
+    }
+    .island-ecg {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      color: #00E676;
+      font-weight: 700;
+    }
+    .island-dot {
+      width: 6px;
+      height: 6px;
+      background: #00E676;
+      border-radius: 50%;
+      animation: pulseGreen 1.2s infinite;
+    }
+    .island-cam {
+      width: 10px;
+      height: 10px;
+      background: #111;
+      border: 1.5px solid #222;
+      border-radius: 50%;
+    }
+
+    /* Status Bar */
+    .status-bar {
+      height: 44px;
+      padding: 10px 24px 0 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: #191C1C;
+      z-index: 90;
+      background: transparent;
+    }
+    .status-icons {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+    }
+
+    /* Main Scrollable Viewport */
+    .viewport-scroll {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 8px 16px 80px 16px;
+      scroll-behavior: smooth;
+      position: relative;
+    }
+    .viewport-scroll::-webkit-scrollbar { width: 0; height: 0; }
+
+    /* App Views (Lifecycle: Splash, Onboarding, Main Hub, Details) */
+    .app-view {
+      display: none;
+      animation: fadeIn 0.25s ease-out forwards;
+    }
+    .app-view.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulseGreen {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    /* =====================================================================
+       SPLASH SCREEN VIEW
+       ===================================================================== */
+    .splash-view {
+      height: 100%;
+      min-height: 720px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 32px 20px;
+      background: linear-gradient(180deg, #021C19 0%, #063D36 45%, #011412 100%);
+      color: #FFFFFF;
+      border-radius: 36px;
+    }
+    .splash-logo-container {
+      width: 110px;
+      height: 110px;
+      margin-bottom: 24px;
+      position: relative;
+      animation: floatLogo 3s ease-in-out infinite;
+    }
+    @keyframes floatLogo {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    .splash-title-kh {
+      font-size: 26px;
+      font-weight: 800;
+      color: #FFFFFF;
+      letter-spacing: -0.5px;
+      margin-bottom: 4px;
+    }
+    .splash-title-en {
+      font-size: 13px;
+      font-weight: 700;
+      color: #2DD4BF;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+    .splash-loading-box {
+      width: 220px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(45, 212, 191, 0.2);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 24px;
+    }
+    .splash-progress-track {
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 99px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .splash-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #10B981, #2DD4BF);
+      border-radius: 99px;
+      transition: width 0.3s ease;
+    }
+    .splash-status-text {
+      font-size: 11px;
+      color: #A7F3D0;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .btn-splash-enter {
+      background: linear-gradient(135deg, #14B8A6, #0D9488);
+      color: #FFFFFF;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 12px 32px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(20, 184, 166, 0.4);
+      transition: all 0.2s;
+    }
+    .btn-splash-enter:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(20, 184, 166, 0.6);
+    }
+
+    /* =====================================================================
+       ONBOARDING / STAFF DUTY SIGN-IN
+       ===================================================================== */
+    .onboarding-view {
+      padding: 12px 4px;
+    }
+    .staff-card {
+      background: #FFFFFF;
+      border: 1px solid var(--outline-variant);
+      border-radius: 18px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: var(--card-shadow);
+    }
+    .staff-card:hover, .staff-card.selected {
+      border-color: var(--primary);
+      background: var(--primary-container);
+      transform: translateY(-2px);
+      box-shadow: var(--card-shadow-hover);
+    }
+    .staff-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: #004D40;
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 18px;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0, 77, 64, 0.25);
+    }
+    .staff-avatar.nurse { background: #00796B; }
+    .staff-avatar.dental { background: #0288D1; }
+    .staff-avatar.pharma { background: #6A1B9A; }
+    .staff-name { font-size: 14px; font-weight: 700; color: var(--text-main); line-height: 1.3; }
+    .staff-role { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+    .staff-meta { font-size: 10px; color: var(--text-sub); font-family: 'JetBrains Mono', monospace; margin-top: 2px; }
+
+    .biometric-box {
+      margin-top: 16px;
+      background: #FFFFFF;
+      border: 1.5px dashed var(--outline);
+      border-radius: 20px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .biometric-box:hover {
+      border-color: var(--primary);
+      background: #F0FDF4;
+    }
+    .fingerprint-icon {
+      width: 52px;
+      height: 52px;
+      margin: 0 auto 10px auto;
+      color: var(--primary);
+      animation: pulseFinger 2s infinite ease-in-out;
+    }
+    @keyframes pulseFinger {
+      0%, 100% { transform: scale(1); opacity: 0.9; }
+      50% { transform: scale(1.08); opacity: 1; filter: drop-shadow(0 0 8px rgba(0, 106, 106, 0.5)); }
+    }
+
+    /* =====================================================================
+       MAIN CLINICAL HUB (FLAGSHIP HOME VIEW)
+       ===================================================================== */
+    /* Header Profile & Brand Bar */
+    .app-brand-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0 12px 0;
+      border-bottom: 1px solid var(--outline-variant);
+      margin-bottom: 12px;
+    }
+    .brand-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-icon-mini {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #004D40, #006A6A);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(0, 77, 64, 0.3);
+    }
+    .brand-text-kh { font-size: 15px; font-weight: 800; color: #004D40; line-height: 1.2; }
+    .brand-text-en { font-size: 10px; font-weight: 600; color: #5B6A68; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .brand-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .staff-badge-pill {
+      background: #FFFFFF;
+      border: 1px solid var(--outline-variant);
+      border-radius: 20px;
+      padding: 4px 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+    .staff-dot-live { width: 7px; height: 7px; border-radius: 50%; background: #00C853; }
+    .staff-pill-text { font-size: 11px; font-weight: 700; color: var(--text-main); }
+
+    /* Live Hospital Telemetry Banner (REAL CLINICAL METRICS) */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .kpi-card {
+      background: #FFFFFF;
+      border: 1px solid var(--outline-variant);
+      border-radius: 16px;
+      padding: 10px 12px;
+      box-shadow: var(--card-shadow);
+      position: relative;
+      overflow: hidden;
+    }
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--primary);
+    }
+    .kpi-card.critical::before { background: var(--critical); }
+    .kpi-card.warning::before { background: var(--warning); }
+    .kpi-card.bank::before { background: var(--aba-blue); }
+
+    .kpi-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+    .kpi-label { font-size: 11px; font-weight: 600; color: var(--text-muted); }
+    .kpi-value { font-size: 18px; font-weight: 800; color: var(--text-main); font-family: 'Plus Jakarta Sans', sans-serif; }
+    .kpi-sub { font-size: 10px; color: var(--text-sub); display: flex; align-items: center; gap: 4px; }
+    .kpi-sub.up { color: var(--success); font-weight: 600; }
+
+    /* Quick Action Buttons (Scanning, Triage, Telemetry, Bank QR) */
+    .quick-actions-bar {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      margin-bottom: 14px;
+    }
+    .quick-actions-bar::-webkit-scrollbar { height: 0; }
+    .quick-btn {
+      flex-shrink: 0;
+      background: #FFFFFF;
+      border: 1px solid var(--outline-variant);
+      border-radius: 14px;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-main);
+      box-shadow: var(--card-shadow);
+      transition: all 0.2s;
+    }
+    .quick-btn:hover {
+      border-color: var(--primary);
+      background: var(--primary-container);
+    }
+    .quick-btn-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #FFFFFF;
+    }
+
+    /* Section Title */
+    .section-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .section-heading {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .section-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 12px;
+      background: #E0F2F1;
+      color: #004D40;
+    }
+
+    /* Clinical Patient Beds Grid (REAL DATA SCAN) */
+    .bed-item-card {
+      background: #FFFFFF;
+      border: 1px solid var(--outline-variant);
+      border-radius: 16px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      box-shadow: var(--card-shadow);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .bed-item-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-1.5px);
+      box-shadow: var(--card-shadow-hover);
+    }
+    .bed-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 6px;
+    }
+    .bed-number-pill {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 8px;
+      background: #004D40;
+      color: #FFFFFF;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .bed-number-pill.icu { background: #BA1A1A; }
+    .bed-number-pill.er { background: #B26A00; }
+
+    .patient-name-hn {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .hn-badge {
+      font-size: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-sub);
+    }
+    .patient-diagnosis {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    /* Vitals Strip */
+    .vitals-strip {
+      display: flex;
+      gap: 6px;
+      background: #F4F7F6;
+      border-radius: 10px;
+      padding: 6px 10px;
+      margin-bottom: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+    }
+    .vital-item {
+      flex: 1;
+      text-align: center;
+      border-right: 1px solid #DCE5E3;
+    }
+    .vital-item:last-child { border-right: none; }
+    .vital-item span.lbl { font-size: 9px; color: var(--text-sub); display: block; font-weight: 600; }
+    .vital-item span.val { font-weight: 700; color: var(--text-main); }
+    .vital-item span.val.alert { color: var(--critical); font-weight: 800; }
+
+    .allergy-alert-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #FFDAD6;
+      color: #BA1A1A;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+
+    /* Clinical Modules Grid (16 Modules) */
+    .modules-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .module-tile {
+      background: #FFFFFF;
+      border: 1px solid var(--outline-variant);
+      border-radius: 16px;
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: var(--card-shadow);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 98px;
+    }
+    .module-tile:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: var(--card-shadow-hover);
+    }
+    .tile-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .tile-icon-box {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #FFFFFF;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    }
+    .tile-dept {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--text-sub);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .tile-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-main);
+      line-height: 1.25;
+      margin-bottom: 2px;
+    }
+    .tile-sub {
+      font-size: 10px;
+      color: var(--text-sub);
+      font-weight: 500;
+    }
+
+    /* =====================================================================
+       BAKONG KHQR & ABA PAY CHECKOUT MODAL / VIEW
+       ===================================================================== */
+    .khqr-card-container {
+      background: #FFFFFF;
+      border: 1px solid var(--outline-variant);
+      border-radius: 24px;
+      padding: 18px 16px;
+      box-shadow: var(--card-shadow);
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .khqr-badge-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .khqr-official-logo {
+      height: 28px;
+      width: auto;
+    }
+    .bakong-official-logo {
+      height: 32px;
+      width: auto;
+    }
+    .aba-official-logo {
+      height: 28px;
+      width: auto;
+    }
+
+    .qr-canvas-holder {
+      background: #FFFFFF;
+      padding: 14px;
+      border-radius: 18px;
+      display: inline-block;
+      border: 2px dashed #004D40;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 14px rgba(0, 77, 64, 0.08);
+      position: relative;
+    }
+    .qr-center-emblem {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 36px;
+      height: 36px;
+      background: #E21A1A;
+      border: 3px solid #FFFFFF;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    .qr-center-emblem svg { width: 22px; height: 22px; }
+
+    .invoice-amount-box {
+      background: #F0FDF4;
+      border: 1px solid #BBF7D0;
+      border-radius: 14px;
+      padding: 10px 14px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .amount-usd { font-size: 20px; font-weight: 800; color: #14532D; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .amount-khr { font-size: 12px; font-weight: 700; color: #166534; font-family: 'Kantumruy Pro', sans-serif; }
+
+    .bank-actions-row {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .btn-aba-pay {
+      background: #00475E;
+      color: #FFFFFF;
+      border: none;
+      border-radius: 14px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 71, 94, 0.35);
+      transition: all 0.2s;
+    }
+    .btn-aba-pay:hover {
+      background: #003647;
+      transform: translateY(-1px);
+    }
+    .btn-bakong-app {
+      background: #E21A1A;
+      color: #FFFFFF;
+      border: none;
+      border-radius: 14px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(226, 26, 26, 0.35);
+      transition: all 0.2s;
+    }
+    .btn-bakong-app:hover {
+      background: #C61313;
+      transform: translateY(-1px);
+    }
+
+    /* =====================================================================
+       LIVE TELEMETRY WAVEFORM VIEW
+       ===================================================================== */
+    .telemetry-screen-box {
+      background: #020C0B;
+      border-radius: 20px;
+      padding: 14px;
+      color: #FFFFFF;
+      margin-bottom: 14px;
+      border: 1px solid rgba(0, 230, 118, 0.2);
+    }
+    .waveform-canvas {
+      width: 100%;
+      height: 120px;
+      background: #00100E;
+      border-radius: 12px;
+      display: block;
+      margin: 8px 0;
+    }
+
+    /* =====================================================================
+       BOTTOM NAVIGATION BAR (FLAGSHIP DOCK)
+       ===================================================================== */
+    .bottom-nav-dock {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 68px;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid var(--outline-variant);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 4px 8px 12px 8px;
+      z-index: 80;
+    }
+    .nav-tab-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-sub);
+      transition: all 0.2s;
+      width: 60px;
+    }
+    .nav-tab-btn.active {
+      color: var(--primary);
+    }
+    .nav-tab-icon {
+      width: 22px;
+      height: 22px;
+    }
+    .nav-tab-label {
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    /* Modals & Sheets */
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 20, 20, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      display: none;
+      align-items: flex-end;
+    }
+    .modal-overlay.open {
+      display: flex;
+      animation: fadeIn 0.2s ease-out;
+    }
+    .modal-sheet {
+      width: 100%;
+      background: #FFFFFF;
+      border-radius: 28px 28px 0 0;
+      padding: 20px 18px 34px 18px;
+      max-height: 85%;
+      overflow-y: auto;
+      box-shadow: 0 -10px 30px rgba(0,0,0,0.25);
+    }
+    .sheet-handle {
+      width: 38px;
+      height: 4px;
+      background: #DCE5E3;
+      border-radius: 99px;
+      margin: 0 auto 14px auto;
+    }
+
+    /* Studio Controls Bottom Bar */
+    .studio-controls-bar {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      z-index: 10;
+    }
+    .control-pill-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #E0E7E6;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 999px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .control-pill-btn:hover {
+      background: rgba(0, 106, 106, 0.3);
+      border-color: #4DD0E1;
+      color: #FFFFFF;
+      transform: translateY(-1px);
+    }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-800 antialiased p-4 min-h-screen flex flex-col items-center justify-center">
+<body>
 
-  <!-- Header Banner -->
-  <div class="max-w-4xl w-full mb-4 flex items-center justify-between">
-    <div>
-      <div class="flex items-center gap-2">
-        <span class="px-2.5 py-0.5 rounded text-xs font-bold bg-teal-800 text-white">KRUPET CLINICAL</span>
-        <span class="px-2 py-0.5 rounded text-xs font-semibold bg-emerald-100 text-emerald-800">16 MODULES ACTIVE</span>
-        <span class="px-2 py-0.5 rounded text-xs font-semibold bg-cyan-100 text-cyan-800">LIGHTWEIGHT SIMULATOR</span>
-      </div>
-      <h1 class="text-xl font-bold text-slate-900 mt-1">KruPet Enterprise Android Station - 2026 Medical Prototype</h1>
-      <p class="text-xs text-slate-500">Pure native Kotlin Jetpack Compose logic replicated in lightweight sandbox - Zero Drive C footprint</p>
+  <div class="studio-bg"></div>
+
+  <!-- Studio Header -->
+  <header class="studio-header">
+    <div class="studio-badge-row">
+      <span class="pill-badge primary">KruPet Enterprise 2026</span>
+      <span class="pill-badge success">Live Native Gateway</span>
+      <span class="pill-badge bakong">Bakong KHQR Active</span>
+      <span class="pill-badge aba">ABA Mobile Payway</span>
     </div>
-    <div class="text-right">
-      <span class="text-xs font-mono text-slate-500">Target: Android 15 (SDK 35)</span>
-      <div class="text-xs font-semibold text-teal-700">Backend: http://10.0.2.2:3001/api</div>
+    <h1 class="studio-title">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2v20M2 12h20"/>
+      </svg>
+      មន្ទីរពេទ្យ គ្រូពេទ្យ - KruPet Clinical Mobile Workstation
+    </h1>
+    <p class="studio-subtitle">
+      100% Native Architecture Replica - Pure Drive D Isolation - Real Clinical Data & Official Bank Logos
+    </p>
+  </header>
+
+  <!-- Device Container -->
+  <div class="device-wrapper">
+    <div class="device-chassis">
+      <div class="screen-content">
+
+        <!-- Dynamic Island -->
+        <div class="dynamic-island" id="dynamicIsland" onclick="toggleIslandExpansion()">
+          <div class="island-ecg">
+            <span class="island-dot"></span>
+            <span id="islandBpm">74 BPM</span>
+          </div>
+          <div class="island-cam"></div>
+        </div>
+
+        <!-- Android Status Bar -->
+        <div class="status-bar">
+          <span id="clockDisplay">14:30</span>
+          <div class="status-icons">
+            <span style="font-size: 10px; font-weight: 800; color: #00796B;">5G</span>
+            <span style="font-size: 10px;">VoLTE</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.34V5.33C17 4.6 16.4 4 15.67 4z"/>
+            </svg>
+            <span>98%</span>
+          </div>
+        </div>
+
+        <!-- Scrollable Viewport Content -->
+        <div class="viewport-scroll" id="viewportScroll">
+
+          <!-- =============================================================
+               VIEW 1: SPLASH SCREEN (LAUNCH BOOT)
+               ============================================================= -->
+          <div class="app-view splash-view active" id="viewSplash">
+            <div class="splash-logo-container">
+              <!-- Official KruPet Vector Emblem from icon-192.svg -->
+              <svg viewBox="0 0 120 120" fill="none" width="100%" height="100%">
+                <defs>
+                  <linearGradient id="spBase" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#021C19" />
+                    <stop offset="50%" stop-color="#063D36" />
+                    <stop offset="100%" stop-color="#011412" />
+                  </linearGradient>
+                  <linearGradient id="spPillar" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#14B8A6" />
+                    <stop offset="100%" stop-color="#047857" />
+                  </linearGradient>
+                  <linearGradient id="spArmUp" x1="0%" y1="100%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#10B981" />
+                    <stop offset="100%" stop-color="#5EEAD4" />
+                  </linearGradient>
+                </defs>
+                <rect x="6" y="6" width="108" height="108" rx="28" fill="url(#spBase)" stroke="#2DD4BF" stroke-width="2"/>
+                <!-- K Pillar & Cross Stem -->
+                <rect x="28" y="26" width="16" height="68" rx="4.5" fill="url(#spPillar)"/>
+                <path d="M 42 56 L 72 26 L 90 26 L 56 66 Z" fill="url(#spArmUp)"/>
+                <path d="M 48 58 L 72 94 L 92 94 L 62 50 Z" fill="#0D9488"/>
+                <!-- Cross Inset -->
+                <rect x="18" y="52" width="38" height="16" rx="4" fill="url(#spPillar)"/>
+                <rect x="21" y="55" width="32" height="10" rx="2.5" fill="#FFFFFF"/>
+                <path d="M 20 60 L 26 60 L 30 52 L 35 68 L 39 54 L 43 60 L 52 60" stroke="#00C853" stroke-width="2.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+
+            <h2 class="splash-title-kh">មន្ទីរពេទ្យ គ្រូពេទ្យ</h2>
+            <div class="splash-title-en">KRUPET CLINICAL ENTERPRISE</div>
+
+            <div class="splash-loading-box">
+              <div class="splash-progress-track">
+                <div class="splash-progress-bar" id="splashBar"></div>
+              </div>
+              <div class="splash-status-text" id="splashStatus">Initializing TLS 1.3 Gateway...</div>
+            </div>
+
+            <button class="btn-splash-enter" onclick="navigateToView('viewOnboarding')">
+              ចាប់ផ្តើមចូលប្រើប្រាស់
+            </button>
+          </div>
+
+          <!-- =============================================================
+               VIEW 2: STAFF ROLE ONBOARDING / BIOMETRIC AUTH
+               ============================================================= -->
+          <div class="app-view onboarding-view" id="viewOnboarding">
+            <div style="text-align: center; margin-bottom: 16px;">
+              <h2 style="font-size: 18px; font-weight: 800; color: #004D40;">ជ្រើសរើសតួនាទីបំពេញការងារ</h2>
+              <p style="font-size: 12px; color: var(--text-muted);">Zero-Trust Clinical Staff Biometric Sign-in</p>
+            </div>
+
+            <!-- Doctor Sokha -->
+            <div class="staff-card selected" onclick="selectStaffRole(this, 'Dr. Sokha Rath, MD', 'Chief Medical Officer', 'ICU-INTERNAL')">
+              <div class="staff-avatar">SR</div>
+              <div style="flex: 1;">
+                <div class="staff-name">វេជ្ជ. រ័ត្ន សុខា - Dr. Sokha Rath</div>
+                <div class="staff-role">ប្រធានផ្នែកសង្គ្រោះបន្ទាន់ និង ICU</div>
+                <div class="staff-meta">LICENSE: MoH-09412 | ZERO-TRUST MD</div>
+              </div>
+            </div>
+
+            <!-- Nurse Bopha -->
+            <div class="staff-card" onclick="selectStaffRole(this, 'RN Bopha Chann', 'ICU Charge Nurse', 'TRIAGE-WARD')">
+              <div class="staff-avatar nurse">BC</div>
+              <div style="flex: 1;">
+                <div class="staff-name">គិលានុបដ្ឋាយិកា ចាន់ បុប្ផា - RN Bopha</div>
+                <div class="staff-role">ប្រធានវេន Triage & អន្តេវាសិកដ្ឋាន</div>
+                <div class="staff-meta">LICENSE: MoH-18290 | SBAR LEAD</div>
+              </div>
+            </div>
+
+            <!-- Dentist Chea -->
+            <div class="staff-card" onclick="selectStaffRole(this, 'Dr. Vireak Chea, DDS', 'Dental Surgeon', 'ODONTOLOGY')">
+              <div class="staff-avatar dental">VC</div>
+              <div style="flex: 1;">
+                <div class="staff-name">ទន្តបណ្ឌិត ជា វិរៈ - Dr. Vireak Chea</div>
+                <div class="staff-role">ឯកទេសទន្តសាស្ត្រ FDI Odontology</div>
+                <div class="staff-meta">LICENSE: MoH-04812 | DENTAL OR</div>
+              </div>
+            </div>
+
+            <!-- Pharmacist Sothea -->
+            <div class="staff-card" onclick="selectStaffRole(this, 'RPh Sothea Heng', 'Clinical Pharmacist', 'PHARMACY-ISMP')">
+              <div class="staff-avatar pharma">SH</div>
+              <div style="flex: 1;">
+                <div class="staff-name">ឱសថការី ហេង សុធា - RPh Sothea</div>
+                <div class="staff-role">Custody ថ្នាំញៀន MoH & ថ្នាំផ្សះ ASP</div>
+                <div class="staff-meta">LICENSE: MoH-07319 | DUAL-WITNESS</div>
+              </div>
+            </div>
+
+            <!-- Biometric Fingerprint Action -->
+            <div class="biometric-box" onclick="authenticateBiometrics()">
+              <svg class="fingerprint-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/>
+                <path d="M14 13.12c0 2.38 0 6.38-1 8.88"/>
+                <path d="M17.29 21.02c.12-.6.43-2.3.5-3.02"/>
+                <path d="M2 12a10 10 0 0 1 18-6"/>
+                <path d="M2 16h.01"/>
+                <path d="M21.8 16c.2-2 .131-5.354 0-6"/>
+                <path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2"/>
+                <path d="M8.65 22c.21-.66.45-1.32.57-2"/>
+                <path d="M9 6.8a6 6 0 0 1 9 5.2v2"/>
+              </svg>
+              <div style="font-size: 13px; font-weight: 700; color: #004D40;">ចុចស្កេនក្រយៅដៃ ឬ Face ID</div>
+              <div style="font-size: 11px; color: var(--text-sub); margin-top: 2px;">Android BiometricPrompt Strong Keystore</div>
+            </div>
+          </div>
+
+          <!-- =============================================================
+               VIEW 3: FLAGSHIP CLINICAL HUB (HOMEPAGE)
+               ============================================================= -->
+          <div class="app-view hub-view" id="viewHub">
+
+            <!-- App Brand Top Bar -->
+            <div class="app-brand-bar">
+              <div class="brand-left">
+                <div class="brand-icon-mini">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5EEAD4" stroke-width="2.5">
+                    <path d="M12 2v20M2 12h20"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="brand-text-kh">មន្ទីរពេទ្យ គ្រូពេទ្យ</div>
+                  <div class="brand-text-en">Phnom Penh Central Branch</div>
+                </div>
+              </div>
+
+              <div class="brand-right">
+                <div class="staff-badge-pill" onclick="navigateToView('viewOnboarding')">
+                  <span class="staff-dot-live"></span>
+                  <span class="staff-pill-text" id="activeStaffPill">Dr. Sokha MD</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Hospital Live KPI Strip (REAL DATA SCAN) -->
+            <div class="kpi-grid">
+              <div class="kpi-card">
+                <div class="kpi-header">
+                  <span class="kpi-label">អ្នកជំងឺថ្ងៃនេះ</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                  </svg>
+                </div>
+                <div class="kpi-value">148 នាក់</div>
+                <div class="kpi-sub up">
+                  <span>+14% ធៀបម្សិលមិញ</span>
+                </div>
+              </div>
+
+              <div class="kpi-card critical">
+                <div class="kpi-header">
+                  <span class="kpi-label">គ្រែសម្រាក IPD</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9"/>
+                  </svg>
+                </div>
+                <div class="kpi-value">34 / 40</div>
+                <div class="kpi-sub" style="color: var(--critical); font-weight: 700;">
+                  <span>85% Occupancy (6 ICU)</span>
+                </div>
+              </div>
+
+              <div class="kpi-card warning">
+                <div class="kpi-header">
+                  <span class="kpi-label">ជួររង់ចាំ Triage</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                  </svg>
+                </div>
+                <div class="kpi-value">4 នាក់</div>
+                <div class="kpi-sub" style="color: var(--warning); font-weight: 700;">
+                  <span>1 ESI-1 សង្គ្រោះបន្ទាន់</span>
+                </div>
+              </div>
+
+              <div class="kpi-card bank" onclick="openKhqrModal(105.00, 430500)">
+                <div class="kpi-header">
+                  <span class="kpi-label">Bakong KHQR POS</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 15h0M2 10h20"/>
+                  </svg>
+                </div>
+                <div class="kpi-value">$4,850.00</div>
+                <div class="kpi-sub" style="color: var(--aba-blue); font-weight: 700;">
+                  <span>19,885,000 ៛ - Bakong 78%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Action Bar -->
+            <div class="quick-actions-bar">
+              <div class="quick-btn" onclick="openScannerModal()">
+                <div class="quick-btn-icon" style="background: #004D40;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/></svg>
+                </div>
+                <span>ស្កេន QR អ្នកជំងឺ</span>
+              </div>
+
+              <div class="quick-btn" onclick="openKhqrModal(105.00, 430500)">
+                <div class="quick-btn-icon" style="background: #E21A1A;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-6h2v6zm4 0h-2V7h2v10z"/></svg>
+                </div>
+                <span>Bakong Pay</span>
+              </div>
+
+              <div class="quick-btn" onclick="navigateToView('viewTelemetry')">
+                <div class="quick-btn-icon" style="background: #00C853;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                </div>
+                <span>រលកបេះដូង ECG</span>
+              </div>
+
+              <div class="quick-btn" onclick="openPanicLabDetail()">
+                <div class="quick-btn-icon" style="background: #BA1A1A;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                </div>
+                <span>Panic Lab (Troponin)</span>
+              </div>
+            </div>
+
+            <!-- Inpatient Bed Census (REAL PATIENTS SCAN) -->
+            <div class="section-title-row">
+              <h3 class="section-heading">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#006A6A" stroke-width="2">
+                  <path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9"/>
+                </svg>
+                អ្នកជំងឺសម្រាកពេទ្យបច្ចុប្បន្ន - Live Census
+              </h3>
+              <span class="section-badge">34 នាក់</span>
+            </div>
+
+            <!-- Patient 1 -->
+            <div class="bed-item-card" onclick="openPatientModal('Sokha Rath', 'HN-10492', 'Bed 01 - ICU')">
+              <div class="bed-top-row">
+                <div class="patient-name-hn">
+                  <span>រ័ត្ន សុខា - Sokha Rath</span>
+                  <span class="hn-badge">HN-10492</span>
+                </div>
+                <span class="bed-number-pill icu">BED 01 ICU</span>
+              </div>
+              <div class="patient-diagnosis">Acute Appendicitis Post-Op Day 1 - Dr. Sokha MD</div>
+              <div class="vitals-strip">
+                <div class="vital-item"><span class="lbl">HR</span><span class="val">82 bpm</span></div>
+                <div class="vital-item"><span class="lbl">BP</span><span class="val">124/78</span></div>
+                <div class="vital-item"><span class="lbl">SpO2</span><span class="val">98%</span></div>
+                <div class="vital-item"><span class="lbl">TEMP</span><span class="val">37.1 °C</span></div>
+              </div>
+              <div class="allergy-alert-tag">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99zM11 10v4h2v-4h-2zm0 6v2h2v-2h-2z"/></svg>
+                អាលែកហ្ស៊ីធ្ងន់ធ្ងរ: Penicillin Anaphylaxis
+              </div>
+            </div>
+
+            <!-- Patient 2 -->
+            <div class="bed-item-card" onclick="openPatientModal('Bopha Chann', 'HN-10501', 'Bed 04 - ICU')">
+              <div class="bed-top-row">
+                <div class="patient-name-hn">
+                  <span>ចាន់ បុប្ផា - Bopha Chann</span>
+                  <span class="hn-badge">HN-10501</span>
+                </div>
+                <span class="bed-number-pill icu">BED 04 ICU</span>
+              </div>
+              <div class="patient-diagnosis">Dengue Hemorrhagic Fever Grade 2 - Shock Index 1.22</div>
+              <div class="vitals-strip">
+                <div class="vital-item"><span class="lbl">HR</span><span class="val alert">112 bpm</span></div>
+                <div class="vital-item"><span class="lbl">BP</span><span class="val alert">92/58</span></div>
+                <div class="vital-item"><span class="lbl">SpO2</span><span class="val">95%</span></div>
+                <div class="vital-item"><span class="lbl">PLT</span><span class="val alert">38,000/µL</span></div>
+              </div>
+            </div>
+
+            <!-- Patient 3 -->
+            <div class="bed-item-card" onclick="openPatientModal('Dara Khem', 'HN-10515', 'Bed 07 - ER')">
+              <div class="bed-top-row">
+                <div class="patient-name-hn">
+                  <span>ខឹម ដារ៉ា - Dara Khem</span>
+                  <span class="hn-badge">HN-10515</span>
+                </div>
+                <span class="bed-number-pill er">BED 07 ER</span>
+              </div>
+              <div class="patient-diagnosis">NSTEMI on IV Heparin Protocol - Troponin I: 4.8 ng/mL</div>
+              <div class="vitals-strip">
+                <div class="vital-item"><span class="lbl">HR</span><span class="val">68 bpm</span></div>
+                <div class="vital-item"><span class="lbl">BP</span><span class="val">138/85</span></div>
+                <div class="vital-item"><span class="lbl">SpO2</span><span class="val">99%</span></div>
+                <div class="vital-item"><span class="lbl">TROP</span><span class="val alert">4.8 PANIC</span></div>
+              </div>
+            </div>
+
+            <!-- All Clinical Modules Navigation (16 Modules) -->
+            <div class="section-title-row" style="margin-top: 16px;">
+              <h3 class="section-heading">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#006A6A" stroke-width="2">
+                  <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                </svg>
+                ផ្នែកគ្លីនិកឯកទេស - 16 Modules
+              </h3>
+              <span class="section-badge">2026 Core</span>
+            </div>
+
+            <div class="modules-grid">
+              <!-- 1. Emergency Triage -->
+              <div class="module-tile" onclick="openTriageDetail()">
+                <div class="tile-top">
+                  <div class="tile-icon-box" style="background: #BA1A1A;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20"/></svg>
+                  </div>
+                  <span class="tile-dept">EMERGENCY</span>
+                </div>
+                <div>
+                  <div class="tile-name">Triage ESI v4</div>
+                  <div class="tile-sub">NEWS2 & GCS 3-15</div>
+                </div>
+              </div>
+
+              <!-- 2. ACLS Resuscitation -->
+              <div class="module-tile" onclick="openResusDetail()">
+                <div class="tile-top">
+                  <div class="tile-icon-box" style="background: #C2185B;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                  </div>
+                  <span class="tile-dept">RESUS</span>
+                </div>
+                <div>
+                  <div class="tile-name">ACLS & Sepsis</div>
+                  <div class="tile-sub">Parkland, CPR Timer</div>
+                </div>
+              </div>
+
+              <!-- 3. Bedside Telemetry -->
+              <div class="module-tile" onclick="navigateToView('viewTelemetry')">
+                <div class="tile-top">
+                  <div class="tile-icon-box" style="background: #00796B;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                  </div>
+                  <span class="tile-dept">CRITICAL CARE</span>
+                </div>
+                <div>
+                  <div class="tile-name">ECG & Infusion</div>
+                  <div class="tile-sub">Live Waveform Canvas</div>
+                </div>
+              </div>
+
+              <!-- 4. Bakong KHQR POS -->
+              <div class="module-tile" onclick="openKhqrModal(105.00, 430500)">
+                <div class="tile-top">
+                  <div class="tile-icon-box" style="background: #E21A1A;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h6v6H4V4zm10 0h6v6h-6V4zM4 14h6v6H4v-6zm10 0h6v6h-6v-6z"/></svg>
+                  </div>
+                  <span class="tile-dept">FINANCE</span>
+                </div>
+                <div>
+                  <div class="tile-name">Bakong KHQR POS</div>
+                  <div class="tile-sub">Official ABA & Dual KHR</div>
+                </div>
+              </div>
+
+              <!-- 5. PACS Radiology -->
+              <div class="module-tile" onclick="openPacsDetail()">
+                <div class="tile-top">
+                  <div class="tile-icon-box" style="background: #1565C0;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                  </div>
+                  <span class="tile-dept">DIAGNOSTICS</span>
+                </div>
+                <div>
+                  <div class="tile-name">PACS Radiology</div>
+                  <div class="tile-sub">DICOM W/L & Calipers</div>
+                </div>
+              </div>
+
+              <!-- 6. Dental Odontogram -->
+              <div class="module-tile" onclick="openDentalDetail()">
+                <div class="tile-top">
+                  <div class="tile-icon-box" style="background: #00838F;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C7 2 6 6 6 10c0 4.5 1.5 12 6 12s6-7.5 6-12c0-4-1-8-6-8z"/></svg>
+                  </div>
+                  <span class="tile-dept">DENTAL</span>
+                </div>
+                <div>
+                  <div class="tile-name">FDI Odontogram</div>
+                  <div class="tile-sub">32-Tooth DMFT Chart</div>
+                </div>
+              </div>
+
+              <!-- 7. LIS Panic Laboratory -->
+              <div class="module-tile" onclick="openPanicLabDetail()">
+                <div class="tile-top">
+                  <div class="tile-icon-box" style="background: #D84315;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 2v7.31L4.62 19.4A2 2 0 0 0 6.38 22h11.24a2 2 0 0 0 1.76-2.6L14 9.31V2"/></svg>
+                  </div>
+                  <span class="tile-dept">LABORATORY</span>
+                </div>
+                <div>
+                  <div class="tile-name">LIS Panic Lab</div>
+                  <div class="tile-sub">Troponin I & Verbal Order</div>
+                </div>
+              </div>
+
+              <!-- 8. Narcotics MoH Vault -->
+              <div class="module-tile" onclick="openNarcoticsDetail()">
+                <div class="tile-top">
+                  <div class="tile-icon-box" style="background: #4A148C;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  </div>
+                  <span class="tile-dept">CONTROLLED</span>
+                </div>
+                <div>
+                  <div class="tile-name">Narcotics Vault</div>
+                  <div class="tile-sub">Dual-Witness Signoff</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- =============================================================
+               VIEW 4: LIVE TELEMETRY & ECG MONITOR VIEW
+               ============================================================= -->
+          <div class="app-view telemetry-view" id="viewTelemetry">
+            <div class="app-brand-bar">
+              <div class="brand-left">
+                <button onclick="navigateToView('viewHub')" style="background: none; border: none; cursor: pointer; color: var(--primary);">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                </button>
+                <div class="brand-text-kh">Bedside Monitor - ICU Bed 01</div>
+              </div>
+              <button onclick="toggleAudioBeep()" id="btnAudioBeep" style="background: #E0F2F1; border: 1px solid var(--primary); padding: 4px 10px; border-radius: 99px; font-size: 11px; font-weight: 700; color: #004D40; cursor: pointer;">
+                សំឡេង Beep: OFF
+              </button>
+            </div>
+
+            <div class="telemetry-screen-box">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 11px; font-weight: 700; color: #00E676; letter-spacing: 1px;">LEAD II (II) 25mm/s 10mm/mV</span>
+                <span style="font-size: 18px; font-weight: 800; color: #00E676;" id="telemHr">74 BPM</span>
+              </div>
+              <canvas id="ecgCanvas" class="waveform-canvas" width="360" height="120"></canvas>
+              
+              <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; text-align: center; font-family: 'JetBrains Mono', monospace;">
+                <div style="background: #001B17; padding: 6px; border-radius: 8px;">
+                  <div style="font-size: 9px; color: #80CBC4;">SPO2</div>
+                  <div style="font-size: 15px; font-weight: 800; color: #26C6DA;">98%</div>
+                </div>
+                <div style="background: #001B17; padding: 6px; border-radius: 8px;">
+                  <div style="font-size: 9px; color: #80CBC4;">NIBP</div>
+                  <div style="font-size: 15px; font-weight: 800; color: #FFD54F;">124/78</div>
+                </div>
+                <div style="background: #001B17; padding: 6px; border-radius: 8px;">
+                  <div style="font-size: 9px; color: #80CBC4;">RESP</div>
+                  <div style="font-size: 15px; font-weight: 800; color: #FFF;">16 /m</div>
+                </div>
+                <div style="background: #001B17; padding: 6px; border-radius: 8px;">
+                  <div style="font-size: 9px; color: #80CBC4;">MAP</div>
+                  <div style="font-size: 15px; font-weight: 800; color: #81C784;">93</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Smart Vasoactive Infusion Calculator -->
+            <div style="background: #FFFFFF; border: 1px solid var(--outline-variant); border-radius: 18px; padding: 14px; box-shadow: var(--card-shadow);">
+              <h4 style="font-size: 13px; font-weight: 800; color: var(--text-main); margin-bottom: 8px;">ម៉ាស៊ីនគិតគូរថ្នាំសរសៃឈាម Infusion Pump</h4>
+              <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">Norepinephrine 4mg / 50mL D5W (80 mcg/mL)</div>
+              
+              <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                <button onclick="calcInfusion(0.05)" class="quick-btn" style="flex: 1; justify-content: center;">0.05 mcg/kg/min</button>
+                <button onclick="calcInfusion(0.1)" class="quick-btn" style="flex: 1; justify-content: center; background: #E0F2F1;">0.10 mcg/kg/min</button>
+                <button onclick="calcInfusion(0.2)" class="quick-btn" style="flex: 1; justify-content: center;">0.20 mcg/kg/min</button>
+              </div>
+
+              <div id="infusionResult" style="background: #F4F7F6; padding: 10px; border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: #004D40; text-align: center;">
+                Rate: 5.25 mL/hr (70 kg patient)
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- =============================================================
+             FLAGSHIP BOTTOM NAVIGATION DOCK
+             ============================================================= -->
+        <nav class="bottom-nav-dock">
+          <button class="nav-tab-btn active" id="tabHub" onclick="navigateToTab('hub')">
+            <svg class="nav-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span class="nav-tab-label">ទំព័រដើម</span>
+          </button>
+
+          <button class="nav-tab-btn" id="tabTriage" onclick="navigateToTab('triage')">
+            <svg class="nav-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            <span class="nav-tab-label">Triage</span>
+          </button>
+
+          <button class="nav-tab-btn" id="tabTelem" onclick="navigateToTab('telem')">
+            <svg class="nav-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            <span class="nav-tab-label">រលកបេះដូង</span>
+          </button>
+
+          <button class="nav-tab-btn" id="tabWard" onclick="navigateToTab('ward')">
+            <svg class="nav-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9"/></svg>
+            <span class="nav-tab-label">គ្រែពេទ្យ</span>
+          </button>
+
+          <button class="nav-tab-btn" id="tabKhqr" onclick="navigateToTab('khqr')">
+            <svg class="nav-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            <span class="nav-tab-label">គិតប្រាក់</span>
+          </button>
+        </nav>
+
+        <!-- =============================================================
+             MODAL 1: BAKONG KHQR & ABA PAY OFFICIAL CHECKOUT MODAL
+             ============================================================= -->
+        <div class="modal-overlay" id="modalKhqrOverlay" onclick="closeModalOnBackdrop(event, 'modalKhqrOverlay')">
+          <div class="modal-sheet">
+            <div class="sheet-handle"></div>
+            
+            <div class="khqr-badge-header">
+              <!-- Official KHQR SVG Logo -->
+              <svg class="khqr-official-logo" viewBox="0 0 52 31" fill="none">
+                <rect width="51" height="20" transform="translate(0.5 0.3)" fill="#055E7C"/>
+                <path d="M21.22 14.47h-1.57l-.5-1.47h-2.82l-.48 1.47h-1.58L16.87 7.3h1.73l2.62 7.17zm5.53-7.17c1.51 0 2.29.65 2.29 1.81 0 .72-.28 1.21-.87 1.48.76.3 1.13.86 1.13 1.7 0 1.36-.93 2.18-2.65 2.18h-3.33V7.3h3.43zm10.97 7.17h-1.57l-.5-1.47h-2.82l-.48 1.47h-1.58L33.37 7.3h1.73l2.63 7.17zM24.76 13.17h1.77c.82 0 1.21-.27 1.21-.93 0-.7-.39-.95-1.22-.95h-1.76v1.88zm-8.04-1.38h2.03l-1.01-3.06-1.02 3.06zm16.5 0h2.03l-1.01-3.06-1.02 3.06zm-8.46-1.72h1.71c.72 0 1.06-.23 1.06-.78 0-.55-.35-.74-1.07-.74h-1.7v1.52z" fill="white"/>
+                <rect x="0.5" y="20.3" width="51" height="10" fill="#E1232E"/>
+                <path d="M16.76 25.05l2.14-2h1.04l-2.32 2.15 2.43 2.34h-1.07l-2.22-2.1v2.1h-.88V23.05h.88v2zm4.81-.13h2.46v-1.87h.86v4.5h-.86V25.6h-2.46v1.95h-.86V23.05h.86v1.87zm8.25-1.87c.4 0 .73.3.73.69v3.33l-.75-.71v-2.13c0-.26-.22-.47-.5-.47h-2.28c-.28 0-.5.2-.5.47v2.13c0 .26.22.47.5.47h2.28l.75.71h-3.55c-.41 0-.74-.31-.74-.69v-3.11c0-.38.33-.69.74-.69h3.32zm3.92 0c1.32 0 2.38 1.01 2.38 2.24h-.75c0-.84-.74-1.53-1.64-1.53-.71 0-1.34.43-1.55 1.07-.05.15-.08.31-.08.46v2.25h-.02c-.4 0-.73-.31-.73-.69v-1.56h.01c0-.62.27-1.21.75-1.64.45-.39 1.03-.6 1.64-.6z" fill="white"/>
+              </svg>
+
+              <!-- Official Bakong Red Logo -->
+              <svg class="bakong-official-logo" viewBox="0 0 41 41" fill="none">
+                <rect x="1.75" y="1.75" width="37.5" height="37.5" rx="18.75" fill="#E21A1A" stroke="white" stroke-width="3.5"/>
+                <path d="M10.4 20.55c.23.23.46.44.68.66.78.8 1.56 1.6 2.35 2.4.07.08.1.19.09.29v1.27c0 .96 0 1.91 0 2.87 0 .13.03.16.16.16 1.38 0 2.76 0 4.14 0 .07.01.14.05.19.1.4.41.82.83 1.22 1.24.59.6 1.18 1.21 1.78 1.83.15-.15.28-.28.4-.41.87-.89 1.73-1.78 2.61-2.66.08-.06.17-.1.27-.1 1.35 0 2.71 0 4.07 0 .13 0 .15-.04.15-.16 0-1.38 0-2.77 0-4.15 0-.12.05-.24.14-.32.63-.64 1.27-1.28 1.9-1.92.05-.05.12-.08.19-.09.63 0 1.27 0 1.9 0h.08c-.84.86-1.68 1.72-2.52 2.58-.08.08-.13.18-.12.29 0 1.66 0 3.32 0 4.99 0 .24 0 .24-.24.24-1.63 0-3.27 0-4.91 0-.08 0-.15.03-.21.09-.8.82-1.6 1.64-2.41 2.46-.38.39-.76.78-1.14 1.17-.07.07-.12.06-.19-.01-.4-.42-.81-.83-1.22-1.25-.78-.8-1.57-1.6-2.35-2.4-.05-.04-.1-.06-.16-.06-1.65 0-3.31 0-4.96 0-.22 0-.22 0-.22-.22v-5.02c0-.1-.04-.19-.11-.26-.74-.76-1.49-1.52-2.23-2.28-.44-.45-.88-.91-1.32-1.36h.14c.78-.79 1.55-1.58 2.33-2.38.38-.38.76-.77 1.13-1.16.06-.07.09-.15.09-.25 0-1.68 0-3.37 0-5.05 0-.2 0-.2.2-.2h4.91c.11.01.21-.04.28-.11 1.12-1.15 2.25-2.31 3.38-3.45.07-.08.14-.16.22-.25.24.23.46.46.68.68.99 1.02 1.98 2.03 2.97 3.04.06.06.14.09.22.1 1.65 0 3.3 0 4.95 0 .2 0 .2 0 .2.21 0 1.67 0 3.35 0 5.02 0 .1.04.2.11.27.83.83 1.65 1.67 2.47 2.51l.15.17h-.47c-.49 0-.97 0-1.45-.01-.1-.01-.18-.04-.25-.1-.65-.66-1.3-1.32-1.94-1.98-.06-.07-.1-.15-.1-.24 0-1.4 0-2.79 0-4.19 0-.14-.04-.18-.18-.18-1.35 0-2.72 0-4.08 0-.08 0-.16-.03-.22-.09-.97-.98-1.93-1.97-2.89-2.95-.08-.09-.14-.1-.23 0-.58.6-1.18 1.2-1.77 1.8-.38.39-.75.78-1.13 1.16-.07.06-.15.09-.24.09-1.34 0-2.69 0-4.04 0h-.19v4.27c0 .14-.05.28-.16.39-.96.97-1.92 1.95-2.87 2.93z" fill="white"/>
+              </svg>
+
+              <!-- Official ABA Pay Logo -->
+              <svg class="aba-official-logo" viewBox="0 0 51 30" fill="none">
+                <rect width="51" height="30" rx="3" fill="#055E7C"/>
+                <path d="M16.62 13.62c.44 0 .87.08 1.28.24.4.16.77.4 1.08.71.31.3.56.67.72 1.06.17.4.26.83.26 1.26 0 .44-.08.87-.25 1.27-.16.4-.4.77-.71 1.07-.3.31-.67.55-1.07.72-.4.17-.83.26-1.27.26H9.11v2.9c0 .3-.13.6-.35.81-.22.21-.52.33-.83.33-.31 0-.6-.12-.82-.34-.1-.11-.19-.24-.24-.38-.06-.14-.09-.29-.09-.44v-4.05c0-.15.02-.3.07-.44.05-.14.14-.27.24-.38.11-.11.23-.19.37-.25.14-.06.29-.09.44-.08h8.82c.23-.02.46-.12.62-.29.17-.17.26-.39.27-.62.01-.24-.07-.46-.22-.64-.15-.18-.36-.3-.59-.34h-8.83c-.28-.08-.53-.25-.7-.49-.12-.17-.18-.38-.19-.59 0-.21.05-.42.15-.6.1-.19.25-.34.43-.45.18-.11.39-.17.6-.17h8.66zm15.26 8.82l-5.58-8.33c-.15-.2-.35-.35-.59-.43-.24-.08-.49-.08-.73 0-.24.07-.44.22-.59.42-.15.2-.23.44-.23.69 0 .25.08.49.23.69l2.65 3.78h-5.03c-.21.02-.42.09-.61.19-.19.1-.35.25-.49.42l-1.77 2.49c-.1.11-.18.25-.23.39-.05.14-.07.3-.06.45.01.15.05.3.12.43.07.13.17.25.29.35.12.1.25.17.4.21.15.04.3.05.45.04.15-.02.3-.07.43-.14.13-.08.25-.18.34-.3h.02l1.59-2.11h6.21l1.28 2c.12.21.31.38.54.48.23.1.48.12.72.06.24-.06.45-.2.6-.39.15-.19.24-.43.24-.68 0-.22-.07-.44-.19-.63z" fill="#00BCD4"/>
+                <path d="M9.23 7.06l1.47 4.06H9.82l-.28-.83H7.95l-.26.83H6.8l1.46-4.06h.97zm-1.05 2.54h1.13l-.57-1.73-.56 1.73zm3.71-2.54h1.92c.85 0 1.28.37 1.28 1.03 0 .17-.03.34-.12.49-.09.15-.22.27-.38.34.2.07.36.2.48.37.11.17.17.38.15.58 0 .78-.52 1.24-1.49 1.24h-1.84V7.06zm1.77 1.57c.4 0 .6-.13.6-.44 0-.31-.19-.42-.6-.42h-.96v.86h.96zm.03 1.76c.46 0 .68-.16.68-.53 0-.37-.22-.54-.68-.54h-1v1.07h1zm6.29.73l-1.48-4.06h-.97l-1.45 4.06h.88l.27-.83h1.59l.28.83h.88zm-1.39-1.52h-1.14l.56-1.73.58 1.73z" fill="white"/>
+                <path d="M21.15 6.25h-.79v1.71h.79V6.25z" fill="#EB2227"/>
+              </svg>
+            </div>
+
+            <!-- Dynamic QR Holder -->
+            <div class="qr-canvas-holder">
+              <svg id="dynamicKhqrSvg" width="180" height="180" viewBox="0 0 180 180">
+                <!-- SVG QR Grid generated via script -->
+              </svg>
+              <div class="qr-center-emblem">
+                <!-- Bakong Emblem inside QR -->
+                <svg viewBox="0 0 41 41" fill="none">
+                  <path d="M20.5 7.5L32.7 19.5v5.5l-4.2-4.2v4.2H24v-4.2l-3.5 3.5-3.5-3.5v4.2H12.5v-4.2L8.3 25v-5.5L20.5 7.5z" fill="white"/>
+                </svg>
+              </div>
+            </div>
+
+            <div class="invoice-amount-box">
+              <div style="text-align: left;">
+                <div style="font-size: 11px; color: var(--text-sub);">វិក្កយបត្រ #INV-2026-0891</div>
+                <div style="font-size: 13px; font-weight: 700; color: #004D40;">អ្នកជំងឺ: រ័ត្ន សុខា - Sokha Rath</div>
+              </div>
+              <div style="text-align: right;">
+                <div class="amount-usd" id="khqrUsdText">$105.00</div>
+                <div class="amount-khr" id="khqrKhrText">430,500 ៛</div>
+              </div>
+            </div>
+
+            <div class="bank-actions-row">
+              <button class="btn-aba-pay" onclick="simulateBankPayment('ABA')">
+                <!-- Embedded Mini ABA Logo -->
+                <svg width="24" height="14" viewBox="0 0 51 30" fill="none">
+                  <rect width="51" height="30" rx="3" fill="#00BCD4"/>
+                  <path d="M16 13h8v4h-8z" fill="#00475E"/>
+                </svg>
+                <span>ទូទាត់តាម ABA Mobile - App Deeplink</span>
+              </button>
+
+              <button class="btn-bakong-app" onclick="simulateBankPayment('BAKONG')">
+                <!-- Embedded Mini Bakong Circle -->
+                <svg width="20" height="20" viewBox="0 0 41 41" fill="none">
+                  <circle cx="20.5" cy="20.5" r="18" fill="white"/>
+                  <path d="M20.5 10L28 17.5v3.5l-2.5-2.5V21H22v-2.5l-1.5 1.5L19 18.5V21h-3.5v-2.5L13 21v-3.5L20.5 10z" fill="#E21A1A"/>
+                </svg>
+                <span>ទូទាត់តាម Bakong App</span>
+              </button>
+            </div>
+
+            <div style="margin-top: 12px; font-size: 11px; color: var(--text-sub);">
+              ស្កេនបានជាមួយគ្រប់ធនាគារក្នុងប្រទេសកម្ពុជា: ABA, ACLEDA, Wing, Canadia, Sathapana
+            </div>
+          </div>
+        </div>
+
+        <!-- =============================================================
+             MODAL 2: CLINICAL BARCODE & PATIENT QR SCANNER
+             ============================================================= -->
+        <div class="modal-overlay" id="modalScannerOverlay" onclick="closeModalOnBackdrop(event, 'modalScannerOverlay')">
+          <div class="modal-sheet" style="background: #020C0B; color: #FFFFFF;">
+            <div class="sheet-handle" style="background: #334D49;"></div>
+
+            <div style="text-align: center; margin-bottom: 12px;">
+              <h3 style="font-size: 15px; font-weight: 800; color: #5EEAD4;">ម៉ាស៊ីនស្កេនបាកូដគ្លីនិក</h3>
+              <p style="font-size: 11px; color: #80CBC4;">Scan Patient Wristband QR or GS1 Medication Box</p>
+            </div>
+
+            <!-- Viewport with Animated Laser -->
+            <div style="width: 240px; height: 240px; margin: 0 auto 16px auto; position: relative; border-radius: 20px; overflow: hidden; background: #001714; border: 2px solid #004D40;">
+              <!-- Corner Reticles -->
+              <div style="position: absolute; top: 12px; left: 12px; width: 24px; height: 24px; border-top: 3px solid #2DD4BF; border-left: 3px solid #2DD4BF;"></div>
+              <div style="position: absolute; top: 12px; right: 12px; width: 24px; height: 24px; border-top: 3px solid #2DD4BF; border-right: 3px solid #2DD4BF;"></div>
+              <div style="position: absolute; bottom: 12px; left: 12px; width: 24px; height: 24px; border-bottom: 3px solid #2DD4BF; border-left: 3px solid #2DD4BF;"></div>
+              <div style="position: absolute; bottom: 12px; right: 12px; width: 24px; height: 24px; border-bottom: 3px solid #2DD4BF; border-right: 3px solid #2DD4BF;"></div>
+              
+              <!-- Laser Line -->
+              <div id="scannerLaser" style="position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, transparent, #00E676, #5EEAD4, transparent); box-shadow: 0 0 12px #00E676; animation: scanMove 2s infinite ease-in-out;"></div>
+            </div>
+
+            <style>
+              @keyframes scanMove {
+                0% { top: 10%; opacity: 0.2; }
+                50% { top: 90%; opacity: 1; }
+                100% { top: 10%; opacity: 0.2; }
+              }
+            </style>
+
+            <div style="display: flex; gap: 8px;">
+              <button onclick="simulateScanSuccess('WRISTBAND')" class="btn-splash-enter" style="flex: 1; font-size: 12px; padding: 10px;">
+                តេស្តស្កេនខ្សែដៃអ្នកជំងឺ - HN-10492
+              </button>
+              <button onclick="simulateScanSuccess('MED')" class="btn-splash-enter" style="flex: 1; font-size: 12px; padding: 10px; background: linear-gradient(135deg, #0288D1, #0097A7);">
+                តេស្តស្កេនប្រអប់ថ្នាំ GS1 DataMatrix
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
     </div>
   </div>
 
-  <!-- Device Frame Container -->
-  <div class="relative w-[390px] h-[810px] bg-white rounded-[44px] shadow-2xl border-[10px] border-slate-900 flex flex-col overflow-hidden">
-
-    <!-- Top Speaker & Camera Notch -->
-    <div class="absolute top-0 inset-x-0 h-6 bg-slate-900 flex items-center justify-center z-50">
-      <div class="w-14 h-3 bg-black rounded-full"></div>
-    </div>
-
-    <!-- Android Status Bar -->
-    <div class="pt-6 px-5 pb-1 flex justify-between items-center text-[11px] font-semibold text-slate-700 select-none bg-slate-50 border-b border-slate-100 z-40">
-      <span class="font-mono">14:30</span>
-      <div class="flex items-center gap-1.5 font-mono text-[10px]">
-        <span>5G</span>
-        <span>VoLTE</span>
-        <span>100%</span>
-      </div>
-    </div>
-
-    <!-- Active Screen Viewport (Scrollable) -->
-    <div id="screen-viewport" class="flex-1 overflow-y-auto hide-scrollbar bg-slate-50 p-4 space-y-3.5">
-
-      <!-- Dynamic Views rendered via JavaScript -->
-
-    </div>
-
-    <!-- Bottom Android Navigation Bar (Material 3 Tabs) -->
-    <div class="h-16 bg-white border-t border-slate-200 flex items-center justify-around px-2 z-40">
-      <button onclick="switchScreen('dashboard')" id="tab-dashboard" class="flex flex-col items-center justify-center flex-1 py-1 text-teal-800 font-bold transition">
-        <span class="text-xs">HUB</span>
-        <span class="text-[10px] mt-0.5">Overview</span>
-      </button>
-      <button onclick="switchScreen('triage')" id="tab-triage" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-500 transition">
-        <span class="text-xs font-mono">ESI</span>
-        <span class="text-[10px] mt-0.5">Triage</span>
-      </button>
-      <button onclick="switchScreen('telemetry')" id="tab-telemetry" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-500 transition">
-        <span class="text-xs font-mono">ECG</span>
-        <span class="text-[10px] mt-0.5">Vitals</span>
-      </button>
-      <button onclick="switchScreen('ward')" id="tab-ward" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-500 transition">
-        <span class="text-xs font-mono">BED</span>
-        <span class="text-[10px] mt-0.5">Ward</span>
-      </button>
-      <button onclick="switchScreen('billing')" id="tab-billing" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-500 transition">
-        <span class="text-xs font-mono">POS</span>
-        <span class="text-[10px] mt-0.5">KHQR</span>
-      </button>
-    </div>
-
-    <!-- Android Gesture Home Pill -->
-    <div class="h-4 bg-white flex items-center justify-center pb-1">
-      <div class="w-28 h-1 bg-slate-300 rounded-full"></div>
-    </div>
-  </div>
-
-  <!-- Quick Feature Launcher Bar -->
-  <div class="max-w-4xl w-full mt-4 bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-wrap gap-2 items-center justify-center text-xs">
-    <span class="font-bold text-slate-600 mr-1">Direct Module Jump:</span>
-    <button onclick="switchScreen('resus')" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-teal-50 hover:text-teal-800 font-semibold border border-slate-200">ACLS Resus</button>
-    <button onclick="switchScreen('surgical')" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-teal-50 hover:text-teal-800 font-semibold border border-slate-200">WHO Surgical</button>
-    <button onclick="switchScreen('pacs')" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-teal-50 hover:text-teal-800 font-semibold border border-slate-200">PACS Radiology</button>
-    <button onclick="switchScreen('lab')" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-teal-50 hover:text-teal-800 font-semibold border border-slate-200">Lab Panic Alerts</button>
-    <button onclick="switchScreen('stewardship')" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-teal-50 hover:text-teal-800 font-semibold border border-slate-200">Antimicrobial PK</button>
-    <button onclick="switchScreen('narcotics')" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-teal-50 hover:text-teal-800 font-semibold border border-slate-200">Narcotics Vault</button>
-    <button onclick="switchScreen('warehouse')" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-teal-50 hover:text-teal-800 font-semibold border border-slate-200">Warehouse FEFO</button>
-    <button onclick="switchScreen('pediatric')" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-teal-50 hover:text-teal-800 font-semibold border border-slate-200">Pediatric Nomogram</button>
-    <button onclick="switchScreen('dental')" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-teal-50 hover:text-teal-800 font-semibold border border-slate-200">Dental Odontogram</button>
-    <button onclick="switchScreen('teleconsult')" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-teal-50 hover:text-teal-800 font-semibold border border-slate-200">Teleconsult WebRTC</button>
-    <button onclick="switchScreen('patient')" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-teal-50 hover:text-teal-800 font-semibold border border-slate-200">Patient EHR</button>
+  <!-- Studio Bottom Quick Launchers -->
+  <div class="studio-controls-bar">
+    <button class="control-pill-btn" onclick="navigateToView('viewSplash')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M12 3l9 9-9 9"/></svg>
+      Reload Splash Screen
+    </button>
+    <button class="control-pill-btn" onclick="navigateToView('viewOnboarding')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M6 21v-2a6 6 0 0 1 12 0v2"/></svg>
+      Staff Role Switcher
+    </button>
+    <button class="control-pill-btn" onclick="openKhqrModal(105.00, 430500)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Open Bakong KHQR Modal
+    </button>
+    <button class="control-pill-btn" onclick="openScannerModal()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/></svg>
+      Clinical Barcode Scanner
+    </button>
   </div>
 
   <script>
-    let currentScreen = 'dashboard';
+    // State Management
+    let currentView = 'viewSplash';
+    let isAudioBeepOn = false;
+    let audioCtx = null;
+    let ecgAnimationId = null;
 
-    // State for interactive modules
-    const state = {
-      // Triage
-      rr: 24, spo2: 93, sbp: 94, dbp: 58, hr: 118, temp: 38.8, avpu: 'Alert', o2: true,
-      // Billing
-      amountUsd: 45.0, rateKhr: 4100,
-      // Telemetry
-      infusionWeight: 70, vancoScr: 1.1, vancoDose: 2000
-    };
-
-    function switchScreen(screen) {
-      currentScreen = screen;
-      // Update Tab Styles
-      ['dashboard', 'triage', 'telemetry', 'ward', 'billing'].forEach(t => {
-        const el = document.getElementById('tab-' + t);
-        if (el) {
-          if (t === screen) {
-            el.className = 'flex flex-col items-center justify-center flex-1 py-1 text-teal-800 font-bold transition';
-          } else {
-            el.className = 'flex flex-col items-center justify-center flex-1 py-1 text-slate-500 transition';
-          }
-        }
-      });
-      renderScreen();
+    // Clock
+    function updateClock() {
+      const now = new Date();
+      const hrs = String(now.getHours()).padStart(2, '0');
+      const mins = String(now.getMinutes()).padStart(2, '0');
+      const el = document.getElementById('clockDisplay');
+      if (el) el.innerText = `${hrs}:${mins}`;
     }
+    setInterval(updateClock, 1000);
+    updateClock();
 
-    function renderScreen() {
-      const v = document.getElementById('screen-viewport');
-      if (!v) return;
+    // Splash Screen Loading Simulation
+    let progress = 0;
+    const splashStatuses = [
+      'Initializing SQLite Room Database...',
+      'Establishing TLS 1.3 to NestJS Gateway...',
+      'Synchronizing MoH Essential Formulary 2026...',
+      'Calibrating Bedside ECG Telemetry DSP...',
+      'Checking Double-Witness Narcotics Ledger...',
+      'System Ready - 16 Clinical Modules Active'
+    ];
+    let statusIdx = 0;
 
-      switch(currentScreen) {
-        case 'dashboard':
-          v.innerHTML = renderDashboard();
-          break;
-        case 'triage':
-          v.innerHTML = renderTriage();
-          break;
-        case 'telemetry':
-          v.innerHTML = renderTelemetry();
-          initWaveformCanvas();
-          break;
-        case 'ward':
-          v.innerHTML = renderWard();
-          break;
-        case 'billing':
-          v.innerHTML = renderBilling();
-          initKhqrCanvas();
-          break;
-        case 'resus':
-          v.innerHTML = renderResus();
-          break;
-        case 'surgical':
-          v.innerHTML = renderSurgical();
-          break;
-        case 'pacs':
-          v.innerHTML = renderPacs();
-          initPacsCanvas();
-          break;
-        case 'lab':
-          v.innerHTML = renderLab();
-          break;
-        case 'stewardship':
-          v.innerHTML = renderStewardship();
-          break;
-        case 'narcotics':
-          v.innerHTML = renderNarcotics();
-          break;
-        case 'warehouse':
-          v.innerHTML = renderWarehouse();
-          break;
-        case 'pediatric':
-          v.innerHTML = renderPediatric();
-          break;
-        case 'dental':
-          v.innerHTML = renderDental();
-          break;
-        case 'teleconsult':
-          v.innerHTML = renderTeleconsult();
-          break;
-        case 'patient':
-          v.innerHTML = renderPatient();
-          break;
+    const splashInterval = setInterval(() => {
+      progress += 6;
+      if (progress > 100) progress = 100;
+      const bar = document.getElementById('splashBar');
+      const txt = document.getElementById('splashStatus');
+      if (bar) bar.style.width = progress + '%';
+      if (txt && progress % 18 === 0 && statusIdx < splashStatuses.length) {
+        txt.innerText = splashStatuses[statusIdx++];
+      }
+      if (progress >= 100) {
+        clearInterval(splashInterval);
+        setTimeout(() => {
+          if (currentView === 'viewSplash') {
+            navigateToView('viewOnboarding');
+          }
+        }, 600);
+      }
+    }, 120);
+
+    // View Navigation
+    function navigateToView(viewId) {
+      document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active'));
+      const target = document.getElementById(viewId);
+      if (target) {
+        target.classList.add('active');
+        currentView = viewId;
+        document.getElementById('viewportScroll').scrollTop = 0;
+      }
+      if (viewId === 'viewTelemetry') {
+        initEcgWaveform();
+      } else {
+        if (ecgAnimationId) cancelAnimationFrame(ecgAnimationId);
       }
     }
 
-    function renderDashboard() {
-      return `
-        <div>
-          <div class="flex items-center justify-between">
-            <div>
-              <h2 class="text-lg font-bold text-teal-900 leading-tight">KruPet Clinical Hub</h2>
-              <p class="text-xs text-slate-500">Enterprise Mobile Station - Jetpack Compose</p>
-            </div>
-            <span class="w-8 h-8 rounded-full bg-teal-800 text-white font-bold flex items-center justify-center text-xs">KP</span>
-          </div>
-
-          <div class="mt-3 p-3 bg-white rounded-xl border border-slate-200 shadow-sm">
-            <div class="flex justify-between items-center text-xs">
-              <span class="font-bold text-slate-800">NestJS Mobile Gateway</span>
-              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">CONNECTED</span>
-            </div>
-            <div class="mt-1 text-[11px] font-mono text-slate-500">http://10.0.2.2:3001/api/mobile-sync</div>
-            <div class="mt-2 text-[10px] text-teal-700 bg-teal-50 p-1.5 rounded font-medium">Sync Protocol: LWW Timestamp Vector with Merkle Audit Integrity</div>
-          </div>
-
-          <div class="mt-4">
-            <h3 class="text-xs font-bold text-slate-700 mb-2">Clinical Modules (16 Ready)</h3>
-            <div class="grid grid-cols-2 gap-2">
-              <div onclick="switchScreen('triage')" class="p-2.5 bg-white rounded-xl border border-slate-200 shadow-sm cursor-pointer hover:border-teal-600 transition">
-                <div class="text-[10px] font-bold text-teal-700 uppercase">Emergency</div>
-                <div class="text-xs font-bold text-slate-900 mt-0.5">Triage ESI v4</div>
-                <div class="text-[10px] text-slate-500 mt-1">NEWS2, GCS 3-15</div>
-              </div>
-              <div onclick="switchScreen('resus')" class="p-2.5 bg-white rounded-xl border border-slate-200 shadow-sm cursor-pointer hover:border-teal-600 transition">
-                <div class="text-[10px] font-bold text-rose-700 uppercase">Resuscitation</div>
-                <div class="text-xs font-bold text-slate-900 mt-0.5">ACLS & Sepsis</div>
-                <div class="text-[10px] text-slate-500 mt-1">Parkland, CPR Timer</div>
-              </div>
-              <div onclick="switchScreen('telemetry')" class="p-2.5 bg-white rounded-xl border border-slate-200 shadow-sm cursor-pointer hover:border-teal-600 transition">
-                <div class="text-[10px] font-bold text-cyan-700 uppercase">Critical Care</div>
-                <div class="text-xs font-bold text-slate-900 mt-0.5">ECG & Infusion</div>
-                <div class="text-[10px] text-slate-500 mt-1">Live Waveform Canvas</div>
-              </div>
-              <div onclick="switchScreen('surgical')" class="p-2.5 bg-white rounded-xl border border-slate-200 shadow-sm cursor-pointer hover:border-teal-600 transition">
-                <div class="text-[10px] font-bold text-indigo-700 uppercase">Surgical OR</div>
-                <div class="text-xs font-bold text-slate-900 mt-0.5">WHO Checklist</div>
-                <div class="text-[10px] text-slate-500 mt-1">3 Phases & ASA Class</div>
-              </div>
-              <div onclick="switchScreen('ward')" class="p-2.5 bg-white rounded-xl border border-slate-200 shadow-sm cursor-pointer hover:border-teal-600 transition">
-                <div class="text-[10px] font-bold text-emerald-700 uppercase">Inpatient</div>
-                <div class="text-xs font-bold text-slate-900 mt-0.5">Ward Bed Census</div>
-                <div class="text-[10px] text-slate-500 mt-1">Fluid Net & SBAR</div>
-              </div>
-              <div onclick="switchScreen('pacs')" class="p-2.5 bg-white rounded-xl border border-slate-200 shadow-sm cursor-pointer hover:border-teal-600 transition">
-                <div class="text-[10px] font-bold text-amber-700 uppercase">Diagnostics</div>
-                <div class="text-xs font-bold text-slate-900 mt-0.5">PACS Radiology</div>
-                <div class="text-[10px] text-slate-500 mt-1">DICOM & Calipers</div>
-              </div>
-              <div onclick="switchScreen('lab')" class="p-2.5 bg-white rounded-xl border border-slate-200 shadow-sm cursor-pointer hover:border-teal-600 transition">
-                <div class="text-[10px] font-bold text-red-700 uppercase">Laboratory</div>
-                <div class="text-xs font-bold text-slate-900 mt-0.5">LIS Panic Alerts</div>
-                <div class="text-[10px] text-slate-500 mt-1">CBC, Renal, Troponin</div>
-              </div>
-              <div onclick="switchScreen('stewardship')" class="p-2.5 bg-white rounded-xl border border-slate-200 shadow-sm cursor-pointer hover:border-teal-600 transition">
-                <div class="text-[10px] font-bold text-purple-700 uppercase">Pharmacology</div>
-                <div class="text-xs font-bold text-slate-900 mt-0.5">Antimicrobial PK</div>
-                <div class="text-[10px] text-slate-500 mt-1">CrCl, Vanco AUC24</div>
-              </div>
-              <div onclick="switchScreen('narcotics')" class="p-2.5 bg-white rounded-xl border border-slate-200 shadow-sm cursor-pointer hover:border-teal-600 transition">
-                <div class="text-[10px] font-bold text-rose-800 uppercase">Controlled Vault</div>
-                <div class="text-xs font-bold text-slate-900 mt-0.5">Narcotics Register</div>
-                <div class="text-[10px] text-slate-500 mt-1">Double-Witness Signoff</div>
-              </div>
-              <div onclick="switchScreen('billing')" class="p-2.5 bg-white rounded-xl border border-slate-200 shadow-sm cursor-pointer hover:border-teal-600 transition">
-                <div class="text-[10px] font-bold text-teal-800 uppercase">Finance</div>
-                <div class="text-xs font-bold text-slate-900 mt-0.5">Bakong KHQR POS</div>
-                <div class="text-[10px] text-slate-500 mt-1">Dual USD/KHR Engine</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="mt-4 p-3 bg-slate-100 rounded-xl text-[10px] text-slate-600">
-            <span class="font-bold text-slate-700">Google Play Non-SaMD Compliance:</span> Adheres strictly to Clinical Decision Support boundaries under 2026 healthcare software standards.
-          </div>
-        </div>
-      `;
+    function navigateToTab(tab) {
+      document.querySelectorAll('.nav-tab-btn').forEach(b => b.classList.remove('active'));
+      if (tab === 'hub') {
+        document.getElementById('tabHub').classList.add('active');
+        navigateToView('viewHub');
+      } else if (tab === 'triage') {
+        document.getElementById('tabTriage').classList.add('active');
+        openTriageDetail();
+      } else if (tab === 'telem') {
+        document.getElementById('tabTelem').classList.add('active');
+        navigateToView('viewTelemetry');
+      } else if (tab === 'ward') {
+        document.getElementById('tabWard').classList.add('active');
+        navigateToView('viewHub');
+        document.getElementById('viewportScroll').scrollTop = 280;
+      } else if (tab === 'khqr') {
+        document.getElementById('tabKhqr').classList.add('active');
+        openKhqrModal(105.00, 430500);
+      }
     }
 
-    function renderTriage() {
-      // Calculate NEWS2
-      let newsScore = 0;
-      if (state.rr <= 8 || state.rr >= 25) newsScore += 3;
-      else if (state.rr in [21,22,23,24]) newsScore += 2;
-      else if (state.rr in [9,10,11]) newsScore += 1;
-
-      if (state.spo2 <= 91) newsScore += 3;
-      else if (state.spo2 <= 93) newsScore += 2;
-      else if (state.spo2 <= 95) newsScore += 1;
-
-      if (state.o2) newsScore += 2;
-
-      if (state.sbp <= 90 || state.sbp >= 220) newsScore += 3;
-      else if (state.sbp <= 100) newsScore += 2;
-      else if (state.sbp <= 110) newsScore += 1;
-
-      if (state.hr <= 40 || state.hr >= 131) newsScore += 3;
-      else if (state.hr >= 111) newsScore += 2;
-      else if (state.hr <= 50 || state.hr >= 91) newsScore += 1;
-
-      if (state.temp <= 35.0) newsScore += 3;
-      else if (state.temp >= 39.1) newsScore += 2;
-      else if (state.temp <= 36.0 || state.temp >= 38.1) newsScore += 1;
-
-      const shockIndex = (state.hr / state.sbp).toFixed(2);
-      const map = (((state.sbp + 2 * state.dbp)) / 3).toFixed(1);
-
-      return `
-        <div>
-          <div class="flex justify-between items-center">
-            <div>
-              <h2 class="text-base font-bold text-slate-900">Emergency Triage</h2>
-              <p class="text-xs text-slate-500">ESI v4 Protocol & NEWS2 Acuity</p>
-            </div>
-            <span class="px-2.5 py-1 rounded bg-amber-500 text-white font-bold text-xs">ESI LEVEL 2</span>
-          </div>
-
-          <div class="mt-3 p-3 bg-red-50 border border-red-200 rounded-xl">
-            <div class="flex justify-between items-center">
-              <span class="text-xs font-bold text-red-800">NEWS2 Score: ${newsScore} (High Risk)</span>
-              <span class="text-[10px] font-semibold text-red-700">Immediate Medical Review</span>
-            </div>
-            <p class="text-[11px] text-red-900 mt-1">Continuous vital telemetry monitoring and rapid response mobilization indicated.</p>
-          </div>
-
-          <div class="mt-3 grid grid-cols-2 gap-2">
-            <div class="p-2.5 bg-white border border-slate-200 rounded-lg">
-              <div class="text-[10px] text-slate-500">Shock Index (HR/SBP)</div>
-              <div class="text-lg font-bold mono ${shockIndex >= 0.9 ? 'text-red-600' : 'text-slate-800'}">${shockIndex}</div>
-              <div class="text-[10px] text-red-600 font-semibold">${shockIndex >= 0.9 ? 'Occult Shock Risk' : 'Normal: 0.5-0.7'}</div>
-            </div>
-            <div class="p-2.5 bg-white border border-slate-200 rounded-lg">
-              <div class="text-[10px] text-slate-500">Mean Arterial BP (MAP)</div>
-              <div class="text-lg font-bold mono text-teal-800">${map} mmHg</div>
-              <div class="text-[10px] text-emerald-600 font-semibold">Adequate Perfusion</div>
-            </div>
-          </div>
-
-          <div class="mt-3 bg-white p-3 border border-slate-200 rounded-xl space-y-2">
-            <h4 class="text-xs font-bold text-slate-800">Patient Vitals Input</h4>
-            <div class="grid grid-cols-3 gap-2 text-xs">
-              <div>
-                <label class="text-[10px] text-slate-500">Sys BP</label>
-                <input type="number" value="${state.sbp}" onchange="state.sbp = Number(this.value); renderTriage();" class="w-full mt-0.5 p-1.5 border border-slate-300 rounded font-mono text-center">
-              </div>
-              <div>
-                <label class="text-[10px] text-slate-500">Dia BP</label>
-                <input type="number" value="${state.dbp}" onchange="state.dbp = Number(this.value); renderTriage();" class="w-full mt-0.5 p-1.5 border border-slate-300 rounded font-mono text-center">
-              </div>
-              <div>
-                <label class="text-[10px] text-slate-500">Pulse bpm</label>
-                <input type="number" value="${state.hr}" onchange="state.hr = Number(this.value); renderTriage();" class="w-full mt-0.5 p-1.5 border border-slate-300 rounded font-mono text-center">
-              </div>
-            </div>
-            <div class="grid grid-cols-3 gap-2 text-xs mt-1">
-              <div>
-                <label class="text-[10px] text-slate-500">Resp Rate</label>
-                <input type="number" value="${state.rr}" onchange="state.rr = Number(this.value); renderTriage();" class="w-full mt-0.5 p-1.5 border border-slate-300 rounded font-mono text-center">
-              </div>
-              <div>
-                <label class="text-[10px] text-slate-500">SpO2 %</label>
-                <input type="number" value="${state.spo2}" onchange="state.spo2 = Number(this.value); renderTriage();" class="w-full mt-0.5 p-1.5 border border-slate-300 rounded font-mono text-center">
-              </div>
-              <div>
-                <label class="text-[10px] text-slate-500">Temp C</label>
-                <input type="number" step="0.1" value="${state.temp}" onchange="state.temp = Number(this.value); renderTriage();" class="w-full mt-0.5 p-1.5 border border-slate-300 rounded font-mono text-center">
-              </div>
-            </div>
-          </div>
-
-          <div class="mt-3 bg-white p-3 border border-slate-200 rounded-xl">
-            <div class="flex justify-between items-center text-xs">
-              <span class="font-bold text-slate-800">Glasgow Coma Scale: 14/15</span>
-              <span class="text-teal-700 font-semibold text-[10px]">MILD BRAIN INJURY</span>
-            </div>
-            <p class="text-[11px] text-slate-500 mt-1">Eye: 4 | Verbal: 4 | Motor: 6 - Airway protected.</p>
-          </div>
-
-          <button class="w-full mt-3 py-2.5 bg-teal-800 text-white font-bold rounded-lg text-xs shadow-sm">
-            Assign Emergency Bed & Alert Trauma Team
-          </button>
-        </div>
-      `;
+    // Role Selection
+    function selectStaffRole(element, name, role, dept) {
+      document.querySelectorAll('.staff-card').forEach(c => c.classList.remove('selected'));
+      element.classList.add('selected');
+      const pill = document.getElementById('activeStaffPill');
+      if (pill) pill.innerText = name.split(',')[0];
     }
 
-    function renderTelemetry() {
-      // Calculate rate
-      const dosePerMin = 0.10 * state.infusionWeight; // mcg/min
-      const conc = (4 * 1000) / 250; // 16 mcg/mL
-      const rateMlHr = ((dosePerMin * 60) / conc).toFixed(1);
-      const dripGtt = ((rateMlHr * 60) / 60).toFixed(0);
-
-      return `
-        <div>
-          <div class="flex justify-between items-center">
-            <div>
-              <h2 class="text-base font-bold text-slate-900">Bedside Telemetry</h2>
-              <p class="text-xs text-slate-500">Live Waveforms & Smart Infusion Pump</p>
-            </div>
-            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">SYNC LIVE</span>
-          </div>
-
-          <div class="mt-3 bg-slate-950 p-3 rounded-xl border border-slate-800 text-white">
-            <div class="flex justify-between text-[11px] font-mono text-slate-400 mb-1">
-              <span>BED 01: SOKHA MEAS</span>
-              <span class="text-emerald-400">ECG II + PLETH</span>
-            </div>
-            <canvas id="ecgCanvas" width="340" height="130" class="w-full bg-black rounded border border-slate-900"></canvas>
-            <div class="grid grid-cols-4 gap-2 mt-2 pt-2 border-t border-slate-900 text-center font-mono">
-              <div>
-                <div class="text-[9px] text-slate-400">HR bpm</div>
-                <div class="text-xl font-bold text-emerald-400">75</div>
-              </div>
-              <div>
-                <div class="text-[9px] text-slate-400">SpO2 %</div>
-                <div class="text-xl font-bold text-cyan-400">98</div>
-              </div>
-              <div>
-                <div class="text-[9px] text-slate-400">BP mmHg</div>
-                <div class="text-sm font-bold text-white mt-1">118/76</div>
-              </div>
-              <div>
-                <div class="text-[9px] text-slate-400">RR /min</div>
-                <div class="text-xl font-bold text-amber-400">16</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="mt-3 bg-white p-3 border border-slate-200 rounded-xl space-y-2">
-            <h4 class="text-xs font-bold text-slate-800">Smart Infusion Pump Titration</h4>
-            <div class="p-2 bg-teal-50 rounded text-xs">
-              <div class="flex justify-between font-bold text-teal-900">
-                <span>Norepinephrine (4 mg in 250 mL D5W)</span>
-                <span>0.10 mcg/kg/min</span>
-              </div>
-              <div class="mt-2 flex justify-between items-center text-teal-800">
-                <div>
-                  <div class="text-[10px]">Pump Delivery Rate</div>
-                  <div class="text-lg font-bold mono">${rateMlHr} mL/hr</div>
-                </div>
-                <div class="text-right">
-                  <div class="text-[10px]">Gravity Drip (60 gtt)</div>
-                  <div class="text-lg font-bold mono">${dripGtt} gtt/min</div>
-                </div>
-              </div>
-            </div>
-            <button class="w-full py-2 bg-teal-800 text-white font-bold rounded text-xs">
-              Transmit Parameters to Smart IV Pump
-            </button>
-          </div>
-        </div>
-      `;
+    function authenticateBiometrics() {
+      playBeepTone(880, 0.08);
+      setTimeout(() => playBeepTone(1320, 0.12), 100);
+      const pill = document.getElementById('activeStaffPill');
+      const selected = document.querySelector('.staff-card.selected .staff-name');
+      if (pill && selected) {
+        pill.innerText = selected.innerText.split('(')[0].trim();
+      }
+      navigateToView('viewHub');
     }
 
-    function renderWard() {
-      return `
-        <div>
-          <div class="flex justify-between items-center">
-            <div>
-              <h2 class="text-base font-bold text-slate-900">Inpatient Ward Beds</h2>
-              <p class="text-xs text-slate-500">Census, Fluid Balance & SBAR Handoff</p>
-            </div>
-            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-100 text-teal-800">ICU WARD</span>
-          </div>
-
-          <div class="mt-3 grid grid-cols-3 gap-2 text-center text-xs">
-            <div class="p-2 bg-white border border-slate-200 rounded-lg">
-              <div class="text-[10px] text-slate-500">Occupied</div>
-              <div class="text-base font-bold text-red-700">18 Beds</div>
-            </div>
-            <div class="p-2 bg-white border border-slate-200 rounded-lg">
-              <div class="text-[10px] text-slate-500">Available</div>
-              <div class="text-base font-bold text-emerald-700">4 Beds</div>
-            </div>
-            <div class="p-2 bg-white border border-slate-200 rounded-lg">
-              <div class="text-[10px] text-slate-500">Cleaning</div>
-              <div class="text-base font-bold text-amber-700">2 Beds</div>
-            </div>
-          </div>
-
-          <div class="mt-3 bg-white p-3 border border-slate-200 rounded-xl space-y-2">
-            <h4 class="text-xs font-bold text-slate-800">24-Hour Fluid Balance Surveillance</h4>
-            <div class="grid grid-cols-3 gap-2 text-center font-mono text-xs">
-              <div class="p-1.5 bg-slate-50 rounded">
-                <div class="text-[9px] text-slate-500">Total Intake</div>
-                <div class="font-bold text-slate-800">2450 mL</div>
-              </div>
-              <div class="p-1.5 bg-slate-50 rounded">
-                <div class="text-[9px] text-slate-500">Total Output</div>
-                <div class="font-bold text-slate-800">1800 mL</div>
-              </div>
-              <div class="p-1.5 bg-emerald-50 rounded">
-                <div class="text-[9px] text-emerald-700">Net Balance</div>
-                <div class="font-bold text-emerald-800">+650 mL</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="mt-3 bg-white p-3 border border-slate-200 rounded-xl space-y-1.5 text-xs">
-            <h4 class="font-bold text-slate-800">SBAR Shift Handover Note</h4>
-            <div class="p-1.5 bg-slate-50 rounded"><span class="font-bold text-teal-800">S:</span> Post-op laparotomy Day 1, febrile spike 38.6C.</div>
-            <div class="p-1.5 bg-slate-50 rounded"><span class="font-bold text-teal-800">B:</span> Known hypertension, penicillin allergy.</div>
-            <div class="p-1.5 bg-slate-50 rounded"><span class="font-bold text-teal-800">A:</span> Tachycardia 112 bpm, soft abdomen, wound clean.</div>
-            <div class="p-1.5 bg-slate-50 rounded"><span class="font-bold text-teal-800">R:</span> Blood cultures sent, start IV Piperacillin-Tazobactam.</div>
-          </div>
-        </div>
-      `;
+    // Dynamic Island Interaction
+    let islandExpanded = false;
+    function toggleIslandExpansion() {
+      const island = document.getElementById('dynamicIsland');
+      islandExpanded = !islandExpanded;
+      if (islandExpanded) {
+        island.style.width = '240px';
+        island.style.height = '48px';
+        document.getElementById('islandBpm').innerText = '74 BPM - Sinus Rhythm Lead II';
+      } else {
+        island.style.width = '125px';
+        island.style.height = '28px';
+        document.getElementById('islandBpm').innerText = '74 BPM';
+      }
     }
 
-    function renderBilling() {
-      const khr = (state.amountUsd * state.rateKhr).toLocaleString();
-      return `
-        <div>
-          <div class="flex justify-between items-center">
-            <div>
-              <h2 class="text-base font-bold text-slate-900">Bakong KHQR Billing</h2>
-              <p class="text-xs text-slate-500">Dual Currency POS Checkout</p>
-            </div>
-            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-800 text-white">NBC CERTIFIED</span>
-          </div>
+    // KHQR Generator with Real SVG Pattern
+    function generateKhqrSvgGrid() {
+      const svg = document.getElementById('dynamicKhqrSvg');
+      if (!svg) return;
+      let gridHtml = '<rect width="180" height="180" fill="white"/>';
+      
+      // Draw 3 corner finder patterns
+      function drawFinder(x, y) {
+        gridHtml += `<rect x="${x}" y="${y}" width="42" height="42" rx="4" fill="#004D40"/>`;
+        gridHtml += `<rect x="${x+6}" y="${y+6}" width="30" height="30" rx="2" fill="white"/>`;
+        gridHtml += `<rect x="${x+12}" y="${y+12}" width="18" height="18" rx="2" fill="#004D40"/>`;
+      }
+      drawFinder(10, 10);
+      drawFinder(128, 10);
+      drawFinder(10, 128);
 
-          <div class="mt-3 bg-white p-4 border border-slate-200 rounded-xl text-center space-y-2">
-            <div class="text-xs text-slate-500">Invoice #INV-2026-9901</div>
-            <div class="text-2xl font-bold mono text-teal-900">$${state.amountUsd.toFixed(2)} USD</div>
-            <div class="text-sm font-semibold mono text-slate-600 font-mono">៛ ${khr} KHR</div>
-
-            <div class="my-3 flex justify-center">
-              <canvas id="khqrCanvas" width="160" height="160" class="border p-2 rounded-lg bg-white shadow-sm"></canvas>
-            </div>
-
-            <div class="text-[10px] font-mono text-slate-400 bg-slate-50 p-2 rounded break-all">
-              bakong://khqr?merchant=krupet_clinic&amount=${state.amountUsd}&cur=USD&crc=8F2B
-            </div>
-
-            <div class="flex gap-2 mt-2">
-              <button class="flex-1 py-2 bg-teal-800 text-white font-bold rounded text-xs">Verify Payment Status</button>
-              <button class="flex-1 py-2 bg-slate-100 text-slate-700 font-bold rounded text-xs border border-slate-200">Print Receipt</button>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderResus() {
-      return `
-        <div>
-          <h2 class="text-base font-bold text-slate-900">Emergency Resuscitation</h2>
-          <p class="text-xs text-slate-500">ACLS Protocols & Clinical Shock Engines</p>
-
-          <div class="mt-3 bg-rose-50 border border-rose-200 p-3 rounded-xl">
-            <div class="flex justify-between items-center text-xs font-bold text-rose-800">
-              <span>Sepsis Hour-1 Bundle</span>
-              <span>30 mL/kg Bolus</span>
-            </div>
-            <div class="text-xl font-bold mono text-rose-900 mt-1">2,100 mL Crystalloid</div>
-            <div class="text-[10px] text-rose-700 mt-0.5">Administer within 60 minutes for severe hypoperfusion or lactate > 4.0 mmol/L.</div>
-          </div>
-
-          <div class="mt-3 bg-white p-3 border border-slate-200 rounded-xl space-y-2 text-xs">
-            <h4 class="font-bold text-slate-800">Parkland Burn Resuscitation (4 mL x kg x %TBSA)</h4>
-            <div class="flex justify-between font-mono text-slate-700">
-              <span>Weight: 70 kg | 30% TBSA</span>
-              <span class="font-bold text-teal-800">8,400 mL / 24h</span>
-            </div>
-            <div class="text-[11px] text-slate-500">First 8 Hours: 4,200 mL (525 mL/hr) | Remaining 16 Hours: 4,200 mL (263 mL/hr)</div>
-          </div>
-
-          <div class="mt-3 bg-white p-3 border border-slate-200 rounded-xl space-y-1.5 text-xs">
-            <h4 class="font-bold text-slate-800">CRASH-2 Tranexamic Acid (TXA) Protocol</h4>
-            <div class="p-2 bg-emerald-50 rounded text-emerald-800 font-semibold">
-              Eligible: Trauma within 3-hour window. Loading dose 1g IV over 10 min, then 1g IV over 8h.
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderSurgical() {
-      return `
-        <div>
-          <div class="flex justify-between items-center">
-            <div>
-              <h2 class="text-base font-bold text-slate-900">WHO Surgical Safety</h2>
-              <p class="text-xs text-slate-500">Operating Theater #2 - 3 Phases</p>
-            </div>
-            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-800 text-white">ASA II</span>
-          </div>
-
-          <div class="mt-3 space-y-2 text-xs">
-            <div class="p-2.5 bg-white border border-slate-200 rounded-xl">
-              <div class="font-bold text-slate-800 mb-1">Phase 1: Sign In (Before Induction)</div>
-              <div class="space-y-1 text-slate-600 text-[11px]">
-                <div>[x] Patient identity, site, procedure confirmed</div>
-                <div>[x] Surgical site marked</div>
-                <div>[x] Pulse oximeter on patient and functioning</div>
-                <div>[x] Airway and aspiration risk evaluated</div>
-              </div>
-            </div>
-
-            <div class="p-2.5 bg-white border border-slate-200 rounded-xl">
-              <div class="font-bold text-slate-800 mb-1">Phase 2: Time Out (Before Incision)</div>
-              <div class="space-y-1 text-slate-600 text-[11px]">
-                <div>[x] Verbal team introduction complete</div>
-                <div>[x] Antibiotic prophylaxis given within 60 min</div>
-                <div>[x] Critical steps and blood loss reviewed</div>
-                <div>[x] Sterility indicators verified</div>
-              </div>
-            </div>
-
-            <div class="p-2.5 bg-white border border-slate-200 rounded-xl">
-              <div class="font-bold text-slate-800 mb-1">Phase 3: Sign Out (Before Leaving OR)</div>
-              <div class="space-y-1 text-slate-600 text-[11px]">
-                <div>[x] Instrument, sponge, needle count correct</div>
-                <div>[x] Specimen labeled aloud</div>
-                <div>[x] Recovery PACU concerns addressed</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderPacs() {
-      return `
-        <div>
-          <div class="flex justify-between items-center">
-            <div>
-              <h2 class="text-base font-bold text-slate-900">PACS Radiology</h2>
-              <p class="text-xs text-slate-500">DICOM Modality Worklist</p>
-            </div>
-            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-white">DX CHEST</span>
-          </div>
-
-          <div class="mt-3 bg-black rounded-xl p-2 border border-slate-800">
-            <canvas id="pacsCanvas" width="340" height="200" class="w-full bg-black rounded"></canvas>
-            <div class="flex justify-between text-[10px] font-mono text-slate-400 mt-2 px-1">
-              <span>W: 2000 L: 300 (Bone)</span>
-              <span>CTR: 0.48 (Normal)</span>
-              <span>CALIPER: 140 mm</span>
-            </div>
-          </div>
-
-          <div class="mt-3 bg-white p-3 border border-slate-200 rounded-xl text-xs space-y-1">
-            <div class="font-bold text-slate-800">Radiologist Diagnostic Impression</div>
-            <div class="text-[11px] text-teal-800 font-semibold">Negative for acute cardiopulmonary abnormality. Joint spaces preserved.</div>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderLab() {
-      return `
-        <div>
-          <div class="flex justify-between items-center">
-            <div>
-              <h2 class="text-base font-bold text-slate-900">Laboratory LIS</h2>
-              <p class="text-xs text-slate-500">Specimen Tracking & Panic Alerts</p>
-            </div>
-            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-800">1 PANIC DETECTED</span>
-          </div>
-
-          <div class="mt-3 bg-red-50 border border-red-200 p-3 rounded-xl text-xs">
-            <div class="font-bold text-red-800">CRITICAL PANIC: Serum Potassium (K+) 5.9 mmol/L</div>
-            <div class="text-[11px] text-red-700 mt-0.5">High risk of cardiac dysrhythmia. Immediate physician read-back required.</div>
-          </div>
-
-          <div class="mt-3 space-y-2 text-xs">
-            <div class="p-2.5 bg-white border border-slate-200 rounded-lg flex justify-between items-center">
-              <div>
-                <div class="font-bold text-slate-800">hs-Troponin I</div>
-                <div class="text-[10px] text-slate-400">Ref: 0.0 - 0.04 ng/mL</div>
-              </div>
-              <div class="text-right">
-                <div class="font-bold text-red-600 font-mono">2.45 ng/mL</div>
-                <div class="text-[9px] font-bold text-red-600">CRITICAL HIGH</div>
-              </div>
-            </div>
-
-            <div class="p-2.5 bg-white border border-slate-200 rounded-lg flex justify-between items-center">
-              <div>
-                <div class="font-bold text-slate-800">Serum Creatinine</div>
-                <div class="text-[10px] text-slate-400">Ref: 0.6 - 1.2 mg/dL</div>
-              </div>
-              <div class="text-right">
-                <div class="font-bold text-amber-600 font-mono">2.1 mg/dL</div>
-                <div class="text-[9px] font-bold text-amber-600">ELEVATED</div>
-              </div>
-            </div>
-
-            <div class="p-2.5 bg-white border border-slate-200 rounded-lg flex justify-between items-center">
-              <div>
-                <div class="font-bold text-slate-800">Hemoglobin (Hb)</div>
-                <div class="text-[10px] text-slate-400">Ref: 12.0 - 16.0 g/dL</div>
-              </div>
-              <div class="text-right">
-                <div class="font-bold text-blue-600 font-mono">9.2 g/dL</div>
-                <div class="text-[9px] font-bold text-blue-600">LOW</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderStewardship() {
-      return `
-        <div>
-          <h2 class="text-base font-bold text-slate-900">Antimicrobial Stewardship</h2>
-          <p class="text-xs text-slate-500">Cockcroft-Gault CrCl & Vanco AUC Target</p>
-
-          <div class="mt-3 bg-white p-3 border border-slate-200 rounded-xl text-xs space-y-2">
-            <div class="flex justify-between items-center font-bold text-slate-800">
-              <span>Creatinine Clearance (Devine IBW)</span>
-              <span class="text-teal-800 mono font-bold text-base">97.2 mL/min</span>
-            </div>
-            <div class="p-2 bg-emerald-50 rounded text-emerald-800 text-[11px]">
-              Renal function intact. Standard empiric dosing approved.
-            </div>
-          </div>
-
-          <div class="mt-3 bg-white p-3 border border-slate-200 rounded-xl text-xs space-y-2">
-            <div class="flex justify-between items-center font-bold text-slate-800">
-              <span>Vancomycin 24h AUC/MIC Target</span>
-              <span class="text-emerald-700 mono font-bold text-base">544 mg*h/L</span>
-            </div>
-            <div class="text-[11px] text-slate-600">
-              Optimal therapeutic window (400 - 600 mg*h/L) achieved. Nephrotoxicity risk minimized.
-            </div>
-          </div>
-
-          <div class="mt-3 bg-white p-3 border border-slate-200 rounded-xl text-xs space-y-2">
-            <div class="flex justify-between items-center font-bold text-slate-800">
-              <span>IV-to-Oral Step-Down Candidate</span>
-              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">QUALIFIED</span>
-            </div>
-            <div class="text-[11px] text-slate-600">
-              Patient received IV >48h, afebrile 24h, stable vitals. Bioequivalent oral Amox-Clav approved.
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderNarcotics() {
-      return `
-        <div>
-          <div class="flex justify-between items-center">
-            <div>
-              <h2 class="text-base font-bold text-slate-900">Narcotics Register</h2>
-              <p class="text-xs text-slate-500">Double-Witness Vault & Merkle Audit</p>
-            </div>
-            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-800 text-white">MoH DDF</span>
-          </div>
-
-          <div class="mt-3 bg-teal-50 border border-teal-200 p-2.5 rounded-xl text-xs font-mono">
-            <div class="text-[10px] font-bold text-teal-900">CRYPTOGRAPHIC MERKLE ROOT:</div>
-            <div class="text-[9px] text-teal-700 break-all mt-0.5">e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</div>
-            <div class="text-[10px] text-emerald-700 font-bold mt-1">Verified: Zero Tampering Detected</div>
-          </div>
-
-          <div class="mt-3 space-y-2 text-xs">
-            <div class="p-2.5 bg-white border border-slate-200 rounded-lg flex justify-between items-center">
-              <div>
-                <div class="font-bold text-slate-800">Morphine Sulfate 10mg/mL</div>
-                <div class="text-[10px] text-slate-500">Schedule II | Controlled Vault</div>
-              </div>
-              <div class="font-bold mono text-teal-800">42 Amps</div>
-            </div>
-            <div class="p-2.5 bg-white border border-slate-200 rounded-lg flex justify-between items-center">
-              <div>
-                <div class="font-bold text-slate-800">Fentanyl 100mcg/2mL</div>
-                <div class="text-[10px] text-slate-500">Schedule II | Controlled Vault</div>
-              </div>
-              <div class="font-bold mono text-teal-800">28 Amps</div>
-            </div>
-          </div>
-
-          <div class="mt-3 bg-white p-3 border border-slate-200 rounded-xl space-y-2 text-xs">
-            <div class="font-bold text-slate-800">Double-Witness Dispense Protocol</div>
-            <div class="text-[11px] text-slate-600">Administered: 6 mg | Wastage Destroyed: 4 mg</div>
-            <div class="text-[11px] text-slate-600">Primary: RN Sokha Meas | Witness: Dr. Virak Lim</div>
-            <button class="w-full py-2 bg-teal-800 text-white font-bold rounded text-xs">Sign & Unlock Vault Safe</button>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderWarehouse() {
-      return `
-        <div>
-          <h2 class="text-base font-bold text-slate-900">Pharmacy Warehouse</h2>
-          <p class="text-xs text-slate-500">FEFO Expiration & Reorder Alert</p>
-
-          <div class="mt-3 space-y-2 text-xs">
-            <div class="p-2.5 bg-white border border-slate-200 rounded-xl">
-              <div class="flex justify-between items-center font-bold">
-                <span class="text-slate-800">Vancomycin 500mg IV</span>
-                <span class="px-2 py-0.5 rounded text-[10px] bg-red-100 text-red-800">LOW STOCK</span>
-              </div>
-              <div class="text-[11px] text-slate-500 mt-1">LOT-2026-VN12 | Expiry: 2026-11-30 (27 days FEFO)</div>
-              <div class="mt-1 flex justify-between text-slate-700 font-mono">
-                <span>Stock: 8 Vials / Min: 30</span>
-                <span class="text-red-700 font-bold">Reorder +50 Vials</span>
-              </div>
-            </div>
-
-            <div class="p-2.5 bg-white border border-slate-200 rounded-xl">
-              <div class="flex justify-between items-center font-bold">
-                <span class="text-slate-800">Meropenem 1g IV Vial</span>
-                <span class="px-2 py-0.5 rounded text-[10px] bg-amber-100 text-amber-800">FEFO PRIORITY</span>
-              </div>
-              <div class="text-[11px] text-slate-500 mt-1">LOT-2026-MR01 | Expiry: 2026-12-20 (47 days)</div>
-              <div class="mt-1 flex justify-between text-slate-700 font-mono">
-                <span>Stock: 18 Vials / Min: 50</span>
-                <span class="text-slate-800">$14.50 / Unit</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderPediatric() {
-      return `
-        <div>
-          <h2 class="text-base font-bold text-slate-900">Pediatric Precision Dosing</h2>
-          <p class="text-xs text-slate-500">Clark, Young, Fried & Bhutani Nomograms</p>
-
-          <div class="mt-3 bg-white p-3 border border-slate-200 rounded-xl text-xs space-y-2">
-            <div class="font-bold text-slate-800">Patient: Infant (Age 6m, Weight 7.5 kg)</div>
-            <div class="p-2 bg-slate-50 rounded space-y-1">
-              <div class="flex justify-between"><span class="text-slate-500">Fried Rule:</span> <span class="font-mono font-bold">25.0 mg</span></div>
-              <div class="flex justify-between"><span class="text-slate-500">Clark Rule:</span> <span class="font-mono font-bold">55.1 mg</span></div>
-              <div class="flex justify-between"><span class="text-slate-500">Broselow Color:</span> <span class="font-bold text-purple-700">PURPLE (10-12 kg zone)</span></div>
-            </div>
-          </div>
-
-          <div class="mt-3 bg-amber-50 border border-amber-200 p-3 rounded-xl text-xs">
-            <div class="font-bold text-amber-900">Bhutani Phototherapy Nomogram</div>
-            <div class="text-[11px] text-amber-800 mt-1">Postnatal Age: 48h | Total Bilirubin: 14.2 mg/dL -> High Intermediate Risk Zone. Initiate intensive phototherapy.</div>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderDental() {
-      return `
-        <div>
-          <h2 class="text-base font-bold text-slate-900">Dental Odontogram</h2>
-          <p class="text-xs text-slate-500">FDI Two-Digit Notation (32 Adult Teeth)</p>
-
-          <div class="mt-3 bg-white p-3 border border-slate-200 rounded-xl text-xs">
-            <div class="font-bold text-slate-800 mb-2">Maxillary Arch (Upper Dentition)</div>
-            <div class="grid grid-cols-8 gap-1 text-center font-mono text-[10px]">
-              <div class="p-1.5 bg-slate-100 rounded">18</div>
-              <div class="p-1.5 bg-slate-100 rounded">17</div>
-              <div class="p-1.5 bg-red-100 border border-red-300 font-bold text-red-800 rounded">16<br>Caries</div>
-              <div class="p-1.5 bg-slate-100 rounded">15</div>
-              <div class="p-1.5 bg-slate-100 rounded">14</div>
-              <div class="p-1.5 bg-slate-100 rounded">13</div>
-              <div class="p-1.5 bg-slate-100 rounded">12</div>
-              <div class="p-1.5 bg-slate-100 rounded">11</div>
-            </div>
-
-            <div class="font-bold text-slate-800 mt-3 mb-2">Mandibular Arch (Lower Dentition)</div>
-            <div class="grid grid-cols-8 gap-1 text-center font-mono text-[10px]">
-              <div class="p-1.5 bg-slate-100 rounded">48</div>
-              <div class="p-1.5 bg-slate-100 rounded">47</div>
-              <div class="p-1.5 bg-blue-100 border border-blue-300 font-bold text-blue-800 rounded">46<br>Filled</div>
-              <div class="p-1.5 bg-slate-100 rounded">45</div>
-              <div class="p-1.5 bg-slate-100 rounded">44</div>
-              <div class="p-1.5 bg-slate-100 rounded">43</div>
-              <div class="p-1.5 bg-slate-100 rounded">42</div>
-              <div class="p-1.5 bg-slate-100 rounded">41</div>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderTeleconsult() {
-      return `
-        <div>
-          <div class="flex justify-between items-center">
-            <div>
-              <h2 class="text-base font-bold text-slate-900">Teleconsultation</h2>
-              <p class="text-xs text-slate-500">Encrypted WebRTC Session #TC-8821</p>
-            </div>
-            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">LIVE 05:42</span>
-          </div>
-
-          <div class="mt-3 bg-slate-900 rounded-xl h-44 relative flex items-center justify-center border border-slate-800 overflow-hidden">
-            <div class="text-slate-500 text-xs text-center">
-              <div class="w-16 h-16 rounded-full bg-slate-800 mx-auto flex items-center justify-center text-slate-400 font-bold">PATIENT</div>
-              <div class="mt-2 text-[11px] text-slate-400">Sokleang Kim (F, 32y)</div>
-            </div>
-            <div class="absolute top-2 right-2 w-20 h-24 bg-slate-950 rounded-lg border border-slate-700 p-1 flex items-end justify-center text-[9px] text-white">
-              Dr. Virak (You)
-            </div>
-            <div class="absolute bottom-2 left-2 px-2 py-1 bg-black/60 rounded text-[10px] font-mono text-emerald-400">
-              HD 1080p | 32 ms | AES-256
-            </div>
-          </div>
-
-          <div class="mt-3 bg-white p-3 border border-slate-200 rounded-xl text-xs space-y-1.5">
-            <div class="font-bold text-slate-800">In-Call Digital e-Prescription</div>
-            <div class="p-2 bg-slate-50 rounded font-mono text-[11px]">
-              Amoxicillin-Clavulanate 875/125 mg PO BID x 7d<br>
-              Paracetamol 500 mg PO Q6H PRN fever
-            </div>
-            <button class="w-full py-2 bg-teal-800 text-white font-bold rounded text-xs">Dispatch eRx to Patient Phone</button>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderPatient() {
-      return `
-        <div>
-          <h2 class="text-base font-bold text-slate-900">Patient Health Dossier</h2>
-          <p class="text-xs text-slate-500">Channa Keo (F, 45y) - HN-2026-0042</p>
-
-          <div class="mt-3 bg-red-50 border border-red-200 p-3 rounded-xl text-xs space-y-1">
-            <div class="font-bold text-red-800">CRITICAL ALLERGY ALERT</div>
-            <div class="text-[11px] text-red-900">- Penicillin: Severe Anaphylaxis with Angioedema</div>
-            <div class="text-[11px] text-red-900">- NSAIDs: Generalized Urticaria</div>
-          </div>
-
-          <div class="mt-3 bg-white p-3 border border-slate-200 rounded-xl text-xs space-y-1.5">
-            <div class="font-bold text-slate-800">Chronic Problem List</div>
-            <div class="text-[11px] text-slate-600">• Essential Hypertension (ICD-10 I10)</div>
-            <div class="text-[11px] text-slate-600">• Type 2 Diabetes Mellitus (ICD-10 E11.9)</div>
-          </div>
-
-          <div class="mt-3 bg-white p-3 border border-slate-200 rounded-xl text-xs space-y-1.5">
-            <div class="font-bold text-slate-800">Active Prescriptions</div>
-            <div class="text-[11px] font-mono text-slate-700">• Amlodipine 5mg PO OD</div>
-            <div class="text-[11px] font-mono text-slate-700">• Metformin 500mg PO BID</div>
-          </div>
-        </div>
-      `;
-    }
-
-    // Dynamic Waveform Drawing
-    function initWaveformCanvas() {
-      setTimeout(() => {
-        const c = document.getElementById('ecgCanvas');
-        if (!c) return;
-        const ctx = c.getContext('2d');
-        const w = c.width;
-        const h = c.height;
-
-        ctx.fillStyle = '#000000';
-        ctx.fillRect(0, 0, w, h);
-
-        // Grid
-        ctx.strokeStyle = '#1e293b';
-        ctx.lineWidth = 0.5;
-        for (let x = 0; x < w; x += 15) {
-          ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
-        }
-        for (let y = 0; y < h; y += 15) {
-          ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
-        }
-
-        // ECG Waveform (Green)
-        ctx.strokeStyle = '#00e676';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        const mid = h * 0.4;
-        ctx.moveTo(0, mid);
-        for (let x = 0; x < w; x++) {
-          const relX = x % 100;
-          let y = mid;
-          if (relX >= 10 && relX <= 18) y = mid - 6; // P
-          else if (relX >= 30 && relX <= 33) y = mid + 8; // Q
-          else if (relX >= 34 && relX <= 38) y = mid - 32; // R
-          else if (relX >= 39 && relX <= 42) y = mid + 12; // S
-          else if (relX >= 55 && relX <= 68) y = mid - 10; // T
-          ctx.lineTo(x, y);
-        }
-        ctx.stroke();
-
-        // Pleth Waveform (Cyan)
-        ctx.strokeStyle = '#00e5ff';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        const pMid = h * 0.82;
-        ctx.moveTo(0, pMid);
-        for (let x = 0; x < w; x++) {
-          const relX = x % 80;
-          const y = pMid - Math.sin((relX / 80) * Math.PI) * 16;
-          ctx.lineTo(x, y);
-        }
-        ctx.stroke();
-      }, 50);
-    }
-
-    // Dynamic KHQR Canvas
-    function initKhqrCanvas() {
-      setTimeout(() => {
-        const c = document.getElementById('khqrCanvas');
-        if (!c) return;
-        const ctx = c.getContext('2d');
-        const size = c.width;
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, size, size);
-
-        ctx.fillStyle = '#004d40';
-        // Draw simulated QR matrix blocks
-        const blockSize = 8;
-        for (let x = 0; x < size; x += blockSize) {
-          for (let y = 0; y < size; y += blockSize) {
-            // Corner position markers
-            if ((x < 32 && y < 32) || (x > size - 40 && y < 32) || (x < 32 && y > size - 40)) {
-              if (x === 0 || y === 0 || x === 24 || y === 24 || (x > 4 && x < 20 && y > 4 && y < 20)) {
-                ctx.fillRect(x, y, blockSize, blockSize);
-              }
-            } else if (Math.sin(x * y + 3) > 0.1) {
-              ctx.fillRect(x, y, blockSize - 1, blockSize - 1);
-            }
+      // Random synthetic medical QR blocks
+      for (let r = 0; r < 25; r++) {
+        for (let c = 0; c < 25; c++) {
+          if ((r < 7 && c < 7) || (r < 7 && c > 17) || (r > 17 && c < 7)) continue;
+          if (r >= 10 && r <= 14 && c >= 10 && c <= 14) continue; // center logo cutout
+          if ((r * 17 + c * 31) % 3 === 0) {
+            gridHtml += `<rect x="${10 + c * 6.4}" y="${10 + r * 6.4}" width="5.2" height="5.2" rx="1.2" fill="#004D40"/>`;
           }
         }
-        // Center Bakong Emblem
-        ctx.fillStyle = '#ba1a1a';
-        ctx.fillRect(size/2 - 14, size/2 - 14, 28, 28);
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 9px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('KHQR', size/2, size/2);
-      }, 50);
+      }
+      svg.innerHTML = gridHtml;
     }
 
-    // Dynamic PACS Canvas
-    function initPacsCanvas() {
-      setTimeout(() => {
-        const c = document.getElementById('pacsCanvas');
-        if (!c) return;
-        const ctx = c.getContext('2d');
-        const w = c.width;
-        const h = c.height;
+    function openKhqrModal(usd, khr) {
+      document.getElementById('khqrUsdText').innerText = `$${usd.toFixed(2)}`;
+      document.getElementById('khqrKhrText').innerText = `${khr.toLocaleString()} ៛`;
+      generateKhqrSvgGrid();
+      document.getElementById('modalKhqrOverlay').classList.add('open');
+    }
 
-        ctx.fillStyle = '#000000';
-        ctx.fillRect(0, 0, w, h);
+    function closeModalOnBackdrop(event, modalId) {
+      if (event.target.id === modalId) {
+        document.getElementById(modalId).classList.remove('open');
+      }
+    }
 
-        // Spine
-        ctx.fillStyle = '#cbd5e1';
-        ctx.fillRect(w/2 - 8, 20, 16, h - 40);
+    // Bank Payment Simulator
+    function simulateBankPayment(bank) {
+      playBeepTone(587.33, 0.1);
+      setTimeout(() => playBeepTone(880, 0.15), 120);
+      setTimeout(() => playBeepTone(1174.66, 0.3), 260);
 
-        // Ribs
-        ctx.strokeStyle = '#94a3b8';
-        ctx.lineWidth = 3;
-        for (let i = -3; i <= 3; i++) {
-          const y = h/2 + i * 20;
-          ctx.beginPath();
-          ctx.arc(w/2 - 50, y, 40, Math.PI, Math.PI * 1.6);
-          ctx.stroke();
+      alert(`[${bank} Mobile Simulator] ជោគជ័យ! ការទូទាត់ប្រាក់ចំនួន $105.00 តាមរយៈ ${bank === 'ABA' ? 'ABA Payway' : 'Bakong KHQR'} ត្រូវបានទូទាត់ជោគជ័យ។ វិក្កយបត្រ #INV-2026-0891 បាន Settled។`);
+      document.getElementById('modalKhqrOverlay').classList.remove('open');
+    }
 
-          ctx.beginPath();
-          ctx.arc(w/2 + 50, y, 40, Math.PI * 1.4, Math.PI * 2);
-          ctx.stroke();
+    // Barcode Scanner Modal
+    function openScannerModal() {
+      document.getElementById('modalScannerOverlay').classList.add('open');
+    }
+
+    function simulateScanSuccess(type) {
+      playBeepTone(1046.5, 0.15);
+      document.getElementById('modalScannerOverlay').classList.remove('open');
+      if (type === 'WRISTBAND') {
+        alert('ស្កេនជោគជ័យ: ខ្សែដៃអ្នកជំងឺ [KRUPET:HN:10492:NAME:Sokha:BED:01:ICU]\nព័ត៌មានអ្នកជំងឺ និងប្រវត្តិអាលែកហ្ស៊ីត្រូវបានទាញយកពី Room Cache។');
+      } else {
+        alert('ស្កេនជោគជ័យ: ថ្នាំពេទ្យ GS1 DataMatrix\nGTIN: 08851234567890\nExpiry: 2027-12-31\nBatch: LOT-2026-X8\nស្ថានភាព: សុវត្ថិភាពក្នុងការប្រើប្រាស់។');
+      }
+    }
+
+    // Audio Tone Generator (Zero External Sound Files)
+    function playBeepTone(freq, duration) {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {
+        console.log('Audio disabled or blocked by browser');
+      }
+    }
+
+    function toggleAudioBeep() {
+      isAudioBeepOn = !isAudioBeepOn;
+      const btn = document.getElementById('btnAudioBeep');
+      btn.innerText = `សំឡេង Beep: ${isAudioBeepOn ? 'ON' : 'OFF'}`;
+      btn.style.background = isAudioBeepOn ? '#00C853' : '#E0F2F1';
+      btn.style.color = isAudioBeepOn ? '#FFFFFF' : '#004D40';
+      if (isAudioBeepOn) playBeepTone(880, 0.1);
+    }
+
+    // Live Canvas ECG Waveform Generator
+    function initEcgWaveform() {
+      const canvas = document.getElementById('ecgCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width;
+      const height = canvas.height;
+
+      let x = 0;
+      let lastY = height / 2;
+      ctx.fillStyle = '#00100E';
+      ctx.fillRect(0, 0, width, height);
+
+      // Grid Lines
+      ctx.strokeStyle = 'rgba(0, 230, 118, 0.1)';
+      ctx.lineWidth = 0.5;
+      for (let i = 0; i < width; i += 20) {
+        ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, height); ctx.stroke();
+      }
+      for (let j = 0; j < height; j += 20) {
+        ctx.beginPath(); ctx.moveTo(0, j); ctx.lineTo(width, j); ctx.stroke();
+      }
+
+      function renderFrame() {
+        // Clear a moving slice ahead
+        ctx.fillStyle = '#00100E';
+        ctx.fillRect(x, 0, 12, height);
+
+        // ECG Complex generation
+        let targetY = height / 2;
+        const cycle = x % 90;
+
+        if (cycle > 15 && cycle < 25) {
+          targetY = height / 2 - 8; // P wave
+        } else if (cycle === 38) {
+          targetY = height / 2 + 6; // Q dip
+        } else if (cycle === 42) {
+          targetY = height / 2 - 46; // R peak
+          if (isAudioBeepOn) playBeepTone(880, 0.05);
+        } else if (cycle === 46) {
+          targetY = height / 2 + 16; // S dip
+        } else if (cycle > 55 && cycle < 72) {
+          targetY = height / 2 - 12; // T wave
         }
 
-        // Cardiac silhouette
-        ctx.fillStyle = 'rgba(203, 213, 225, 0.4)';
+        ctx.strokeStyle = '#00E676';
+        ctx.lineWidth = 2.2;
+        ctx.shadowColor = '#00E676';
+        ctx.shadowBlur = 4;
         ctx.beginPath();
-        ctx.arc(w/2 + 20, h/2 + 15, 35, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Caliper (Yellow)
-        ctx.strokeStyle = '#facc15';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(w/2 - 40, h/2 + 60);
-        ctx.lineTo(w/2 + 60, h/2 + 60);
+        ctx.moveTo(x > 0 ? x - 2 : 0, lastY);
+        ctx.lineTo(x, targetY);
         ctx.stroke();
-      }, 50);
+
+        lastY = targetY;
+        x += 2;
+        if (x >= width) x = 0;
+
+        ecgAnimationId = requestAnimationFrame(renderFrame);
+      }
+
+      if (ecgAnimationId) cancelAnimationFrame(ecgAnimationId);
+      ecgAnimationId = requestAnimationFrame(renderFrame);
     }
 
-    // Initial render
-    renderScreen();
+    function calcInfusion(rate) {
+      const patientWeight = 70; // kg
+      const concentration = 80; // mcg/mL
+      const totalMcgPerMin = rate * patientWeight;
+      const totalMcgPerHour = totalMcgPerMin * 60;
+      const mlPerHour = totalMcgPerHour / concentration;
+      document.getElementById('infusionResult').innerText = `Rate: ${mlPerHour.toFixed(2)} mL/hr (${patientWeight} kg - ${rate} mcg/kg/min)`;
+      playBeepTone(659.25, 0.08);
+    }
+
+    function openPatientModal(name, hn, bed) {
+      alert(`[EHR Patient Chart]\nអ្នកជំងឺ: ${name} (${hn})\nគ្រែសម្រាក: ${bed}\nវេជ្ជបញ្ជា: Ceftriaxone 1g IV q24h, Paracetamol 1g IV q6h prn.\nស្ថានភាព: មានស្ថេរភាព - Stable post-op`);
+    }
+
+    function openTriageDetail() {
+      alert(`[Emergency Triage ESI v4 Engine]\nអ្នកជំងឺកំពុងរង់ចាំ: 4 នាក់\n- ESI 1 ភ្លាមៗ: 1 នាក់ - Anaphylactic Shock\n- ESI 2 រយៈពេល 10 នាទី: 2 នាក់ - Dengue Shock Index 1.22, Chest Pain Troponin High\n- ESI 3 រយៈពេល 30 នាទី: 1 នាក់ - Acute Abdomen Appendicitis\n\nពិន្ទុ NEWS2 ត្រូវបានគណនាស្វ័យប្រវត្តិតាមរយៈ Android ClinicalMathEngine។`);
+    }
+
+    function openResusDetail() {
+      alert(`[Resuscitation ACLS Module]\nCPR Metronome 110 BPM, Parkland Burn Formula, CRASH-2 TXA 1g IV Bolus Gate សុទ្ធតែដំណើរការតាមក្បួនវេជ្ជសាស្ត្រឆ្នាំ 2026។`);
+    }
+
+    function openPacsDetail() {
+      alert(`[PACS Radiology Diagnostic Viewer]\nWindow/Level Presets: Bone (W:2000, L:300), Soft Tissue (W:400, L:40), Lung (W:1500, L:-600)\nមានបន្ទាត់វាស់ Caliper និង Contrast Inversion 100% លើឧបករណ៍ដៃ។`);
+    }
+
+    function openDentalDetail() {
+      alert(`[Dental FDI 32-Tooth Odontogram]\nគំនូសធ្មេញមនុស្សពេញវ័យ 32 ធ្មេញ និងកុមារ 20 ធ្មេញ ជាមួយ Condition Tagging: Caries, Restoration, Missing, Crown និងការគណនាសន្ទស្សន៍ DMFT ស្វ័យប្រវត្តិ។`);
+    }
+
+    function openPanicLabDetail() {
+      playBeepTone(440, 0.2);
+      setTimeout(() => playBeepTone(880, 0.3), 200);
+      alert(`[LIS Panic Laboratory Alert!]\nអ្នកជំងឺ: ខឹម ដារ៉ា - HN-10515, ER Bed 07\nតេស្ត: Troponin I High-Sensitivity = 4.8 ng/mL - ធម្មតា < 0.04 ng/mL\nតេស្ត: Potassium Serum = 6.8 mEq/L - PANIC HIGH!\n\nតម្រូវឱ្យវេជ្ជបណ្ឌិតបញ្ជាក់ការទទួលដំណឹងផ្ទាល់មាត់ - Verbal Readback Mandatory។`);
+    }
+
+    function openNarcoticsDetail() {
+      alert(`[MoH Controlled Substances Vault]\nទូស្តុកថ្នាំញៀនកម្រិត Schedule II-IV - Morphine, Fentanyl, Pethidine\nតម្រូវឱ្យចុះហត្ថលេខាទ្វេ Nurse 1 - Primary + Nurse 2 - Independent Witness ជាមួយ Merkle Cryptographic Audit Hash។`);
+    }
   </script>
 </body>
 </html>

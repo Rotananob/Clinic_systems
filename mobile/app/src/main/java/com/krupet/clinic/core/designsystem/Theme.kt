@@ -20,6 +20,14 @@ val MedicalSurface = Color(0xFFFFFFFF)
 val MedicalSurfaceVariant = Color(0xFFDAE5E3)
 val MedicalOnSurface = Color(0xFF191C1C)
 val MedicalError = Color(0xFFBA1A1A)
+val MedicalBorder = Color(0xFFE0E7E6)
+
+// Official Bank & Payment Colors (Cambodia National Gateway)
+val BankBakongRed = Color(0xFFE21A1A)
+val BankAbaNavy = Color(0xFF055E7C)
+val BankAcledaBlue = Color(0xFF0C3D60)
+val BankWingGreen = Color(0xFF75B832)
+val BankKhqrDarkBlue = Color(0xFF055E7C)
 
 // Emergency Acuity Tier Colors
 val AcuityEsi1Resus = Color(0xFFD32F2F)
