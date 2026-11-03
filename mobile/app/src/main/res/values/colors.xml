@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Medical Clinical Clean Palette - Zero AI Neon Glow -->
+    <color name="md_theme_light_primary">#006A6A</color>
+    <color name="md_theme_light_onPrimary">#FFFFFF</color>
+    <color name="md_theme_light_primaryContainer">#6FF7F5</color>
+    <color name="md_theme_light_onPrimaryContainer">#002020</color>
+
+    <color name="md_theme_light_secondary">#4A6362</color>
+    <color name="md_theme_light_onSecondary">#FFFFFF</color>
+    <color name="md_theme_light_secondaryContainer">#CCE8E6</color>
+    <color name="md_theme_light_onSecondaryContainer">#051F1F</color>
+
+    <color name="md_theme_light_tertiary">#4A607C</color>
+    <color name="md_theme_light_onTertiary">#FFFFFF</color>
+    <color name="md_theme_light_tertiaryContainer">#D2E4FF</color>
+    <color name="md_theme_light_onTertiaryContainer">#041C35</color>
+
+    <color name="md_theme_light_error">#BA1A1A</color>
+    <color name="md_theme_light_onError">#FFFFFF</color>
+    <color name="md_theme_light_errorContainer">#FFDAD6</color>
+    <color name="md_theme_light_onErrorContainer">#410002</color>
+
+    <color name="md_theme_light_background">#FAFDFB</color>
+    <color name="md_theme_light_onBackground">#191C1C</color>
+    <color name="md_theme_light_surface">#FFFFFF</color>
+    <color name="md_theme_light_onSurface">#191C1C</color>
+    <color name="md_theme_light_surfaceVariant">#DAE5E3</color>
+    <color name="md_theme_light_onSurfaceVariant">#3F4948</color>
+    <color name="md_theme_light_outline">#6F7978</color>
+
+    <!-- Clinical Acuity Badges -->
+    <color name="clinical_acuity_esi1_resus">#D32F2F</color>
+    <color name="clinical_acuity_esi2_emergent">#E65100</color>
+    <color name="clinical_acuity_esi3_urgent">#F57F17</color>
+    <color name="clinical_acuity_esi4_less_urgent">#388E3C</color>
+    <color name="clinical_acuity_esi5_non_urgent">#1976D2</color>
+</resources>

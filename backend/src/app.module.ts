@@ -42,6 +42,7 @@ import { AspModule } from './asp/asp.module.ts';
 import { ChemoModule } from './chemo/chemo.module.ts';
 import { PediatricModule } from './pediatric/pediatric.module.ts';
 import { ResuscitationModule } from './resuscitation/resuscitation.module.ts';
+import { MobileSyncModule } from './mobile-sync/mobile-sync.module.ts';
 import { RateLimiterMiddleware } from './common/middleware/rate-limiter.middleware';
 import { TenantContextMiddleware } from './common/middleware/tenant-context.middleware';
 import { CommonModule } from './common/common.module';
@@ -100,6 +101,7 @@ import { CommonModule } from './common/common.module';
     ChemoModule,
     PediatricModule,
     ResuscitationModule,
+    MobileSyncModule,
   ],
 })
 export class AppModule implements NestModule {

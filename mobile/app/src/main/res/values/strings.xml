@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">KruPet Clinical</string>
+    <string name="login_title">Clinical System Login</string>
+    <string name="login_subtitle">Enterprise Healthcare Platform</string>
+    <string name="email_label">Staff Email</string>
+    <string name="password_label">Master Password</string>
+    <string name="login_button">Sign In Securely</string>
+    <string name="biometric_button">Quick Biometric Sign In</string>
+    
+    <!-- Navigation Tabs -->
+    <string name="nav_dashboard">Dashboard</string>
+    <string name="nav_triage">Triage</string>
+    <string name="nav_resuscitation">Resuscitation</string>
+    <string name="nav_pediatric">Pediatric</string>
+    <string name="nav_billing">Billing POS</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Resuscitation Protocol Strings -->
+    <string name="resus_sepsis_title">Sepsis Hour-1 Bundle</string>
+    <string name="resus_sepsis_fluid">30 mL/kg Balanced Crystalloid Bolus</string>
+    <string name="resus_parkland_title">Parkland Burn Resuscitation</string>
+    <string name="resus_parkland_formula">4 mL x Weight (kg) x %TBSA</string>
+    <string name="resus_pediatric_title">Broselow PALS Resuscitation</string>
+    <string name="resus_mtp_title">Massive Transfusion Protocol</string>
+
+    <!-- Pediatric Precision Dosing Strings -->
+    <string name="ped_clark_rule">Clark Rule: Weight (lbs) / 150 x Adult Dose</string>
+    <string name="ped_young_rule">Young Rule: Age (years) / (Age + 12) x Adult Dose</string>
+    <string name="ped_bhutani_title">Bhutani Phototherapy Nomogram</string>
+
+    <!-- Billing & KHQR Strings -->
+    <string name="billing_khqr_title">Bakong KHQR Dynamic Checkout</string>
+    <string name="billing_amount_usd">Amount USD</string>
+    <string name="billing_amount_khr">Amount KHR</string>
+    <string name="billing_generate_qr">Generate KHQR DeepLink</string>
+
+    <!-- Status & Alerts -->
+    <string name="status_connected">Connected to Clinic Server</string>
+    <string name="status_offline">Offline Mode: Queued for Sync</string>
+    <string name="loading">Processing clinical request...</string>
+</resources>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">គ្រូពេទ្យ គ្លីនិកចល័ត</string>
+    <string name="login_title">ចូលប្រើប្រាស់ប្រព័ន្ធវេជ្ជសាស្ត្រ</string>
+    <string name="login_subtitle">ប្រព័ន្ធគ្រប់គ្រងគ្លីនិកកម្រិតខ្ពស់</string>
+    <string name="email_label">អ៊ីមែលបុគ្គលិក</string>
+    <string name="password_label">ពាក្យសម្ងាត់មេ</string>
+    <string name="login_button">ចូលប្រព័ន្ធដោយសុវត្ថិភាព</string>
+    <string name="biometric_button">ចូលប្រព័ន្ធរហ័សដោយស្នាមម្រាមដៃ</string>
+    
+    <!-- Navigation Tabs -->
+    <string name="nav_dashboard">ផ្ទាំងគ្រប់គ្រង</string>
+    <string name="nav_triage">ការវាយតម្លៃសង្គ្រោះបន្ទាន់</string>
+    <string name="nav_resuscitation">សង្គ្រោះបន្ទាន់</string>
+    <string name="nav_pediatric">កុមារ និងទារក</string>
+    <string name="nav_billing">ការទូទាត់ប្រាក់</string>
+    <string name="nav_settings">ការកំណត់</string>
+
+    <!-- Resuscitation Protocol Strings -->
+    <string name="resus_sepsis_title">ពិធីសារសង្គ្រោះជំងឺឆ្លងក្នុងឈាមធ្ងន់ធ្ងរ ម៉ោងទី ១</string>
+    <string name="resus_sepsis_fluid">សូលុយស្យុង ៣០ មីលីលីត្រក្នុងមួយគីឡូក្រាម</string>
+    <string name="resus_parkland_title">រូបមន្តប៉ាកលែន សម្រាប់អ្នករលាកភ្លើង</string>
+    <string name="resus_parkland_formula">៤ មីលីលីត្រ គុណនឹងទម្ងន់គីឡូក្រាម គុណនឹងភាគរយរលាក</string>
+    <string name="resus_pediatric_title">ពិធីសារប្រូសឺឡូ PALS សម្រាប់កុមារ</string>
+    <string name="resus_mtp_title">ពិធីសារបញ្ចូលឈាមបន្ទាន់ក្នុងបរិមាណច្រើន</string>
+
+    <!-- Pediatric Precision Dosing Strings -->
+    <string name="ped_clark_rule">រូបមន្តខ្លាក: ទម្ងន់ផោន ចែកនឹង ១៥០ គុណនឹងកម្រិតថ្នាំមនុស្សពេញវ័យ</string>
+    <string name="ped_young_rule">រូបមន្តយ៉ាំង: អាយុគិតជាឆ្នាំ ចែកនឹង អាយុបូក ១២ គុណនឹងកម្រិតថ្នាំមនុស្សពេញវ័យ</string>
+    <string name="ped_bhutani_title">ក្រាហ្វពន្លឺព្យាបាលទារកលឿង ប៊ូតានី</string>
+
+    <!-- Billing & KHQR Strings -->
+    <string name="billing_khqr_title">ការទូទាត់ប្រាក់បាគង KHQR</string>
+    <string name="billing_amount_usd">ចំនួនប្រាក់ដុល្លារ</string>
+    <string name="billing_amount_khr">ចំនួនប្រាក់រៀល</string>
+    <string name="billing_generate_qr">បង្កើតកូដទូទាត់ KHQR</string>
+
+    <!-- Status & Alerts -->
+    <string name="status_connected">បានភ្ជាប់ទៅកាន់ម៉ាស៊ីនមេគ្លីនិក</string>
+    <string name="status_offline">ស្ថានភាពគ្មានអ៊ីនធឺណិត: រក្សាទុកក្នុងជួររង់ចាំ</string>
+    <string name="loading">កំពុងដំណើរការសំណើវេជ្ជសាស្ត្រ...</string>
+</resources>
