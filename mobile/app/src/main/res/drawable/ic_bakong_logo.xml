@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <!-- Bakong Official Red Circle -->
+    <path
+        android:pathData="M24,2 A22,22 0 1,0 24,46 A22,22 0 1,0 24,2 Z"
+        android:fillColor="#E21A1A"/>
+    <!-- Central Stylized Bakong Pillar Geometry -->
+    <path
+        android:pathData="M20,13 h8 a2,2 0 0,1 2,2 v18 a2,2 0 0,1 -2,2 h-8 a2,2 0 0,1 -2,-2 v-18 a2,2 0 0,1 2,-2 z"
+        android:fillColor="#FFFFFF"/>
+    <path
+        android:pathData="M15,20 h18 v8 h-18 z"
+        android:fillColor="#FFFFFF"/>
+    <path
+        android:pathData="M22,17 h4 v14 h-4 z"
+        android:fillColor="#E21A1A"/>
+    <path
+        android:pathData="M18,22 h12 v4 h-12 z"
+        android:fillColor="#E21A1A"/>
+</vector>

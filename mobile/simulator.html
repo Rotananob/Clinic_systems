@@ -710,6 +710,104 @@
       font-weight: 500;
     }
 
+    /* In-App SEO Spotlight Search */
+    .spotlight-search-wrap {
+      background: #FFFFFF;
+      border: 1px solid var(--outline-variant);
+      border-radius: 18px;
+      padding: 10px 12px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 8px rgba(0, 32, 32, 0.05);
+      position: relative;
+    }
+    .spotlight-search-wrap.active {
+      border-color: var(--primary);
+      box-shadow: 0 4px 14px rgba(0, 106, 106, 0.15);
+    }
+    .search-input-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .search-input-field {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-size: 12px;
+      font-family: inherit;
+      color: var(--text-main);
+      background: transparent;
+    }
+    .search-input-field::placeholder {
+      color: var(--text-sub);
+    }
+    .search-clear-btn {
+      background: #ECEFF1;
+      border: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: #546E7A;
+    }
+    .search-tags-row {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      margin-top: 8px;
+      padding-bottom: 2px;
+    }
+    .search-tags-row::-webkit-scrollbar { display: none; }
+    .search-tag-chip {
+      background: #F0F4F3;
+      border-radius: 8px;
+      padding: 3px 8px;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--primary);
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .search-tag-chip:hover {
+      background: var(--primary-container);
+    }
+    .search-results-panel {
+      display: none;
+      margin-top: 10px;
+      border-top: 1px solid #ECEFF1;
+      padding-top: 8px;
+      max-height: 240px;
+      overflow-y: auto;
+    }
+    .search-hit-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 8px;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-bottom: 4px;
+      background: #FAFCFB;
+      transition: background 0.15s;
+    }
+    .search-hit-item:hover {
+      background: #E0F2F1;
+    }
+    .hit-category-badge {
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(0, 106, 106, 0.12);
+      color: var(--primary);
+      text-transform: uppercase;
+    }
+
     /* =====================================================================
        BAKONG KHQR & ABA PAY CHECKOUT MODAL / VIEW
        ===================================================================== */
@@ -1146,6 +1244,39 @@
                   <span class="staff-pill-text" id="activeStaffPill">Dr. Sokha MD</span>
                 </div>
               </div>
+            </div>
+
+            <!-- In-App SEO: Global Fast Clinical Spotlight Search Bar -->
+            <div class="spotlight-search-wrap" id="spotlightWrap">
+              <div class="search-input-row">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#006A6A" stroke-width="2.2">
+                  <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+                </svg>
+                <input
+                  type="text"
+                  class="search-input-field"
+                  id="clinicalSearchInput"
+                  placeholder="ស្វែងរកអ្នកជំងឺ កូដ ICD-10 ថ្នាំ ឬផ្នែកគ្លីនិក..."
+                  oninput="handleClinicalSearch(this.value)"
+                  onfocus="document.getElementById('spotlightWrap').classList.add('active')"
+                  onblur="setTimeout(() => document.getElementById('spotlightWrap').classList.remove('active'), 250)"
+                />
+                <button class="search-clear-btn" id="searchClearBtn" onclick="clearClinicalSearch()">✕</button>
+              </div>
+
+              <!-- Quick Search Suggestions -->
+              <div class="search-tags-row" id="searchTagsRow">
+                <span class="search-tag-chip" onclick="applySearchTag('HN-10492')">HN-10492</span>
+                <span class="search-tag-chip" onclick="applySearchTag('K35')">ICD K35</span>
+                <span class="search-tag-chip" onclick="applySearchTag('Dengue')">Dengue</span>
+                <span class="search-tag-chip" onclick="applySearchTag('Bakong')">Bakong POS</span>
+                <span class="search-tag-chip" onclick="applySearchTag('PACS')">PACS DICOM</span>
+                <span class="search-tag-chip" onclick="applySearchTag('Bhutani')">Bhutani</span>
+                <span class="search-tag-chip" onclick="applySearchTag('Ceftriaxone')">Ceftriaxone</span>
+              </div>
+
+              <!-- Live Instant Search Results Panel -->
+              <div class="search-results-panel" id="searchResultsPanel"></div>
             </div>
 
             <!-- Hospital Live KPI Strip (REAL DATA SCAN) -->
@@ -1989,6 +2120,95 @@
 
     function openNarcoticsDetail() {
       alert(`[MoH Controlled Substances Vault]\nទូស្តុកថ្នាំញៀនកម្រិត Schedule II-IV - Morphine, Fentanyl, Pethidine\nតម្រូវឱ្យចុះហត្ថលេខាទ្វេ Nurse 1 - Primary + Nurse 2 - Independent Witness ជាមួយ Merkle Cryptographic Audit Hash។`);
+    }
+
+    // In-App SEO: Fast Clinical Spotlight Search Index
+    const searchIndexData = [
+      { type: 'PATIENT', categoryKh: 'អ្នកជំងឺ', title: 'រ័ត្ន សុខា - Sokha Rath', sub: 'HN: HN-10492 - Bed 01 ICU - Acute Appendicitis Day 1', keywords: 'sokha rath hn-10492 icu appendicitis', action: () => openPatientModal('Sokha Rath', 'HN-10492', 'Bed 01 - ICU') },
+      { type: 'PATIENT', categoryKh: 'អ្នកជំងឺ', title: 'ចាន់ បុប្ផា - Bopha Chann', sub: 'HN: HN-10501 - Bed 04 ICU - Dengue Shock Index 1.22', keywords: 'bopha chann hn-10501 dengue shock', action: () => openPatientModal('Bopha Chann', 'HN-10501', 'Bed 04 - ICU') },
+      { type: 'PATIENT', categoryKh: 'អ្នកជំងឺ', title: 'ខឹម ដារ៉ា - Dara Khem', sub: 'HN: HN-10515 - Bed 07 ER - NSTEMI Troponin 4.8 ng/mL', keywords: 'dara khem hn-10515 nstemi troponin', action: () => openPatientModal('Dara Khem', 'HN-10515', 'Bed 07 - ER') },
+      { type: 'ICD10', categoryKh: 'កូដ ICD-10', title: 'K35.80: Acute Appendicitis', sub: 'រលាកខ្នែងពោះវៀនស្រួចស្រាវ - MoH NSSF Verified', keywords: 'k35 k35.80 appendicitis appendiceal', action: () => alert('[ICD-10 Search Hit]\nCode: K35.80 - Acute Appendicitis\nNSSF Tariff: Surgical K50 - 600,000 KHR\nPre-Authorization: Verified') },
+      { type: 'ICD10', categoryKh: 'កូដ ICD-10', title: 'A91: Dengue Hemorrhagic Fever', sub: 'ជំងឺគ្រុនឈាមដង់ហ្គាធ្ងន់ធ្ងរ - MoH NSSF Protocol', keywords: 'a91 dengue hemorrhagic shock fever', action: () => alert('[ICD-10 Search Hit]\nCode: A91 - Dengue Hemorrhagic Fever\nClinical Alert: Monitor Shock Index and Hematocrit\nNSSF Medical Coverage: 100% Covered') },
+      { type: 'ICD10', categoryKh: 'កូដ ICD-10', title: 'I21.4: NSTEMI Myocardial Infarction', sub: 'ជំងឺគាំងបេះដូងស្រួចស្រាវ NSTEMI - Troponin High', keywords: 'i21 i21.4 nstemi troponin infarction cardiac', action: () => alert('[ICD-10 Search Hit]\nCode: I21.4 - NSTEMI Acute Coronary Syndrome\nStat Lab: Troponin I Serial Monitoring\nProtocol: IV Heparin with aPTT Nomogram') },
+      { type: 'MED', categoryKh: 'ឱសថ ISMP', title: 'Ceftriaxone 1g IV - Rocephin', sub: 'WHO Watch Tier - 1g to 2g IV q24h', keywords: 'ceftriaxone rocephin antibiotic watch', action: () => alert('[Formulary Search Hit]\nCeftriaxone 1g to 2g IV q24h\nWHO AWaRe: Watch Tier\nMoH Essential Medicines: Approved') },
+      { type: 'MED', categoryKh: 'ឱសថ ISMP', title: 'Meropenem 1g IV - Merrem', sub: 'WHO Reserve Tier - High-Alert Dual Witness Gate', keywords: 'meropenem merrem carbapenem reserve', action: () => alert('[Formulary Search Hit]\nMeropenem 1g IV q8h\nWHO AWaRe: Reserve Tier\nRestriction: Clinical Pharmacist electronic approval required') },
+      { type: 'MODULE', categoryKh: 'ផ្នែកគ្លីនិក', title: 'ទូទាត់ប្រាក់ Bakong KHQR POS', sub: 'Official ABA Payway and Dual Currency KHR/USD', keywords: 'bakong khqr pos payment aba money', action: () => openKhqrModal(105.00, 430500) },
+      { type: 'MODULE', categoryKh: 'ផ្នែកគ្លីនិក', title: 'រូបភាពវេជ្ជសាស្ត្រ PACS Radiology', sub: 'DICOM Viewer, Windowing Presets and Calipers', keywords: 'pacs dicom x-ray ct mri radiology calipers cobb ctr', action: () => openPacsDetail() },
+      { type: 'MODULE', categoryKh: 'ផ្នែកគ្លីនិក', title: 'កុមារ និងទារក Pediatric Nomograms', sub: 'Bhutani Bilirubin Curve, pGCS and Broselow Ladder', keywords: 'pediatric bhutani bilirubin jaundice neonate broselow pgcs', action: () => alert('[Pediatric Module Search Hit]\nBhutani Phototherapy Risk Curve, Glasgow Coma Scale, and Broselow Tape Resuscitation.') },
+      { type: 'MODULE', categoryKh: 'ផ្នែកគ្លីនិក', title: 'ទន្តសាស្ត្រ Dental FDI Odontogram', sub: '32-Tooth Chart, Periodontal Probing and DMFT Index', keywords: 'dental odontogram fdi tooth teeth dmft caries', action: () => openDentalDetail() },
+      { type: 'MODULE', categoryKh: 'ផ្នែកគ្លីនិក', title: 'តាមដានរលកបេះដូង Bedside Telemetry', sub: 'Live 60 FPS ECG Waveform and Infusion Calculator', keywords: 'telemetry ecg vitals waveform monitor infusion heart', action: () => navigateToView('viewTelemetry') },
+      { type: 'MODULE', categoryKh: 'ផ្នែកគ្លីនិក', title: 'ប.ស.ស Cambodia NSSF e-Claim', sub: 'CamDX 10-Digit ID Verification and Tariff Engine', keywords: 'nssf camdx claim insurance eclaim tariff', action: () => alert('[NSSF e-Claim Module]\nCamDX Verification Token and Hardware-backed StrongBox Signature.') }
+    ];
+
+    function handleClinicalSearch(query) {
+      const q = query.trim().toLowerCase();
+      const clearBtn = document.getElementById('searchClearBtn');
+      const panel = document.getElementById('searchResultsPanel');
+      const tagsRow = document.getElementById('searchTagsRow');
+
+      if (!q) {
+        clearBtn.style.display = 'none';
+        panel.style.display = 'none';
+        panel.innerHTML = '';
+        tagsRow.style.display = 'flex';
+        return;
+      }
+
+      clearBtn.style.display = 'flex';
+      tagsRow.style.display = 'none';
+
+      const hits = searchIndexData.filter(item => 
+        item.title.toLowerCase().includes(q) ||
+        item.sub.toLowerCase().includes(q) ||
+        item.keywords.toLowerCase().includes(q)
+      );
+
+      if (hits.length === 0) {
+        panel.style.display = 'block';
+        panel.innerHTML = `<div style="padding: 10px; font-size: 11px; color: var(--text-sub); text-align: center;">រកមិនឃើញលទ្ធផលសម្រាប់ "${query}" ទេ</div>`;
+        return;
+      }
+
+      panel.style.display = 'block';
+      let html = `<div style="font-size: 10px; font-weight: 700; color: var(--primary); margin-bottom: 6px;">លទ្ធផលស្វែងរក: ${hits.length} ធាតុ</div>`;
+
+      hits.slice(0, 5).forEach((hit, idx) => {
+        html += `
+          <div class="search-hit-item" onclick="executeSearchHit(${idx})">
+            <div>
+              <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
+                <span class="hit-category-badge">${hit.categoryKh}</span>
+                <span style="font-size: 11px; font-weight: 700; color: var(--text-main);">${hit.title}</span>
+              </div>
+              <div style="font-size: 10px; color: var(--text-sub);">${hit.sub}</div>
+            </div>
+            <div style="font-size: 10px; font-weight: 700; color: var(--primary);">បើក &rarr;</div>
+          </div>
+        `;
+      });
+
+      panel.innerHTML = html;
+      window.activeSearchHits = hits;
+    }
+
+    function executeSearchHit(index) {
+      if (window.activeSearchHits && window.activeSearchHits[index]) {
+        playBeepTone(784, 0.08);
+        window.activeSearchHits[index].action();
+      }
+    }
+
+    function applySearchTag(tag) {
+      const input = document.getElementById('clinicalSearchInput');
+      input.value = tag;
+      handleClinicalSearch(tag);
+    }
+
+    function clearClinicalSearch() {
+      const input = document.getElementById('clinicalSearchInput');
+      input.value = '';
+      handleClinicalSearch('');
+      input.focus();
     }
   </script>
 </body>

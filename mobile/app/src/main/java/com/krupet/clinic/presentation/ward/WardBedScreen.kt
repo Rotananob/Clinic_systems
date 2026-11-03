@@ -232,7 +232,7 @@ fun WardBedScreen(
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Divider()
+                    HorizontalDivider()
 
                     // Patient Quick Card
                     Row(

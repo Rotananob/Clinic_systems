@@ -182,7 +182,7 @@ fun NarcoticsRegisterScreen(
                         singleLine = true
                     )
 
-                    Divider()
+                    HorizontalDivider()
 
                     Text("Dual Authentication Signatures", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium)
 

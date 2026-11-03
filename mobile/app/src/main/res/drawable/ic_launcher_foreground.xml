@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Centered Hospital Cross Base Pill -->
+    <path
+        android:pathData="M48,26 h12 a4,4 0 0,1 4,4 v48 a4,4 0 0,1 -4,4 h-12 a4,4 0 0,1 -4,-4 v-48 a4,4 0 0,1 4,-4 z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="48"
+                android:startY="26"
+                android:endX="64"
+                android:endY="82"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#2DD4BF"/>
+                <item android:offset="1.0" android:color="#006A6A"/>
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- Cross Horizontal Bar -->
+    <path
+        android:pathData="M26,48 h56 a4,4 0 0,1 4,4 v12 a4,4 0 0,1 -4,4 h-56 a4,4 0 0,1 -4,-4 v-12 a4,4 0 0,1 4,-4 z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="26"
+                android:startY="48"
+                android:endX="86"
+                android:endY="68"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#5EEAD4"/>
+                <item android:offset="1.0" android:color="#0D9488"/>
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- Center Pure White Core -->
+    <path
+        android:pathData="M48,48 h12 v12 h-12 z"
+        android:fillColor="#FFFFFF"/>
+    <!-- Dynamic ECG Pulse Wave Line inside Cross -->
+    <path
+        android:pathData="M30,54 h8 l4,-8 l5,16 l5,-12 l4,4 h22"
+        android:strokeWidth="2.4"
+        android:strokeColor="#00E676"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"/>
+</vector>

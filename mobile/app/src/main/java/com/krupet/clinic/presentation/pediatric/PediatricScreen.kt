@@ -728,7 +728,7 @@ private fun BhutaniNomogramSection() {
                             Text("High-Risk Cutoff (>95th):", fontSize = 11.sp, color = MedicalSlate)
                             Text("$p95 mg/dL", fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
                         }
-                        Divider(modifier = Modifier.padding(vertical = 4.dp), color = MedicalBorder)
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), color = MedicalBorder)
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                             Text("Phototherapy Threshold:", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1976D2))
                             Text("$photoThreshold mg/dL", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1976D2))

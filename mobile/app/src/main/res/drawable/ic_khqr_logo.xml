@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <!-- KHQR Red Header Banner -->
+    <path
+        android:pathData="M4,8 h40 a4,4 0 0,1 4,4 v10 h-48 v-10 a4,4 0 0,1 4,-4 z"
+        android:fillColor="#E21A1A"/>
+    <!-- KHQR White Body -->
+    <path
+        android:pathData="M0,22 h48 v18 a4,4 0 0,1 -4,4 h-40 a4,4 0 0,1 -4,-4 z"
+        android:fillColor="#FFFFFF"/>
+    <!-- Border -->
+    <path
+        android:pathData="M4,8 h40 a4,4 0 0,1 4,4 v28 a4,4 0 0,1 -4,4 h-40 a4,4 0 0,1 -4,-4 v-28 a4,4 0 0,1 4,-4 z"
+        android:strokeWidth="1.5"
+        android:strokeColor="#C2CDCB"/>
+    <!-- KH Text in Red Banner -->
+    <path
+        android:pathData="M16,13 v6 M22,13 v6 M16,16 h6"
+        android:strokeWidth="2.0"
+        android:strokeColor="#FFFFFF"/>
+    <!-- QR 3 Square Finder Patterns -->
+    <path
+        android:pathData="M8,26 h8 v8 h-8 z M20,26 h4 v4 h-4 z M32,26 h8 v8 h-8 z M8,36 h4 v4 h-4 z M32,36 h8 v4 h-8 z"
+        android:fillColor="#191C1C"/>
+</vector>

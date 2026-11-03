@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <!-- Rounded Container -->
+    <path
+        android:pathData="M8,4 h32 a4,4 0 0,1 4,4 v32 a4,4 0 0,1 -4,4 h-32 a4,4 0 0,1 -4,-4 v-32 a4,4 0 0,1 4,-4 z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="4"
+                android:startY="4"
+                android:endX="44"
+                android:endY="44"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#006A6A"/>
+                <item android:offset="1.0" android:color="#004D40"/>
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- Medical Cross Stem -->
+    <path
+        android:pathData="M21,12 h6 a2,2 0 0,1 2,2 v20 a2,2 0 0,1 -2,2 h-6 a2,2 0 0,1 -2,-2 v-20 a2,2 0 0,1 2,-2 z"
+        android:fillColor="#5EEAD4"/>
+    <!-- Medical Cross Horizontal -->
+    <path
+        android:pathData="M12,21 h24 a2,2 0 0,1 2,2 v6 a2,2 0 0,1 -2,2 h-24 a2,2 0 0,1 -2,-2 v-6 a2,2 0 0,1 2,-2 z"
+        android:fillColor="#2DD4BF"/>
+    <!-- Cross Inner Center -->
+    <path
+        android:pathData="M21,21 h6 v6 h-6 z"
+        android:fillColor="#FFFFFF"/>
+    <!-- Heartbeat Waveform -->
+    <path
+        android:pathData="M14,24 h4 l2,-4 l3,8 l3,-6 l2,2 h6"
+        android:strokeWidth="1.6"
+        android:strokeColor="#00E676"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"/>
+</vector>

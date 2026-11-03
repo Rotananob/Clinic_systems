@@ -9,6 +9,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,6 +23,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.krupet.clinic.core.designsystem.*
+import com.krupet.clinic.core.search.ClinicalSearchResult
+import com.krupet.clinic.core.search.FastClinicalSearchEngine
+import com.krupet.clinic.core.search.SearchCategory
 
 data class DepartmentModule(
     val titleKh: String,
@@ -51,6 +57,10 @@ fun DashboardScreen(
     onNavigateToChemo: () -> Unit = {}
 ) {
     var selectedBranch by remember { mutableStateOf("រាជធានីភ្នំពេញ - មន្ទីរពេទ្យកណ្ដាល") }
+    var searchQuery by remember { mutableStateOf("") }
+    val searchResults = remember(searchQuery) {
+        FastClinicalSearchEngine.search(searchQuery)
+    }
 
     Column(
         modifier = Modifier
@@ -184,6 +194,193 @@ fun DashboardScreen(
                     ) {
                         Text("On Duty", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MedicalDeepTeal)
                     }
+                }
+            }
+        }
+
+        // In-App SEO: Global Fast Clinical Spotlight Search Bar
+        Card(
+            shape = RoundedCornerShape(14.dp),
+            colors = CardDefaults.cardColors(containerColor = MedicalSurface),
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(1.dp, if (searchQuery.isNotEmpty()) MedicalDeepTeal else MedicalBorder, RoundedCornerShape(14.dp))
+        ) {
+            Column(modifier = Modifier.padding(12.dp)) {
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    placeholder = {
+                        Text(
+                            text = "ស្វែងរកអ្នកជំងឺ កូដ ICD-10 ថ្នាំ ឬផ្នែកគ្លីនិក...",
+                            fontSize = 12.sp,
+                            color = MedicalSlate
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.Search,
+                            contentDescription = "Search",
+                            tint = MedicalDeepTeal,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    },
+                    trailingIcon = {
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(onClick = { searchQuery = "" }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Clear,
+                                    contentDescription = "Clear",
+                                    tint = MedicalSlate,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                    },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MedicalDeepTeal,
+                        unfocusedBorderColor = MedicalBorder
+                    )
+                )
+
+                // Quick Search Suggestion Chips
+                if (searchQuery.isEmpty()) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        listOf("HN-10492", "K35", "Dengue", "Bakong", "PACS", "Bhutani", "Ceftriaxone").forEach { tag ->
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(Color(0xFFF0F4F3))
+                                    .clickable { searchQuery = tag }
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                            ) {
+                                Text(
+                                    text = tag,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MedicalDeepTeal
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Live Instant Search Results Dropdown
+                if (searchResults.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(
+                        text = "លទ្ធផលស្វែងរក: ${searchResults.size} ធាតុ",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MedicalDeepTeal
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    searchResults.take(6).forEach { hit ->
+                        Card(
+                            shape = RoundedCornerShape(10.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFFF9FBFA)),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 3.dp)
+                                .border(0.5.dp, MedicalBorder, RoundedCornerShape(10.dp))
+                                .clickable {
+                                    when (hit) {
+                                        is ClinicalSearchResult.PatientHit -> onNavigateToPatient()
+                                        is ClinicalSearchResult.Icd10Hit -> onNavigateToNssf()
+                                        is ClinicalSearchResult.MedicationHit -> onNavigateToStewardship()
+                                        is ClinicalSearchResult.ModuleHit -> {
+                                            when (hit.moduleRoute) {
+                                                "triage" -> onNavigateToTriage()
+                                                "resus" -> onNavigateToResus()
+                                                "telemetry" -> onNavigateToTelemetry()
+                                                "ward" -> onNavigateToWard()
+                                                "pos" -> onNavigateToBilling()
+                                                "pacs" -> onNavigateToPacs()
+                                                "dental" -> onNavigateToDental()
+                                                "chemo" -> onNavigateToChemo()
+                                                "pediatric" -> onNavigateToPediatric()
+                                                "nssf" -> onNavigateToNssf()
+                                                "narcotics" -> onNavigateToNarcotics()
+                                                "stewardship" -> onNavigateToStewardship()
+                                                else -> onNavigateToWard()
+                                            }
+                                        }
+                                    }
+                                }
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(4.dp))
+                                                .background(MedicalDeepTeal.copy(alpha = 0.12f))
+                                                .padding(horizontal = 5.dp, vertical = 2.dp)
+                                        ) {
+                                            Text(
+                                                text = hit.category.titleKh,
+                                                fontSize = 9.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = MedicalDeepTeal
+                                            )
+                                        }
+                                        Text(
+                                            text = hit.title,
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MedicalOnSurface
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = hit.subtitle,
+                                        fontSize = 10.sp,
+                                        color = MedicalSlate,
+                                        maxLines = 1
+                                    )
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(Color(0xFFE0F2F1))
+                                        .padding(horizontal = 6.dp, vertical = 3.dp)
+                                ) {
+                                    Text(
+                                        text = "បើកមើល",
+                                        fontSize = 9.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MedicalDeepTeal
+                                    )
+                                }
+                            }
+                        }
+                    }
+                } else if (searchQuery.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "រកមិនឃើញលទ្ធផលសម្រាប់: \"$searchQuery\"",
+                        fontSize = 11.sp,
+                        color = MedicalSlate
+                    )
                 }
             }
         }

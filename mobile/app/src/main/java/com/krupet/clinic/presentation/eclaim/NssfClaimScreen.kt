@@ -26,7 +26,7 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Security
-import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -1531,7 +1531,7 @@ private fun HardwareSignatureSubmissionCard(
                         )
                     } else {
                         Icon(
-                            imageVector = Icons.Default.Send,
+                            imageVector = Icons.AutoMirrored.Filled.Send,
                             contentDescription = null,
                             modifier = Modifier.size(16.dp)
                         )

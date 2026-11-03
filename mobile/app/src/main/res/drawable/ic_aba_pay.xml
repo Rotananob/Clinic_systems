@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <!-- ABA Navy Square Background -->
+    <path
+        android:pathData="M6,6 h36 a6,6 0 0,1 6,6 v24 a6,6 0 0,1 -6,6 h-36 a6,6 0 0,1 -6,-6 v-24 a6,6 0 0,1 6,-6 z"
+        android:fillColor="#055E7C"/>
+    <!-- ABA Letter A -->
+    <path
+        android:pathData="M11,32 L15,16 L19,32 M12.5,27 h5"
+        android:strokeWidth="2.8"
+        android:strokeColor="#FFFFFF"
+        android:strokeLineCap="round"/>
+    <!-- ABA Letter B -->
+    <path
+        android:pathData="M23,16 h4 a4,4 0 0,1 0,8 h-4 v8 h5 a4,4 0 0,0 0,-8 M23,24 h4"
+        android:strokeWidth="2.8"
+        android:strokeColor="#00BCD4"
+        android:strokeLineCap="round"/>
+    <!-- ABA Letter A2 -->
+    <path
+        android:pathData="M31,32 L35,16 L39,32 M32.5,27 h5"
+        android:strokeWidth="2.8"
+        android:strokeColor="#FFFFFF"
+        android:strokeLineCap="round"/>
+</vector>
