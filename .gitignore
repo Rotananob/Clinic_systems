@@ -11,6 +11,10 @@ doc/
 *.spec.md
 roadmap.md
 
+# Scripts & Automation Tooling (STRICT EXCLUSION - DO NOT PUSH)
+scripts/
+**/scripts/
+
 # Build Outputs
 dist/
 build/

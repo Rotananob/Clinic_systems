@@ -1,6 +1,8 @@
 node_modules/
 .next/
 out/
+docs/
+scripts/
 .env
 .env.*
 !.env.example
@@ -8,4 +10,3 @@ out/
 .vercel
 *.pem
 *.key
-
