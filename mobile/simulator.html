@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KruPet Mobile Clinical Station - 2026 Interactive Simulator</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Kantumruy+Pro:wght@400;600;700&display=swap');
+    body { font-family: 'Inter', 'Kantumruy Pro', sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased p-4 min-h-screen flex flex-col items-center justify-center">
+
+  <!-- Header Banner -->
+  <div class="max-w-4xl w-full mb-4 flex items-center justify-between">
+    <div>
+      <div class="flex items-center gap-2">
+        <span class="px-2.5 py-0.5 rounded text-xs font-bold bg-teal-800 text-white">KRUPET CLINICAL</span>
+        <span class="px-2 py-0.5 rounded text-xs font-semibold bg-emerald-100 text-emerald-800">16 MODULES ACTIVE</span>
+        <span class="px-2 py-0.5 rounded text-xs font-semibold bg-cyan-100 text-cyan-800">LIGHTWEIGHT SIMULATOR</span>
+      </div>
+      <h1 class="text-xl font-bold text-slate-900 mt-1">KruPet Enterprise Android Station - 2026 Medical Prototype</h1>
+      <p class="text-xs text-slate-500">Pure native Kotlin Jetpack Compose logic replicated in lightweight sandbox - Zero Drive C footprint</p>
+    </div>
+    <div class="text-right">
+      <span class="text-xs font-mono text-slate-500">Target: Android 15 (SDK 35)</span>
+      <div class="text-xs font-semibold text-teal-700">Backend: http://10.0.2.2:3001/api</div>
+    </div>
+  </div>
+
+  <!-- Device Frame Container -->
+  <div class="relative w-[390px] h-[810px] bg-white rounded-[44px] shadow-2xl border-[10px] border-slate-900 flex flex-col overflow-hidden">
+
+    <!-- Top Speaker & Camera Notch -->
+    <div class="absolute top-0 inset-x-0 h-6 bg-slate-900 flex items-center justify-center z-50">
+      <div class="w-14 h-3 bg-black rounded-full"></div>
+    </div>
+
+    <!-- Android Status Bar -->
+    <div class="pt-6 px-5 pb-1 flex justify-between items-center text-[11px] font-semibold text-slate-700 select-none bg-slate-50 border-b border-slate-100 z-40">
+      <span class="font-mono">14:30</span>
+      <div class="flex items-center gap-1.5 font-mono text-[10px]">
+        <span>5G</span>
+        <span>VoLTE</span>
+        <span>100%</span>
+      </div>
+    </div>
+
+    <!-- Active Screen Viewport (Scrollable) -->
+    <div id="screen-viewport" class="flex-1 overflow-y-auto hide-scrollbar bg-slate-50 p-4 space-y-3.5">
+
+      <!-- Dynamic Views rendered via JavaScript -->
+
+    </div>
+
+    <!-- Bottom Android Navigation Bar (Material 3 Tabs) -->
+    <div class="h-16 bg-white border-t border-slate-200 flex items-center justify-around px-2 z-40">
+      <button onclick="switchScreen('dashboard')" id="tab-dashboard" class="flex flex-col items-center justify-center flex-1 py-1 text-teal-800 font-bold transition">
+        <span class="text-xs">HUB</span>
+        <span class="text-[10px] mt-0.5">Overview</span>
+      </button>
+      <button onclick="switchScreen('triage')" id="tab-triage" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-500 transition">
+        <span class="text-xs font-mono">ESI</span>
+        <span class="text-[10px] mt-0.5">Triage</span>
+      </button>
+      <button onclick="switchScreen('telemetry')" id="tab-telemetry" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-500 transition">
+        <span class="text-xs font-mono">ECG</span>
+        <span class="text-[10px] mt-0.5">Vitals</span>
+      </button>
+      <button onclick="switchScreen('ward')" id="tab-ward" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-500 transition">
+        <span class="text-xs font-mono">BED</span>
+        <span class="text-[10px] mt-0.5">Ward</span>
+      </button>
+      <button onclick="switchScreen('billing')" id="tab-billing" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-500 transition">
+        <span class="text-xs font-mono">POS</span>
+        <span class="text-[10px] mt-0.5">KHQR</span>
+      </button>
+    </div>
+
+    <!-- Android Gesture Home Pill -->
+    <div class="h-4 bg-white flex items-center justify-center pb-1">
+      <div class="w-28 h-1 bg-slate-300 rounded-full"></div>
+    </div>
+  </div>
+
+  <!-- Quick Feature Launcher Bar -->
+  <div class="max-w-4xl w-full mt-4 bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-wrap gap-2 items-center justify-center text-xs">
+    <span class="font-bold text-slate-600 mr-1">Direct Module Jump:</span>
+    <button onclick="switchScreen('resus')" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-teal-50 hover:text-teal-800 font-semibold border border-slate-200">ACLS Resus</button>
+    <button onclick="switchScreen('surgical')" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-teal-50 hover:text-teal-800 font-semibold border border-slate-200">WHO Surgical</button>
+    <button onclick="switchScreen('pacs')" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-teal-50 hover:text-teal-800 font-semibold border border-slate-200">PACS Radiology</button>
+    <button onclick="switchScreen('lab')" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-teal-50 hover:text-teal-800 font-semibold border border-slate-200">Lab Panic Alerts</button>
+    <button onclick="switchScreen('stewardship')" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-teal-50 hover:text-teal-800 font-semibold border border-slate-200">Antimicrobial PK</button>
+    <button onclick="switchScreen('narcotics')" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-teal-50 hover:text-teal-800 font-semibold border border-slate-200">Narcotics Vault</button>
+    <button onclick="switchScreen('warehouse')" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-teal-50 hover:text-teal-800 font-semibold border border-slate-200">Warehouse FEFO</button>
+    <button onclick="switchScreen('pediatric')" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-teal-50 hover:text-teal-800 font-semibold border border-slate-200">Pediatric Nomogram</button>
+    <button onclick="switchScreen('dental')" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-teal-50 hover:text-teal-800 font-semibold border border-slate-200">Dental Odontogram</button>
+    <button onclick="switchScreen('teleconsult')" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-teal-50 hover:text-teal-800 font-semibold border border-slate-200">Teleconsult WebRTC</button>
+    <button onclick="switchScreen('patient')" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-teal-50 hover:text-teal-800 font-semibold border border-slate-200">Patient EHR</button>
+  </div>
+
+  <script>
+    let currentScreen = 'dashboard';
+
+    // State for interactive modules
+    const state = {
+      // Triage
+      rr: 24, spo2: 93, sbp: 94, dbp: 58, hr: 118, temp: 38.8, avpu: 'Alert', o2: true,
+      // Billing
+      amountUsd: 45.0, rateKhr: 4100,
+      // Telemetry
+      infusionWeight: 70, vancoScr: 1.1, vancoDose: 2000
+    };
+
+    function switchScreen(screen) {
+      currentScreen = screen;
+      // Update Tab Styles
+      ['dashboard', 'triage', 'telemetry', 'ward', 'billing'].forEach(t => {
+        const el = document.getElementById('tab-' + t);
+        if (el) {
+          if (t === screen) {
+            el.className = 'flex flex-col items-center justify-center flex-1 py-1 text-teal-800 font-bold transition';
+          } else {
+            el.className = 'flex flex-col items-center justify-center flex-1 py-1 text-slate-500 transition';
+          }
+        }
+      });
+      renderScreen();
+    }
+
+    function renderScreen() {
+      const v = document.getElementById('screen-viewport');
+      if (!v) return;
+
+      switch(currentScreen) {
+        case 'dashboard':
+          v.innerHTML = renderDashboard();
+          break;
+        case 'triage':
+          v.innerHTML = renderTriage();
+          break;
+        case 'telemetry':
+          v.innerHTML = renderTelemetry();
+          initWaveformCanvas();
+          break;
+        case 'ward':
+          v.innerHTML = renderWard();
+          break;
+        case 'billing':
+          v.innerHTML = renderBilling();
+          initKhqrCanvas();
+          break;
+        case 'resus':
+          v.innerHTML = renderResus();
+          break;
+        case 'surgical':
+          v.innerHTML = renderSurgical();
+          break;
+        case 'pacs':
+          v.innerHTML = renderPacs();
+          initPacsCanvas();
+          break;
+        case 'lab':
+          v.innerHTML = renderLab();
+          break;
+        case 'stewardship':
+          v.innerHTML = renderStewardship();
+          break;
+        case 'narcotics':
+          v.innerHTML = renderNarcotics();
+          break;
+        case 'warehouse':
+          v.innerHTML = renderWarehouse();
+          break;
+        case 'pediatric':
+          v.innerHTML = renderPediatric();
+          break;
+        case 'dental':
+          v.innerHTML = renderDental();
+          break;
+        case 'teleconsult':
+          v.innerHTML = renderTeleconsult();
+          break;
+        case 'patient':
+          v.innerHTML = renderPatient();
+          break;
+      }
+    }
+
+    function renderDashboard() {
+      return `
+        <div>
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-lg font-bold text-teal-900 leading-tight">KruPet Clinical Hub</h2>
+              <p class="text-xs text-slate-500">Enterprise Mobile Station - Jetpack Compose</p>
+            </div>
+            <span class="w-8 h-8 rounded-full bg-teal-800 text-white font-bold flex items-center justify-center text-xs">KP</span>
+          </div>
+
+          <div class="mt-3 p-3 bg-white rounded-xl border border-slate-200 shadow-sm">
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-bold text-slate-800">NestJS Mobile Gateway</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">CONNECTED</span>
+            </div>
+            <div class="mt-1 text-[11px] font-mono text-slate-500">http://10.0.2.2:3001/api/mobile-sync</div>
+            <div class="mt-2 text-[10px] text-teal-700 bg-teal-50 p-1.5 rounded font-medium">Sync Protocol: LWW Timestamp Vector with Merkle Audit Integrity</div>
+          </div>
+
+          <div class="mt-4">
+            <h3 class="text-xs font-bold text-slate-700 mb-2">Clinical Modules (16 Ready)</h3>
+            <div class="grid grid-cols-2 gap-2">
+              <div onclick="switchScreen('triage')" class="p-2.5 bg-white rounded-xl border border-slate-200 shadow-sm cursor-pointer hover:border-teal-600 transition">
+                <div class="text-[10px] font-bold text-teal-700 uppercase">Emergency</div>
+                <div class="text-xs font-bold text-slate-900 mt-0.5">Triage ESI v4</div>
+                <div class="text-[10px] text-slate-500 mt-1">NEWS2, GCS 3-15</div>
+              </div>
+              <div onclick="switchScreen('resus')" class="p-2.5 bg-white rounded-xl border border-slate-200 shadow-sm cursor-pointer hover:border-teal-600 transition">
+                <div class="text-[10px] font-bold text-rose-700 uppercase">Resuscitation</div>
+                <div class="text-xs font-bold text-slate-900 mt-0.5">ACLS & Sepsis</div>
+                <div class="text-[10px] text-slate-500 mt-1">Parkland, CPR Timer</div>
+              </div>
+              <div onclick="switchScreen('telemetry')" class="p-2.5 bg-white rounded-xl border border-slate-200 shadow-sm cursor-pointer hover:border-teal-600 transition">
+                <div class="text-[10px] font-bold text-cyan-700 uppercase">Critical Care</div>
+                <div class="text-xs font-bold text-slate-900 mt-0.5">ECG & Infusion</div>
+                <div class="text-[10px] text-slate-500 mt-1">Live Waveform Canvas</div>
+              </div>
+              <div onclick="switchScreen('surgical')" class="p-2.5 bg-white rounded-xl border border-slate-200 shadow-sm cursor-pointer hover:border-teal-600 transition">
+                <div class="text-[10px] font-bold text-indigo-700 uppercase">Surgical OR</div>
+                <div class="text-xs font-bold text-slate-900 mt-0.5">WHO Checklist</div>
+                <div class="text-[10px] text-slate-500 mt-1">3 Phases & ASA Class</div>
+              </div>
+              <div onclick="switchScreen('ward')" class="p-2.5 bg-white rounded-xl border border-slate-200 shadow-sm cursor-pointer hover:border-teal-600 transition">
+                <div class="text-[10px] font-bold text-emerald-700 uppercase">Inpatient</div>
+                <div class="text-xs font-bold text-slate-900 mt-0.5">Ward Bed Census</div>
+                <div class="text-[10px] text-slate-500 mt-1">Fluid Net & SBAR</div>
+              </div>
+              <div onclick="switchScreen('pacs')" class="p-2.5 bg-white rounded-xl border border-slate-200 shadow-sm cursor-pointer hover:border-teal-600 transition">
+                <div class="text-[10px] font-bold text-amber-700 uppercase">Diagnostics</div>
+                <div class="text-xs font-bold text-slate-900 mt-0.5">PACS Radiology</div>
+                <div class="text-[10px] text-slate-500 mt-1">DICOM & Calipers</div>
+              </div>
+              <div onclick="switchScreen('lab')" class="p-2.5 bg-white rounded-xl border border-slate-200 shadow-sm cursor-pointer hover:border-teal-600 transition">
+                <div class="text-[10px] font-bold text-red-700 uppercase">Laboratory</div>
+                <div class="text-xs font-bold text-slate-900 mt-0.5">LIS Panic Alerts</div>
+                <div class="text-[10px] text-slate-500 mt-1">CBC, Renal, Troponin</div>
+              </div>
+              <div onclick="switchScreen('stewardship')" class="p-2.5 bg-white rounded-xl border border-slate-200 shadow-sm cursor-pointer hover:border-teal-600 transition">
+                <div class="text-[10px] font-bold text-purple-700 uppercase">Pharmacology</div>
+                <div class="text-xs font-bold text-slate-900 mt-0.5">Antimicrobial PK</div>
+                <div class="text-[10px] text-slate-500 mt-1">CrCl, Vanco AUC24</div>
+              </div>
+              <div onclick="switchScreen('narcotics')" class="p-2.5 bg-white rounded-xl border border-slate-200 shadow-sm cursor-pointer hover:border-teal-600 transition">
+                <div class="text-[10px] font-bold text-rose-800 uppercase">Controlled Vault</div>
+                <div class="text-xs font-bold text-slate-900 mt-0.5">Narcotics Register</div>
+                <div class="text-[10px] text-slate-500 mt-1">Double-Witness Signoff</div>
+              </div>
+              <div onclick="switchScreen('billing')" class="p-2.5 bg-white rounded-xl border border-slate-200 shadow-sm cursor-pointer hover:border-teal-600 transition">
+                <div class="text-[10px] font-bold text-teal-800 uppercase">Finance</div>
+                <div class="text-xs font-bold text-slate-900 mt-0.5">Bakong KHQR POS</div>
+                <div class="text-[10px] text-slate-500 mt-1">Dual USD/KHR Engine</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 p-3 bg-slate-100 rounded-xl text-[10px] text-slate-600">
+            <span class="font-bold text-slate-700">Google Play Non-SaMD Compliance:</span> Adheres strictly to Clinical Decision Support boundaries under 2026 healthcare software standards.
+          </div>
+        </div>
+      `;
+    }
+
+    function renderTriage() {
+      // Calculate NEWS2
+      let newsScore = 0;
+      if (state.rr <= 8 || state.rr >= 25) newsScore += 3;
+      else if (state.rr in [21,22,23,24]) newsScore += 2;
+      else if (state.rr in [9,10,11]) newsScore += 1;
+
+      if (state.spo2 <= 91) newsScore += 3;
+      else if (state.spo2 <= 93) newsScore += 2;
+      else if (state.spo2 <= 95) newsScore += 1;
+
+      if (state.o2) newsScore += 2;
+
+      if (state.sbp <= 90 || state.sbp >= 220) newsScore += 3;
+      else if (state.sbp <= 100) newsScore += 2;
+      else if (state.sbp <= 110) newsScore += 1;
+
+      if (state.hr <= 40 || state.hr >= 131) newsScore += 3;
+      else if (state.hr >= 111) newsScore += 2;
+      else if (state.hr <= 50 || state.hr >= 91) newsScore += 1;
+
+      if (state.temp <= 35.0) newsScore += 3;
+      else if (state.temp >= 39.1) newsScore += 2;
+      else if (state.temp <= 36.0 || state.temp >= 38.1) newsScore += 1;
+
+      const shockIndex = (state.hr / state.sbp).toFixed(2);
+      const map = (((state.sbp + 2 * state.dbp)) / 3).toFixed(1);
+
+      return `
+        <div>
+          <div class="flex justify-between items-center">
+            <div>
+              <h2 class="text-base font-bold text-slate-900">Emergency Triage</h2>
+              <p class="text-xs text-slate-500">ESI v4 Protocol & NEWS2 Acuity</p>
+            </div>
+            <span class="px-2.5 py-1 rounded bg-amber-500 text-white font-bold text-xs">ESI LEVEL 2</span>
+          </div>
+
+          <div class="mt-3 p-3 bg-red-50 border border-red-200 rounded-xl">
+            <div class="flex justify-between items-center">
+              <span class="text-xs font-bold text-red-800">NEWS2 Score: ${newsScore} (High Risk)</span>
+              <span class="text-[10px] font-semibold text-red-700">Immediate Medical Review</span>
+            </div>
+            <p class="text-[11px] text-red-900 mt-1">Continuous vital telemetry monitoring and rapid response mobilization indicated.</p>
+          </div>
+
+          <div class="mt-3 grid grid-cols-2 gap-2">
+            <div class="p-2.5 bg-white border border-slate-200 rounded-lg">
+              <div class="text-[10px] text-slate-500">Shock Index (HR/SBP)</div>
+              <div class="text-lg font-bold mono ${shockIndex >= 0.9 ? 'text-red-600' : 'text-slate-800'}">${shockIndex}</div>
+              <div class="text-[10px] text-red-600 font-semibold">${shockIndex >= 0.9 ? 'Occult Shock Risk' : 'Normal: 0.5-0.7'}</div>
+            </div>
+            <div class="p-2.5 bg-white border border-slate-200 rounded-lg">
+              <div class="text-[10px] text-slate-500">Mean Arterial BP (MAP)</div>
+              <div class="text-lg font-bold mono text-teal-800">${map} mmHg</div>
+              <div class="text-[10px] text-emerald-600 font-semibold">Adequate Perfusion</div>
+            </div>
+          </div>
+
+          <div class="mt-3 bg-white p-3 border border-slate-200 rounded-xl space-y-2">
+            <h4 class="text-xs font-bold text-slate-800">Patient Vitals Input</h4>
+            <div class="grid grid-cols-3 gap-2 text-xs">
+              <div>
+                <label class="text-[10px] text-slate-500">Sys BP</label>
+                <input type="number" value="${state.sbp}" onchange="state.sbp = Number(this.value); renderTriage();" class="w-full mt-0.5 p-1.5 border border-slate-300 rounded font-mono text-center">
+              </div>
+              <div>
+                <label class="text-[10px] text-slate-500">Dia BP</label>
+                <input type="number" value="${state.dbp}" onchange="state.dbp = Number(this.value); renderTriage();" class="w-full mt-0.5 p-1.5 border border-slate-300 rounded font-mono text-center">
+              </div>
+              <div>
+                <label class="text-[10px] text-slate-500">Pulse bpm</label>
+                <input type="number" value="${state.hr}" onchange="state.hr = Number(this.value); renderTriage();" class="w-full mt-0.5 p-1.5 border border-slate-300 rounded font-mono text-center">
+              </div>
+            </div>
+            <div class="grid grid-cols-3 gap-2 text-xs mt-1">
+              <div>
+                <label class="text-[10px] text-slate-500">Resp Rate</label>
+                <input type="number" value="${state.rr}" onchange="state.rr = Number(this.value); renderTriage();" class="w-full mt-0.5 p-1.5 border border-slate-300 rounded font-mono text-center">
+              </div>
+              <div>
+                <label class="text-[10px] text-slate-500">SpO2 %</label>
+                <input type="number" value="${state.spo2}" onchange="state.spo2 = Number(this.value); renderTriage();" class="w-full mt-0.5 p-1.5 border border-slate-300 rounded font-mono text-center">
+              </div>
+              <div>
+                <label class="text-[10px] text-slate-500">Temp C</label>
+                <input type="number" step="0.1" value="${state.temp}" onchange="state.temp = Number(this.value); renderTriage();" class="w-full mt-0.5 p-1.5 border border-slate-300 rounded font-mono text-center">
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 bg-white p-3 border border-slate-200 rounded-xl">
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-bold text-slate-800">Glasgow Coma Scale: 14/15</span>
+              <span class="text-teal-700 font-semibold text-[10px]">MILD BRAIN INJURY</span>
+            </div>
+            <p class="text-[11px] text-slate-500 mt-1">Eye: 4 | Verbal: 4 | Motor: 6 - Airway protected.</p>
+          </div>
+
+          <button class="w-full mt-3 py-2.5 bg-teal-800 text-white font-bold rounded-lg text-xs shadow-sm">
+            Assign Emergency Bed & Alert Trauma Team
+          </button>
+        </div>
+      `;
+    }
+
+    function renderTelemetry() {
+      // Calculate rate
+      const dosePerMin = 0.10 * state.infusionWeight; // mcg/min
+      const conc = (4 * 1000) / 250; // 16 mcg/mL
+      const rateMlHr = ((dosePerMin * 60) / conc).toFixed(1);
+      const dripGtt = ((rateMlHr * 60) / 60).toFixed(0);
+
+      return `
+        <div>
+          <div class="flex justify-between items-center">
+            <div>
+              <h2 class="text-base font-bold text-slate-900">Bedside Telemetry</h2>
+              <p class="text-xs text-slate-500">Live Waveforms & Smart Infusion Pump</p>
+            </div>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">SYNC LIVE</span>
+          </div>
+
+          <div class="mt-3 bg-slate-950 p-3 rounded-xl border border-slate-800 text-white">
+            <div class="flex justify-between text-[11px] font-mono text-slate-400 mb-1">
+              <span>BED 01: SOKHA MEAS</span>
+              <span class="text-emerald-400">ECG II + PLETH</span>
+            </div>
+            <canvas id="ecgCanvas" width="340" height="130" class="w-full bg-black rounded border border-slate-900"></canvas>
+            <div class="grid grid-cols-4 gap-2 mt-2 pt-2 border-t border-slate-900 text-center font-mono">
+              <div>
+                <div class="text-[9px] text-slate-400">HR bpm</div>
+                <div class="text-xl font-bold text-emerald-400">75</div>
+              </div>
+              <div>
+                <div class="text-[9px] text-slate-400">SpO2 %</div>
+                <div class="text-xl font-bold text-cyan-400">98</div>
+              </div>
+              <div>
+                <div class="text-[9px] text-slate-400">BP mmHg</div>
+                <div class="text-sm font-bold text-white mt-1">118/76</div>
+              </div>
+              <div>
+                <div class="text-[9px] text-slate-400">RR /min</div>
+                <div class="text-xl font-bold text-amber-400">16</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 bg-white p-3 border border-slate-200 rounded-xl space-y-2">
+            <h4 class="text-xs font-bold text-slate-800">Smart Infusion Pump Titration</h4>
+            <div class="p-2 bg-teal-50 rounded text-xs">
+              <div class="flex justify-between font-bold text-teal-900">
+                <span>Norepinephrine (4 mg in 250 mL D5W)</span>
+                <span>0.10 mcg/kg/min</span>
+              </div>
+              <div class="mt-2 flex justify-between items-center text-teal-800">
+                <div>
+                  <div class="text-[10px]">Pump Delivery Rate</div>
+                  <div class="text-lg font-bold mono">${rateMlHr} mL/hr</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-[10px]">Gravity Drip (60 gtt)</div>
+                  <div class="text-lg font-bold mono">${dripGtt} gtt/min</div>
+                </div>
+              </div>
+            </div>
+            <button class="w-full py-2 bg-teal-800 text-white font-bold rounded text-xs">
+              Transmit Parameters to Smart IV Pump
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderWard() {
+      return `
+        <div>
+          <div class="flex justify-between items-center">
+            <div>
+              <h2 class="text-base font-bold text-slate-900">Inpatient Ward Beds</h2>
+              <p class="text-xs text-slate-500">Census, Fluid Balance & SBAR Handoff</p>
+            </div>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-100 text-teal-800">ICU WARD</span>
+          </div>
+
+          <div class="mt-3 grid grid-cols-3 gap-2 text-center text-xs">
+            <div class="p-2 bg-white border border-slate-200 rounded-lg">
+              <div class="text-[10px] text-slate-500">Occupied</div>
+              <div class="text-base font-bold text-red-700">18 Beds</div>
+            </div>
+            <div class="p-2 bg-white border border-slate-200 rounded-lg">
+              <div class="text-[10px] text-slate-500">Available</div>
+              <div class="text-base font-bold text-emerald-700">4 Beds</div>
+            </div>
+            <div class="p-2 bg-white border border-slate-200 rounded-lg">
+              <div class="text-[10px] text-slate-500">Cleaning</div>
+              <div class="text-base font-bold text-amber-700">2 Beds</div>
+            </div>
+          </div>
+
+          <div class="mt-3 bg-white p-3 border border-slate-200 rounded-xl space-y-2">
+            <h4 class="text-xs font-bold text-slate-800">24-Hour Fluid Balance Surveillance</h4>
+            <div class="grid grid-cols-3 gap-2 text-center font-mono text-xs">
+              <div class="p-1.5 bg-slate-50 rounded">
+                <div class="text-[9px] text-slate-500">Total Intake</div>
+                <div class="font-bold text-slate-800">2450 mL</div>
+              </div>
+              <div class="p-1.5 bg-slate-50 rounded">
+                <div class="text-[9px] text-slate-500">Total Output</div>
+                <div class="font-bold text-slate-800">1800 mL</div>
+              </div>
+              <div class="p-1.5 bg-emerald-50 rounded">
+                <div class="text-[9px] text-emerald-700">Net Balance</div>
+                <div class="font-bold text-emerald-800">+650 mL</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 bg-white p-3 border border-slate-200 rounded-xl space-y-1.5 text-xs">
+            <h4 class="font-bold text-slate-800">SBAR Shift Handover Note</h4>
+            <div class="p-1.5 bg-slate-50 rounded"><span class="font-bold text-teal-800">S:</span> Post-op laparotomy Day 1, febrile spike 38.6C.</div>
+            <div class="p-1.5 bg-slate-50 rounded"><span class="font-bold text-teal-800">B:</span> Known hypertension, penicillin allergy.</div>
+            <div class="p-1.5 bg-slate-50 rounded"><span class="font-bold text-teal-800">A:</span> Tachycardia 112 bpm, soft abdomen, wound clean.</div>
+            <div class="p-1.5 bg-slate-50 rounded"><span class="font-bold text-teal-800">R:</span> Blood cultures sent, start IV Piperacillin-Tazobactam.</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderBilling() {
+      const khr = (state.amountUsd * state.rateKhr).toLocaleString();
+      return `
+        <div>
+          <div class="flex justify-between items-center">
+            <div>
+              <h2 class="text-base font-bold text-slate-900">Bakong KHQR Billing</h2>
+              <p class="text-xs text-slate-500">Dual Currency POS Checkout</p>
+            </div>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-800 text-white">NBC CERTIFIED</span>
+          </div>
+
+          <div class="mt-3 bg-white p-4 border border-slate-200 rounded-xl text-center space-y-2">
+            <div class="text-xs text-slate-500">Invoice #INV-2026-9901</div>
+            <div class="text-2xl font-bold mono text-teal-900">$${state.amountUsd.toFixed(2)} USD</div>
+            <div class="text-sm font-semibold mono text-slate-600 font-mono">៛ ${khr} KHR</div>
+
+            <div class="my-3 flex justify-center">
+              <canvas id="khqrCanvas" width="160" height="160" class="border p-2 rounded-lg bg-white shadow-sm"></canvas>
+            </div>
+
+            <div class="text-[10px] font-mono text-slate-400 bg-slate-50 p-2 rounded break-all">
+              bakong://khqr?merchant=krupet_clinic&amount=${state.amountUsd}&cur=USD&crc=8F2B
+            </div>
+
+            <div class="flex gap-2 mt-2">
+              <button class="flex-1 py-2 bg-teal-800 text-white font-bold rounded text-xs">Verify Payment Status</button>
+              <button class="flex-1 py-2 bg-slate-100 text-slate-700 font-bold rounded text-xs border border-slate-200">Print Receipt</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderResus() {
+      return `
+        <div>
+          <h2 class="text-base font-bold text-slate-900">Emergency Resuscitation</h2>
+          <p class="text-xs text-slate-500">ACLS Protocols & Clinical Shock Engines</p>
+
+          <div class="mt-3 bg-rose-50 border border-rose-200 p-3 rounded-xl">
+            <div class="flex justify-between items-center text-xs font-bold text-rose-800">
+              <span>Sepsis Hour-1 Bundle</span>
+              <span>30 mL/kg Bolus</span>
+            </div>
+            <div class="text-xl font-bold mono text-rose-900 mt-1">2,100 mL Crystalloid</div>
+            <div class="text-[10px] text-rose-700 mt-0.5">Administer within 60 minutes for severe hypoperfusion or lactate > 4.0 mmol/L.</div>
+          </div>
+
+          <div class="mt-3 bg-white p-3 border border-slate-200 rounded-xl space-y-2 text-xs">
+            <h4 class="font-bold text-slate-800">Parkland Burn Resuscitation (4 mL x kg x %TBSA)</h4>
+            <div class="flex justify-between font-mono text-slate-700">
+              <span>Weight: 70 kg | 30% TBSA</span>
+              <span class="font-bold text-teal-800">8,400 mL / 24h</span>
+            </div>
+            <div class="text-[11px] text-slate-500">First 8 Hours: 4,200 mL (525 mL/hr) | Remaining 16 Hours: 4,200 mL (263 mL/hr)</div>
+          </div>
+
+          <div class="mt-3 bg-white p-3 border border-slate-200 rounded-xl space-y-1.5 text-xs">
+            <h4 class="font-bold text-slate-800">CRASH-2 Tranexamic Acid (TXA) Protocol</h4>
+            <div class="p-2 bg-emerald-50 rounded text-emerald-800 font-semibold">
+              Eligible: Trauma within 3-hour window. Loading dose 1g IV over 10 min, then 1g IV over 8h.
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSurgical() {
+      return `
+        <div>
+          <div class="flex justify-between items-center">
+            <div>
+              <h2 class="text-base font-bold text-slate-900">WHO Surgical Safety</h2>
+              <p class="text-xs text-slate-500">Operating Theater #2 - 3 Phases</p>
+            </div>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-800 text-white">ASA II</span>
+          </div>
+
+          <div class="mt-3 space-y-2 text-xs">
+            <div class="p-2.5 bg-white border border-slate-200 rounded-xl">
+              <div class="font-bold text-slate-800 mb-1">Phase 1: Sign In (Before Induction)</div>
+              <div class="space-y-1 text-slate-600 text-[11px]">
+                <div>[x] Patient identity, site, procedure confirmed</div>
+                <div>[x] Surgical site marked</div>
+                <div>[x] Pulse oximeter on patient and functioning</div>
+                <div>[x] Airway and aspiration risk evaluated</div>
+              </div>
+            </div>
+
+            <div class="p-2.5 bg-white border border-slate-200 rounded-xl">
+              <div class="font-bold text-slate-800 mb-1">Phase 2: Time Out (Before Incision)</div>
+              <div class="space-y-1 text-slate-600 text-[11px]">
+                <div>[x] Verbal team introduction complete</div>
+                <div>[x] Antibiotic prophylaxis given within 60 min</div>
+                <div>[x] Critical steps and blood loss reviewed</div>
+                <div>[x] Sterility indicators verified</div>
+              </div>
+            </div>
+
+            <div class="p-2.5 bg-white border border-slate-200 rounded-xl">
+              <div class="font-bold text-slate-800 mb-1">Phase 3: Sign Out (Before Leaving OR)</div>
+              <div class="space-y-1 text-slate-600 text-[11px]">
+                <div>[x] Instrument, sponge, needle count correct</div>
+                <div>[x] Specimen labeled aloud</div>
+                <div>[x] Recovery PACU concerns addressed</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderPacs() {
+      return `
+        <div>
+          <div class="flex justify-between items-center">
+            <div>
+              <h2 class="text-base font-bold text-slate-900">PACS Radiology</h2>
+              <p class="text-xs text-slate-500">DICOM Modality Worklist</p>
+            </div>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-white">DX CHEST</span>
+          </div>
+
+          <div class="mt-3 bg-black rounded-xl p-2 border border-slate-800">
+            <canvas id="pacsCanvas" width="340" height="200" class="w-full bg-black rounded"></canvas>
+            <div class="flex justify-between text-[10px] font-mono text-slate-400 mt-2 px-1">
+              <span>W: 2000 L: 300 (Bone)</span>
+              <span>CTR: 0.48 (Normal)</span>
+              <span>CALIPER: 140 mm</span>
+            </div>
+          </div>
+
+          <div class="mt-3 bg-white p-3 border border-slate-200 rounded-xl text-xs space-y-1">
+            <div class="font-bold text-slate-800">Radiologist Diagnostic Impression</div>
+            <div class="text-[11px] text-teal-800 font-semibold">Negative for acute cardiopulmonary abnormality. Joint spaces preserved.</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderLab() {
+      return `
+        <div>
+          <div class="flex justify-between items-center">
+            <div>
+              <h2 class="text-base font-bold text-slate-900">Laboratory LIS</h2>
+              <p class="text-xs text-slate-500">Specimen Tracking & Panic Alerts</p>
+            </div>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-800">1 PANIC DETECTED</span>
+          </div>
+
+          <div class="mt-3 bg-red-50 border border-red-200 p-3 rounded-xl text-xs">
+            <div class="font-bold text-red-800">CRITICAL PANIC: Serum Potassium (K+) 5.9 mmol/L</div>
+            <div class="text-[11px] text-red-700 mt-0.5">High risk of cardiac dysrhythmia. Immediate physician read-back required.</div>
+          </div>
+
+          <div class="mt-3 space-y-2 text-xs">
+            <div class="p-2.5 bg-white border border-slate-200 rounded-lg flex justify-between items-center">
+              <div>
+                <div class="font-bold text-slate-800">hs-Troponin I</div>
+                <div class="text-[10px] text-slate-400">Ref: 0.0 - 0.04 ng/mL</div>
+              </div>
+              <div class="text-right">
+                <div class="font-bold text-red-600 font-mono">2.45 ng/mL</div>
+                <div class="text-[9px] font-bold text-red-600">CRITICAL HIGH</div>
+              </div>
+            </div>
+
+            <div class="p-2.5 bg-white border border-slate-200 rounded-lg flex justify-between items-center">
+              <div>
+                <div class="font-bold text-slate-800">Serum Creatinine</div>
+                <div class="text-[10px] text-slate-400">Ref: 0.6 - 1.2 mg/dL</div>
+              </div>
+              <div class="text-right">
+                <div class="font-bold text-amber-600 font-mono">2.1 mg/dL</div>
+                <div class="text-[9px] font-bold text-amber-600">ELEVATED</div>
+              </div>
+            </div>
+
+            <div class="p-2.5 bg-white border border-slate-200 rounded-lg flex justify-between items-center">
+              <div>
+                <div class="font-bold text-slate-800">Hemoglobin (Hb)</div>
+                <div class="text-[10px] text-slate-400">Ref: 12.0 - 16.0 g/dL</div>
+              </div>
+              <div class="text-right">
+                <div class="font-bold text-blue-600 font-mono">9.2 g/dL</div>
+                <div class="text-[9px] font-bold text-blue-600">LOW</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderStewardship() {
+      return `
+        <div>
+          <h2 class="text-base font-bold text-slate-900">Antimicrobial Stewardship</h2>
+          <p class="text-xs text-slate-500">Cockcroft-Gault CrCl & Vanco AUC Target</p>
+
+          <div class="mt-3 bg-white p-3 border border-slate-200 rounded-xl text-xs space-y-2">
+            <div class="flex justify-between items-center font-bold text-slate-800">
+              <span>Creatinine Clearance (Devine IBW)</span>
+              <span class="text-teal-800 mono font-bold text-base">97.2 mL/min</span>
+            </div>
+            <div class="p-2 bg-emerald-50 rounded text-emerald-800 text-[11px]">
+              Renal function intact. Standard empiric dosing approved.
+            </div>
+          </div>
+
+          <div class="mt-3 bg-white p-3 border border-slate-200 rounded-xl text-xs space-y-2">
+            <div class="flex justify-between items-center font-bold text-slate-800">
+              <span>Vancomycin 24h AUC/MIC Target</span>
+              <span class="text-emerald-700 mono font-bold text-base">544 mg*h/L</span>
+            </div>
+            <div class="text-[11px] text-slate-600">
+              Optimal therapeutic window (400 - 600 mg*h/L) achieved. Nephrotoxicity risk minimized.
+            </div>
+          </div>
+
+          <div class="mt-3 bg-white p-3 border border-slate-200 rounded-xl text-xs space-y-2">
+            <div class="flex justify-between items-center font-bold text-slate-800">
+              <span>IV-to-Oral Step-Down Candidate</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">QUALIFIED</span>
+            </div>
+            <div class="text-[11px] text-slate-600">
+              Patient received IV >48h, afebrile 24h, stable vitals. Bioequivalent oral Amox-Clav approved.
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderNarcotics() {
+      return `
+        <div>
+          <div class="flex justify-between items-center">
+            <div>
+              <h2 class="text-base font-bold text-slate-900">Narcotics Register</h2>
+              <p class="text-xs text-slate-500">Double-Witness Vault & Merkle Audit</p>
+            </div>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-800 text-white">MoH DDF</span>
+          </div>
+
+          <div class="mt-3 bg-teal-50 border border-teal-200 p-2.5 rounded-xl text-xs font-mono">
+            <div class="text-[10px] font-bold text-teal-900">CRYPTOGRAPHIC MERKLE ROOT:</div>
+            <div class="text-[9px] text-teal-700 break-all mt-0.5">e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</div>
+            <div class="text-[10px] text-emerald-700 font-bold mt-1">Verified: Zero Tampering Detected</div>
+          </div>
+
+          <div class="mt-3 space-y-2 text-xs">
+            <div class="p-2.5 bg-white border border-slate-200 rounded-lg flex justify-between items-center">
+              <div>
+                <div class="font-bold text-slate-800">Morphine Sulfate 10mg/mL</div>
+                <div class="text-[10px] text-slate-500">Schedule II | Controlled Vault</div>
+              </div>
+              <div class="font-bold mono text-teal-800">42 Amps</div>
+            </div>
+            <div class="p-2.5 bg-white border border-slate-200 rounded-lg flex justify-between items-center">
+              <div>
+                <div class="font-bold text-slate-800">Fentanyl 100mcg/2mL</div>
+                <div class="text-[10px] text-slate-500">Schedule II | Controlled Vault</div>
+              </div>
+              <div class="font-bold mono text-teal-800">28 Amps</div>
+            </div>
+          </div>
+
+          <div class="mt-3 bg-white p-3 border border-slate-200 rounded-xl space-y-2 text-xs">
+            <div class="font-bold text-slate-800">Double-Witness Dispense Protocol</div>
+            <div class="text-[11px] text-slate-600">Administered: 6 mg | Wastage Destroyed: 4 mg</div>
+            <div class="text-[11px] text-slate-600">Primary: RN Sokha Meas | Witness: Dr. Virak Lim</div>
+            <button class="w-full py-2 bg-teal-800 text-white font-bold rounded text-xs">Sign & Unlock Vault Safe</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderWarehouse() {
+      return `
+        <div>
+          <h2 class="text-base font-bold text-slate-900">Pharmacy Warehouse</h2>
+          <p class="text-xs text-slate-500">FEFO Expiration & Reorder Alert</p>
+
+          <div class="mt-3 space-y-2 text-xs">
+            <div class="p-2.5 bg-white border border-slate-200 rounded-xl">
+              <div class="flex justify-between items-center font-bold">
+                <span class="text-slate-800">Vancomycin 500mg IV</span>
+                <span class="px-2 py-0.5 rounded text-[10px] bg-red-100 text-red-800">LOW STOCK</span>
+              </div>
+              <div class="text-[11px] text-slate-500 mt-1">LOT-2026-VN12 | Expiry: 2026-11-30 (27 days FEFO)</div>
+              <div class="mt-1 flex justify-between text-slate-700 font-mono">
+                <span>Stock: 8 Vials / Min: 30</span>
+                <span class="text-red-700 font-bold">Reorder +50 Vials</span>
+              </div>
+            </div>
+
+            <div class="p-2.5 bg-white border border-slate-200 rounded-xl">
+              <div class="flex justify-between items-center font-bold">
+                <span class="text-slate-800">Meropenem 1g IV Vial</span>
+                <span class="px-2 py-0.5 rounded text-[10px] bg-amber-100 text-amber-800">FEFO PRIORITY</span>
+              </div>
+              <div class="text-[11px] text-slate-500 mt-1">LOT-2026-MR01 | Expiry: 2026-12-20 (47 days)</div>
+              <div class="mt-1 flex justify-between text-slate-700 font-mono">
+                <span>Stock: 18 Vials / Min: 50</span>
+                <span class="text-slate-800">$14.50 / Unit</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderPediatric() {
+      return `
+        <div>
+          <h2 class="text-base font-bold text-slate-900">Pediatric Precision Dosing</h2>
+          <p class="text-xs text-slate-500">Clark, Young, Fried & Bhutani Nomograms</p>
+
+          <div class="mt-3 bg-white p-3 border border-slate-200 rounded-xl text-xs space-y-2">
+            <div class="font-bold text-slate-800">Patient: Infant (Age 6m, Weight 7.5 kg)</div>
+            <div class="p-2 bg-slate-50 rounded space-y-1">
+              <div class="flex justify-between"><span class="text-slate-500">Fried Rule:</span> <span class="font-mono font-bold">25.0 mg</span></div>
+              <div class="flex justify-between"><span class="text-slate-500">Clark Rule:</span> <span class="font-mono font-bold">55.1 mg</span></div>
+              <div class="flex justify-between"><span class="text-slate-500">Broselow Color:</span> <span class="font-bold text-purple-700">PURPLE (10-12 kg zone)</span></div>
+            </div>
+          </div>
+
+          <div class="mt-3 bg-amber-50 border border-amber-200 p-3 rounded-xl text-xs">
+            <div class="font-bold text-amber-900">Bhutani Phototherapy Nomogram</div>
+            <div class="text-[11px] text-amber-800 mt-1">Postnatal Age: 48h | Total Bilirubin: 14.2 mg/dL -> High Intermediate Risk Zone. Initiate intensive phototherapy.</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderDental() {
+      return `
+        <div>
+          <h2 class="text-base font-bold text-slate-900">Dental Odontogram</h2>
+          <p class="text-xs text-slate-500">FDI Two-Digit Notation (32 Adult Teeth)</p>
+
+          <div class="mt-3 bg-white p-3 border border-slate-200 rounded-xl text-xs">
+            <div class="font-bold text-slate-800 mb-2">Maxillary Arch (Upper Dentition)</div>
+            <div class="grid grid-cols-8 gap-1 text-center font-mono text-[10px]">
+              <div class="p-1.5 bg-slate-100 rounded">18</div>
+              <div class="p-1.5 bg-slate-100 rounded">17</div>
+              <div class="p-1.5 bg-red-100 border border-red-300 font-bold text-red-800 rounded">16<br>Caries</div>
+              <div class="p-1.5 bg-slate-100 rounded">15</div>
+              <div class="p-1.5 bg-slate-100 rounded">14</div>
+              <div class="p-1.5 bg-slate-100 rounded">13</div>
+              <div class="p-1.5 bg-slate-100 rounded">12</div>
+              <div class="p-1.5 bg-slate-100 rounded">11</div>
+            </div>
+
+            <div class="font-bold text-slate-800 mt-3 mb-2">Mandibular Arch (Lower Dentition)</div>
+            <div class="grid grid-cols-8 gap-1 text-center font-mono text-[10px]">
+              <div class="p-1.5 bg-slate-100 rounded">48</div>
+              <div class="p-1.5 bg-slate-100 rounded">47</div>
+              <div class="p-1.5 bg-blue-100 border border-blue-300 font-bold text-blue-800 rounded">46<br>Filled</div>
+              <div class="p-1.5 bg-slate-100 rounded">45</div>
+              <div class="p-1.5 bg-slate-100 rounded">44</div>
+              <div class="p-1.5 bg-slate-100 rounded">43</div>
+              <div class="p-1.5 bg-slate-100 rounded">42</div>
+              <div class="p-1.5 bg-slate-100 rounded">41</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderTeleconsult() {
+      return `
+        <div>
+          <div class="flex justify-between items-center">
+            <div>
+              <h2 class="text-base font-bold text-slate-900">Teleconsultation</h2>
+              <p class="text-xs text-slate-500">Encrypted WebRTC Session #TC-8821</p>
+            </div>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">LIVE 05:42</span>
+          </div>
+
+          <div class="mt-3 bg-slate-900 rounded-xl h-44 relative flex items-center justify-center border border-slate-800 overflow-hidden">
+            <div class="text-slate-500 text-xs text-center">
+              <div class="w-16 h-16 rounded-full bg-slate-800 mx-auto flex items-center justify-center text-slate-400 font-bold">PATIENT</div>
+              <div class="mt-2 text-[11px] text-slate-400">Sokleang Kim (F, 32y)</div>
+            </div>
+            <div class="absolute top-2 right-2 w-20 h-24 bg-slate-950 rounded-lg border border-slate-700 p-1 flex items-end justify-center text-[9px] text-white">
+              Dr. Virak (You)
+            </div>
+            <div class="absolute bottom-2 left-2 px-2 py-1 bg-black/60 rounded text-[10px] font-mono text-emerald-400">
+              HD 1080p | 32 ms | AES-256
+            </div>
+          </div>
+
+          <div class="mt-3 bg-white p-3 border border-slate-200 rounded-xl text-xs space-y-1.5">
+            <div class="font-bold text-slate-800">In-Call Digital e-Prescription</div>
+            <div class="p-2 bg-slate-50 rounded font-mono text-[11px]">
+              Amoxicillin-Clavulanate 875/125 mg PO BID x 7d<br>
+              Paracetamol 500 mg PO Q6H PRN fever
+            </div>
+            <button class="w-full py-2 bg-teal-800 text-white font-bold rounded text-xs">Dispatch eRx to Patient Phone</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderPatient() {
+      return `
+        <div>
+          <h2 class="text-base font-bold text-slate-900">Patient Health Dossier</h2>
+          <p class="text-xs text-slate-500">Channa Keo (F, 45y) - HN-2026-0042</p>
+
+          <div class="mt-3 bg-red-50 border border-red-200 p-3 rounded-xl text-xs space-y-1">
+            <div class="font-bold text-red-800">CRITICAL ALLERGY ALERT</div>
+            <div class="text-[11px] text-red-900">- Penicillin: Severe Anaphylaxis with Angioedema</div>
+            <div class="text-[11px] text-red-900">- NSAIDs: Generalized Urticaria</div>
+          </div>
+
+          <div class="mt-3 bg-white p-3 border border-slate-200 rounded-xl text-xs space-y-1.5">
+            <div class="font-bold text-slate-800">Chronic Problem List</div>
+            <div class="text-[11px] text-slate-600">• Essential Hypertension (ICD-10 I10)</div>
+            <div class="text-[11px] text-slate-600">• Type 2 Diabetes Mellitus (ICD-10 E11.9)</div>
+          </div>
+
+          <div class="mt-3 bg-white p-3 border border-slate-200 rounded-xl text-xs space-y-1.5">
+            <div class="font-bold text-slate-800">Active Prescriptions</div>
+            <div class="text-[11px] font-mono text-slate-700">• Amlodipine 5mg PO OD</div>
+            <div class="text-[11px] font-mono text-slate-700">• Metformin 500mg PO BID</div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Dynamic Waveform Drawing
+    function initWaveformCanvas() {
+      setTimeout(() => {
+        const c = document.getElementById('ecgCanvas');
+        if (!c) return;
+        const ctx = c.getContext('2d');
+        const w = c.width;
+        const h = c.height;
+
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, w, h);
+
+        // Grid
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = 0.5;
+        for (let x = 0; x < w; x += 15) {
+          ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+        }
+        for (let y = 0; y < h; y += 15) {
+          ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+        }
+
+        // ECG Waveform (Green)
+        ctx.strokeStyle = '#00e676';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        const mid = h * 0.4;
+        ctx.moveTo(0, mid);
+        for (let x = 0; x < w; x++) {
+          const relX = x % 100;
+          let y = mid;
+          if (relX >= 10 && relX <= 18) y = mid - 6; // P
+          else if (relX >= 30 && relX <= 33) y = mid + 8; // Q
+          else if (relX >= 34 && relX <= 38) y = mid - 32; // R
+          else if (relX >= 39 && relX <= 42) y = mid + 12; // S
+          else if (relX >= 55 && relX <= 68) y = mid - 10; // T
+          ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        // Pleth Waveform (Cyan)
+        ctx.strokeStyle = '#00e5ff';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        const pMid = h * 0.82;
+        ctx.moveTo(0, pMid);
+        for (let x = 0; x < w; x++) {
+          const relX = x % 80;
+          const y = pMid - Math.sin((relX / 80) * Math.PI) * 16;
+          ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }, 50);
+    }
+
+    // Dynamic KHQR Canvas
+    function initKhqrCanvas() {
+      setTimeout(() => {
+        const c = document.getElementById('khqrCanvas');
+        if (!c) return;
+        const ctx = c.getContext('2d');
+        const size = c.width;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, size, size);
+
+        ctx.fillStyle = '#004d40';
+        // Draw simulated QR matrix blocks
+        const blockSize = 8;
+        for (let x = 0; x < size; x += blockSize) {
+          for (let y = 0; y < size; y += blockSize) {
+            // Corner position markers
+            if ((x < 32 && y < 32) || (x > size - 40 && y < 32) || (x < 32 && y > size - 40)) {
+              if (x === 0 || y === 0 || x === 24 || y === 24 || (x > 4 && x < 20 && y > 4 && y < 20)) {
+                ctx.fillRect(x, y, blockSize, blockSize);
+              }
+            } else if (Math.sin(x * y + 3) > 0.1) {
+              ctx.fillRect(x, y, blockSize - 1, blockSize - 1);
+            }
+          }
+        }
+        // Center Bakong Emblem
+        ctx.fillStyle = '#ba1a1a';
+        ctx.fillRect(size/2 - 14, size/2 - 14, 28, 28);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 9px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('KHQR', size/2, size/2);
+      }, 50);
+    }
+
+    // Dynamic PACS Canvas
+    function initPacsCanvas() {
+      setTimeout(() => {
+        const c = document.getElementById('pacsCanvas');
+        if (!c) return;
+        const ctx = c.getContext('2d');
+        const w = c.width;
+        const h = c.height;
+
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, w, h);
+
+        // Spine
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillRect(w/2 - 8, 20, 16, h - 40);
+
+        // Ribs
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = 3;
+        for (let i = -3; i <= 3; i++) {
+          const y = h/2 + i * 20;
+          ctx.beginPath();
+          ctx.arc(w/2 - 50, y, 40, Math.PI, Math.PI * 1.6);
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.arc(w/2 + 50, y, 40, Math.PI * 1.4, Math.PI * 2);
+          ctx.stroke();
+        }
+
+        // Cardiac silhouette
+        ctx.fillStyle = 'rgba(203, 213, 225, 0.4)';
+        ctx.beginPath();
+        ctx.arc(w/2 + 20, h/2 + 15, 35, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Caliper (Yellow)
+        ctx.strokeStyle = '#facc15';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(w/2 - 40, h/2 + 60);
+        ctx.lineTo(w/2 + 60, h/2 + 60);
+        ctx.stroke();
+      }, 50);
+    }
+
+    // Initial render
+    renderScreen();
+  </script>
+</body>
+</html>
