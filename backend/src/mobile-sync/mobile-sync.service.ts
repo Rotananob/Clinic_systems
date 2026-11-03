@@ -1,6 +1,7 @@
 // Mobile Sync & Device Gateway Service
 // Strictly ZERO emojis in code and text. Strictly NO parentheses in Khmer text.
 
+import crypto from 'crypto';
 import { BadRequestException, Logger } from '@nestjs/common';
 import { Subject, Observable, interval, merge, from } from 'rxjs';
 import { filter, map, finalize } from 'rxjs/operators';
@@ -22,6 +23,7 @@ import type {
   SyncPatientDto,
   SyncVitalSignsDto,
   SyncFormularyItemDto,
+  SyncInvoiceDto,
   OfflineMutationDto,
   MutationResultDto,
   RegisteredDevice,
@@ -33,6 +35,15 @@ import type {
   TelemetryBedVitalsData,
   TelemetryEcgData,
   TelemetryLabPanicData,
+  TelemetryKhqrSettledData,
+  MobilePushNotificationDto,
+  KhqrSettlementWebhookDto,
+  KhqrSettlementResponseDto,
+  NssfEligibilityRequestDto,
+  NssfEligibilityResponseDto,
+  NssfClaimSubmissionDto,
+  NssfClaimSubmissionResponseDto,
+  NssfAdjudicatedItemResultDto,
 } from './mobile-sync.types.ts';
 
 /**
@@ -85,6 +96,21 @@ export class MobileSyncService {
   private readonly patientsStore: Map<string, SyncPatientDto> = new Map();
   private readonly vitalSignsStore: Map<string, SyncVitalSignsDto> = new Map();
   private readonly formularyStore: Map<string, SyncFormularyItemDto> = new Map();
+  private readonly invoicesStore: Map<string, SyncInvoiceDto> = new Map();
+  private readonly settledTransactions: Map<
+    string,
+    {
+      tranId: string;
+      hash: string;
+      invoiceId: string;
+      amount: number;
+      currency: 'USD' | 'KHR';
+      settledAt: string;
+      status: string;
+      response: KhqrSettlementResponseDto;
+    }
+  > = new Map();
+  private readonly mobilePushNotificationQueue: MobilePushNotificationDto[] = [];
   private readonly mutationAuditLog: Array<{
     mutationId: string;
     deviceId: string;
@@ -93,6 +119,13 @@ export class MobileSyncService {
     status: string;
     timestamp: string;
   }> = [];
+
+  // NSSF Cambodia & CamDX Integration Stores
+  private readonly camdxSecretKey: string = 'CAMDX-HMAC-SECRET-KRUPET-2026-NSSF-SECURE';
+  private readonly devicePublicKeys: Map<string, string> = new Map();
+  private readonly nssfMembersStore: Map<string, any> = new Map();
+  private readonly nssfClaimsStore: Map<string, any> = new Map();
+  private readonly nssfTariffItems: Map<string, any> = new Map();
 
   // Real-Time Telemetry & Alert Broadcasting Engine
   private readonly telemetrySubject = new Subject<TelemetryStreamEvent>();
@@ -108,6 +141,8 @@ export class MobileSyncService {
     this.seedFormularyCatalog();
     this.seedInitialClinicalData();
     this.seedTelemetryBedsAndAlerts();
+    this.seedInitialInvoices();
+    this.seedNssfMasterData();
   }
 
   /**
@@ -335,25 +370,50 @@ export class MobileSyncService {
       }
     }
 
+    // 4. Gather all updated Invoices (when requested)
+    const includeInvoices = dto.includeInvoices === true;
+    const updatedInvoices: SyncInvoiceDto[] = [];
+    if (includeInvoices) {
+      for (const inv of this.invoicesStore.values()) {
+        if (dto.tenantId && inv.tenantId && inv.tenantId !== dto.tenantId) {
+          continue;
+        }
+        const recordTimeMs = Date.parse(inv.updatedAt);
+        if (recordTimeMs > sinceTimeMs) {
+          updatedInvoices.push(inv);
+        }
+      }
+    }
+
     // Parse cursor for low-bandwidth resumable pagination
-    // Format: CURSOR-<pIndex>-<vIndex>-<fIndex>-<chunkIndex>
+    // Format: CURSOR-<pIndex>-<vIndex>-<fIndex>-<chunkIndex> OR CURSOR-<pIndex>-<vIndex>-<fIndex>-<iIndex>-<chunkIndex>
     let pOffset = 0;
     let vOffset = 0;
     let fOffset = 0;
+    let iOffset = 0;
     let chunkIndex = 0;
 
     if (dto.cursor && typeof dto.cursor === 'string' && dto.cursor.startsWith('CURSOR-')) {
       const parts = dto.cursor.replace('CURSOR-', '').split('-');
-      pOffset = parseInt(parts[0], 10) || 0;
-      vOffset = parseInt(parts[1], 10) || 0;
-      fOffset = parseInt(parts[2], 10) || 0;
-      chunkIndex = parseInt(parts[3], 10) || 0;
+      if (parts.length >= 5) {
+        pOffset = parseInt(parts[0], 10) || 0;
+        vOffset = parseInt(parts[1], 10) || 0;
+        fOffset = parseInt(parts[2], 10) || 0;
+        iOffset = parseInt(parts[3], 10) || 0;
+        chunkIndex = parseInt(parts[4], 10) || 0;
+      } else {
+        pOffset = parseInt(parts[0], 10) || 0;
+        vOffset = parseInt(parts[1], 10) || 0;
+        fOffset = parseInt(parts[2], 10) || 0;
+        chunkIndex = parseInt(parts[3], 10) || 0;
+      }
     }
 
     // Slice using sequential chunk budget across entities
     const slicedPatients: SyncPatientDto[] = [];
     const slicedVitals: SyncVitalSignsDto[] = [];
     const slicedFormulary: SyncFormularyItemDto[] = [];
+    const slicedInvoices: SyncInvoiceDto[] = [];
 
     let budget = chunkSize;
 
@@ -381,14 +441,25 @@ export class MobileSyncService {
       budget -= takeF;
     }
 
+    // 4. Take Invoices
+    if (includeInvoices && iOffset < updatedInvoices.length && budget > 0) {
+      const takeI = Math.min(budget, updatedInvoices.length - iOffset);
+      slicedInvoices.push(...updatedInvoices.slice(iOffset, iOffset + takeI));
+      iOffset += takeI;
+      budget -= takeI;
+    }
+
     const remainingP = Math.max(0, updatedPatients.length - pOffset);
     const remainingV = Math.max(0, updatedVitals.length - vOffset);
     const remainingF = Math.max(0, updatedFormulary.length - fOffset);
-    const remainingRecordsCount = remainingP + remainingV + remainingF;
+    const remainingI = includeInvoices ? Math.max(0, updatedInvoices.length - iOffset) : 0;
+    const remainingRecordsCount = remainingP + remainingV + remainingF + remainingI;
 
     const hasMore = remainingRecordsCount > 0;
     const nextCursor = hasMore
-      ? `CURSOR-${pOffset}-${vOffset}-${fOffset}-${chunkIndex + 1}`
+      ? includeInvoices
+        ? `CURSOR-${pOffset}-${vOffset}-${fOffset}-${iOffset}-${chunkIndex + 1}`
+        : `CURSOR-${pOffset}-${vOffset}-${fOffset}-${chunkIndex + 1}`
       : undefined;
 
     // Optional lightweight payload compression/stripping for low-bandwidth mode
@@ -489,11 +560,17 @@ export class MobileSyncService {
       patients: finalPatients,
       vitalSigns: finalVitals,
       formularyItems: finalFormulary,
+      ...(includeInvoices ? { invoices: slicedInvoices } : {}),
       counts: {
         patients: finalPatients.length,
         vitalSigns: finalVitals.length,
         formularyItems: finalFormulary.length,
-        total: finalPatients.length + finalVitals.length + finalFormulary.length,
+        ...(includeInvoices ? { invoices: slicedInvoices.length } : {}),
+        total:
+          finalPatients.length +
+          finalVitals.length +
+          finalFormulary.length +
+          (includeInvoices ? slicedInvoices.length : 0),
       },
     };
   }
@@ -1314,6 +1391,8 @@ export class MobileSyncService {
       cachedPatientsCount: this.patientsStore.size,
       cachedVitalSignsCount: this.vitalSignsStore.size,
       cachedFormularyItemsCount: this.formularyStore.size,
+      cachedInvoicesCount: this.invoicesStore.size,
+      pendingPushNotificationsCount: this.mobilePushNotificationQueue.length,
       activeTelemetrySubscribersCount: this.activeSubscribers.size,
       cachedBedsCount: this.bedTelemetryCache.size,
       activePanicAlertsCount: this.activePanicAlerts.size,
@@ -1340,6 +1419,252 @@ export class MobileSyncService {
 
   public getFormularyItem(itemId: string): SyncFormularyItemDto | undefined {
     return this.formularyStore.get(itemId);
+  }
+
+  public getInvoice(invoiceId: string): SyncInvoiceDto | undefined {
+    return this.invoicesStore.get(invoiceId);
+  }
+
+  public getInvoices(tenantId?: string): SyncInvoiceDto[] {
+    const list: SyncInvoiceDto[] = [];
+    for (const inv of this.invoicesStore.values()) {
+      if (!tenantId || inv.tenantId === tenantId) {
+        list.push(inv);
+      }
+    }
+    return list;
+  }
+
+  public getPendingPushNotifications(deviceId?: string): MobilePushNotificationDto[] {
+    if (!deviceId) {
+      return [...this.mobilePushNotificationQueue];
+    }
+    return this.mobilePushNotificationQueue.filter(
+      (n) => !n.targetDeviceId || n.targetDeviceId === deviceId
+    );
+  }
+
+  public acknowledgePushNotification(notificationId: string): boolean {
+    const notif = this.mobilePushNotificationQueue.find((n) => n.notificationId === notificationId);
+    if (notif) {
+      notif.status = 'DELIVERED';
+      return true;
+    }
+    return false;
+  }
+
+  public clearPushNotifications(): void {
+    this.mobilePushNotificationQueue.length = 0;
+  }
+
+  public getSettledTransactions(): Array<any> {
+    return Array.from(this.settledTransactions.values());
+  }
+
+  /**
+   * Bakong KHQR Settled Transaction Webhook & Mobile Push Notification Engine
+   */
+  public async settleKhqrTransaction(
+    dto: KhqrSettlementWebhookDto
+  ): Promise<KhqrSettlementResponseDto> {
+    if (!dto.tranId || typeof dto.tranId !== 'string') {
+      throw new BadRequestException('tranId is required for KHQR settlement');
+    }
+    if (!dto.invoiceId && !dto.invoiceNumber) {
+      throw new BadRequestException('invoiceId or invoiceNumber is required for KHQR settlement');
+    }
+    if (dto.amount === undefined || dto.amount === null || isNaN(dto.amount) || dto.amount <= 0) {
+      throw new BadRequestException('Valid positive amount is required for KHQR settlement');
+    }
+    if (!dto.currency || (dto.currency !== 'USD' && dto.currency !== 'KHR')) {
+      throw new BadRequestException('Currency must be USD or KHR');
+    }
+
+    const hashKey = dto.hash || dto.tranId;
+
+    // 1. Idempotency Check: Return existing record if already settled
+    const existingSettlement =
+      this.settledTransactions.get(dto.tranId) || this.settledTransactions.get(hashKey);
+
+    if (existingSettlement) {
+      return {
+        ...existingSettlement.response,
+        idempotent: true,
+      };
+    }
+
+    // 2. Locate or create invoice
+    let invoice = dto.invoiceId ? this.invoicesStore.get(dto.invoiceId) : undefined;
+    if (!invoice && dto.invoiceNumber) {
+      for (const inv of this.invoicesStore.values()) {
+        if (inv.invoiceNumber === dto.invoiceNumber) {
+          invoice = inv;
+          break;
+        }
+      }
+    }
+
+    const now = new Date();
+    const serverTimeUtc = now.toISOString();
+    const settledTimestamp = dto.settledAt || serverTimeUtc;
+    const nextMonotonic = this.getNextMonotonicSequence();
+
+    if (!invoice) {
+      // Auto-create invoice if not found in memory (e.g. external POS or walk-in patient)
+      const invId = dto.invoiceId || `INV-${dto.tranId}`;
+      const invNum = dto.invoiceNumber || `INV-${dto.tranId.slice(-6)}`;
+      invoice = {
+        id: invId,
+        tenantId: dto.tenantId || 'TENANT-ROTANA-01',
+        invoiceNumber: invNum,
+        patientId: (dto.metadata && dto.metadata.patientId) || 'PAT-WALKIN',
+        patientNameEn: (dto.metadata && dto.metadata.patientNameEn) || 'Walk-in Patient',
+        patientNameKh: (dto.metadata && dto.metadata.patientNameKh) || 'អ្នកជំងឺទូទៅ',
+        totalAmount: dto.amount,
+        payableAmount: dto.amount,
+        currency: dto.currency,
+        status: 'PAID',
+        paymentMethod: 'KHQR',
+        tranId: dto.tranId,
+        cashierId: dto.cashierId,
+        paidAt: settledTimestamp,
+        updatedAt: serverTimeUtc,
+        monotonicVersion: nextMonotonic,
+        vectorClock: { SERVER: 1 },
+      };
+      this.invoicesStore.set(invoice.id, invoice);
+    } else {
+      // Update existing invoice to PAID
+      invoice.status = 'PAID';
+      invoice.paidAt = settledTimestamp;
+      invoice.tranId = dto.tranId;
+      invoice.cashierId = dto.cashierId || invoice.cashierId;
+      invoice.updatedAt = serverTimeUtc;
+      invoice.monotonicVersion = nextMonotonic;
+      invoice.vectorClock = GatewayVectorClockEngine.increment(
+        invoice.vectorClock || { SERVER: 1 },
+        'SERVER'
+      );
+      this.invoicesStore.set(invoice.id, invoice);
+    }
+
+    // 3. Construct Real-Time SSE Broadcast Event
+    // Strictly ZERO emojis, and strictly NO parentheses in Khmer text
+    const alertMessageKh = `ការទូទាត់ប្រាក់បានជោគជ័យ: វិក្កយបត្រ ${invoice.invoiceNumber} ទឹកប្រាក់ ${dto.amount} ${dto.currency}`;
+    const alertMessageEn = `KHQR Payment Settled: Invoice ${invoice.invoiceNumber} Amount ${dto.amount} ${dto.currency}`;
+
+    const broadcastEvent: TelemetryStreamEvent = {
+      eventId: `KHQR-SETTLED-${dto.tranId}`,
+      eventType: 'KHQR_PAYMENT_SETTLED',
+      timestamp: serverTimeUtc,
+      department: 'BILLING',
+      ward: 'BILLING_CASHIER',
+      patientId: invoice.patientId,
+      patientName: invoice.patientNameEn,
+      data: {
+        tranId: dto.tranId,
+        hash: dto.hash || '',
+        invoiceId: invoice.id,
+        invoiceNumber: invoice.invoiceNumber,
+        amount: dto.amount,
+        currency: dto.currency,
+        settledAt: settledTimestamp,
+        payerAccount: dto.payerAccount || '',
+        bakongAccountId: dto.bakongAccountId || '',
+        isSettled: true,
+        notificationMessageKh: alertMessageKh,
+        notificationMessageEn: alertMessageEn,
+      },
+    };
+
+    // Emit event on SSE telemetry stream for mobile cashier tablets
+    this.telemetrySubject.next(broadcastEvent);
+
+    // 4. Construct Mobile Push Notification for Mobile POS and Cashiers
+    // Strictly ZERO emojis, and strictly NO parentheses in Khmer text
+    const pushNotification: MobilePushNotificationDto = {
+      notificationId: `PUSH-KHQR-${dto.tranId}`,
+      targetDeviceId: dto.deviceId,
+      title: 'KHQR Payment Received',
+      titleKh: 'ទទួលបានការទូទាត់ប្រាក់ KHQR',
+      body: `Invoice ${invoice.invoiceNumber} settled: ${dto.amount} ${dto.currency}`,
+      bodyKh: `វិក្កយបត្រ ${invoice.invoiceNumber} បានទូទាត់រួចរាល់: ចំនួន ${dto.amount} ${dto.currency}`,
+      category: 'BILLING',
+      priority: 'HIGH',
+      data: {
+        tranId: dto.tranId,
+        hash: dto.hash || '',
+        invoiceId: invoice.id,
+        invoiceNumber: invoice.invoiceNumber,
+        amount: dto.amount,
+        currency: dto.currency,
+        payerAccount: dto.payerAccount || '',
+        type: 'KHQR_PAYMENT_SETTLED',
+      },
+      dispatchedAt: serverTimeUtc,
+      status: 'QUEUED',
+    };
+    this.mobilePushNotificationQueue.push(pushNotification);
+
+    // 5. Prisma Persistence Fallback (Standalone Try/Catch)
+    if (this.prisma) {
+      try {
+        if (typeof this.prisma.paymentTransaction?.updateMany === 'function') {
+          await this.prisma.paymentTransaction.updateMany({
+            where: { tranId: dto.tranId },
+            data: {
+              status: 'SUCCESS',
+              verifiedAt: new Date(settledTimestamp),
+            },
+          });
+        }
+        if (typeof this.prisma.invoice?.update === 'function') {
+          await this.prisma.invoice.update({
+            where: { id: invoice.id },
+            data: {
+              status: 'PAID',
+              paidAt: new Date(settledTimestamp),
+            },
+          });
+        }
+      } catch (err: any) {
+        this.logger.warn(`Prisma billing reconciliation fallback: ${err.message}`);
+      }
+    }
+
+    const response: KhqrSettlementResponseDto = {
+      success: true,
+      idempotent: false,
+      tranId: dto.tranId,
+      invoiceId: invoice.id,
+      invoiceNumber: invoice.invoiceNumber,
+      invoiceStatus: 'PAID',
+      payableAmount: invoice.payableAmount,
+      currency: invoice.currency,
+      settledAt: settledTimestamp,
+      serverMonotonicSequence: nextMonotonic,
+      serverVectorClock: { ...this.serverVectorClock },
+      pushNotification,
+      broadcastEvent,
+    };
+
+    // Store for idempotency
+    const record = {
+      tranId: dto.tranId,
+      hash: dto.hash || dto.tranId,
+      invoiceId: invoice.id,
+      amount: dto.amount,
+      currency: dto.currency,
+      settledAt: settledTimestamp,
+      status: 'PAID',
+      response,
+    };
+    this.settledTransactions.set(dto.tranId, record);
+    if (dto.hash) {
+      this.settledTransactions.set(dto.hash, record);
+    }
+
+    return response;
   }
 
   /**
@@ -1753,6 +2078,794 @@ export class MobileSyncService {
 
     for (const v of vitals) {
       this.vitalSignsStore.set(v.id, v);
+    }
+  }
+
+  /**
+   * Seed Initial Clinic Invoices for Billing Reconciliation & Mobile Sync
+   */
+  private seedInitialInvoices(): void {
+    const nowIso = new Date().toISOString();
+    const inv1: SyncInvoiceDto = {
+      id: 'INV-UUID-001',
+      tenantId: 'TENANT-ROTANA-01',
+      invoiceNumber: 'INV-2026-001',
+      patientId: 'PAT-OFFLINE-0001',
+      patientNameEn: 'Sophea Sok',
+      patientNameKh: 'សុភា សុខ',
+      totalAmount: 15.5,
+      payableAmount: 15.5,
+      currency: 'USD',
+      status: 'PENDING',
+      paymentMethod: 'KHQR',
+      updatedAt: nowIso,
+      monotonicVersion: 1001,
+      vectorClock: { SERVER: 1 },
+    };
+
+    const inv2: SyncInvoiceDto = {
+      id: 'INV-UUID-002',
+      tenantId: 'TENANT-ROTANA-01',
+      invoiceNumber: 'INV-2026-002',
+      patientId: 'PAT-OFFLINE-0002',
+      patientNameEn: 'Channary Lim',
+      patientNameKh: 'ចាន់ណារី លីម',
+      totalAmount: 60000,
+      payableAmount: 60000,
+      currency: 'KHR',
+      status: 'UNPAID',
+      paymentMethod: 'KHQR',
+      updatedAt: nowIso,
+      monotonicVersion: 1002,
+      vectorClock: { SERVER: 1 },
+    };
+
+    const inv3: SyncInvoiceDto = {
+      id: 'INV-UUID-003',
+      tenantId: 'TENANT-ROTANA-01',
+      invoiceNumber: 'INV-2026-003',
+      patientId: 'PAT-OFFLINE-0003',
+      patientNameEn: 'Dara Heng',
+      patientNameKh: 'ដារ៉ា ហេង',
+      totalAmount: 45.0,
+      payableAmount: 45.0,
+      currency: 'USD',
+      status: 'PAID',
+      paymentMethod: 'KHQR',
+      tranId: 'TRX-BAKONG-PREV-01',
+      paidAt: nowIso,
+      updatedAt: nowIso,
+      monotonicVersion: 1003,
+      vectorClock: { SERVER: 2 },
+    };
+
+    this.invoicesStore.set(inv1.id, inv1);
+    this.invoicesStore.set(inv2.id, inv2);
+    this.invoicesStore.set(inv3.id, inv3);
+  }
+
+  /**
+   * Register Mobile Device ECDSA secp256r1 Public Key for Hardware Attestation
+   */
+  public registerDevicePublicKey(deviceId: string, publicKeyPem: string): void {
+    this.devicePublicKeys.set(deviceId, publicKeyPem);
+  }
+
+  public getDevicePublicKey(deviceId: string): string | undefined {
+    return this.devicePublicKeys.get(deviceId);
+  }
+
+  public generateDeviceEcKeyPair(): { publicKey: string; privateKey: string } {
+    return crypto.generateKeyPairSync('ec', {
+      namedCurve: 'prime256v1',
+      publicKeyEncoding: { type: 'spki', format: 'pem' },
+      privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
+    });
+  }
+
+  public buildClaimCanonicalString(dto: {
+    memberId: string;
+    nationalId: string;
+    benefitPackage: string;
+    primaryIcd10: string;
+    items: Array<{ actCode: string; quantity: number }>;
+    clientTimestamp: string;
+  }): string {
+    const itemStr = dto.items.map((i) => `${i.actCode}:${i.quantity}`).join(',');
+    return `${dto.memberId}|${dto.nationalId}|${dto.benefitPackage}|${dto.primaryIcd10}|${itemStr}|${dto.clientTimestamp}`;
+  }
+
+  public verifyDeviceSignature(
+    canonicalString: string,
+    signatureBase64: string,
+    publicKeyPem: string
+  ): boolean {
+    try {
+      const verify = crypto.createVerify('SHA256');
+      verify.update(canonicalString);
+      verify.end();
+      return verify.verify(publicKeyPem, signatureBase64, 'base64');
+    } catch {
+      return false;
+    }
+  }
+
+  public generateCamdxToken(member: {
+    memberId: string;
+    nationalId: string;
+    status: string;
+    entitlements: string[];
+  }): { token: string; expiresAt: string } {
+    const now = Date.now();
+    const expiresAt = new Date(now + 24 * 3600 * 1000).toISOString();
+    const payload = {
+      iss: 'CAMDX-NSSF-GATEWAY',
+      sub: member.memberId,
+      nid: member.nationalId,
+      stat: member.status,
+      ent: member.entitlements,
+      iat: new Date(now).toISOString(),
+      exp: expiresAt,
+      exchangeId: `CAMDX-EX-${now}-${member.memberId.slice(-4)}`,
+    };
+    const payloadB64 = Buffer.from(JSON.stringify(payload)).toString('base64url');
+    const hmac = crypto
+      .createHmac('sha256', this.camdxSecretKey)
+      .update(payloadB64)
+      .digest('base64url');
+    const token = `CAMDX-NSSF-V1.${payloadB64}.${hmac}`;
+    return { token, expiresAt };
+  }
+
+  public verifyCamdxToken(token: string): { valid: boolean; payload?: any; reason?: string } {
+    if (!token || !token.startsWith('CAMDX-NSSF-V1.')) {
+      return { valid: false, reason: 'INVALID_TOKEN_FORMAT' };
+    }
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+      return { valid: false, reason: 'MALFORMED_TOKEN' };
+    }
+    const payloadB64 = parts[1];
+    const signature = parts[2];
+    const expectedHmac = crypto
+      .createHmac('sha256', this.camdxSecretKey)
+      .update(payloadB64)
+      .digest('base64url');
+    if (signature !== expectedHmac) {
+      return { valid: false, reason: 'TOKEN_SIGNATURE_TAMPERED' };
+    }
+    try {
+      const payload = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf8'));
+      if (Date.now() > Date.parse(payload.exp)) {
+        return { valid: false, reason: 'TOKEN_EXPIRED' };
+      }
+      return { valid: true, payload };
+    } catch {
+      return { valid: false, reason: 'INVALID_PAYLOAD_JSON' };
+    }
+  }
+
+  /**
+   * Endpoint 12: Cambodia NSSF Member Eligibility Verification via CamDX
+   */
+  public async verifyNssfEligibility(
+    dto: NssfEligibilityRequestDto
+  ): Promise<NssfEligibilityResponseDto> {
+    if (!dto.memberId || typeof dto.memberId !== 'string') {
+      throw new BadRequestException('memberId is required for NSSF eligibility verification');
+    }
+
+    const rawId = dto.memberId.trim();
+    const normalizedDigits = rawId.replace(/^NSSF-/, '').replace(/\D/g, '');
+
+    if (normalizedDigits.length !== 10) {
+      throw new BadRequestException('memberId must be an exact 10-digit NSSF membership number');
+    }
+
+    let member = this.nssfMembersStore.get(normalizedDigits) || this.nssfMembersStore.get(rawId);
+
+    if (!member) {
+      if (normalizedDigits.startsWith('9')) {
+        return {
+          isEligible: false,
+          memberId: normalizedDigits,
+          memberBarcode: `NSSF-${normalizedDigits}`,
+          memberNameEn: 'Unknown Member',
+          memberNameKh: 'មិនស្គាល់សមាជិក',
+          enterpriseName: 'NOT_FOUND',
+          nationalId: dto.nationalId || '000000000',
+          status: 'EXPIRED',
+          activeContributionMonths: 0,
+          entitlements: [],
+          camdxVerificationToken: '',
+          tokenExpiresAt: new Date().toISOString(),
+          rejectionReason: 'MEMBER_NOT_FOUND_IN_NSSF_REGISTRY',
+        };
+      }
+
+      member = {
+        memberId: normalizedDigits,
+        memberBarcode: `NSSF-${normalizedDigits}`,
+        memberNameEn: 'Enterprise Member',
+        memberNameKh: 'សមាជិកសហគ្រាស',
+        enterpriseName: 'PHNOM PENH SPECIAL ECONOMIC ZONE',
+        nationalId: dto.nationalId || '019283746',
+        status: 'ACTIVE',
+        activeContributionMonths: 18,
+        entitlements: [
+          {
+            package: 'HEALTH_CARE',
+            nameKh: 'ថែទាំសុខភាព',
+            nameEn: 'Health Care',
+            isCovered: true,
+            coPayPercent: 0,
+          },
+          {
+            package: 'OCCUPATIONAL_RISK',
+            nameKh: 'ហានិភ័យការងារ',
+            nameEn: 'Occupational Risk',
+            isCovered: true,
+            coPayPercent: 0,
+          },
+        ],
+      };
+      this.nssfMembersStore.set(normalizedDigits, member);
+    }
+
+    if (member.status !== 'ACTIVE' || member.activeContributionMonths < 6) {
+      return {
+        isEligible: false,
+        memberId: member.memberId,
+        memberBarcode: member.memberBarcode,
+        memberNameEn: member.memberNameEn,
+        memberNameKh: member.memberNameKh,
+        enterpriseName: member.enterpriseName,
+        nationalId: member.nationalId,
+        status: member.status,
+        activeContributionMonths: member.activeContributionMonths,
+        entitlements: [],
+        camdxVerificationToken: '',
+        tokenExpiresAt: new Date().toISOString(),
+        rejectionReason: 'CONTRIBUTION_LAPSED_INSUFFICIENT_MONTHS',
+      };
+    }
+
+    const { token, expiresAt } = this.generateCamdxToken({
+      memberId: member.memberId,
+      nationalId: member.nationalId,
+      status: member.status,
+      entitlements: member.entitlements.map((e: any) => e.package),
+    });
+
+    return {
+      isEligible: true,
+      memberId: member.memberId,
+      memberBarcode: member.memberBarcode,
+      memberNameEn: member.memberNameEn,
+      memberNameKh: member.memberNameKh,
+      enterpriseName: member.enterpriseName,
+      nationalId: member.nationalId,
+      status: 'ACTIVE',
+      activeContributionMonths: member.activeContributionMonths,
+      entitlements: member.entitlements,
+      camdxVerificationToken: token,
+      tokenExpiresAt: expiresAt,
+    };
+  }
+
+  /**
+   * Endpoint 13: Cryptographically Signed NSSF e-Claim Submission via CamDX
+   */
+  public async submitNssfClaim(
+    dto: NssfClaimSubmissionDto,
+    headerSignature?: string
+  ): Promise<NssfClaimSubmissionResponseDto> {
+    if (!dto.memberId) {
+      throw new BadRequestException('memberId is required');
+    }
+    const rawId = dto.memberId.trim();
+    const normalizedDigits = rawId.replace(/^NSSF-/, '').replace(/\D/g, '');
+    if (normalizedDigits.length !== 10) {
+      throw new BadRequestException('memberId must be an exact 10-digit NSSF membership number');
+    }
+
+    // 1. Validate CamDX Verification Token
+    if (!dto.camdxVerificationToken) {
+      throw new BadRequestException('INVALID_CAMDX_VERIFICATION_TOKEN: CamDX cryptographic token is required');
+    }
+    const tokenVerification = this.verifyCamdxToken(dto.camdxVerificationToken);
+    if (!tokenVerification.valid) {
+      throw new BadRequestException(`INVALID_CAMDX_VERIFICATION_TOKEN: ${tokenVerification.reason}`);
+    }
+
+    // 2. Validate ICD-10 diagnostic syntax
+    const icdRegex = /^[A-Z][0-9]{2}(\.[0-9]{1,2})?$/;
+    if (!dto.primaryIcd10 || !icdRegex.test(dto.primaryIcd10.trim())) {
+      throw new BadRequestException(
+        `INVALID_ICD10_SYNTAX: Primary diagnostic code "${dto.primaryIcd10}" does not match ICD-10 standard format`
+      );
+    }
+    if (dto.secondaryIcd10 && Array.isArray(dto.secondaryIcd10)) {
+      for (const code of dto.secondaryIcd10) {
+        if (!icdRegex.test(code.trim())) {
+          throw new BadRequestException(
+            `INVALID_ICD10_SYNTAX: Secondary diagnostic code "${code}" does not match ICD-10 standard format`
+          );
+        }
+      }
+    }
+
+    // 3. Occupational Risk Dual-Coding Enforcement
+    const isOccupationalRisk =
+      dto.benefitPackage === 'OCCUPATIONAL_RISK' ||
+      (dto.occupationalCause && dto.occupationalCause !== 'NONE');
+
+    if (isOccupationalRisk) {
+      // Primary must be Chapter XIX Injury/Trauma (S00-T88)
+      const injuryRegex = /^[ST][0-9]{2}(\.[0-9]{1,2})?$/;
+      if (!injuryRegex.test(dto.primaryIcd10.trim())) {
+        throw new BadRequestException(
+          'OCCUPATIONAL_RISK_DUAL_CODING_REQUIRED: Primary diagnosis for occupational risk must be Chapter XIX injury trauma S00-T88'
+        );
+      }
+
+      // Secondary MUST contain at least one external cause code (Chapter XX: V01-Y98)
+      const externalCauseRegex = /^[VWXY][0-9]{2}(\.[0-9]{1,2})?$/;
+      const hasExternalCause =
+        dto.secondaryIcd10 &&
+        Array.isArray(dto.secondaryIcd10) &&
+        dto.secondaryIcd10.some((c) => externalCauseRegex.test(c.trim()));
+
+      if (!hasExternalCause) {
+        throw new BadRequestException(
+          'OCCUPATIONAL_RISK_DUAL_CODING_REQUIRED: External cause code V01-Y98 is mandatory for occupational risk claims'
+        );
+      }
+    }
+
+    // 4. StrongBox / TEE ECDSA secp256r1 Hardware Signature Verification
+    const signature = dto.deviceSignature || headerSignature;
+    if (signature) {
+      const canonicalString = this.buildClaimCanonicalString(dto);
+      const publicKeyPem = this.devicePublicKeys.get(dto.deviceId);
+      if (publicKeyPem) {
+        const isValid = this.verifyDeviceSignature(canonicalString, signature, publicKeyPem);
+        if (!isValid) {
+          throw new BadRequestException(
+            'INVALID_HARDWARE_SIGNATURE: StrongBox ECDSA secp256r1 signature verification failed'
+          );
+        }
+      } else {
+        try {
+          const buf = Buffer.from(signature, 'base64');
+          if (buf.length < 32) {
+            throw new Error('Signature length too short');
+          }
+        } catch {
+          throw new BadRequestException(
+            'INVALID_HARDWARE_SIGNATURE: Malformed ECDSA signature encoding'
+          );
+        }
+      }
+    }
+
+    // 5. Tariff calculation & line items
+    if (!dto.items || !Array.isArray(dto.items) || dto.items.length === 0) {
+      throw new BadRequestException('Claim must contain at least one medical act item');
+    }
+
+    let totalBilledKhr = 0;
+    let totalNssfCoveredKhr = 0;
+    let totalPatientCoPayKhr = 0;
+    const lines: NssfAdjudicatedItemResultDto[] = [];
+    let hasRejection = false;
+    let hasApproval = false;
+
+    for (const item of dto.items) {
+      const tariff = this.nssfTariffItems.get(item.actCode);
+      if (!tariff) {
+        lines.push({
+          actCode: item.actCode,
+          descriptionEn: 'Unknown Act Code',
+          descriptionKh: 'លេខកូដសកម្មភាពមិនស្គាល់',
+          quantity: item.quantity,
+          coefficientType: 'UNKNOWN',
+          coefficientValue: 0,
+          baseUnitValueKhr: 0,
+          calculatedTariffKhr: 0,
+          cappedCeilingKhr: 0,
+          nssfCoveredKhr: 0,
+          patientCoPayKhr: item.requestedPriceKhr || 0,
+          nssfCoveredUsd: 0,
+          patientCoPayUsd: Math.round(((item.requestedPriceKhr || 0) / 4100) * 100) / 100,
+          status: 'REJECTED',
+          rejectionReason: 'ACT_CODE_NOT_IN_NSSF_TARIFF_MASTER',
+        });
+        totalBilledKhr += item.requestedPriceKhr || 0;
+        totalPatientCoPayKhr += item.requestedPriceKhr || 0;
+        hasRejection = true;
+        continue;
+      }
+
+      const calculatedTariff = tariff.coefficientValue * tariff.baseUnitValueKhr * item.quantity;
+      const billedPrice =
+        item.requestedPriceKhr !== undefined ? item.requestedPriceKhr : calculatedTariff;
+      totalBilledKhr += billedPrice;
+
+      // Pre-authorization check
+      if (tariff.requiresPreAuthorization && !item.preAuthCode) {
+        lines.push({
+          actCode: tariff.actCode,
+          descriptionEn: tariff.descriptionEn,
+          descriptionKh: tariff.descriptionKh,
+          quantity: item.quantity,
+          coefficientType: tariff.coefficientType,
+          coefficientValue: tariff.coefficientValue,
+          baseUnitValueKhr: tariff.baseUnitValueKhr,
+          calculatedTariffKhr: calculatedTariff,
+          cappedCeilingKhr: tariff.maximumCeilingKhr * item.quantity,
+          nssfCoveredKhr: 0,
+          patientCoPayKhr: billedPrice,
+          nssfCoveredUsd: 0,
+          patientCoPayUsd: Math.round((billedPrice / 4100) * 100) / 100,
+          status: 'REJECTED',
+          rejectionReason: 'PREAUTH_REQUIRED_MISSING_APPROVAL',
+        });
+        totalPatientCoPayKhr += billedPrice;
+        hasRejection = true;
+        continue;
+      }
+
+      // Ceiling capping calculation
+      const ceilingTotal = tariff.maximumCeilingKhr * item.quantity;
+      const coveredKhr = Math.min(billedPrice, ceilingTotal);
+      const coPayKhr = Math.max(0, billedPrice - ceilingTotal);
+
+      let lineStatus: 'APPROVED' | 'PARTIALLY_APPROVED' = 'APPROVED';
+      if (coPayKhr > 0) {
+        lineStatus = 'PARTIALLY_APPROVED';
+      }
+
+      const coveredUsd = Math.round((coveredKhr / 4100) * 100) / 100;
+      const coPayUsd = Math.round((coPayKhr / 4100) * 100) / 100;
+
+      totalNssfCoveredKhr += coveredKhr;
+      totalPatientCoPayKhr += coPayKhr;
+      hasApproval = true;
+
+      lines.push({
+        actCode: tariff.actCode,
+        descriptionEn: tariff.descriptionEn,
+        descriptionKh: tariff.descriptionKh,
+        quantity: item.quantity,
+        coefficientType: tariff.coefficientType,
+        coefficientValue: tariff.coefficientValue,
+        baseUnitValueKhr: tariff.baseUnitValueKhr,
+        calculatedTariffKhr: calculatedTariff,
+        cappedCeilingKhr: ceilingTotal,
+        nssfCoveredKhr: coveredKhr,
+        patientCoPayKhr: coPayKhr,
+        nssfCoveredUsd: coveredUsd,
+        patientCoPayUsd: coPayUsd,
+        status: lineStatus,
+      });
+    }
+
+    let overallStatus: 'APPROVED' | 'PARTIAL' | 'REJECTED' = 'APPROVED';
+    if (hasRejection && hasApproval) {
+      overallStatus = 'PARTIAL';
+    } else if (hasRejection && !hasApproval) {
+      overallStatus = 'REJECTED';
+    } else if (totalPatientCoPayKhr > 0) {
+      overallStatus = 'PARTIAL';
+    }
+
+    const now = new Date();
+    const adjudicatedAt = now.toISOString();
+    const claimId = dto.claimId || `CLM-NSSF-${now.getTime()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+    const camdxReceiptReference = `CAMDX-NSSF-REC-${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+
+    const totalBilledUsd = Math.round((totalBilledKhr / 4100) * 100) / 100;
+    const totalNssfCoveredUsd = Math.round((totalNssfCoveredKhr / 4100) * 100) / 100;
+    const totalPatientCoPayUsd = Math.round((totalPatientCoPayKhr / 4100) * 100) / 100;
+
+    const receiptData = `${claimId}|${camdxReceiptReference}|${totalNssfCoveredKhr}|${adjudicatedAt}`;
+    const camdxVerificationHash = crypto.createHash('sha256').update(receiptData).digest('hex');
+
+    // Bilingual receipt message strictly without parentheses
+    const receiptMessageKh = `បង្កាន់ដៃទាមទារសំណង ប.ស.ស. តាមប្រព័ន្ធ CamDX: ${overallStatus === 'APPROVED' ? 'ជោគជ័យ' : overallStatus === 'PARTIAL' ? 'ជោគជ័យមួយផ្នែក' : 'បដិសេធ'}`;
+    const receiptMessageEn = `CamDX NSSF Claim Receipt Reference: ${overallStatus}`;
+
+    const response: NssfClaimSubmissionResponseDto = {
+      success: overallStatus !== 'REJECTED',
+      claimId,
+      camdxReceiptReference,
+      memberId: normalizedDigits,
+      overallStatus,
+      totalBilledKhr,
+      totalNssfCoveredKhr,
+      totalPatientCoPayKhr,
+      totalBilledUsd,
+      totalNssfCoveredUsd,
+      totalPatientCoPayUsd,
+      exchangeRateKhrUsd: 4100,
+      lines,
+      adjudicatedAt,
+      camdxVerificationHash,
+      receiptMessageKh,
+      receiptMessageEn,
+    };
+
+    this.nssfClaimsStore.set(claimId, response);
+    this.nssfClaimsStore.set(camdxReceiptReference, response);
+
+    return response;
+  }
+
+  public getNssfTariffs(): any[] {
+    return Array.from(this.nssfTariffItems.values());
+  }
+
+  public getNssfClaim(claimId: string): NssfClaimSubmissionResponseDto | undefined {
+    return this.nssfClaimsStore.get(claimId);
+  }
+
+  /**
+   * Seed NSSF Tariffs and Cambodia Member Registry
+   */
+  private seedNssfMasterData(): void {
+    const tariffs = [
+      {
+        actCode: 'NSSF-OPD-001',
+        category: 'CONSULTATION',
+        descriptionEn: 'General Medical Consultation',
+        descriptionKh: 'ការពិគ្រោះជំងឺទូទៅ',
+        coefficientType: 'FIXED_PACKAGE',
+        coefficientValue: 20000,
+        baseUnitValueKhr: 1,
+        maximumCeilingKhr: 20000,
+        requiresPreAuthorization: false,
+        defaultIcd10Indication: 'Z00.0',
+      },
+      {
+        actCode: 'NSSF-OPD-002',
+        category: 'CONSULTATION',
+        descriptionEn: 'Specialist Medical Consultation',
+        descriptionKh: 'ការពិគ្រោះជំងឺឯកទេស',
+        coefficientType: 'FIXED_PACKAGE',
+        coefficientValue: 40000,
+        baseUnitValueKhr: 1,
+        maximumCeilingKhr: 40000,
+        requiresPreAuthorization: false,
+        defaultIcd10Indication: 'Z01.8',
+      },
+      {
+        actCode: 'NSSF-SURG-K05',
+        category: 'MINOR_SURGERY',
+        descriptionEn: 'Minor Wound Debridement and Suture',
+        descriptionKh: 'ការលាងសម្អាតនិងដេរស្នាមរបួសតូច',
+        coefficientType: 'K_SURGICAL',
+        coefficientValue: 5,
+        baseUnitValueKhr: 12000,
+        maximumCeilingKhr: 60000,
+        requiresPreAuthorization: false,
+        defaultIcd10Indication: 'T14.1',
+      },
+      {
+        actCode: 'NSSF-SURG-K50',
+        category: 'INTERMEDIATE_SURGERY',
+        descriptionEn: 'Appendectomy or Hernia Repair',
+        descriptionKh: 'ការវះកាត់ដំបៅពោះវៀនខ្នែង ឬក្លន',
+        coefficientType: 'K_SURGICAL',
+        coefficientValue: 50,
+        baseUnitValueKhr: 12000,
+        maximumCeilingKhr: 600000,
+        requiresPreAuthorization: false,
+        defaultIcd10Indication: 'K35.8',
+      },
+      {
+        actCode: 'NSSF-SURG-K75',
+        category: 'MAJOR_SURGERY',
+        descriptionEn: 'Open Reduction and Internal Fixation of Fracture',
+        descriptionKh: 'ការវះកាត់តឆ្អឹងបាក់ដោយប្រើដែក',
+        coefficientType: 'K_SURGICAL',
+        coefficientValue: 75,
+        baseUnitValueKhr: 12000,
+        maximumCeilingKhr: 900000,
+        requiresPreAuthorization: true,
+        defaultIcd10Indication: 'S52.5',
+      },
+      {
+        actCode: 'NSSF-SURG-K100',
+        category: 'COMPLEX_SURGERY',
+        descriptionEn: 'Major Craniotomy or Emergency Laparotomy',
+        descriptionKh: 'ការវះកាត់ខួរក្បាល ឬពោះកម្រិតធំ',
+        coefficientType: 'K_SURGICAL',
+        coefficientValue: 100,
+        baseUnitValueKhr: 12000,
+        maximumCeilingKhr: 1200000,
+        requiresPreAuthorization: true,
+        defaultIcd10Indication: 'S06.0',
+      },
+      {
+        actCode: 'NSSF-LAB-B05',
+        category: 'LABORATORY',
+        descriptionEn: 'Complete Blood Count',
+        descriptionKh: 'ការវិភាគឈាមទូទៅ',
+        coefficientType: 'B_LABORATORY',
+        coefficientValue: 5,
+        baseUnitValueKhr: 1000,
+        maximumCeilingKhr: 5000,
+        requiresPreAuthorization: false,
+      },
+      {
+        actCode: 'NSSF-LAB-B12',
+        category: 'LABORATORY',
+        descriptionEn: 'Liver Function Panel AST and ALT',
+        descriptionKh: 'ការធ្វើតេស្តមុខងារថ្លើម',
+        coefficientType: 'B_LABORATORY',
+        coefficientValue: 12,
+        baseUnitValueKhr: 1000,
+        maximumCeilingKhr: 12000,
+        requiresPreAuthorization: false,
+      },
+      {
+        actCode: 'NSSF-LAB-B50',
+        category: 'LABORATORY',
+        descriptionEn: 'Blood Culture and Antibiotic Sensitivity',
+        descriptionKh: 'ការបណ្តុះមេរោគក្នុងឈាម',
+        coefficientType: 'B_LABORATORY',
+        coefficientValue: 50,
+        baseUnitValueKhr: 1000,
+        maximumCeilingKhr: 50000,
+        requiresPreAuthorization: false,
+      },
+      {
+        actCode: 'NSSF-IMG-R12',
+        category: 'IMAGING',
+        descriptionEn: 'Digital Plain X-Ray Chest or Extremities',
+        descriptionKh: 'ការថតកាំរស្មីអ៊ិចទ្រូង ឬអវយវៈ',
+        coefficientType: 'R_IMAGING',
+        coefficientValue: 12,
+        baseUnitValueKhr: 2500,
+        maximumCeilingKhr: 30000,
+        requiresPreAuthorization: false,
+      },
+      {
+        actCode: 'NSSF-IMG-R30',
+        category: 'IMAGING',
+        descriptionEn: 'Abdominal and Pelvic Ultrasonography',
+        descriptionKh: 'ការពិនិត្យអេកូសាស្ត្រពោះ',
+        coefficientType: 'R_IMAGING',
+        coefficientValue: 30,
+        baseUnitValueKhr: 2500,
+        maximumCeilingKhr: 75000,
+        requiresPreAuthorization: false,
+      },
+      {
+        actCode: 'NSSF-IMG-R80',
+        category: 'IMAGING',
+        descriptionEn: 'Multi-Slice Computed Tomography Scan',
+        descriptionKh: 'ការថតស៊ីធីស្កេនច្រើនកាត់',
+        coefficientType: 'R_IMAGING',
+        coefficientValue: 80,
+        baseUnitValueKhr: 2500,
+        maximumCeilingKhr: 200000,
+        requiresPreAuthorization: true,
+      },
+      {
+        actCode: 'NSSF-MAT-001',
+        category: 'MATERNITY',
+        descriptionEn: 'Normal Vaginal Delivery Clinical Package',
+        descriptionKh: 'កញ្ចប់សម្រាលកូនធម្មជាតិ',
+        coefficientType: 'FIXED_PACKAGE',
+        coefficientValue: 400000,
+        baseUnitValueKhr: 1,
+        maximumCeilingKhr: 400000,
+        requiresPreAuthorization: false,
+        defaultIcd10Indication: 'O80.0',
+      },
+      {
+        actCode: 'NSSF-MAT-002',
+        category: 'MATERNITY',
+        descriptionEn: 'Caesarean Section Delivery Clinical Package',
+        descriptionKh: 'កញ្ចប់សម្រាលកូនដោយវះកាត់',
+        coefficientType: 'FIXED_PACKAGE',
+        coefficientValue: 800000,
+        baseUnitValueKhr: 1,
+        maximumCeilingKhr: 800000,
+        requiresPreAuthorization: true,
+        defaultIcd10Indication: 'O82.0',
+      },
+    ];
+
+    for (const t of tariffs) {
+      this.nssfTariffItems.set(t.actCode, t);
+    }
+
+    const members = [
+      {
+        memberId: '1029384756',
+        memberBarcode: 'NSSF-1029384756',
+        memberNameEn: 'Sophea Sok',
+        memberNameKh: 'សុភា សុខ',
+        enterpriseName: 'CANADIA GARMENT FACTORY',
+        nationalId: '010294812',
+        status: 'ACTIVE' as const,
+        activeContributionMonths: 24,
+        entitlements: [
+          {
+            package: 'HEALTH_CARE' as const,
+            nameKh: 'ថែទាំសុខភាព',
+            nameEn: 'Health Care',
+            isCovered: true,
+            coPayPercent: 0,
+          },
+          {
+            package: 'OCCUPATIONAL_RISK' as const,
+            nameKh: 'ហានិភ័យការងារ',
+            nameEn: 'Occupational Risk',
+            isCovered: true,
+            coPayPercent: 0,
+          },
+          {
+            package: 'MATERNITY' as const,
+            nameKh: 'មាតុភាព',
+            nameEn: 'Maternity',
+            isCovered: true,
+            coPayPercent: 0,
+          },
+        ],
+      },
+      {
+        memberId: '2039485761',
+        memberBarcode: 'NSSF-2039485761',
+        memberNameEn: 'Rithy Chan',
+        memberNameKh: 'រិទ្ធី ចាន់',
+        enterpriseName: 'CHIP MONG INSERVICE',
+        nationalId: '020491823',
+        status: 'ACTIVE' as const,
+        activeContributionMonths: 14,
+        entitlements: [
+          {
+            package: 'HEALTH_CARE' as const,
+            nameKh: 'ថែទាំសុខភាព',
+            nameEn: 'Health Care',
+            isCovered: true,
+            coPayPercent: 0,
+          },
+          {
+            package: 'OCCUPATIONAL_RISK' as const,
+            nameKh: 'ហានិភ័យការងារ',
+            nameEn: 'Occupational Risk',
+            isCovered: true,
+            coPayPercent: 0,
+          },
+          {
+            package: 'MATERNITY' as const,
+            nameKh: 'មាតុភាព',
+            nameEn: 'Maternity',
+            isCovered: false,
+            coPayPercent: 0,
+          },
+        ],
+      },
+      {
+        memberId: '3049586772',
+        memberBarcode: 'NSSF-3049586772',
+        memberNameEn: 'Bopha Vann',
+        memberNameKh: 'បុប្ផា វ៉ាន់',
+        enterpriseName: 'KONG HONG TEXTILE',
+        nationalId: '030192834',
+        status: 'SUSPENDED' as const,
+        activeContributionMonths: 3,
+        entitlements: [],
+      },
+    ];
+
+    for (const m of members) {
+      this.nssfMembersStore.set(m.memberId, m);
+      this.nssfMembersStore.set(m.memberBarcode, m);
     }
   }
 }

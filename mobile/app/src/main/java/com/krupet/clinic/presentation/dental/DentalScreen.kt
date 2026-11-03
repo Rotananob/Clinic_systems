@@ -153,7 +153,7 @@ fun DentalScreen(
     }
 
     // Initialize interactive tooth states
-    var toothRecords by remember {
+    var toothRecords: Map<Int, ToothState> by remember {
         val initialMap = mutableMapOf<Int, ToothState>()
         (permanentUpperArch + permanentLowerArch).forEach { num ->
             initialMap[num] = ToothState(fdiNumber = num, isPrimary = false)
@@ -195,7 +195,7 @@ fun DentalScreen(
             clinicalNotes = "Intact occlusal amalgam restoration"
         )
 
-        mutableStateOf<Map<Int, ToothState>>(initialMap)
+        mutableStateOf<Map<Int, ToothState>>(initialMap.toMap())
     }
 
     val selectedTooth = toothRecords[selectedToothNum] ?: ToothState(fdiNumber = selectedToothNum)

@@ -61,6 +61,22 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+            all { test ->
+                test.systemProperty("user.home", "D:\\.gradle")
+                test.systemProperty("java.io.tmpdir", "D:\\.gradle\\tmp")
+                test.systemProperty("org.conscrypt.native.workdir", "D:\\.gradle\\tmp")
+                test.jvmArgs(
+                    "-Duser.home=D:\\.gradle",
+                    "-Djava.io.tmpdir=D:\\.gradle\\tmp",
+                    "-Dorg.conscrypt.native.workdir=D:\\.gradle\\tmp"
+                )
+            }
+        }
+    }
 }
 
 dependencies {
@@ -101,6 +117,9 @@ dependencies {
     // Unit Testing
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
+    testImplementation("androidx.test:core:1.6.1")
+    testImplementation("androidx.test.ext:junit:1.2.1")
+    testImplementation("org.robolectric:robolectric:4.14.1")
 
     // Debugging Tools
     debugImplementation("androidx.compose.ui:ui-tooling")
