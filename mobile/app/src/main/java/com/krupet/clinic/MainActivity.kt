@@ -27,6 +27,7 @@ import com.krupet.clinic.presentation.auth.SplashScreen
 import com.krupet.clinic.presentation.billing.BillingScreen
 import com.krupet.clinic.presentation.dashboard.DashboardScreen
 import com.krupet.clinic.presentation.dental.DentalScreen
+import com.krupet.clinic.presentation.eclaim.NssfClaimScreen
 import com.krupet.clinic.presentation.laboratory.LabScreen
 import com.krupet.clinic.presentation.narcotics.NarcoticsRegisterScreen
 import com.krupet.clinic.presentation.pacs.PacsViewerScreen
@@ -165,7 +166,8 @@ class MainActivity : ComponentActivity() {
                                 onNavigateToStewardship = { navController.navigate("stewardship") },
                                 onNavigateToSurgical = { navController.navigate("surgical") },
                                 onNavigateToNarcotics = { navController.navigate("narcotics") },
-                                onNavigateToWarehouse = { navController.navigate("warehouse") }
+                                onNavigateToWarehouse = { navController.navigate("warehouse") },
+                                onNavigateToNssf = { navController.navigate("nssf_claim") }
                             )
                         }
                         composable("login") {
@@ -220,6 +222,11 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("billing") {
                             BillingScreen()
+                        }
+                        composable("nssf_claim") {
+                            NssfClaimScreen(
+                                onNavigateBack = { navController.popBackStack() }
+                            )
                         }
                     }
                 }
