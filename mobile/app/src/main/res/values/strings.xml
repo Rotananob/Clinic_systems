@@ -21,6 +21,10 @@
     <string name="nav_dental">Dental</string>
     <string name="nav_telemetry">Telemetry</string>
     <string name="nav_patient">Patient EHR</string>
+    <string name="nav_surgical">Surgical Safety</string>
+    <string name="nav_stewardship">Antimicrobial PK</string>
+    <string name="nav_narcotics">Narcotics Vault</string>
+    <string name="nav_warehouse">Warehouse FEFO</string>
     <string name="nav_settings">Settings</string>
 
     <!-- Resuscitation Protocol Strings -->
@@ -51,6 +55,10 @@
     <string name="dental_title">Dental Odontogram Charting</string>
     <string name="telemetry_title">Bedside Telemetry and Infusion</string>
     <string name="patient_title">Patient Electronic Health Records</string>
+    <string name="surgical_title">WHO Surgical Safety Checklist</string>
+    <string name="stewardship_title">Antimicrobial Stewardship and Pharmacokinetics</string>
+    <string name="narcotics_title">Controlled Substances Narcotic Register</string>
+    <string name="warehouse_title">Pharmacy Warehouse and FEFO Stock</string>
 
     <!-- Status & Alerts -->
     <string name="status_connected">Connected to Clinic Server</string>

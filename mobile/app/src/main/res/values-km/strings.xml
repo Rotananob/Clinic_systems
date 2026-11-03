@@ -21,6 +21,10 @@
     <string name="nav_dental">ទន្តសាស្ត្រ</string>
     <string name="nav_telemetry">តាមដានសញ្ញាជីវិត និងបញ្ចូលថ្នាំ</string>
     <string name="nav_patient">កំណត់ត្រាសុខភាពអ្នកជំងឺ</string>
+    <string name="nav_surgical">សុវត្ថិភាពវះកាត់</string>
+    <string name="nav_stewardship">ការគ្រប់គ្រងថ្នាំផ្សះ</string>
+    <string name="nav_narcotics">បញ្ជីឱសថញៀន</string>
+    <string name="nav_warehouse">ឃ្លាំងឱសថ</string>
     <string name="nav_settings">ការកំណត់</string>
 
     <!-- Resuscitation Protocol Strings -->
@@ -51,6 +55,10 @@
     <string name="dental_title">គំនូសតាងសុខភាពមាត់ធ្មេញ</string>
     <string name="telemetry_title">ការតាមដានចង្វាក់បេះដូង និងម៉ាស៊ីនបញ្ចូលសេរ៉ូមស្វ័យប្រវត្តិ</string>
     <string name="patient_title">ប្រវត្តិវេជ្ជសាស្ត្រ និងការកត់ត្រាអ្នកជំងឺ</string>
+    <string name="surgical_title">បញ្ជីផ្ទៀងផ្ទាត់សុវត្ថិភាពការវះកាត់ របស់អង្គការសុខភាពពិភពលោក</string>
+    <string name="stewardship_title">កម្មវិធីគ្រប់គ្រងការប្រើប្រាស់ថ្នាំផ្សះ និងឱសថសាស្ត្រគ្លីនិក</string>
+    <string name="narcotics_title">បញ្ជីកត់ត្រាឱសថញៀន និងការផ្ទៀងផ្ទាត់ហត្ថលេខាពីរនាក់</string>
+    <string name="warehouse_title">ការគ្រប់គ្រងឃ្លាំងឱសថ និងការតាមដានកាលបរិច្ឆេទផុតកំណត់មុន</string>
 
     <!-- Status & Alerts -->
     <string name="status_connected">បានភ្ជាប់ទៅកាន់ម៉ាស៊ីនមេគ្លីនិក</string>

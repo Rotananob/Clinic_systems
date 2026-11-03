@@ -4,9 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -41,16 +38,24 @@ fun DashboardScreen(
     onNavigateToLab: () -> Unit = {},
     onNavigateToDental: () -> Unit = {},
     onNavigateToTelemetry: () -> Unit = {},
-    onNavigateToPatient: () -> Unit = {}
+    onNavigateToPatient: () -> Unit = {},
+    onNavigateToStewardship: () -> Unit = {},
+    onNavigateToSurgical: () -> Unit = {},
+    onNavigateToNarcotics: () -> Unit = {},
+    onNavigateToWarehouse: () -> Unit = {}
 ) {
     val modules = remember {
         listOf(
             ClinicalModuleTile("Emergency Triage", "ESI v4 & NEWS2 Acuity", "Emergency", "TRG", onNavigateToTriage),
             ClinicalModuleTile("Resuscitation", "ACLS, CPR & Sepsis 30mL/kg", "Emergency", "RES", onNavigateToResus),
             ClinicalModuleTile("Bedside Telemetry", "ECG Monitor & Infusion Pump", "Emergency", "TEL", onNavigateToTelemetry),
+            ClinicalModuleTile("Surgical Safety", "WHO OR Checklist & ASA Score", "Surgical", "OR", onNavigateToSurgical),
             ClinicalModuleTile("Inpatient Wards", "Bed Census, SBAR & Fluid Net", "Inpatient", "WRD", onNavigateToWard),
             ClinicalModuleTile("PACS Radiology", "DICOM Viewer & Calipers", "Diagnostics", "RAD", onNavigateToPacs),
             ClinicalModuleTile("Laboratory LIS", "Panic Values & Blood Work", "Diagnostics", "LAB", onNavigateToLab),
+            ClinicalModuleTile("Antimicrobial PK", "CrCl, Vanco AUC & PCT Kinetics", "Pharmacy", "ASP", onNavigateToStewardship),
+            ClinicalModuleTile("Narcotics Vault", "Double-Witness Ledger & Merkle", "Pharmacy", "NAR", onNavigateToNarcotics),
+            ClinicalModuleTile("Pharmacy Warehouse", "FEFO Stock & Barcode Reorder", "Pharmacy", "WHS", onNavigateToWarehouse),
             ClinicalModuleTile("Pediatric Dosing", "Bhutani Bilirubin & Nomograms", "Specialty", "PED", onNavigateToPediatric),
             ClinicalModuleTile("Dental Charting", "FDI Odontogram & Perio", "Specialty", "DEN", onNavigateToDental),
             ClinicalModuleTile("Teleconsultation", "WebRTC Video & e-Prescription", "Outpatient", "TLC", onNavigateToTeleconsult),

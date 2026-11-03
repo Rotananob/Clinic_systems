@@ -13,18 +13,23 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.krupet.clinic.core.designsystem.KruPetTheme
+import com.krupet.clinic.presentation.auth.LoginScreen
 import com.krupet.clinic.presentation.billing.BillingScreen
 import com.krupet.clinic.presentation.dashboard.DashboardScreen
 import com.krupet.clinic.presentation.dental.DentalScreen
 import com.krupet.clinic.presentation.laboratory.LabScreen
+import com.krupet.clinic.presentation.narcotics.NarcoticsRegisterScreen
 import com.krupet.clinic.presentation.pacs.PacsViewerScreen
 import com.krupet.clinic.presentation.patient.PatientScreen
 import com.krupet.clinic.presentation.pediatric.PediatricScreen
 import com.krupet.clinic.presentation.resuscitation.ResuscitationScreen
+import com.krupet.clinic.presentation.stewardship.AntimicrobialStewardshipScreen
+import com.krupet.clinic.presentation.surgical.SurgicalChecklistScreen
 import com.krupet.clinic.presentation.teleconsult.TeleconsultScreen
 import com.krupet.clinic.presentation.telemetry.BedsideTelemetryScreen
 import com.krupet.clinic.presentation.triage.TriageScreen
 import com.krupet.clinic.presentation.ward.WardBedScreen
+import com.krupet.clinic.presentation.warehouse.WarehouseInventoryScreen
 
 class MainActivity : ComponentActivity() {
 
@@ -39,37 +44,39 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     bottomBar = {
-                        NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
-                            NavigationBarItem(
-                                selected = currentRoute == "dashboard",
-                                onClick = { navController.navigate("dashboard") },
-                                label = { Text("Hub") },
-                                icon = { Text("HUB") }
-                            )
-                            NavigationBarItem(
-                                selected = currentRoute == "triage",
-                                onClick = { navController.navigate("triage") },
-                                label = { Text("Triage") },
-                                icon = { Text("ESI") }
-                            )
-                            NavigationBarItem(
-                                selected = currentRoute == "patient",
-                                onClick = { navController.navigate("patient") },
-                                label = { Text("EHR") },
-                                icon = { Text("EHR") }
-                            )
-                            NavigationBarItem(
-                                selected = currentRoute == "ward",
-                                onClick = { navController.navigate("ward") },
-                                label = { Text("Ward") },
-                                icon = { Text("BED") }
-                            )
-                            NavigationBarItem(
-                                selected = currentRoute == "billing",
-                                onClick = { navController.navigate("billing") },
-                                label = { Text("Billing") },
-                                icon = { Text("POS") }
-                            )
+                        if (currentRoute != "login") {
+                            NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
+                                NavigationBarItem(
+                                    selected = currentRoute == "dashboard",
+                                    onClick = { navController.navigate("dashboard") },
+                                    label = { Text("Hub") },
+                                    icon = { Text("HUB") }
+                                )
+                                NavigationBarItem(
+                                    selected = currentRoute == "triage",
+                                    onClick = { navController.navigate("triage") },
+                                    label = { Text("Triage") },
+                                    icon = { Text("ESI") }
+                                )
+                                NavigationBarItem(
+                                    selected = currentRoute == "patient",
+                                    onClick = { navController.navigate("patient") },
+                                    label = { Text("EHR") },
+                                    icon = { Text("EHR") }
+                                )
+                                NavigationBarItem(
+                                    selected = currentRoute == "ward",
+                                    onClick = { navController.navigate("ward") },
+                                    label = { Text("Ward") },
+                                    icon = { Text("BED") }
+                                )
+                                NavigationBarItem(
+                                    selected = currentRoute == "billing",
+                                    onClick = { navController.navigate("billing") },
+                                    label = { Text("Billing") },
+                                    icon = { Text("POS") }
+                                )
+                            }
                         }
                     }
                 ) { innerPadding ->
@@ -90,7 +97,16 @@ class MainActivity : ComponentActivity() {
                                 onNavigateToLab = { navController.navigate("lab") },
                                 onNavigateToDental = { navController.navigate("dental") },
                                 onNavigateToTelemetry = { navController.navigate("telemetry") },
-                                onNavigateToPatient = { navController.navigate("patient") }
+                                onNavigateToPatient = { navController.navigate("patient") },
+                                onNavigateToStewardship = { navController.navigate("stewardship") },
+                                onNavigateToSurgical = { navController.navigate("surgical") },
+                                onNavigateToNarcotics = { navController.navigate("narcotics") },
+                                onNavigateToWarehouse = { navController.navigate("warehouse") }
+                            )
+                        }
+                        composable("login") {
+                            LoginScreen(
+                                onLoginSuccess = { navController.navigate("dashboard") }
                             )
                         }
                         composable("triage") {
@@ -104,6 +120,18 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("telemetry") {
                             BedsideTelemetryScreen()
+                        }
+                        composable("surgical") {
+                            SurgicalChecklistScreen()
+                        }
+                        composable("stewardship") {
+                            AntimicrobialStewardshipScreen()
+                        }
+                        composable("narcotics") {
+                            NarcoticsRegisterScreen()
+                        }
+                        composable("warehouse") {
+                            WarehouseInventoryScreen()
                         }
                         composable("ward") {
                             WardBedScreen()
