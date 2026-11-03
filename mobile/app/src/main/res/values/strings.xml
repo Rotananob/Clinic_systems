@@ -14,6 +14,13 @@
     <string name="nav_resuscitation">Resuscitation</string>
     <string name="nav_pediatric">Pediatric</string>
     <string name="nav_billing">Billing POS</string>
+    <string name="nav_ward">Ward Beds</string>
+    <string name="nav_pacs">PACS Imaging</string>
+    <string name="nav_teleconsult">Teleconsult</string>
+    <string name="nav_lab">Laboratory</string>
+    <string name="nav_dental">Dental</string>
+    <string name="nav_telemetry">Telemetry</string>
+    <string name="nav_patient">Patient EHR</string>
     <string name="nav_settings">Settings</string>
 
     <!-- Resuscitation Protocol Strings -->
@@ -34,6 +41,16 @@
     <string name="billing_amount_usd">Amount USD</string>
     <string name="billing_amount_khr">Amount KHR</string>
     <string name="billing_generate_qr">Generate KHQR DeepLink</string>
+
+    <!-- Clinical Modules Strings -->
+    <string name="triage_title">Emergency Triage Assessment</string>
+    <string name="ward_title">Inpatient Ward Bed Management</string>
+    <string name="pacs_title">PACS Diagnostic Imaging Viewer</string>
+    <string name="teleconsult_title">Teleconsultation Session</string>
+    <string name="lab_title">Laboratory Information System</string>
+    <string name="dental_title">Dental Odontogram Charting</string>
+    <string name="telemetry_title">Bedside Telemetry and Infusion</string>
+    <string name="patient_title">Patient Electronic Health Records</string>
 
     <!-- Status & Alerts -->
     <string name="status_connected">Connected to Clinic Server</string>

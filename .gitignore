@@ -90,3 +90,8 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+*.salive
+.kotlin/
+**/run_*.bat
+run_*.bat
+

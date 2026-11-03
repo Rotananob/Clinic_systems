@@ -14,6 +14,13 @@
     <string name="nav_resuscitation">សង្គ្រោះបន្ទាន់</string>
     <string name="nav_pediatric">កុមារ និងទារក</string>
     <string name="nav_billing">ការទូទាត់ប្រាក់</string>
+    <string name="nav_ward">គ្រែអ្នកជំងឺសម្រាកព្យាបាល</string>
+    <string name="nav_pacs">ប្រព័ន្ធរូបភាពវេជ្ជសាស្ត្រ</string>
+    <string name="nav_teleconsult">ពិគ្រោះជំងឺពីចម្ងាយ</string>
+    <string name="nav_lab">មន្ទីរពិសោធន៍</string>
+    <string name="nav_dental">ទន្តសាស្ត្រ</string>
+    <string name="nav_telemetry">តាមដានសញ្ញាជីវិត និងបញ្ចូលថ្នាំ</string>
+    <string name="nav_patient">កំណត់ត្រាសុខភាពអ្នកជំងឺ</string>
     <string name="nav_settings">ការកំណត់</string>
 
     <!-- Resuscitation Protocol Strings -->
@@ -34,6 +41,16 @@
     <string name="billing_amount_usd">ចំនួនប្រាក់ដុល្លារ</string>
     <string name="billing_amount_khr">ចំនួនប្រាក់រៀល</string>
     <string name="billing_generate_qr">បង្កើតកូដទូទាត់ KHQR</string>
+
+    <!-- Clinical Modules Strings -->
+    <string name="triage_title">ការវាយតម្លៃកម្រិតអាទិភាពសង្គ្រោះបន្ទាន់</string>
+    <string name="ward_title">ការគ្រប់គ្រងគ្រែសម្រាកព្យាបាល និងតុល្យភាពជាតិទឹក</string>
+    <string name="pacs_title">ការពិនិត្យរូបភាពវេជ្ជសាស្ត្រឆ្លុះកាំរស្មី</string>
+    <string name="teleconsult_title">ការពិគ្រោះជំងឺតាមវីដេអូពីចម្ងាយ</string>
+    <string name="lab_title">ប្រព័ន្ធលទ្ធផលមន្ទីរពិសោធន៍ និងការជូនដំណឹងបន្ទាន់</string>
+    <string name="dental_title">គំនូសតាងសុខភាពមាត់ធ្មេញ</string>
+    <string name="telemetry_title">ការតាមដានចង្វាក់បេះដូង និងម៉ាស៊ីនបញ្ចូលសេរ៉ូមស្វ័យប្រវត្តិ</string>
+    <string name="patient_title">ប្រវត្តិវេជ្ជសាស្ត្រ និងការកត់ត្រាអ្នកជំងឺ</string>
 
     <!-- Status & Alerts -->
     <string name="status_connected">បានភ្ជាប់ទៅកាន់ម៉ាស៊ីនមេគ្លីនិក</string>
