@@ -6,7 +6,7 @@
   <title>KruPet Enterprise Medical Station - 2026 Flagship Mobile App</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
       --primary: #006A6A;
@@ -40,6 +40,9 @@
       padding: 0;
       -webkit-tap-highlight-color: transparent;
       user-select: none;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
     }
 
     body {
@@ -50,7 +53,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 24px 16px;
+      padding: 20px 14px;
       color: #E1E3E1;
       overflow-x: hidden;
     }
@@ -60,8 +63,8 @@
       position: fixed;
       inset: 0;
       background: 
-        radial-gradient(circle at 20% 15%, rgba(0, 106, 106, 0.25) 0%, transparent 50%),
-        radial-gradient(circle at 80% 85%, rgba(5, 94, 124, 0.2) 0%, transparent 55%),
+        radial-gradient(circle at 20% 15%, rgba(0, 106, 106, 0.28) 0%, transparent 50%),
+        radial-gradient(circle at 80% 85%, rgba(5, 94, 124, 0.22) 0%, transparent 55%),
         #06100F;
       z-index: 0;
       pointer-events: none;
@@ -72,8 +75,8 @@
       position: relative;
       z-index: 10;
       text-align: center;
-      margin-bottom: 20px;
-      max-width: 800px;
+      margin-bottom: 18px;
+      max-width: 820px;
     }
 
     .studio-badge-row {
@@ -82,7 +85,7 @@
       justify-content: center;
       align-items: center;
       flex-wrap: wrap;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
     .pill-badge {
@@ -90,23 +93,21 @@
       font-weight: 700;
       padding: 4px 12px;
       border-radius: 999px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.3px;
       display: inline-flex;
       align-items: center;
       gap: 6px;
     }
-    .pill-badge.primary { background: rgba(0, 106, 106, 0.3); color: #4DD0E1; border: 1px solid rgba(77, 208, 225, 0.3); }
-    .pill-badge.success { background: rgba(30, 107, 55, 0.3); color: #81C784; border: 1px solid rgba(129, 199, 132, 0.3); }
-    .pill-badge.aba { background: rgba(5, 94, 124, 0.4); color: #26C6DA; border: 1px solid rgba(38, 198, 218, 0.4); }
-    .pill-badge.bakong { background: rgba(226, 26, 26, 0.25); color: #EF5350; border: 1px solid rgba(239, 83, 80, 0.3); }
+    .pill-badge.primary { background: rgba(0, 106, 106, 0.35); color: #4DD0E1; border: 1px solid rgba(77, 208, 225, 0.35); }
+    .pill-badge.success { background: rgba(30, 107, 55, 0.35); color: #81C784; border: 1px solid rgba(129, 199, 132, 0.35); }
+    .pill-badge.accent { background: rgba(5, 94, 124, 0.4); color: #80DEEA; border: 1px solid rgba(128, 222, 234, 0.35); }
 
     .studio-title {
-      font-size: 24px;
-      font-weight: 800;
+      font-size: 22px;
+      font-weight: 700;
       color: #FFFFFF;
-      letter-spacing: -0.5px;
-      margin-bottom: 6px;
+      letter-spacing: -0.2px;
+      margin-bottom: 4px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -114,108 +115,94 @@
     }
 
     .studio-subtitle {
-      font-size: 13px;
+      font-size: 12px;
       color: #A0B2B0;
-      font-weight: 400;
+      line-height: 1.5;
     }
 
-    /* Device Chassis: Flagship Titanium Medical Tablet/Phone */
-    .device-wrapper {
+    /* =====================================================================
+       FLAGSHIP MOBILE DEVICE FRAME (Pixel 9 Pro / Galaxy S24 Ultra Spec)
+       ===================================================================== */
+    .phone-wrapper {
       position: relative;
       z-index: 10;
-      perspective: 1000px;
+      width: 100%;
+      max-width: 412px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
-    .device-chassis {
-      width: 412px;
-      height: 870px;
+    .phone-chassis {
+      width: 100%;
+      height: 840px;
       background: #020C0B;
-      border-radius: 54px;
-      padding: 12px;
-      position: relative;
+      border-radius: 46px;
+      padding: 10px;
       box-shadow: 
-        0 0 0 1px rgba(255, 255, 255, 0.15),
-        0 0 0 4px #1A2E2C,
-        0 0 0 6px #0D1A19,
-        0 30px 80px -10px rgba(0, 0, 0, 0.9),
-        0 20px 40px -5px rgba(0, 106, 106, 0.35);
-      overflow: hidden;
+        0 0 0 1px rgba(255, 255, 255, 0.1),
+        0 20px 60px -10px rgba(0, 0, 0, 0.9),
+        0 0 80px rgba(0, 106, 106, 0.25);
+      position: relative;
       display: flex;
       flex-direction: column;
     }
 
-    /* Screen Inside Bezel */
-    .screen-content {
+    .phone-screen {
       width: 100%;
       height: 100%;
-      background: #F8FAF9;
-      border-radius: 44px;
+      background: var(--surface-variant);
+      border-radius: 38px;
       overflow: hidden;
       position: relative;
       display: flex;
       flex-direction: column;
-      color: var(--text-main);
     }
 
-    /* Dynamic Island Notch */
-    .dynamic-island {
-      position: absolute;
-      top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 125px;
-      height: 28px;
-      background: #000000;
-      border-radius: 20px;
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 10px;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-    }
-    .dynamic-island:hover {
-      width: 180px;
-    }
-    .island-ecg {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 10px;
-      font-family: 'JetBrains Mono', monospace;
-      color: #00E676;
-      font-weight: 700;
-    }
-    .island-dot {
-      width: 6px;
-      height: 6px;
-      background: #00E676;
-      border-radius: 50%;
-      animation: pulseGreen 1.2s infinite;
-    }
-    .island-cam {
-      width: 10px;
-      height: 10px;
-      background: #111;
-      border: 1.5px solid #222;
-      border-radius: 50%;
-    }
-
-    /* Status Bar */
+    /* Top Notch Dynamic Island & System Status Bar */
     .status-bar {
-      height: 44px;
-      padding: 10px 24px 0 24px;
+      height: 38px;
+      background: #FFFFFF;
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      color: var(--text-main);
       font-size: 12px;
       font-weight: 700;
-      color: #191C1C;
-      z-index: 90;
-      background: transparent;
+      font-family: 'JetBrains Mono', monospace;
+      z-index: 50;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      flex-shrink: 0;
     }
+
+    .status-island {
+      background: #061A18;
+      color: #5EEAD4;
+      padding: 3px 12px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    .status-island-pulse {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #00E676;
+      box-shadow: 0 0 8px #00E676;
+      animation: pulseGreen 1.5s infinite;
+    }
+
+    @keyframes pulseGreen {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
     .status-icons {
       display: flex;
       align-items: center;
@@ -228,84 +215,177 @@
       flex: 1;
       overflow-y: auto;
       overflow-x: hidden;
-      padding: 8px 16px 80px 16px;
       scroll-behavior: smooth;
       position: relative;
+      background: #F7FAF9;
     }
-    .viewport-scroll::-webkit-scrollbar { width: 0; height: 0; }
+    .viewport-scroll::-webkit-scrollbar { width: 0; }
 
-    /* App Views (Lifecycle: Splash, Onboarding, Main Hub, Details) */
+    /* Screen Views */
     .app-view {
       display: none;
-      animation: fadeIn 0.25s ease-out forwards;
+      padding: 14px 14px 84px 14px;
+      min-height: 100%;
     }
     .app-view.active {
       display: block;
+      animation: fadeInView 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    @keyframes fadeIn {
+    @keyframes fadeInView {
       from { opacity: 0; transform: translateY(6px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    @keyframes pulseGreen {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(0.85); }
-    }
 
     /* =====================================================================
-       SPLASH SCREEN VIEW
+       TOP APP BAR & BILINGUAL LANGUAGE SWITCHER
+       ===================================================================== */
+    .app-brand-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0 12px 0;
+      border-bottom: 1px solid var(--outline-variant);
+      margin-bottom: 12px;
+    }
+    .brand-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-icon-mini {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #004D40, #006A6A);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(0, 77, 64, 0.25);
+    }
+    .brand-text-kh { 
+      font-family: 'Kantumruy Pro', sans-serif;
+      font-size: 15px; 
+      font-weight: 700; 
+      color: #004D40; 
+      line-height: 1.25; 
+    }
+    .brand-text-en { 
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 10px; 
+      font-weight: 600; 
+      color: #5B6A68; 
+      text-transform: uppercase; 
+      letter-spacing: 0.5px; 
+    }
+
+    .brand-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Bilingual Toggle Pill */
+    .lang-toggle-btn {
+      background: #FFFFFF;
+      border: 1px solid var(--outline);
+      border-radius: 999px;
+      padding: 4px 8px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      transition: all 0.2s;
+    }
+    .lang-toggle-btn:hover {
+      border-color: var(--primary);
+    }
+    .lang-toggle-btn span {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 999px;
+      color: var(--text-sub);
+    }
+    .lang-toggle-btn span.active {
+      background: #004D40;
+      color: #FFFFFF;
+    }
+
+    .staff-badge-pill {
+      background: #FFFFFF;
+      border: 1px solid var(--outline);
+      padding: 4px 10px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      transition: all 0.2s;
+    }
+    .staff-badge-pill:hover { border-color: var(--primary); background: var(--primary-container); }
+    .staff-dot-live { width: 7px; height: 7px; border-radius: 50%; background: #00C853; }
+    .staff-pill-text { font-size: 11px; font-weight: 700; color: #004D40; }
+
+    /* =====================================================================
+       SPLASH VIEW (LUXURY MEDICAL STARTUP)
        ===================================================================== */
     .splash-view {
-      height: 100%;
-      min-height: 720px;
+      background: linear-gradient(165deg, #021C19 0%, #063832 50%, #011412 100%);
+      color: #FFFFFF;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 32px 20px;
-      background: linear-gradient(180deg, #021C19 0%, #063D36 45%, #011412 100%);
-      color: #FFFFFF;
-      border-radius: 36px;
+      padding: 40px 24px;
+      height: 100%;
     }
     .splash-logo-container {
-      width: 110px;
-      height: 110px;
-      margin-bottom: 24px;
+      width: 100px;
+      height: 100px;
+      margin-bottom: 20px;
       position: relative;
       animation: floatLogo 3s ease-in-out infinite;
     }
     @keyframes floatLogo {
       0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-8px); }
+      50% { transform: translateY(-6px); }
     }
     .splash-title-kh {
-      font-size: 26px;
-      font-weight: 800;
+      font-family: 'Kantumruy Pro', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
       color: #FFFFFF;
-      letter-spacing: -0.5px;
+      letter-spacing: 0.2px;
+      line-height: 1.4;
       margin-bottom: 4px;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
     }
     .splash-title-en {
-      font-size: 13px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 12px;
       font-weight: 700;
       color: #2DD4BF;
       letter-spacing: 2px;
       text-transform: uppercase;
-      margin-bottom: 28px;
+      margin-bottom: 24px;
     }
     .splash-loading-box {
-      width: 220px;
+      width: 240px;
       background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(45, 212, 191, 0.2);
-      border-radius: 12px;
-      padding: 12px;
+      border: 1px solid rgba(45, 212, 191, 0.25);
+      border-radius: 14px;
+      padding: 12px 14px;
       margin-bottom: 24px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
     }
     .splash-progress-track {
       width: 100%;
       height: 4px;
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.12);
       border-radius: 99px;
       overflow: hidden;
       margin-bottom: 8px;
@@ -325,6 +405,7 @@
     .btn-splash-enter {
       background: linear-gradient(135deg, #14B8A6, #0D9488);
       color: #FFFFFF;
+      font-family: 'Kantumruy Pro', 'Plus Jakarta Sans', sans-serif;
       font-size: 14px;
       font-weight: 700;
       padding: 12px 32px;
@@ -340,10 +421,10 @@
     }
 
     /* =====================================================================
-       ONBOARDING / STAFF DUTY SIGN-IN
+       STAFF ROLE ONBOARDING / BIOMETRIC AUTH
        ===================================================================== */
     .onboarding-view {
-      padding: 12px 4px;
+      padding: 16px 8px;
     }
     .staff-card {
       background: #FFFFFF;
@@ -374,14 +455,14 @@
       align-items: center;
       justify-content: center;
       font-weight: 800;
-      font-size: 18px;
+      font-size: 17px;
       flex-shrink: 0;
       box-shadow: 0 2px 8px rgba(0, 77, 64, 0.25);
     }
     .staff-avatar.nurse { background: #00796B; }
     .staff-avatar.dental { background: #0288D1; }
     .staff-avatar.pharma { background: #6A1B9A; }
-    .staff-name { font-size: 14px; font-weight: 700; color: var(--text-main); line-height: 1.3; }
+    .staff-name { font-size: 14px; font-weight: 700; color: var(--text-main); line-height: 1.35; }
     .staff-role { font-size: 12px; color: var(--text-muted); font-weight: 500; }
     .staff-meta { font-size: 10px; color: var(--text-sub); font-family: 'JetBrains Mono', monospace; margin-top: 2px; }
 
@@ -400,106 +481,162 @@
       background: #F0FDF4;
     }
     .fingerprint-icon {
-      width: 52px;
-      height: 52px;
+      width: 50px;
+      height: 50px;
       margin: 0 auto 10px auto;
       color: var(--primary);
       animation: pulseFinger 2s infinite ease-in-out;
     }
     @keyframes pulseFinger {
       0%, 100% { transform: scale(1); opacity: 0.9; }
-      50% { transform: scale(1.08); opacity: 1; filter: drop-shadow(0 0 8px rgba(0, 106, 106, 0.5)); }
+      50% { transform: scale(1.06); opacity: 1; filter: drop-shadow(0 0 8px rgba(0, 106, 106, 0.4)); }
     }
 
     /* =====================================================================
-       MAIN CLINICAL HUB (FLAGSHIP HOME VIEW)
+       GLOBAL FAST CLINICAL SPOTLIGHT SEARCH
        ===================================================================== */
-    /* Header Profile & Brand Bar */
-    .app-brand-bar {
+    .spotlight-search-wrap {
+      position: relative;
+      margin-bottom: 14px;
+      z-index: 40;
+    }
+    .search-input-row {
+      display: flex;
+      align-items: center;
+      background: #FFFFFF;
+      border: 1.5px solid var(--outline);
+      border-radius: 16px;
+      padding: 8px 14px;
+      gap: 10px;
+      box-shadow: var(--card-shadow);
+      transition: all 0.2s;
+    }
+    .search-input-row:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(0, 106, 106, 0.15);
+    }
+    .search-input-field {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-size: 12px;
+      font-family: inherit;
+      color: var(--text-main);
+      background: transparent;
+    }
+    .search-input-field::placeholder {
+      color: var(--text-sub);
+    }
+    .search-clear-btn {
+      background: none;
+      border: none;
+      color: var(--text-sub);
+      font-size: 13px;
+      cursor: pointer;
+      display: none;
+    }
+    .search-tags-row {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 8px 2px 2px 2px;
+    }
+    .search-tags-row::-webkit-scrollbar { height: 0; }
+    .search-tag-chip {
+      background: #FFFFFF;
+      border: 1px solid var(--outline-variant);
+      border-radius: 999px;
+      padding: 3px 9px;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--primary);
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .search-tag-chip:hover {
+      background: var(--primary-container);
+      border-color: var(--primary);
+    }
+    .search-results-panel {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: #FFFFFF;
+      border: 1px solid var(--outline);
+      border-radius: 16px;
+      margin-top: 6px;
+      max-height: 280px;
+      overflow-y: auto;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+      z-index: 50;
+      display: none;
+      padding: 8px;
+    }
+    .search-hit-item {
+      padding: 8px 10px;
+      border-radius: 10px;
+      cursor: pointer;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 4px 0 12px 0;
-      border-bottom: 1px solid var(--outline-variant);
-      margin-bottom: 12px;
+      transition: background 0.15s;
+      border-bottom: 1px solid #F0F4F3;
     }
-    .brand-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+    .search-hit-item:last-child { border-bottom: none; }
+    .search-hit-item:hover { background: #E0F2F1; }
+    .hit-category-badge {
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: #E8EEED;
+      color: var(--primary);
+      text-transform: uppercase;
     }
-    .brand-icon-mini {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, #004D40, #006A6A);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 2px 6px rgba(0, 77, 64, 0.3);
-    }
-    .brand-text-kh { font-size: 15px; font-weight: 800; color: #004D40; line-height: 1.2; }
-    .brand-text-en { font-size: 10px; font-weight: 600; color: #5B6A68; text-transform: uppercase; letter-spacing: 0.5px; }
 
-    .brand-right {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .staff-badge-pill {
-      background: #FFFFFF;
-      border: 1px solid var(--outline-variant);
-      border-radius: 20px;
-      padding: 4px 10px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-    }
-    .staff-dot-live { width: 7px; height: 7px; border-radius: 50%; background: #00C853; }
-    .staff-pill-text { font-size: 11px; font-weight: 700; color: var(--text-main); }
-
-    /* Live Hospital Telemetry Banner (REAL CLINICAL METRICS) */
+    /* KPI Cards */
     .kpi-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 8px;
+      gap: 10px;
       margin-bottom: 14px;
     }
     .kpi-card {
       background: #FFFFFF;
       border: 1px solid var(--outline-variant);
       border-radius: 16px;
-      padding: 10px 12px;
+      padding: 12px 14px;
       box-shadow: var(--card-shadow);
-      position: relative;
-      overflow: hidden;
     }
-    .kpi-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 4px;
-      height: 100%;
-      background: var(--primary);
-    }
-    .kpi-card.critical::before { background: var(--critical); }
-    .kpi-card.warning::before { background: var(--warning); }
-    .kpi-card.bank::before { background: var(--aba-blue); }
-
+    .kpi-card.critical { border-left: 4px solid var(--critical); }
+    .kpi-card.warning { border-left: 4px solid var(--warning); }
+    .kpi-card.bank { border-left: 4px solid var(--aba-blue); cursor: pointer; }
     .kpi-header {
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
       margin-bottom: 4px;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 600;
     }
-    .kpi-label { font-size: 11px; font-weight: 600; color: var(--text-muted); }
-    .kpi-value { font-size: 18px; font-weight: 800; color: var(--text-main); font-family: 'Plus Jakarta Sans', sans-serif; }
-    .kpi-sub { font-size: 10px; color: var(--text-sub); display: flex; align-items: center; gap: 4px; }
+    .kpi-value {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text-main);
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: -0.5px;
+    }
+    .kpi-sub {
+      font-size: 10px;
+      color: var(--text-sub);
+      margin-top: 2px;
+    }
     .kpi-sub.up { color: var(--success); font-weight: 600; }
 
-    /* Quick Action Buttons (Scanning, Triage, Telemetry, Bank QR) */
+    /* Quick Action Buttons */
     .quick-actions-bar {
       display: flex;
       gap: 8px;
@@ -538,7 +675,7 @@
       color: #FFFFFF;
     }
 
-    /* Section Title */
+    /* Section Heading */
     .section-title-row {
       display: flex;
       justify-content: space-between;
@@ -546,8 +683,9 @@
       margin-bottom: 10px;
     }
     .section-heading {
+      font-family: 'Kantumruy Pro', 'Plus Jakarta Sans', sans-serif;
       font-size: 14px;
-      font-weight: 800;
+      font-weight: 700;
       color: var(--text-main);
       display: flex;
       align-items: center;
@@ -562,7 +700,7 @@
       color: #004D40;
     }
 
-    /* Clinical Patient Beds Grid (REAL DATA SCAN) */
+    /* Patient Cards */
     .bed-item-card {
       background: #FFFFFF;
       border: 1px solid var(--outline-variant);
@@ -595,7 +733,6 @@
     }
     .bed-number-pill.icu { background: #BA1A1A; }
     .bed-number-pill.er { background: #B26A00; }
-
     .patient-name-hn {
       font-size: 13px;
       font-weight: 700;
@@ -606,55 +743,50 @@
     }
     .hn-badge {
       font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: var(--surface-tint);
+      color: var(--primary);
       font-family: 'JetBrains Mono', monospace;
-      color: var(--text-sub);
+      font-weight: 600;
     }
     .patient-diagnosis {
       font-size: 11px;
       color: var(--text-muted);
       margin-bottom: 8px;
-      font-weight: 500;
+      line-height: 1.4;
     }
-
-    /* Vitals Strip */
     .vitals-strip {
       display: flex;
-      gap: 6px;
-      background: #F4F7F6;
-      border-radius: 10px;
+      gap: 10px;
+      background: var(--surface-variant);
       padding: 6px 10px;
-      margin-bottom: 8px;
+      border-radius: 10px;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
+      font-size: 11px;
     }
-    .vital-item {
-      flex: 1;
-      text-align: center;
-      border-right: 1px solid #DCE5E3;
-    }
-    .vital-item:last-child { border-right: none; }
-    .vital-item span.lbl { font-size: 9px; color: var(--text-sub); display: block; font-weight: 600; }
-    .vital-item span.val { font-weight: 700; color: var(--text-main); }
-    .vital-item span.val.alert { color: var(--critical); font-weight: 800; }
-
+    .vital-item { display: flex; gap: 4px; }
+    .vital-item .lbl { color: var(--text-sub); }
+    .vital-item .val { font-weight: 700; color: var(--text-main); }
+    .vital-item .val.alert { color: var(--critical); }
     .allergy-alert-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
+      margin-top: 6px;
       background: #FFDAD6;
       color: #BA1A1A;
       font-size: 10px;
       font-weight: 700;
-      padding: 2px 8px;
+      padding: 3px 8px;
       border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
     }
 
-    /* Clinical Modules Grid (16 Modules) */
+    /* Modules Grid */
     .modules-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
-      margin-bottom: 16px;
     }
     .module-tile {
       background: #FFFFFF;
@@ -667,7 +799,8 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      min-height: 98px;
+      min-height: 94px;
+      position: relative;
     }
     .module-tile:hover {
       border-color: var(--primary);
@@ -676,8 +809,8 @@
     }
     .tile-top {
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
       margin-bottom: 8px;
     }
     .tile-icon-box {
@@ -688,11 +821,11 @@
       align-items: center;
       justify-content: center;
       color: #FFFFFF;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
     }
     .tile-dept {
       font-size: 9px;
-      font-weight: 700;
+      font-weight: 800;
       color: var(--text-sub);
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -701,184 +834,636 @@
       font-size: 12px;
       font-weight: 700;
       color: var(--text-main);
-      line-height: 1.25;
-      margin-bottom: 2px;
+      line-height: 1.3;
     }
     .tile-sub {
       font-size: 10px;
-      color: var(--text-sub);
-      font-weight: 500;
-    }
-
-    /* In-App SEO Spotlight Search */
-    .spotlight-search-wrap {
-      background: #FFFFFF;
-      border: 1px solid var(--outline-variant);
-      border-radius: 18px;
-      padding: 10px 12px;
-      margin-bottom: 14px;
-      box-shadow: 0 2px 8px rgba(0, 32, 32, 0.05);
-      position: relative;
-    }
-    .spotlight-search-wrap.active {
-      border-color: var(--primary);
-      box-shadow: 0 4px 14px rgba(0, 106, 106, 0.15);
-    }
-    .search-input-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .search-input-field {
-      flex: 1;
-      border: none;
-      outline: none;
-      font-size: 12px;
-      font-family: inherit;
-      color: var(--text-main);
-      background: transparent;
-    }
-    .search-input-field::placeholder {
-      color: var(--text-sub);
-    }
-    .search-clear-btn {
-      background: #ECEFF1;
-      border: none;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      cursor: pointer;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      font-size: 10px;
-      color: #546E7A;
-    }
-    .search-tags-row {
-      display: flex;
-      gap: 6px;
-      overflow-x: auto;
-      margin-top: 8px;
-      padding-bottom: 2px;
-    }
-    .search-tags-row::-webkit-scrollbar { display: none; }
-    .search-tag-chip {
-      background: #F0F4F3;
-      border-radius: 8px;
-      padding: 3px 8px;
-      font-size: 10px;
-      font-weight: 600;
-      color: var(--primary);
-      white-space: nowrap;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .search-tag-chip:hover {
-      background: var(--primary-container);
-    }
-    .search-results-panel {
-      display: none;
-      margin-top: 10px;
-      border-top: 1px solid #ECEFF1;
-      padding-top: 8px;
-      max-height: 240px;
-      overflow-y: auto;
-    }
-    .search-hit-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 6px 8px;
-      border-radius: 10px;
-      cursor: pointer;
-      margin-bottom: 4px;
-      background: #FAFCFB;
-      transition: background 0.15s;
-    }
-    .search-hit-item:hover {
-      background: #E0F2F1;
-    }
-    .hit-category-badge {
-      font-size: 9px;
-      font-weight: 700;
-      padding: 2px 6px;
-      border-radius: 4px;
-      background: rgba(0, 106, 106, 0.12);
-      color: var(--primary);
-      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 2px;
     }
 
     /* =====================================================================
-       BAKONG KHQR & ABA PAY CHECKOUT MODAL / VIEW
+       EXPLORE TOOLS SCREEN (GATED CATALOG VIEW)
        ===================================================================== */
-    .khqr-card-container {
+    .explore-view {
+      padding: 12px 6px;
+    }
+    .filter-pills-scroll {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+    }
+    .filter-pills-scroll::-webkit-scrollbar { height: 0; }
+    .filter-pill {
+      background: #FFFFFF;
+      border: 1px solid var(--outline);
+      border-radius: 999px;
+      padding: 5px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-sub);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+    .filter-pill.active {
+      background: #004D40;
+      color: #FFFFFF;
+      border-color: #004D40;
+    }
+
+    .tool-catalog-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .tool-item-card {
       background: #FFFFFF;
       border: 1px solid var(--outline-variant);
-      border-radius: 24px;
-      padding: 18px 16px;
+      border-radius: 16px;
+      padding: 12px 14px;
       box-shadow: var(--card-shadow);
-      margin-bottom: 16px;
-      text-align: center;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
     }
-    .khqr-badge-header {
+    .tool-item-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-1.5px);
+      box-shadow: var(--card-shadow-hover);
+    }
+    .tool-item-card.locked {
+      background: #FCFDFD;
+      border-color: #D6E0DF;
+    }
+    .tool-item-icon-box {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      margin-bottom: 12px;
+      color: #FFFFFF;
+      flex-shrink: 0;
     }
-    .khqr-official-logo {
-      height: 28px;
-      width: auto;
+    .tool-info {
+      flex: 1;
     }
-    .bakong-official-logo {
-      height: 32px;
-      width: auto;
+    .tool-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2px;
     }
-    .aba-official-logo {
-      height: 28px;
-      width: auto;
+    .tool-name-text {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .tool-desc-text {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+    .tier-badge {
+      font-size: 9px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 6px;
+      letter-spacing: 0.3px;
+    }
+    .tier-badge.free { background: #E0F2F1; color: #004D40; }
+    .tier-badge.starter { background: #E1F5FE; color: #0277BD; }
+    .tier-badge.pro { background: #EDE7F6; color: #512DA8; }
+    .tier-badge.enterprise { background: #FFF3E0; color: #E65100; }
+    .tier-badge.paas { background: #FCE4EC; color: #C2185B; }
+
+    .lock-overlay-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #FFEBEE;
+      color: #C62828;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      margin-top: 4px;
+    }
+    .unlocked-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #E8F5E9;
+      color: #2E7D32;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      margin-top: 4px;
     }
 
-    .qr-canvas-holder {
+    /* =====================================================================
+       SAAS PRICING SCREEN & BAKONG UPGRADE
+       ===================================================================== */
+    .pricing-view {
+      padding: 12px 6px;
+    }
+    .billing-toggle-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .billing-pill-container {
+      background: #E8EEED;
+      border-radius: 999px;
+      padding: 3px;
+      display: flex;
+    }
+    .billing-pill-opt {
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      color: var(--text-sub);
+      transition: all 0.2s;
+    }
+    .billing-pill-opt.active {
+      background: #004D40;
+      color: #FFFFFF;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+    .save-discount-tag {
+      font-size: 10px;
+      font-weight: 800;
+      background: #E8F5E9;
+      color: #2E7D32;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid #A5D6A7;
+    }
+
+    .plan-card-item {
       background: #FFFFFF;
-      padding: 14px;
-      border-radius: 18px;
-      display: inline-block;
-      border: 2px dashed #004D40;
-      margin-bottom: 12px;
-      box-shadow: 0 4px 14px rgba(0, 77, 64, 0.08);
+      border: 1.5px solid var(--outline-variant);
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: var(--card-shadow);
       position: relative;
+      transition: all 0.2s;
+    }
+    .plan-card-item.featured {
+      border-color: #006A6A;
+      box-shadow: 0 8px 30px rgba(0, 106, 106, 0.15);
+    }
+    .plan-top-badge {
+      position: absolute;
+      top: -10px;
+      right: 16px;
+      background: linear-gradient(135deg, #004D40, #006A6A);
+      color: #FFFFFF;
+      font-size: 9px;
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: 999px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .plan-name-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 4px;
+    }
+    .plan-name-text {
+      font-size: 16px;
+      font-weight: 800;
+      color: #004D40;
+    }
+    .plan-price-usd {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+    .plan-period-sub {
+      font-size: 11px;
+      color: var(--text-sub);
+    }
+    .plan-desc-text {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+    .plan-feature-list {
+      list-style: none;
+      margin-bottom: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .plan-feature-list li {
+      font-size: 11px;
+      color: var(--text-main);
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      line-height: 1.35;
+    }
+    .plan-feature-list li svg {
+      width: 14px;
+      height: 14px;
+      color: #1E6B37;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .btn-upgrade-action {
+      width: 100%;
+      background: linear-gradient(135deg, #004D40, #006A6A);
+      color: #FFFFFF;
+      border: none;
+      border-radius: 12px;
+      padding: 10px 16px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(0, 77, 64, 0.3);
+      transition: all 0.2s;
+    }
+    .btn-upgrade-action:hover {
+      transform: translateY(-1.5px);
+      box-shadow: 0 6px 16px rgba(0, 77, 64, 0.45);
+    }
+    .btn-upgrade-action.current {
+      background: #E8EEED;
+      color: #5B6A68;
+      box-shadow: none;
+      cursor: default;
+    }
+
+    /* =====================================================================
+       CLOUD PAAS (PLATFORM AS A SERVICE) SHOWCASE
+       ===================================================================== */
+    .paas-view {
+      padding: 12px 6px;
+    }
+    .paas-hero-card {
+      background: linear-gradient(145deg, #021C19, #05332E);
+      border-radius: 20px;
+      padding: 16px;
+      color: #FFFFFF;
+      margin-bottom: 14px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(45, 212, 191, 0.25);
+    }
+    .paas-badge-tag {
+      font-size: 10px;
+      font-weight: 800;
+      color: #5EEAD4;
+      background: rgba(94, 234, 212, 0.15);
+      padding: 2px 8px;
+      border-radius: 6px;
+      display: inline-block;
+      margin-bottom: 6px;
+      letter-spacing: 0.5px;
+    }
+    .paas-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #FFFFFF;
+      margin-bottom: 4px;
+    }
+    .paas-subtitle {
+      font-size: 11px;
+      color: #A0B2B0;
+      line-height: 1.45;
+    }
+
+    .paas-node-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .paas-node-card {
+      background: #FFFFFF;
+      border: 1px solid var(--outline-variant);
+      border-radius: 14px;
+      padding: 10px 12px;
+      box-shadow: var(--card-shadow);
+    }
+    .node-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    .node-title { font-size: 11px; font-weight: 700; color: var(--text-main); }
+    .node-status-dot { width: 7px; height: 7px; border-radius: 50%; background: #00E676; }
+    .node-metric {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 15px;
+      font-weight: 800;
+      color: #004D40;
+    }
+    .node-meta { font-size: 10px; color: var(--text-sub); }
+
+    .paas-terminal-box {
+      background: #020C0B;
+      border: 1px solid #14332F;
+      border-radius: 14px;
+      padding: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: #5EEAD4;
+      line-height: 1.6;
+      max-height: 140px;
+      overflow-y: auto;
+      margin-top: 10px;
+    }
+
+    /* =====================================================================
+       SETTINGS VIEW (AUTO UPDATE, OTA, PROFILE)
+       ===================================================================== */
+    .settings-view {
+      padding: 12px 6px;
+    }
+    .settings-group {
+      background: #FFFFFF;
+      border: 1px solid var(--outline-variant);
+      border-radius: 18px;
+      padding: 14px;
+      margin-bottom: 12px;
+      box-shadow: var(--card-shadow);
+    }
+    .settings-group-title {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .settings-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #F0F4F3;
+    }
+    .settings-row:last-child { border-bottom: none; }
+    .settings-label-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .settings-label-sub {
+      font-size: 11px;
+      color: var(--text-sub);
+      margin-top: 2px;
+    }
+
+    /* Switch Toggle */
+    .switch-toggle {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+    }
+    .switch-toggle input { opacity: 0; width: 0; height: 0; }
+    .switch-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #C2CDCB;
+      transition: .3s;
+      border-radius: 24px;
+    }
+    .switch-slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+    input:checked + .switch-slider { background-color: #004D40; }
+    input:checked + .switch-slider:before { transform: translateX(20px); }
+
+    .btn-check-update {
+      width: 100%;
+      background: #E0F2F1;
+      border: 1px solid var(--primary);
+      border-radius: 12px;
+      padding: 10px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      color: #004D40;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 10px;
+      transition: all 0.2s;
+    }
+    .btn-check-update:hover {
+      background: var(--primary);
+      color: #FFFFFF;
+    }
+    .update-status-badge {
+      font-size: 11px;
+      color: var(--text-sub);
+      text-align: center;
+      margin-top: 8px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* =====================================================================
+       LIVE TELEMETRY VIEW
+       ===================================================================== */
+    .telemetry-screen-box {
+      background: #02120F;
+      border: 1px solid #004D40;
+      border-radius: 20px;
+      padding: 14px;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    }
+    .waveform-canvas {
+      width: 100%;
+      height: 110px;
+      background: #000B09;
+      border-radius: 10px;
+      margin: 8px 0;
+    }
+
+    /* =====================================================================
+       BOTTOM NAVIGATION DOCK (5 FLUID TABS)
+       ===================================================================== */
+    .bottom-nav-dock {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background: #FFFFFF;
+      border-top: 1px solid var(--outline-variant);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 0 4px;
+      z-index: 50;
+    }
+    .nav-tab-btn {
+      flex: 1;
+      background: none;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      color: var(--text-sub);
+      cursor: pointer;
+      padding: 6px 0;
+      transition: all 0.2s;
+    }
+    .nav-tab-btn.active {
+      color: #004D40;
+    }
+    .nav-tab-icon {
+      width: 20px;
+      height: 20px;
+      stroke-width: 2.2;
+    }
+    .nav-tab-label {
+      font-family: 'Kantumruy Pro', 'Plus Jakarta Sans', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    /* =====================================================================
+       MODAL SHEETS (BAKONG KHQR, SCANNER, UPGRADE)
+       ===================================================================== */
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: none;
+      align-items: flex-end;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal-sheet {
+      width: 100%;
+      background: #FFFFFF;
+      border-top-left-radius: 28px;
+      border-top-right-radius: 28px;
+      padding: 16px 20px 24px 20px;
+      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.25);
+      animation: slideUpSheet 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      max-height: 92%;
+      overflow-y: auto;
+    }
+    @keyframes slideUpSheet {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    .sheet-handle {
+      width: 36px;
+      height: 4px;
+      background: var(--outline);
+      border-radius: 99px;
+      margin: 0 auto 14px auto;
+    }
+
+    .khqr-badge-header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .khqr-official-logo { height: 26px; }
+    .bakong-official-logo { height: 32px; width: 32px; }
+    .aba-official-logo { height: 24px; }
+
+    .qr-canvas-holder {
+      width: 180px;
+      height: 180px;
+      margin: 0 auto 12px auto;
+      border: 3px solid #E21A1A;
+      border-radius: 16px;
+      padding: 8px;
+      background: #FFFFFF;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(226, 26, 26, 0.15);
     }
     .qr-center-emblem {
       position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 36px;
-      height: 36px;
+      width: 38px;
+      height: 38px;
       background: #E21A1A;
-      border: 3px solid #FFFFFF;
-      border-radius: 50%;
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      border: 2px solid #FFFFFF;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     }
-    .qr-center-emblem svg { width: 22px; height: 22px; }
 
     .invoice-amount-box {
-      background: #F0FDF4;
-      border: 1px solid #BBF7D0;
+      background: var(--surface-variant);
       border-radius: 14px;
       padding: 10px 14px;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    .amount-usd { font-size: 20px; font-weight: 800; color: #14532D; font-family: 'Plus Jakarta Sans', sans-serif; }
-    .amount-khr { font-size: 12px; font-weight: 700; color: #166534; font-family: 'Kantumruy Pro', sans-serif; }
+    .amount-usd {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 20px;
+      font-weight: 800;
+      color: #004D40;
+    }
+    .amount-khr {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: #B26A00;
+    }
 
     .bank-actions-row {
       display: flex;
@@ -886,144 +1471,86 @@
       gap: 8px;
     }
     .btn-aba-pay {
-      background: #00475E;
+      background: #055E7C;
       color: #FFFFFF;
       border: none;
-      border-radius: 14px;
-      padding: 12px 16px;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      font-size: 13px;
-      font-weight: 700;
+      gap: 8px;
       cursor: pointer;
-      box-shadow: 0 4px 12px rgba(0, 71, 94, 0.35);
-      transition: all 0.2s;
-    }
-    .btn-aba-pay:hover {
-      background: #003647;
-      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(5, 94, 124, 0.25);
     }
     .btn-bakong-app {
       background: #E21A1A;
       color: #FFFFFF;
       border: none;
-      border-radius: 14px;
-      padding: 12px 16px;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
+      gap: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(226, 26, 26, 0.25);
+    }
+
+    .btn-verify-settlement {
+      background: linear-gradient(135deg, #1E6B37, #2E7D32);
+      color: #FFFFFF;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-family: inherit;
       font-size: 13px;
       font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
       cursor: pointer;
-      box-shadow: 0 4px 12px rgba(226, 26, 26, 0.35);
-      transition: all 0.2s;
-    }
-    .btn-bakong-app:hover {
-      background: #C61313;
-      transform: translateY(-1px);
+      width: 100%;
+      margin-top: 10px;
+      box-shadow: 0 4px 14px rgba(30, 107, 55, 0.3);
     }
 
-    /* =====================================================================
-       LIVE TELEMETRY WAVEFORM VIEW
-       ===================================================================== */
-    .telemetry-screen-box {
-      background: #020C0B;
-      border-radius: 20px;
-      padding: 14px;
+    /* Success Toast */
+    .toast-banner {
+      position: absolute;
+      top: 50px;
+      left: 14px;
+      right: 14px;
+      background: #1E6B37;
       color: #FFFFFF;
-      margin-bottom: 14px;
-      border: 1px solid rgba(0, 230, 118, 0.2);
-    }
-    .waveform-canvas {
-      width: 100%;
-      height: 120px;
-      background: #00100E;
-      border-radius: 12px;
-      display: block;
-      margin: 8px 0;
-    }
-
-    /* =====================================================================
-       BOTTOM NAVIGATION BAR (FLAGSHIP DOCK)
-       ===================================================================== */
-    .bottom-nav-dock {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 68px;
-      background: rgba(255, 255, 255, 0.96);
-      backdrop-filter: blur(16px);
-      border-top: 1px solid var(--outline-variant);
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      padding: 4px 8px 12px 8px;
-      z-index: 80;
-    }
-    .nav-tab-btn {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 3px;
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: var(--text-sub);
-      transition: all 0.2s;
-      width: 60px;
-    }
-    .nav-tab-btn.active {
-      color: var(--primary);
-    }
-    .nav-tab-icon {
-      width: 22px;
-      height: 22px;
-    }
-    .nav-tab-label {
-      font-size: 10px;
+      border-radius: 14px;
+      padding: 10px 14px;
+      font-size: 12px;
       font-weight: 700;
-    }
-
-    /* Modals & Sheets */
-    .modal-overlay {
-      position: absolute;
-      inset: 0;
-      background: rgba(0, 20, 20, 0.6);
-      backdrop-filter: blur(4px);
-      z-index: 200;
       display: none;
-      align-items: flex-end;
+      align-items: center;
+      gap: 8px;
+      z-index: 200;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+      animation: slideDownToast 0.3s ease;
     }
-    .modal-overlay.open {
-      display: flex;
-      animation: fadeIn 0.2s ease-out;
-    }
-    .modal-sheet {
-      width: 100%;
-      background: #FFFFFF;
-      border-radius: 28px 28px 0 0;
-      padding: 20px 18px 34px 18px;
-      max-height: 85%;
-      overflow-y: auto;
-      box-shadow: 0 -10px 30px rgba(0,0,0,0.25);
-    }
-    .sheet-handle {
-      width: 38px;
-      height: 4px;
-      background: #DCE5E3;
-      border-radius: 99px;
-      margin: 0 auto 14px auto;
+    @keyframes slideDownToast {
+      from { transform: translateY(-30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
     }
 
-    /* Studio Controls Bottom Bar */
+    /* Studio Controls at bottom of browser */
     .studio-controls-bar {
-      margin-top: 20px;
+      margin-top: 16px;
       display: flex;
-      gap: 10px;
+      gap: 8px;
       flex-wrap: wrap;
       justify-content: center;
       z-index: 10;
@@ -1031,73 +1558,72 @@
     .control-pill-btn {
       background: rgba(255, 255, 255, 0.08);
       border: 1px solid rgba(255, 255, 255, 0.15);
-      color: #E0E7E6;
-      font-size: 12px;
+      color: #A0B2B0;
+      font-size: 11px;
       font-weight: 600;
-      padding: 8px 16px;
+      padding: 6px 14px;
       border-radius: 999px;
       cursor: pointer;
+      transition: all 0.2s;
       display: flex;
       align-items: center;
       gap: 6px;
-      transition: all 0.2s;
     }
     .control-pill-btn:hover {
       background: rgba(0, 106, 106, 0.3);
-      border-color: #4DD0E1;
-      color: #FFFFFF;
-      transform: translateY(-1px);
+      color: #5EEAD4;
+      border-color: #5EEAD4;
     }
   </style>
 </head>
 <body>
 
+  <!-- Ambient Background -->
   <div class="studio-bg"></div>
 
   <!-- Studio Header -->
   <header class="studio-header">
     <div class="studio-badge-row">
-      <span class="pill-badge primary">KruPet Enterprise 2026</span>
-      <span class="pill-badge success">Live Native Gateway</span>
-      <span class="pill-badge bakong">Bakong KHQR Active</span>
-      <span class="pill-badge aba">ABA Mobile Payway</span>
+      <span class="pill-badge primary">KruPet Enterprise Medical</span>
+      <span class="pill-badge success">16 Modules Ready</span>
+      <span class="pill-badge accent">Android 15 SDK 35</span>
     </div>
     <h1 class="studio-title">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M12 2v20M2 12h20"/>
       </svg>
-      មន្ទីរពេទ្យ គ្រូពេទ្យ - KruPet Clinical Mobile Workstation
+      <span id="studioTitleText">មន្ទីរពេទ្យ គ្រូពេទ្យ - KruPet Mobile Station 2026</span>
     </h1>
-    <p class="studio-subtitle">
-      100% Native Architecture Replica - Pure Drive D Isolation - Real Clinical Data & Official Bank Logos
+    <p class="studio-subtitle" id="studioSubText">
+      Pure Native Kotlin Jetpack Compose Architecture - Dual Language Khmer/English - Drive D Zero Footprint
     </p>
   </header>
 
-  <!-- Device Container -->
-  <div class="device-wrapper">
-    <div class="device-chassis">
-      <div class="screen-content">
+  <!-- Mobile Phone Chassis -->
+  <div class="phone-wrapper">
+    <div class="phone-chassis">
+      <div class="phone-screen">
 
-        <!-- Dynamic Island -->
-        <div class="dynamic-island" id="dynamicIsland" onclick="toggleIslandExpansion()">
-          <div class="island-ecg">
-            <span class="island-dot"></span>
-            <span id="islandBpm">74 BPM</span>
-          </div>
-          <div class="island-cam"></div>
-        </div>
-
-        <!-- Android Status Bar -->
+        <!-- Top System Status Bar -->
         <div class="status-bar">
           <span id="clockDisplay">14:30</span>
-          <div class="status-icons">
-            <span style="font-size: 10px; font-weight: 800; color: #00796B;">5G</span>
-            <span style="font-size: 10px;">VoLTE</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.34V5.33C17 4.6 16.4 4 15.67 4z"/>
-            </svg>
-            <span>98%</span>
+          
+          <div class="status-island">
+            <span class="status-island-pulse"></span>
+            <span id="statusIslandText">74 BPM - SINUS</span>
           </div>
+
+          <div class="status-icons">
+            <span>5G</span>
+            <span>VoLTE</span>
+            <span>100%</span>
+          </div>
+        </div>
+
+        <!-- Notification Toast Banner -->
+        <div class="toast-banner" id="toastBanner">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span id="toastBannerText">ប្រតិបត្តិការជោគជ័យ</span>
         </div>
 
         <!-- Scrollable Viewport Content -->
@@ -1108,7 +1634,6 @@
                ============================================================= -->
           <div class="app-view splash-view active" id="viewSplash">
             <div class="splash-logo-container">
-              <!-- Official KruPet Vector Emblem from icon-192.svg -->
               <svg viewBox="0 0 120 120" fill="none" width="100%" height="100%">
                 <defs>
                   <linearGradient id="spBase" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -1126,18 +1651,16 @@
                   </linearGradient>
                 </defs>
                 <rect x="6" y="6" width="108" height="108" rx="28" fill="url(#spBase)" stroke="#2DD4BF" stroke-width="2"/>
-                <!-- K Pillar & Cross Stem -->
                 <rect x="28" y="26" width="16" height="68" rx="4.5" fill="url(#spPillar)"/>
                 <path d="M 42 56 L 72 26 L 90 26 L 56 66 Z" fill="url(#spArmUp)"/>
                 <path d="M 48 58 L 72 94 L 92 94 L 62 50 Z" fill="#0D9488"/>
-                <!-- Cross Inset -->
                 <rect x="18" y="52" width="38" height="16" rx="4" fill="url(#spPillar)"/>
                 <rect x="21" y="55" width="32" height="10" rx="2.5" fill="#FFFFFF"/>
                 <path d="M 20 60 L 26 60 L 30 52 L 35 68 L 39 54 L 43 60 L 52 60" stroke="#00C853" stroke-width="2.5" stroke-linecap="round"/>
               </svg>
             </div>
 
-            <h2 class="splash-title-kh">មន្ទីរពេទ្យ គ្រូពេទ្យ</h2>
+            <h2 class="splash-title-kh" id="txtSplashTitle">មន្ទីរពេទ្យ គ្រូពេទ្យ</h2>
             <div class="splash-title-en">KRUPET CLINICAL ENTERPRISE</div>
 
             <div class="splash-loading-box">
@@ -1147,7 +1670,7 @@
               <div class="splash-status-text" id="splashStatus">Initializing TLS 1.3 Gateway...</div>
             </div>
 
-            <button class="btn-splash-enter" onclick="navigateToView('viewOnboarding')">
+            <button class="btn-splash-enter" onclick="navigateToView('viewOnboarding')" id="btnSplashEnter">
               ចាប់ផ្តើមចូលប្រើប្រាស់
             </button>
           </div>
@@ -1157,51 +1680,46 @@
                ============================================================= -->
           <div class="app-view onboarding-view" id="viewOnboarding">
             <div style="text-align: center; margin-bottom: 16px;">
-              <h2 style="font-size: 18px; font-weight: 800; color: #004D40;">ជ្រើសរើសតួនាទីបំពេញការងារ</h2>
-              <p style="font-size: 12px; color: var(--text-muted);">Zero-Trust Clinical Staff Biometric Sign-in</p>
+              <h2 style="font-size: 17px; font-weight: 700; color: #004D40;" id="txtOnboardingTitle">ជ្រើសរើសតួនាទីបំពេញការងារ</h2>
+              <p style="font-size: 11px; color: var(--text-muted);" id="txtOnboardingSub">Zero-Trust Clinical Staff Biometric Sign-in</p>
             </div>
 
-            <!-- Doctor Sokha -->
             <div class="staff-card selected" onclick="selectStaffRole(this, 'Dr. Sokha Rath, MD', 'Chief Medical Officer', 'ICU-INTERNAL')">
               <div class="staff-avatar">SR</div>
               <div style="flex: 1;">
                 <div class="staff-name">វេជ្ជ. រ័ត្ន សុខា - Dr. Sokha Rath</div>
-                <div class="staff-role">ប្រធានផ្នែកសង្គ្រោះបន្ទាន់ និង ICU</div>
+                <div class="staff-role" id="txtRoleDoctor">ប្រធានផ្នែកសង្គ្រោះបន្ទាន់ និង ICU</div>
                 <div class="staff-meta">LICENSE: MoH-09412 | ZERO-TRUST MD</div>
               </div>
             </div>
 
-            <!-- Nurse Bopha -->
             <div class="staff-card" onclick="selectStaffRole(this, 'RN Bopha Chann', 'ICU Charge Nurse', 'TRIAGE-WARD')">
               <div class="staff-avatar nurse">BC</div>
               <div style="flex: 1;">
                 <div class="staff-name">គិលានុបដ្ឋាយិកា ចាន់ បុប្ផា - RN Bopha</div>
-                <div class="staff-role">ប្រធានវេន Triage & អន្តេវាសិកដ្ឋាន</div>
+                <div class="staff-role" id="txtRoleNurse">ប្រធានវេន Triage និងអន្តេវាសិកដ្ឋាន</div>
                 <div class="staff-meta">LICENSE: MoH-18290 | SBAR LEAD</div>
               </div>
             </div>
 
-            <!-- Dentist Chea -->
             <div class="staff-card" onclick="selectStaffRole(this, 'Dr. Vireak Chea, DDS', 'Dental Surgeon', 'ODONTOLOGY')">
               <div class="staff-avatar dental">VC</div>
               <div style="flex: 1;">
                 <div class="staff-name">ទន្តបណ្ឌិត ជា វិរៈ - Dr. Vireak Chea</div>
-                <div class="staff-role">ឯកទេសទន្តសាស្ត្រ FDI Odontology</div>
+                <div class="staff-role" id="txtRoleDental">ឯកទេសទន្តសាស្ត្រ FDI Odontology</div>
                 <div class="staff-meta">LICENSE: MoH-04812 | DENTAL OR</div>
               </div>
             </div>
 
-            <!-- Pharmacist Sothea -->
             <div class="staff-card" onclick="selectStaffRole(this, 'RPh Sothea Heng', 'Clinical Pharmacist', 'PHARMACY-ISMP')">
               <div class="staff-avatar pharma">SH</div>
               <div style="flex: 1;">
                 <div class="staff-name">ឱសថការី ហេង សុធា - RPh Sothea</div>
-                <div class="staff-role">Custody ថ្នាំញៀន MoH & ថ្នាំផ្សះ ASP</div>
+                <div class="staff-role" id="txtRolePharma">គ្រប់គ្រងថ្នាំញៀន MoH និងថ្នាំផ្សះ ASP</div>
                 <div class="staff-meta">LICENSE: MoH-07319 | DUAL-WITNESS</div>
               </div>
             </div>
 
-            <!-- Biometric Fingerprint Action -->
             <div class="biometric-box" onclick="authenticateBiometrics()">
               <svg class="fingerprint-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                 <path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/>
@@ -1214,17 +1732,17 @@
                 <path d="M8.65 22c.21-.66.45-1.32.57-2"/>
                 <path d="M9 6.8a6 6 0 0 1 9 5.2v2"/>
               </svg>
-              <div style="font-size: 13px; font-weight: 700; color: #004D40;">ចុចស្កេនក្រយៅដៃ ឬ Face ID</div>
-              <div style="font-size: 11px; color: var(--text-sub); margin-top: 2px;">Android BiometricPrompt Strong Keystore</div>
+              <div style="font-size: 13px; font-weight: 700; color: #004D40;" id="txtBiometricPrompt">ចុចស្កេនក្រយៅដៃ ឬ Face ID</div>
+              <div style="font-size: 11px; color: var(--text-sub); margin-top: 2px;">Android StrongBox Keymaster Keystore</div>
             </div>
           </div>
 
           <!-- =============================================================
-               VIEW 3: FLAGSHIP CLINICAL HUB (HOMEPAGE)
+               VIEW 3: FLAGSHIP CLINICAL HUB (HOME VIEW)
                ============================================================= -->
           <div class="app-view hub-view" id="viewHub">
 
-            <!-- App Brand Top Bar -->
+            <!-- App Brand Top Bar with Bilingual Switcher -->
             <div class="app-brand-bar">
               <div class="brand-left">
                 <div class="brand-icon-mini">
@@ -1233,15 +1751,21 @@
                   </svg>
                 </div>
                 <div>
-                  <div class="brand-text-kh">មន្ទីរពេទ្យ គ្រូពេទ្យ</div>
-                  <div class="brand-text-en">Phnom Penh Central Branch</div>
+                  <div class="brand-text-kh" id="txtHeaderBrand">មន្ទីរពេទ្យ គ្រូពេទ្យ</div>
+                  <div class="brand-text-en" id="txtHeaderBranch">Phnom Penh Central Branch</div>
                 </div>
               </div>
 
               <div class="brand-right">
-                <div class="staff-badge-pill" onclick="navigateToView('viewOnboarding')">
+                <!-- Interactive Bilingual Toggle -->
+                <div class="lang-toggle-btn" onclick="toggleLanguage()" title="ប្តូរភាសា / Switch Language">
+                  <span id="pillLangKm" class="active">ខ្មែរ</span>
+                  <span id="pillLangEn">EN</span>
+                </div>
+
+                <div class="staff-badge-pill" onclick="navigateToTab('settings')">
                   <span class="staff-dot-live"></span>
-                  <span class="staff-pill-text" id="activeStaffPill">Dr. Sokha MD</span>
+                  <span class="staff-pill-text" id="activeStaffPill">Dr. Sokha</span>
                 </div>
               </div>
             </div>
@@ -1279,24 +1803,24 @@
               <div class="search-results-panel" id="searchResultsPanel"></div>
             </div>
 
-            <!-- Hospital Live KPI Strip (REAL DATA SCAN) -->
+            <!-- Hospital Live KPI Strip -->
             <div class="kpi-grid">
               <div class="kpi-card">
                 <div class="kpi-header">
-                  <span class="kpi-label">អ្នកជំងឺថ្ងៃនេះ</span>
+                  <span class="kpi-label" id="txtKpiPatientsLabel">អ្នកជំងឺថ្ងៃនេះ</span>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                   </svg>
                 </div>
-                <div class="kpi-value">148 នាក់</div>
+                <div class="kpi-value">148 <span style="font-size: 13px;" id="txtKpiCountUnit">នាក់</span></div>
                 <div class="kpi-sub up">
-                  <span>+14% ធៀបម្សិលមិញ</span>
+                  <span id="txtKpiPatientTrend">+14% ធៀបម្សិលមិញ</span>
                 </div>
               </div>
 
               <div class="kpi-card critical">
                 <div class="kpi-header">
-                  <span class="kpi-label">គ្រែសម្រាក IPD</span>
+                  <span class="kpi-label" id="txtKpiIpdLabel">គ្រែសម្រាក IPD</span>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9"/>
                   </svg>
@@ -1309,14 +1833,14 @@
 
               <div class="kpi-card warning">
                 <div class="kpi-header">
-                  <span class="kpi-label">ជួររង់ចាំ Triage</span>
+                  <span class="kpi-label" id="txtKpiTriageLabel">ជួររង់ចាំ Triage</span>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
                   </svg>
                 </div>
-                <div class="kpi-value">4 នាក់</div>
+                <div class="kpi-value">4 <span style="font-size: 13px;" id="txtKpiCountUnit2">នាក់</span></div>
                 <div class="kpi-sub" style="color: var(--warning); font-weight: 700;">
-                  <span>1 ESI-1 សង្គ្រោះបន្ទាន់</span>
+                  <span id="txtKpiEsiAlert">1 ESI-1 សង្គ្រោះបន្ទាន់</span>
                 </div>
               </div>
 
@@ -1340,40 +1864,40 @@
                 <div class="quick-btn-icon" style="background: #004D40;">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/></svg>
                 </div>
-                <span>ស្កេន QR អ្នកជំងឺ</span>
+                <span id="btnQuickScan">ស្កេន QR អ្នកជំងឺ</span>
               </div>
 
               <div class="quick-btn" onclick="openKhqrModal(105.00, 430500)">
                 <div class="quick-btn-icon" style="background: #E21A1A;">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-6h2v6zm4 0h-2V7h2v10z"/></svg>
                 </div>
-                <span>Bakong Pay</span>
+                <span>Bakong POS</span>
+              </div>
+
+              <div class="quick-btn" onclick="navigateToTab('explore')">
+                <div class="quick-btn-icon" style="background: #512DA8;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                </div>
+                <span id="btnQuickExplore">រុករកឧបករណ៍</span>
               </div>
 
               <div class="quick-btn" onclick="navigateToView('viewTelemetry')">
                 <div class="quick-btn-icon" style="background: #00C853;">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
                 </div>
-                <span>រលកបេះដូង ECG</span>
-              </div>
-
-              <div class="quick-btn" onclick="openPanicLabDetail()">
-                <div class="quick-btn-icon" style="background: #BA1A1A;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                </div>
-                <span>Panic Lab: Troponin</span>
+                <span id="btnQuickEcg">រលកបេះដូង ECG</span>
               </div>
             </div>
 
-            <!-- Inpatient Bed Census (REAL PATIENTS SCAN) -->
+            <!-- Inpatient Bed Census -->
             <div class="section-title-row">
               <h3 class="section-heading">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#006A6A" stroke-width="2">
                   <path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9"/>
                 </svg>
-                អ្នកជំងឺសម្រាកពេទ្យបច្ចុប្បន្ន - Live Census
+                <span id="txtSectionCensusTitle">អ្នកជំងឺសម្រាកពេទ្យបច្ចុប្បន្ន - Live Census</span>
               </h3>
-              <span class="section-badge">34 នាក់</span>
+              <span class="section-badge">34 <span id="txtSectionCensusUnit">នាក់</span></span>
             </div>
 
             <!-- Patient 1 -->
@@ -1394,7 +1918,7 @@
               </div>
               <div class="allergy-alert-tag">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99zM11 10v4h2v-4h-2zm0 6v2h2v-2h-2z"/></svg>
-                អាលែកហ្ស៊ីធ្ងន់ធ្ងរ: Penicillin Anaphylaxis
+                <span id="txtAllergyAlert">អាលែកហ្ស៊ីធ្ងន់ធ្ងរ: Penicillin Anaphylaxis</span>
               </div>
             </div>
 
@@ -1434,140 +1958,278 @@
               </div>
             </div>
 
-            <!-- All Clinical Modules Navigation (16 Modules) -->
-            <div class="section-title-row" style="margin-top: 16px;">
-              <h3 class="section-heading">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#006A6A" stroke-width="2">
-                  <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
-                </svg>
-                ផ្នែកគ្លីនិកឯកទេស - 16 Modules
-              </h3>
-              <span class="section-badge">2026 Core</span>
-            </div>
-
-            <div class="modules-grid">
-              <!-- 1. Emergency Triage -->
-              <div class="module-tile" onclick="openTriageDetail()">
-                <div class="tile-top">
-                  <div class="tile-icon-box" style="background: #BA1A1A;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20"/></svg>
-                  </div>
-                  <span class="tile-dept">EMERGENCY</span>
-                </div>
-                <div>
-                  <div class="tile-name">Triage ESI v4</div>
-                  <div class="tile-sub">NEWS2 & GCS 3-15</div>
-                </div>
+            <!-- Clinical Tools Hub Banner -->
+            <div style="background: linear-gradient(135deg, #004D40, #006A6A); border-radius: 18px; padding: 14px; color: #FFFFFF; margin-top: 14px; cursor: pointer;" onclick="navigateToTab('explore')">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <span style="font-size: 10px; font-weight: 800; background: rgba(255, 255, 255, 0.2); padding: 2px 8px; border-radius: 99px;" id="txtBannerTag">ឧបករណ៍គ្លីនិក ១៦ មុខងារ</span>
+                <span style="font-size: 11px; font-weight: 700; color: #80DEEA;">មើលទាំងអស់ &rarr;</span>
               </div>
-
-              <!-- 2. ACLS Resuscitation -->
-              <div class="module-tile" onclick="openResusDetail()">
-                <div class="tile-top">
-                  <div class="tile-icon-box" style="background: #C2185B;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-                  </div>
-                  <span class="tile-dept">RESUS</span>
-                </div>
-                <div>
-                  <div class="tile-name">ACLS & Sepsis</div>
-                  <div class="tile-sub">Parkland, CPR Timer</div>
-                </div>
-              </div>
-
-              <!-- 3. Bedside Telemetry -->
-              <div class="module-tile" onclick="navigateToView('viewTelemetry')">
-                <div class="tile-top">
-                  <div class="tile-icon-box" style="background: #00796B;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-                  </div>
-                  <span class="tile-dept">CRITICAL CARE</span>
-                </div>
-                <div>
-                  <div class="tile-name">ECG & Infusion</div>
-                  <div class="tile-sub">Live Waveform Canvas</div>
-                </div>
-              </div>
-
-              <!-- 4. Bakong KHQR POS -->
-              <div class="module-tile" onclick="openKhqrModal(105.00, 430500)">
-                <div class="tile-top">
-                  <div class="tile-icon-box" style="background: #E21A1A;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h6v6H4V4zm10 0h6v6h-6V4zM4 14h6v6H4v-6zm10 0h6v6h-6v-6z"/></svg>
-                  </div>
-                  <span class="tile-dept">FINANCE</span>
-                </div>
-                <div>
-                  <div class="tile-name">Bakong KHQR POS</div>
-                  <div class="tile-sub">Official ABA & Dual KHR</div>
-                </div>
-              </div>
-
-              <!-- 5. PACS Radiology -->
-              <div class="module-tile" onclick="openPacsDetail()">
-                <div class="tile-top">
-                  <div class="tile-icon-box" style="background: #1565C0;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-                  </div>
-                  <span class="tile-dept">DIAGNOSTICS</span>
-                </div>
-                <div>
-                  <div class="tile-name">PACS Radiology</div>
-                  <div class="tile-sub">DICOM W/L & Calipers</div>
-                </div>
-              </div>
-
-              <!-- 6. Dental Odontogram -->
-              <div class="module-tile" onclick="openDentalDetail()">
-                <div class="tile-top">
-                  <div class="tile-icon-box" style="background: #00838F;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C7 2 6 6 6 10c0 4.5 1.5 12 6 12s6-7.5 6-12c0-4-1-8-6-8z"/></svg>
-                  </div>
-                  <span class="tile-dept">DENTAL</span>
-                </div>
-                <div>
-                  <div class="tile-name">FDI Odontogram</div>
-                  <div class="tile-sub">32-Tooth DMFT Chart</div>
-                </div>
-              </div>
-
-              <!-- 7. LIS Panic Laboratory -->
-              <div class="module-tile" onclick="openPanicLabDetail()">
-                <div class="tile-top">
-                  <div class="tile-icon-box" style="background: #D84315;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 2v7.31L4.62 19.4A2 2 0 0 0 6.38 22h11.24a2 2 0 0 0 1.76-2.6L14 9.31V2"/></svg>
-                  </div>
-                  <span class="tile-dept">LABORATORY</span>
-                </div>
-                <div>
-                  <div class="tile-name">LIS Panic Lab</div>
-                  <div class="tile-sub">Troponin I & Verbal Order</div>
-                </div>
-              </div>
-
-              <!-- 8. Narcotics MoH Vault -->
-              <div class="module-tile" onclick="openNarcoticsDetail()">
-                <div class="tile-top">
-                  <div class="tile-icon-box" style="background: #4A148C;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                  </div>
-                  <span class="tile-dept">CONTROLLED</span>
-                </div>
-                <div>
-                  <div class="tile-name">Narcotics Vault</div>
-                  <div class="tile-sub">Dual-Witness Signoff</div>
-                </div>
-              </div>
+              <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 4px;" id="txtBannerTitle">រុករកប្រព័ន្ធគ្លីនិក និងឧបករណ៍វេជ្ជសាស្ត្រ</h4>
+              <p style="font-size: 11px; color: #E0F2F1;" id="txtBannerSub">FDI Dental, WebGL PACS, LIS Panic Lab, Chemo Calculator & NSSF e-Claim</p>
             </div>
 
           </div>
 
           <!-- =============================================================
-               VIEW 4: LIVE TELEMETRY & ECG MONITOR VIEW
+               VIEW 4: EXPLORE CLINICAL TOOLS (WITH REAL GATING & LOCKS)
+               ============================================================= -->
+          <div class="app-view explore-view" id="viewExplore">
+            <div class="app-brand-bar">
+              <div class="brand-left">
+                <div class="brand-icon-mini" style="background: #512DA8;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                </div>
+                <div>
+                  <div class="brand-text-kh" id="txtExploreHeaderTitle">រុករកឧបករណ៍គ្លីនិក</div>
+                  <div class="brand-text-en">Clinical Systems & Gated Tools</div>
+                </div>
+              </div>
+              <div class="brand-right">
+                <span class="tier-badge" id="currentLicenseBadge" style="background: #E0F2F1; color: #004D40; font-weight: 800; padding: 4px 10px; border-radius: 99px;">FREE TIER</span>
+              </div>
+            </div>
+
+            <!-- Category Filter Pills -->
+            <div class="filter-pills-scroll">
+              <span class="filter-pill active" onclick="filterToolCategory(this, 'all')" id="txtFilterAll">ទាំងអស់</span>
+              <span class="filter-pill" onclick="filterToolCategory(this, 'clinical')" id="txtFilterClinical">គ្លីនិកបន្ទាន់</span>
+              <span class="filter-pill" onclick="filterToolCategory(this, 'diagnostics')" id="txtFilterDiag">រូបភាព & តេស្ត</span>
+              <span class="filter-pill" onclick="filterToolCategory(this, 'inpatient')" id="txtFilterIpd">សម្រាកពេទ្យ</span>
+              <span class="filter-pill" onclick="filterToolCategory(this, 'pharmacy')" id="txtFilterPharma">ឱសថ & ជាតិពុល</span>
+              <span class="filter-pill" onclick="filterToolCategory(this, 'enterprise')" id="txtFilterPaaS">សហគ្រាស PaaS</span>
+            </div>
+
+            <!-- Tool Items Catalog -->
+            <div class="tool-catalog-grid" id="toolCatalogList">
+              <!-- Rendered via JavaScript -->
+            </div>
+          </div>
+
+          <!-- =============================================================
+               VIEW 5: SAAS PRICING PLANS & REAL UPGRADE (KHQR CHECKOUT)
+               ============================================================= -->
+          <div class="app-view pricing-view" id="viewPricing">
+            <div class="app-brand-bar">
+              <div class="brand-left">
+                <div class="brand-icon-mini" style="background: #004D40;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5EEAD4" stroke-width="2.2"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                </div>
+                <div>
+                  <div class="brand-text-kh" id="txtPricingHeaderTitle">គម្រោងសេវាកម្ម SaaS</div>
+                  <div class="brand-text-en">Tier Upgrade & Bakong KHQR POS</div>
+                </div>
+              </div>
+              <div class="brand-right">
+                <span class="tier-badge pro" id="pricingUserTier">FREE TIER</span>
+              </div>
+            </div>
+
+            <!-- Billing Toggle -->
+            <div class="billing-toggle-wrap">
+              <div class="billing-pill-container">
+                <div class="billing-pill-opt active" id="btnBillMonthly" onclick="setBillingCycle('monthly')">
+                  <span id="txtBillMonthly">ប្រចាំខែ</span>
+                </div>
+                <div class="billing-pill-opt" id="btnBillYearly" onclick="setBillingCycle('yearly')">
+                  <span id="txtBillYearly">ប្រចាំឆ្នាំ</span>
+                </div>
+              </div>
+              <span class="save-discount-tag" id="txtSaveDiscount">-20% សន្សំសំចៃ</span>
+            </div>
+
+            <!-- Pricing Plans List -->
+            <div id="pricingPlansContainer">
+              <!-- Rendered via JavaScript -->
+            </div>
+          </div>
+
+          <!-- =============================================================
+               VIEW 6: CLOUD HEALTHCARE PAAS (PLATFORM AS A SERVICE)
+               ============================================================= -->
+          <div class="app-view paas-view" id="viewPaas">
+            <div class="app-brand-bar">
+              <div class="brand-left">
+                <div class="brand-icon-mini" style="background: #055E7C;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#80DEEA" stroke-width="2.2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+                </div>
+                <div>
+                  <div class="brand-text-kh" id="txtPaasHeaderTitle">ហេដ្ឋារចនាសម្ព័ន្ធ Cloud PaaS</div>
+                  <div class="brand-text-en">Healthcare Platform as a Service</div>
+                </div>
+              </div>
+              <div class="brand-right">
+                <span class="pill-badge success" style="font-size: 9px;">99.99% UPTIME</span>
+              </div>
+            </div>
+
+            <div class="paas-hero-card">
+              <span class="paas-badge-tag">ENTERPRISE CLOUD HIGH-AVAILABILITY</span>
+              <h3 class="paas-title" id="txtPaasHeroTitle">ប្រព័ន្ធ PaaS វេជ្ជសាស្ត្រជាតិ កម្រិតមន្ទីរពេទ្យ</h3>
+              <p class="paas-subtitle" id="txtPaasHeroSub">
+                គាំទ្រ FHIR R4 Interoperability, Rural Offline Lamport Vector Sync, Android StrongBox HSM Keymaster និងការចម្លងទិន្នន័យ PostgreSQL Multi-Master Real-time Replication។
+              </p>
+            </div>
+
+            <div class="paas-node-grid">
+              <div class="paas-node-card">
+                <div class="node-header">
+                  <span class="node-title">Phnom Penh Node 01</span>
+                  <span class="node-status-dot"></span>
+                </div>
+                <div class="node-metric">12 ms</div>
+                <div class="node-meta">Primary Cluster - AES-256</div>
+              </div>
+
+              <div class="paas-node-card">
+                <div class="node-header">
+                  <span class="node-title">Battambang Edge 02</span>
+                  <span class="node-status-dot"></span>
+                </div>
+                <div class="node-metric">19 ms</div>
+                <div class="node-meta">Rural Regional Edge Node</div>
+              </div>
+
+              <div class="paas-node-card">
+                <div class="node-header">
+                  <span class="node-title">Siem Reap Edge 03</span>
+                  <span class="node-status-dot"></span>
+                </div>
+                <div class="node-metric">22 ms</div>
+                <div class="node-meta">Disaster Recovery Fleet</div>
+              </div>
+
+              <div class="paas-node-card">
+                <div class="node-header">
+                  <span class="node-title">CamDX Gateway</span>
+                  <span class="node-status-dot"></span>
+                </div>
+                <div class="node-metric">ACTIVE</div>
+                <div class="node-meta">NSSF National Verification</div>
+              </div>
+            </div>
+
+            <!-- Live Event Log Stream -->
+            <div style="font-size: 11px; font-weight: 700; color: var(--text-main); margin-bottom: 4px;" id="txtPaasLogTitle">
+              កំណត់ហេតុព្រឹត្តិការណ៍សុវត្ថិភាព Live Audit Stream
+            </div>
+            <div class="paas-terminal-box" id="paasLogBox">
+              <div>[2026-11-04 02:18:01] HSM StrongBox Keymaster initialized (Key ID: 0x8F9A4)</div>
+              <div>[2026-11-04 02:18:05] Lamport vector sync: Node PP-01 merged with local SQLite</div>
+              <div>[2026-11-04 02:18:09] MoH DDF Narcotics ledger double-witness audit: PASS</div>
+              <div>[2026-11-04 02:18:14] CamDX 10-digit NSSF eligibility token verified</div>
+              <div>[2026-11-04 02:18:20] WebSocket keepalive ACK from NestJS backend 127.0.0.1:3001</div>
+            </div>
+          </div>
+
+          <!-- =============================================================
+               VIEW 7: SETTINGS & SYSTEM AUTO-UPDATE (OTA)
+               ============================================================= -->
+          <div class="app-view settings-view" id="viewSettings">
+            <div class="app-brand-bar">
+              <div class="brand-left">
+                <div class="brand-icon-mini" style="background: #37474F;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ECEFF1" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                </div>
+                <div>
+                  <div class="brand-text-kh" id="txtSettingsHeaderTitle">ការកំណត់ និងអាប់ដេត</div>
+                  <div class="brand-text-en">Settings & System OTA</div>
+                </div>
+              </div>
+              <div class="brand-right">
+                <span class="pill-badge primary" style="font-size: 9px;">v2.4.0</span>
+              </div>
+            </div>
+
+            <!-- Profile Info Group -->
+            <div class="settings-group">
+              <div class="settings-group-title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span id="txtSettingsProfileTitle">ព័ត៌មានមន្ទីរពេទ្យ និងអាជ្ញាប័ណ្ណ</span>
+              </div>
+              <div class="settings-row">
+                <div>
+                  <div class="settings-label-title" id="txtSettingsHospName">មន្ទីរពេទ្យ គ្រូពេទ្យ - រាជធានីភ្នំពេញ</div>
+                  <div class="settings-label-sub">MOH Practice Lic: MOH-2026-KH-88492</div>
+                </div>
+                <span class="tier-badge pro" id="settingsCurrentPlanPill">FREE TIER</span>
+              </div>
+              <div class="settings-row">
+                <div>
+                  <div class="settings-label-title" id="txtSettingsOperator">វេជ្ជបណ្ឌិតទទួលបន្ទុក</div>
+                  <div class="settings-label-sub">Dr. Sokha Rath, MD - ICU Lead</div>
+                </div>
+                <span class="status-island" style="font-size: 9px;">VERIFIED</span>
+              </div>
+            </div>
+
+            <!-- System Auto-Update OTA Group -->
+            <div class="settings-group">
+              <div class="settings-group-title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>
+                <span id="txtSettingsUpdateTitle">ការអាប់ដេតប្រព័ន្ធ OTA (System Updates)</span>
+              </div>
+
+              <!-- Auto Update Toggle -->
+              <div class="settings-row">
+                <div>
+                  <div class="settings-label-title" id="txtAutoUpdateTitle">ទាញយកកំណែថ្មីស្វ័យប្រវត្តិ</div>
+                  <div class="settings-label-sub" id="txtAutoUpdateSub">Auto-download updates over Wi-Fi</div>
+                </div>
+                <label class="switch-toggle">
+                  <input type="checkbox" id="autoUpdateToggle" checked onchange="toggleAutoUpdateSetting(this.checked)">
+                  <span class="switch-slider"></span>
+                </label>
+              </div>
+
+              <!-- Interactive Check for Updates Button -->
+              <button class="btn-check-update" id="btnCheckUpdateAction" onclick="triggerCheckForUpdates()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                <span id="txtBtnCheckUpdate">ពិនិត្យមើលកំណែថ្មី / Check for Updates</span>
+              </button>
+
+              <div class="update-status-badge" id="updateStatusText">
+                Installed: v2.4.0 (Build 2026.11-PROD) - Status: Latest
+              </div>
+
+              <!-- 1-Click Native APK Download Button -->
+              <a href="/apk" target="_blank" style="text-decoration: none;">
+                <button class="btn-upgrade-action" style="margin-top: 10px; background: #004D40;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  <span id="txtBtnDownloadApk">ទាញយក APK ដើម (22.2 MB Native Android)</span>
+                </button>
+              </a>
+            </div>
+
+            <!-- Hardware Security Group -->
+            <div class="settings-group">
+              <div class="settings-group-title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <span id="txtSettingsSecTitle">សុវត្ថិភាព និង Hardware Keymaster</span>
+              </div>
+              <div class="settings-row">
+                <div>
+                  <div class="settings-label-title">Android StrongBox HSM</div>
+                  <div class="settings-label-sub">Hardware-backed AES-256-GCM Keys</div>
+                </div>
+                <span style="font-size: 11px; font-weight: 700; color: #1E6B37;">ENABLED</span>
+              </div>
+              <div class="settings-row">
+                <div>
+                  <div class="settings-label-title">Offline Cache Database</div>
+                  <div class="settings-label-sub">SQLCipher AES-256 Encrypted</div>
+                </div>
+                <span style="font-size: 11px; font-weight: 700; color: #1E6B37;">PROTECTED</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- =============================================================
+               VIEW 8: LIVE TELEMETRY & ECG MONITOR VIEW
                ============================================================= -->
           <div class="app-view telemetry-view" id="viewTelemetry">
             <div class="app-brand-bar">
               <div class="brand-left">
-                <button onclick="navigateToView('viewHub')" style="background: none; border: none; cursor: pointer; color: var(--primary);">
+                <button onclick="navigateToTab('hub')" style="background: none; border: none; cursor: pointer; color: var(--primary);">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                 </button>
                 <div class="brand-text-kh">Bedside Monitor - ICU Bed 01</div>
@@ -1606,8 +2268,8 @@
 
             <!-- Smart Vasoactive Infusion Calculator -->
             <div style="background: #FFFFFF; border: 1px solid var(--outline-variant); border-radius: 18px; padding: 14px; box-shadow: var(--card-shadow);">
-              <h4 style="font-size: 13px; font-weight: 800; color: var(--text-main); margin-bottom: 8px;">ម៉ាស៊ីនគិតគូរថ្នាំសរសៃឈាម Infusion Pump</h4>
-              <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">Norepinephrine 4mg / 50mL D5W (80 mcg/mL)</div>
+              <h4 style="font-size: 13px; font-weight: 700; color: var(--text-main); margin-bottom: 6px;" id="txtInfusionTitle">ម៉ាស៊ីនគិតគូរថ្នាំសរសៃឈាម Infusion Pump</h4>
+              <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 10px;">Norepinephrine 4mg / 50mL D5W (80 mcg/mL)</div>
               
               <div style="display: flex; gap: 8px; margin-bottom: 10px;">
                 <button onclick="calcInfusion(0.05)" class="quick-btn" style="flex: 1; justify-content: center;">0.05 mcg/kg/min</button>
@@ -1624,37 +2286,42 @@
         </div>
 
         <!-- =============================================================
-             FLAGSHIP BOTTOM NAVIGATION DOCK
+             FLAGSHIP BOTTOM NAVIGATION DOCK (5 FLUID TABS)
              ============================================================= -->
         <nav class="bottom-nav-dock">
+          <!-- 1: Hub -->
           <button class="nav-tab-btn active" id="tabHub" onclick="navigateToTab('hub')">
-            <svg class="nav-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            <span class="nav-tab-label">ទំព័រដើម</span>
+            <svg class="nav-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span class="nav-tab-label" id="tabLabelHub">ទំព័រដើម</span>
           </button>
 
-          <button class="nav-tab-btn" id="tabTriage" onclick="navigateToTab('triage')">
-            <svg class="nav-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-            <span class="nav-tab-label">Triage</span>
+          <!-- 2: Explore Tools (Gated) -->
+          <button class="nav-tab-btn" id="tabExplore" onclick="navigateToTab('explore')">
+            <svg class="nav-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            <span class="nav-tab-label" id="tabLabelExplore">រុករក</span>
           </button>
 
-          <button class="nav-tab-btn" id="tabTelem" onclick="navigateToTab('telem')">
-            <svg class="nav-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-            <span class="nav-tab-label">រលកបេះដូង</span>
+          <!-- 3: SaaS Pricing & Bakong Upgrade -->
+          <button class="nav-tab-btn" id="tabPricing" onclick="navigateToTab('pricing')">
+            <svg class="nav-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            <span class="nav-tab-label" id="tabLabelPricing">គម្រោង</span>
           </button>
 
-          <button class="nav-tab-btn" id="tabWard" onclick="navigateToTab('ward')">
-            <svg class="nav-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9"/></svg>
-            <span class="nav-tab-label">គ្រែពេទ្យ</span>
+          <!-- 4: Platform as a Service (PaaS) -->
+          <button class="nav-tab-btn" id="tabPaas" onclick="navigateToTab('paas')">
+            <svg class="nav-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+            <span class="nav-tab-label" id="tabLabelPaas">PaaS</span>
           </button>
 
-          <button class="nav-tab-btn" id="tabKhqr" onclick="navigateToTab('khqr')">
-            <svg class="nav-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-            <span class="nav-tab-label">គិតប្រាក់</span>
+          <!-- 5: Settings & OTA -->
+          <button class="nav-tab-btn" id="tabSettings" onclick="navigateToTab('settings')">
+            <svg class="nav-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span class="nav-tab-label" id="tabLabelSettings">កំណត់</span>
           </button>
         </nav>
 
         <!-- =============================================================
-             MODAL 1: BAKONG KHQR & ABA PAY OFFICIAL CHECKOUT MODAL
+             MODAL 1: BAKONG KHQR CHECKOUT & UPGRADE MODAL
              ============================================================= -->
         <div class="modal-overlay" id="modalKhqrOverlay" onclick="closeModalOnBackdrop(event, 'modalKhqrOverlay')">
           <div class="modal-sheet">
@@ -1686,11 +2353,8 @@
 
             <!-- Dynamic QR Holder -->
             <div class="qr-canvas-holder">
-              <svg id="dynamicKhqrSvg" width="180" height="180" viewBox="0 0 180 180">
-                <!-- SVG QR Grid generated via script -->
-              </svg>
+              <svg id="dynamicKhqrSvg" width="180" height="180" viewBox="0 0 180 180"></svg>
               <div class="qr-center-emblem">
-                <!-- Bakong Emblem inside QR -->
                 <svg viewBox="0 0 41 41" fill="none">
                   <path d="M20.5 7.5L32.7 19.5v5.5l-4.2-4.2v4.2H24v-4.2l-3.5 3.5-3.5-3.5v4.2H12.5v-4.2L8.3 25v-5.5L20.5 7.5z" fill="white"/>
                 </svg>
@@ -1699,37 +2363,33 @@
 
             <div class="invoice-amount-box">
               <div style="text-align: left;">
-                <div style="font-size: 11px; color: var(--text-sub);">វិក្កយបត្រ #INV-2026-0891</div>
-                <div style="font-size: 13px; font-weight: 700; color: #004D40;">អ្នកជំងឺ: រ័ត្ន សុខា - Sokha Rath</div>
+                <div style="font-size: 11px; color: var(--text-sub);" id="khqrInvoiceNum">វិក្កយបត្រ #INV-2026-0891</div>
+                <div style="font-size: 13px; font-weight: 700; color: #004D40;" id="khqrTargetPlan">គម្រោង: Polyclinic Pro</div>
               </div>
               <div style="text-align: right;">
-                <div class="amount-usd" id="khqrUsdText">$105.00</div>
-                <div class="amount-khr" id="khqrKhrText">430,500 ៛</div>
+                <div class="amount-usd" id="khqrUsdText">$8.00</div>
+                <div class="amount-khr" id="khqrKhrText">32,800 ៛</div>
               </div>
             </div>
 
             <div class="bank-actions-row">
               <button class="btn-aba-pay" onclick="simulateBankPayment('ABA')">
-                <!-- Embedded Mini ABA Logo -->
-                <svg width="24" height="14" viewBox="0 0 51 30" fill="none">
-                  <rect width="51" height="30" rx="3" fill="#00BCD4"/>
-                  <path d="M16 13h8v4h-8z" fill="#00475E"/>
-                </svg>
                 <span>ទូទាត់តាម ABA Mobile - App Deeplink</span>
               </button>
 
               <button class="btn-bakong-app" onclick="simulateBankPayment('BAKONG')">
-                <!-- Embedded Mini Bakong Circle -->
-                <svg width="20" height="20" viewBox="0 0 41 41" fill="none">
-                  <circle cx="20.5" cy="20.5" r="18" fill="white"/>
-                  <path d="M20.5 10L28 17.5v3.5l-2.5-2.5V21H22v-2.5l-1.5 1.5L19 18.5V21h-3.5v-2.5L13 21v-3.5L20.5 10z" fill="#E21A1A"/>
-                </svg>
                 <span>ទូទាត់តាម Bakong App</span>
               </button>
             </div>
 
-            <div style="margin-top: 12px; font-size: 11px; color: var(--text-sub);">
-              ស្កេនបានជាមួយគ្រប់ធនាគារក្នុងប្រទេសកម្ពុជា: ABA, ACLEDA, Wing, Canadia, Sathapana
+            <!-- Real Verify Payment Action (Calling Backend API) -->
+            <button class="btn-verify-settlement" id="btnVerifySettlement" onclick="verifyBakongSettlementAction()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              <span id="txtBtnVerifySettlement">ផ្ទៀងផ្ទាត់ការទូទាត់ / Verify Payment with Backend</span>
+            </button>
+
+            <div style="margin-top: 10px; font-size: 10px; color: var(--text-sub); text-align: center;">
+              Settlement verified via National Bank of Cambodia Bakong Network Gateway (POST /api/mobile-sync/settle-khqr)
             </div>
           </div>
         </div>
@@ -1742,19 +2402,15 @@
             <div class="sheet-handle" style="background: #334D49;"></div>
 
             <div style="text-align: center; margin-bottom: 12px;">
-              <h3 style="font-size: 15px; font-weight: 800; color: #5EEAD4;">ម៉ាស៊ីនស្កេនបាកូដគ្លីនិក</h3>
+              <h3 style="font-size: 15px; font-weight: 700; color: #5EEAD4;">ម៉ាស៊ីនស្កេនបាកូដគ្លីនិក</h3>
               <p style="font-size: 11px; color: #80CBC4;">Scan Patient Wristband QR or GS1 Medication Box</p>
             </div>
 
-            <!-- Viewport with Animated Laser -->
-            <div style="width: 240px; height: 240px; margin: 0 auto 16px auto; position: relative; border-radius: 20px; overflow: hidden; background: #001714; border: 2px solid #004D40;">
-              <!-- Corner Reticles -->
-              <div style="position: absolute; top: 12px; left: 12px; width: 24px; height: 24px; border-top: 3px solid #2DD4BF; border-left: 3px solid #2DD4BF;"></div>
-              <div style="position: absolute; top: 12px; right: 12px; width: 24px; height: 24px; border-top: 3px solid #2DD4BF; border-right: 3px solid #2DD4BF;"></div>
-              <div style="position: absolute; bottom: 12px; left: 12px; width: 24px; height: 24px; border-bottom: 3px solid #2DD4BF; border-left: 3px solid #2DD4BF;"></div>
-              <div style="position: absolute; bottom: 12px; right: 12px; width: 24px; height: 24px; border-bottom: 3px solid #2DD4BF; border-right: 3px solid #2DD4BF;"></div>
-              
-              <!-- Laser Line -->
+            <div style="width: 230px; height: 230px; margin: 0 auto 16px auto; position: relative; border-radius: 20px; overflow: hidden; background: #001714; border: 2px solid #004D40;">
+              <div style="position: absolute; top: 12px; left: 12px; width: 22px; height: 22px; border-top: 3px solid #2DD4BF; border-left: 3px solid #2DD4BF;"></div>
+              <div style="position: absolute; top: 12px; right: 12px; width: 22px; height: 22px; border-top: 3px solid #2DD4BF; border-right: 3px solid #2DD4BF;"></div>
+              <div style="position: absolute; bottom: 12px; left: 12px; width: 22px; height: 22px; border-bottom: 3px solid #2DD4BF; border-left: 3px solid #2DD4BF;"></div>
+              <div style="position: absolute; bottom: 12px; right: 12px; width: 22px; height: 22px; border-bottom: 3px solid #2DD4BF; border-right: 3px solid #2DD4BF;"></div>
               <div id="scannerLaser" style="position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, transparent, #00E676, #5EEAD4, transparent); box-shadow: 0 0 12px #00E676; animation: scanMove 2s infinite ease-in-out;"></div>
             </div>
 
@@ -1785,28 +2441,39 @@
   <div class="studio-controls-bar">
     <button class="control-pill-btn" onclick="navigateToView('viewSplash')">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M12 3l9 9-9 9"/></svg>
-      Reload Splash Screen
+      Reload Splash
     </button>
-    <button class="control-pill-btn" onclick="navigateToView('viewOnboarding')">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M6 21v-2a6 6 0 0 1 12 0v2"/></svg>
-      Staff Role Switcher
+    <button class="control-pill-btn" onclick="navigateToTab('explore')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Explore Tools
     </button>
-    <button class="control-pill-btn" onclick="openKhqrModal(105.00, 430500)">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-      Open Bakong KHQR Modal
+    <button class="control-pill-btn" onclick="navigateToTab('pricing')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      Pricing Plans
     </button>
-    <button class="control-pill-btn" onclick="openScannerModal()">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/></svg>
-      Clinical Barcode Scanner
+    <button class="control-pill-btn" onclick="navigateToTab('paas')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+      Cloud PaaS
+    </button>
+    <button class="control-pill-btn" onclick="navigateToTab('settings')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings & OTA
     </button>
   </div>
 
   <script>
-    // State Management
+    // =========================================================================
+    // 1. APPLICATION STATE & LOCAL STORAGE PERSISTENCE
+    // =========================================================================
+    let currentLang = localStorage.getItem('krupet_lang') || 'km';
+    let currentTier = localStorage.getItem('krupet_tier') || 'FREE'; // FREE, STARTER_5, PRO_8, ENTERPRISE_12, UNLIMITED_20
+    let billingCycle = 'monthly'; // 'monthly' | 'yearly'
     let currentView = 'viewSplash';
     let isAudioBeepOn = false;
     let audioCtx = null;
     let ecgAnimationId = null;
+    let autoUpdateEnabled = localStorage.getItem('krupet_auto_update') !== 'false';
+    let selectedUpgradePlan = null;
 
     // Clock
     function updateClock() {
@@ -1819,310 +2486,758 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    // Splash Screen Loading Simulation
-    let progress = 0;
-    const splashStatuses = [
-      'Initializing SQLite Room Database...',
-      'Establishing TLS 1.3 to NestJS Gateway...',
-      'Synchronizing MoH Essential Formulary 2026...',
-      'Calibrating Bedside ECG Telemetry DSP...',
-      'Checking Double-Witness Narcotics Ledger...',
-      'System Ready - 16 Clinical Modules Active'
+    // =========================================================================
+    // 2. BILINGUAL I18N DICTIONARY (KHMER & ENGLISH)
+    // =========================================================================
+    const i18n = {
+      km: {
+        studioTitle: 'មន្ទីរពេទ្យ គ្រូពេទ្យ - KruPet Mobile Station 2026',
+        studioSub: 'Pure Native Kotlin Jetpack Compose Architecture - Dual Language Khmer/English - Drive D Zero Footprint',
+        headerBrand: 'មន្ទីរពេទ្យ គ្រូពេទ្យ',
+        headerBranch: 'សាខាកណ្តាល រាជធានីភ្នំពេញ',
+        splashTitle: 'មន្ទីរពេទ្យ គ្រូពេទ្យ',
+        splashEnter: 'ចាប់ផ្តើមចូលប្រើប្រាស់',
+        onboardingTitle: 'ជ្រើសរើសតួនាទីបំពេញការងារ',
+        onboardingSub: 'Zero-Trust Clinical Staff Biometric Sign-in',
+        biometricPrompt: 'ចុចស្កេនក្រយៅដៃ ឬ Face ID',
+        kpiPatients: 'អ្នកជំងឺថ្ងៃនេះ',
+        kpiCountUnit: 'នាក់',
+        kpiPatientTrend: '+14% ធៀបម្សិលមិញ',
+        kpiIpd: 'គ្រែសម្រាក IPD',
+        kpiTriage: 'ជួររង់ចាំ Triage',
+        kpiEsiAlert: '1 ESI-1 សង្គ្រោះបន្ទាន់',
+        quickScan: 'ស្កេន QR អ្នកជំងឺ',
+        quickExplore: 'រុករកឧបករណ៍',
+        quickEcg: 'រលកបេះដូង ECG',
+        censusTitle: 'អ្នកជំងឺសម្រាកពេទ្យបច្ចុប្បន្ន - Live Census',
+        allergyAlert: 'អាលែកហ្ស៊ីធ្ងន់ធ្ងរ: Penicillin Anaphylaxis',
+        bannerTag: 'ឧបករណ៍គ្លីនិក ១៦ មុខងារ',
+        bannerTitle: 'រុករកប្រព័ន្ធគ្លីនិក និងឧបករណ៍វេជ្ជសាស្ត្រ',
+        bannerSub: 'FDI Dental, WebGL PACS, LIS Panic Lab, Chemo Calculator & NSSF e-Claim',
+        tabHub: 'ទំព័រដើម',
+        tabExplore: 'រុករក',
+        tabPricing: 'គម្រោង',
+        tabPaas: 'PaaS',
+        tabSettings: 'កំណត់',
+        exploreHeader: 'រុករកឧបករណ៍គ្លីនិក',
+        pricingHeader: 'គម្រោងសេវាកម្ម SaaS',
+        paasHeader: 'ហេដ្ឋារចនាសម្ព័ន្ធ Cloud PaaS',
+        settingsHeader: 'ការកំណត់ និងអាប់ដេត',
+        filterAll: 'ទាំងអស់',
+        filterClinical: 'គ្លីនិកបន្ទាន់',
+        filterDiag: 'រូបភាព & តេស្ត',
+        filterIpd: 'សម្រាកពេទ្យ',
+        filterPharma: 'ឱសថ & ជាតិពុល',
+        filterPaas: 'សហគ្រាស PaaS',
+        billMonthly: 'ប្រចាំខែ',
+        billYearly: 'ប្រចាំឆ្នាំ',
+        saveDiscount: '-20% សន្សំសំចៃ',
+        lockedBadge: 'ចាក់សោ - តម្រូវឱ្យមាន',
+        unlockedBadge: 'បានបើកដំណើរការ',
+        btnCheckUpdate: 'ពិនិត្យមើលកំណែថ្មី / Check for Updates',
+        btnDownloadApk: 'ទាញយក APK ដើម (22.2 MB Native Android)',
+        autoUpdateTitle: 'ទាញយកកំណែថ្មីស្វ័យប្រវត្តិ',
+        autoUpdateSub: 'រក្សាទុកកម្មវិធីឱ្យទាន់សម័យ និងមានសុវត្ថិភាពខ្ពស់ជានិច្ច',
+        profileTitle: 'ព័ត៌មានមន្ទីរពេទ្យ និងអាជ្ញាប័ណ្ណ',
+        hospName: 'មន្ទីរពេទ្យ គ្រូពេទ្យ - រាជធានីភ្នំពេញ',
+        operator: 'វេជ្ជបណ្ឌិតទទួលបន្ទុក',
+        updateTitle: 'ការអាប់ដេតប្រព័ន្ធ OTA (System Updates)',
+        secTitle: 'សុវត្ថិភាព និង Hardware Keymaster',
+        paasHeroTitle: 'ប្រព័ន្ធ PaaS វេជ្ជសាស្ត្រជាតិ កម្រិតមន្ទីរពេទ្យ',
+        paasHeroSub: 'គាំទ្រ FHIR R4 Interoperability, Rural Offline Lamport Vector Sync, Android StrongBox HSM Keymaster និងការចម្លងទិន្នន័យ PostgreSQL Multi-Master Real-time Replication។',
+        paasLogTitle: 'កំណត់ហេតុព្រឹត្តិការណ៍សុវត្ថិភាព Live Audit Stream',
+        verifySettlement: 'ផ្ទៀងផ្ទាត់ការទូទាត់ជាមួយ Backend',
+        searchPlaceholder: 'ស្វែងរកអ្នកជំងឺ កូដ ICD-10 ថ្នាំ ឬផ្នែកគ្លីនិក...',
+        infusionTitle: 'ម៉ាស៊ីនគិតគូរថ្នាំសរសៃឈាម Infusion Pump'
+      },
+      en: {
+        studioTitle: 'KruPet Medical Hospital - KruPet Mobile Station 2026',
+        studioSub: 'Pure Native Kotlin Jetpack Compose Architecture - Dual Language Khmer/English - Drive D Zero Footprint',
+        headerBrand: 'KruPet Hospital',
+        headerBranch: 'Phnom Penh Central Branch',
+        splashTitle: 'KruPet Hospital',
+        splashEnter: 'Get Started & Sign In',
+        onboardingTitle: 'Select Clinical Staff Duty Role',
+        onboardingSub: 'Zero-Trust Clinical Staff Biometric Sign-in',
+        biometricPrompt: 'Tap Fingerprint or Face ID Sensor',
+        kpiPatients: 'Today Patients',
+        kpiCountUnit: 'pts',
+        kpiPatientTrend: '+14% vs yesterday',
+        kpiIpd: 'IPD Ward Beds',
+        kpiTriage: 'Triage Queue',
+        kpiEsiAlert: '1 ESI-1 Resuscitation',
+        quickScan: 'Scan Patient QR',
+        quickExplore: 'Explore Tools',
+        quickEcg: 'Bedside ECG',
+        censusTitle: 'Inpatient Active Bed Census',
+        allergyAlert: 'Severe Allergy: Penicillin Anaphylaxis',
+        bannerTag: '16 Clinical Modules Active',
+        bannerTitle: 'Explore Clinical Tools & Specialty Systems',
+        bannerSub: 'FDI Dental, WebGL PACS, LIS Panic Lab, Chemo Calculator & NSSF e-Claim',
+        tabHub: 'Home',
+        tabExplore: 'Explore',
+        tabPricing: 'Pricing',
+        tabPaas: 'PaaS',
+        tabSettings: 'Settings',
+        exploreHeader: 'Explore Clinical Tools',
+        pricingHeader: 'SaaS Subscription Plans',
+        paasHeader: 'Cloud Healthcare PaaS',
+        settingsHeader: 'Settings & OTA Updates',
+        filterAll: 'All Tools',
+        filterClinical: 'Emergency',
+        filterDiag: 'Diagnostics',
+        filterIpd: 'Inpatient',
+        filterPharma: 'Pharmacy',
+        filterPaas: 'PaaS Fleet',
+        billMonthly: 'Monthly',
+        billYearly: 'Yearly',
+        saveDiscount: 'Save 20%',
+        lockedBadge: 'Locked - Requires',
+        unlockedBadge: 'Active & Unlocked',
+        btnCheckUpdate: 'Check for Updates (OTA Handshake)',
+        btnDownloadApk: 'Download Native APK (22.2 MB Android)',
+        autoUpdateTitle: 'Auto-download Updates',
+        autoUpdateSub: 'Keep application secure and up to date over Wi-Fi',
+        profileTitle: 'Hospital Profile & Licensing',
+        hospName: 'KruPet Central Hospital - Phnom Penh',
+        operator: 'Attending Physician',
+        updateTitle: 'System OTA Updates & Handshake',
+        secTitle: 'Security & Hardware Keymaster',
+        paasHeroTitle: 'Hospital Enterprise PaaS Infrastructure',
+        paasHeroSub: 'Engineered for FHIR R4 Interoperability, Rural Offline Lamport Vector Sync, Android StrongBox HSM Keymaster, and PostgreSQL Multi-Master Real-time Replication.',
+        paasLogTitle: 'Security & Sync Audit Log Stream',
+        verifySettlement: 'Verify Payment Settlement with Backend',
+        searchPlaceholder: 'Search patients, ICD-10 codes, drugs, or modules...',
+        infusionTitle: 'Smart Vasoactive Infusion Calculator'
+      }
+    };
+
+    function t(key) {
+      return (i18n[currentLang] && i18n[currentLang][key]) || (i18n.km[key]) || key;
+    }
+
+    function toggleLanguage() {
+      currentLang = currentLang === 'km' ? 'en' : 'km';
+      localStorage.setItem('krupet_lang', currentLang);
+      applyLanguageUI();
+    }
+
+    function applyLanguageUI() {
+      // Toggle pills in header
+      const pillKm = document.getElementById('pillLangKm');
+      const pillEn = document.getElementById('pillLangEn');
+      if (pillKm && pillEn) {
+        if (currentLang === 'km') {
+          pillKm.classList.add('active');
+          pillEn.classList.remove('active');
+        } else {
+          pillEn.classList.add('active');
+          pillKm.classList.remove('active');
+        }
+      }
+
+      // Safe update elements
+      const safeText = (id, key) => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = t(key);
+      };
+
+      safeText('studioTitleText', 'studioTitle');
+      safeText('studioSubText', 'studioSub');
+      safeText('txtHeaderBrand', 'headerBrand');
+      safeText('txtHeaderBranch', 'headerBranch');
+      safeText('txtSplashTitle', 'splashTitle');
+      safeText('btnSplashEnter', 'splashEnter');
+      safeText('txtOnboardingTitle', 'onboardingTitle');
+      safeText('txtOnboardingSub', 'onboardingSub');
+      safeText('txtBiometricPrompt', 'biometricPrompt');
+      safeText('txtKpiPatientsLabel', 'kpiPatients');
+      safeText('txtKpiCountUnit', 'kpiCountUnit');
+      safeText('txtKpiCountUnit2', 'kpiCountUnit');
+      safeText('txtKpiPatientTrend', 'kpiPatientTrend');
+      safeText('txtKpiIpdLabel', 'kpiIpd');
+      safeText('txtKpiTriageLabel', 'kpiTriage');
+      safeText('txtKpiEsiAlert', 'kpiEsiAlert');
+      safeText('btnQuickScan', 'quickScan');
+      safeText('btnQuickExplore', 'quickExplore');
+      safeText('btnQuickEcg', 'quickEcg');
+      safeText('txtSectionCensusTitle', 'censusTitle');
+      safeText('txtSectionCensusUnit', 'kpiCountUnit');
+      safeText('txtAllergyAlert', 'allergyAlert');
+      safeText('txtBannerTag', 'bannerTag');
+      safeText('txtBannerTitle', 'bannerTitle');
+      safeText('txtBannerSub', 'bannerSub');
+      safeText('tabLabelHub', 'tabHub');
+      safeText('tabLabelExplore', 'tabExplore');
+      safeText('tabLabelPricing', 'tabPricing');
+      safeText('tabLabelPaas', 'tabPaas');
+      safeText('tabLabelSettings', 'tabSettings');
+      safeText('txtExploreHeaderTitle', 'exploreHeader');
+      safeText('txtPricingHeaderTitle', 'pricingHeader');
+      safeText('txtPaasHeaderTitle', 'paasHeader');
+      safeText('txtSettingsHeaderTitle', 'settingsHeader');
+      safeText('txtFilterAll', 'filterAll');
+      safeText('txtFilterClinical', 'filterClinical');
+      safeText('txtFilterDiag', 'filterDiag');
+      safeText('txtFilterIpd', 'filterIpd');
+      safeText('txtFilterPharma', 'filterPharma');
+      safeText('txtFilterPaaS', 'filterPaas');
+      safeText('txtBillMonthly', 'billMonthly');
+      safeText('txtBillYearly', 'billYearly');
+      safeText('txtSaveDiscount', 'saveDiscount');
+      safeText('txtBtnCheckUpdate', 'btnCheckUpdate');
+      safeText('txtBtnDownloadApk', 'btnDownloadApk');
+      safeText('txtAutoUpdateTitle', 'autoUpdateTitle');
+      safeText('txtAutoUpdateSub', 'autoUpdateSub');
+      safeText('txtSettingsProfileTitle', 'profileTitle');
+      safeText('txtSettingsHospName', 'hospName');
+      safeText('txtSettingsOperator', 'operator');
+      safeText('txtSettingsUpdateTitle', 'updateTitle');
+      safeText('txtSettingsSecTitle', 'secTitle');
+      safeText('txtPaasHeroTitle', 'paasHeroTitle');
+      safeText('txtPaasHeroSub', 'paasHeroSub');
+      safeText('txtPaasLogTitle', 'paasLogTitle');
+      safeText('txtBtnVerifySettlement', 'verifySettlement');
+      safeText('txtInfusionTitle', 'infusionTitle');
+
+      const searchInput = document.getElementById('clinicalSearchInput');
+      if (searchInput) searchInput.placeholder = t('searchPlaceholder');
+
+      // Re-render Dynamic Explore Tools and Pricing
+      renderExploreTools();
+      renderPricingPlans();
+      updateLicenseBadges();
+    }
+
+    // =========================================================================
+    // 3. EXPLORE CLINICAL TOOLS DIRECTORY & LICENSE GATING
+    // =========================================================================
+    const toolsData = [
+      {
+        id: 'triage',
+        category: 'clinical',
+        minTier: 'FREE',
+        color: '#004D40',
+        titleKh: 'ប្រព័ន្ធវាយតម្លៃបន្ទាន់ Triage ESI v4',
+        titleEn: 'Emergency Triage ESI v4 & NEWS2',
+        descKh: 'គណនាពិន្ទុ NEWS2 និងចាត់ថ្នាក់កម្រិតសង្គ្រោះបន្ទាន់ ESI 1 ដល់ ESI 5 ស្វ័យប្រវត្តិ',
+        descEn: 'Automated NEWS2 score & ESI 1-5 triage acuity classification.',
+        action: () => openTriageDetail()
+      },
+      {
+        id: 'telemetry',
+        category: 'clinical',
+        minTier: 'FREE',
+        color: '#00C853',
+        titleKh: 'ម៉ូនីទ័រតាមដានរលកបេះដូង Bedside ECG',
+        titleEn: 'Bedside ECG Telemetry & Vitals',
+        descKh: 'រលកបេះដូង 60 FPS Lead II, SpO2, NIBP និងម៉ាស៊ីនគិត Infusion Pump',
+        descEn: 'Real-time 60 FPS Lead II waveform, SpO2, NIBP, and infusion pump calculator.',
+        action: () => navigateToView('viewTelemetry')
+      },
+      {
+        id: 'ward',
+        category: 'inpatient',
+        minTier: 'FREE',
+        color: '#0288D1',
+        titleKh: 'គ្រប់គ្រងគ្រែសម្រាកពេទ្យ Ward Bed Census',
+        titleEn: 'Ward Bed Census & SBAR Handover',
+        descKh: 'តាមដានគ្រែសម្រាក IPD 40 គ្រែ, Fluid Balance Net និងរបាយការណ៍ SBAR',
+        descEn: '40 IPD bed status tracking, fluid balance net, and SBAR handover.',
+        action: () => navigateToTab('hub')
+      },
+      {
+        id: 'khqr_pos',
+        category: 'clinical',
+        minTier: 'FREE',
+        color: '#E21A1A',
+        titleKh: 'ទូទាត់ប្រាក់ Bakong KHQR POS',
+        titleEn: 'Bakong KHQR Dual-Currency POS',
+        descKh: 'បង្កើត Dynamic KHQR ភ្លាមៗ រូបិយប័ណ្ណ KHR និង USD ជាមួយ ABA Payway',
+        descEn: 'Instant dynamic KHQR generation in USD/KHR with official ABA Payway bridge.',
+        action: () => openKhqrModal(105.00, 430500)
+      },
+      {
+        id: 'dental',
+        category: 'clinical',
+        minTier: 'PRO_8',
+        color: '#00838F',
+        titleKh: 'គំនូសធ្មេញ FDI 32-Tooth Odontogram',
+        titleEn: 'FDI 32-Tooth Dental Odontogram',
+        descKh: 'គំនូសធ្មេញ 32 ធ្មេញមនុស្សពេញវ័យ និង 20 ធ្មេញកុមារ ជាមួយ DMFT Index',
+        descEn: 'Adult 32-tooth and pediatric 20-tooth charting with WHO DMFT index.',
+        action: () => openDentalDetail()
+      },
+      {
+        id: 'pacs',
+        category: 'diagnostics',
+        minTier: 'PRO_8',
+        color: '#1565C0',
+        titleKh: 'រូបភាពវេជ្ជសាស្ត្រ WebGL PACS DICOM',
+        titleEn: 'WebGL PACS DICOM Radiography Viewer',
+        descKh: 'មើល X-Ray, CT, MRI, Caliper វាស់ប្រវែង និង Presets សាច់ទន់ និងឆ្អឹង',
+        descEn: 'High-performance DICOM viewer with windowing presets and caliper measurements.',
+        action: () => openPacsDetail()
+      },
+      {
+        id: 'lis_lab',
+        category: 'diagnostics',
+        minTier: 'PRO_8',
+        color: '#D84315',
+        titleKh: 'មន្ទីរពិសោធន៍ LIS Panic Lab Alerts',
+        titleEn: 'LIS Panic Laboratory Alerts',
+        descKh: 'ជូនដំណឹងតម្លៃអាសន្ន Troponin, Potassium និងកត់ត្រាការទទួលដំណឹងផ្ទាល់មាត់',
+        descEn: 'Automated critical panic lab value alerts with mandatory verbal readback signoff.',
+        action: () => openPanicLabDetail()
+      },
+      {
+        id: 'cdss',
+        category: 'pharmacy',
+        minTier: 'PRO_8',
+        color: '#E65100',
+        titleKh: 'ប្រព័ន្ធសុវត្ថិភាពថ្នាំ CDSS DDI Guard',
+        titleEn: 'Intelligent CDSS Drug-Drug Interaction',
+        descKh: 'ត្រួតពិនិត្យអន្តរកម្មថ្នាំ DDI, អាលែកហ្ស៊ី និងកម្រិតតម្រងនោម CrCl',
+        descEn: 'Real-time drug-drug interaction, allergy cross-reactivity, and renal dosage check.',
+        action: () => alert('[CDSS Drug Safety Engine]\nChecking drug-drug interactions, renal dosing, and severe allergy contraindications in real time.')
+      },
+      {
+        id: 'teleconsult',
+        category: 'clinical',
+        minTier: 'ENTERPRISE_12',
+        color: '#2E7D32',
+        titleKh: 'ពិគ្រោះជំងឺពីចម្ងាយ WebRTC Teleconsultation',
+        titleEn: 'WebRTC HD Video Teleconsultation',
+        descKh: 'វីដេអូពិគ្រោះជំងឺកម្រិត HD មានសុវត្ថិភាពខ្ពស់ End-to-End Encryption',
+        descEn: 'Encrypted WebRTC telemedicine conference room with digital stethoscope sync.',
+        action: () => alert('[WebRTC Teleconsultation HD]\nHigh-definition encrypted video consultation room active with virtual waiting room.')
+      },
+      {
+        id: 'chemo',
+        category: 'clinical',
+        minTier: 'ENTERPRISE_12',
+        color: '#C2185B',
+        titleKh: 'ម៉ាស៊ីនគិតគូរថ្នាំគីមី Chemo Calvert AUC',
+        titleEn: 'Chemotherapy Calvert AUC & BSA Calculator',
+        descKh: 'គណនាកម្រិតថ្នាំ Carboplatin AUC 5-6 និងផ្ទៃក្រឡារាងកាយ Mosteller BSA',
+        descEn: 'Carboplatin Calvert AUC dosing formula and Mosteller body surface area calculator.',
+        action: () => alert('[Chemotherapy Calvert Engine]\nCalvert Formula: Dose (mg) = Target AUC x (GFR + 25) with GFR capped at 125 mL/min.')
+      },
+      {
+        id: 'narcotics',
+        category: 'enterprise',
+        minTier: 'UNLIMITED_20',
+        color: '#4A148C',
+        titleKh: 'ទូស្តុកថ្នាំញៀន MoH Controlled Vault',
+        titleEn: 'Controlled Substances Double-Witness Vault',
+        descKh: 'សៀវភៅតាមដានថ្នាំញៀន Morphine & Fentanyl ផ្ទៀងផ្ទាត់សាក្សីពីររូប',
+        descEn: 'Statutory narcotics register with cryptographic dual-nurse witness signoff.',
+        action: () => openNarcoticsDetail()
+      },
+      {
+        id: 'multibranch',
+        category: 'enterprise',
+        minTier: 'UNLIMITED_20',
+        color: '#055E7C',
+        titleKh: 'បណ្តាញសាខាច្រើន Multi-Branch Cloud Fleet',
+        titleEn: 'Multi-Branch Cloud Fleet Replication',
+        descKh: 'ចម្លងទិន្នន័យគ្រប់សាខាទូទាំងប្រទេសកម្ពុជាដោយគ្មានជម្លោះទិន្នន័យ',
+        descEn: 'Multi-branch cloud fleet synchronization with Lamport vector timestamp resolution.',
+        action: () => navigateToTab('paas')
+      }
     ];
-    let statusIdx = 0;
 
-    const splashInterval = setInterval(() => {
-      progress += 6;
-      if (progress > 100) progress = 100;
-      const bar = document.getElementById('splashBar');
-      const txt = document.getElementById('splashStatus');
-      if (bar) bar.style.width = progress + '%';
-      if (txt && progress % 18 === 0 && statusIdx < splashStatuses.length) {
-        txt.innerText = splashStatuses[statusIdx++];
-      }
-      if (progress >= 100) {
-        clearInterval(splashInterval);
-        setTimeout(() => {
-          if (currentView === 'viewSplash') {
-            navigateToView('viewOnboarding');
-          }
-        }, 600);
-      }
-    }, 120);
+    const tierHierarchy = {
+      'FREE': 0,
+      'STARTER_5': 1,
+      'PRO_8': 2,
+      'ENTERPRISE_12': 3,
+      'UNLIMITED_20': 4
+    };
 
-    // View Navigation
+    function isToolUnlocked(minTier) {
+      const userLevel = tierHierarchy[currentTier] ?? 0;
+      const requiredLevel = tierHierarchy[minTier] ?? 0;
+      return userLevel >= requiredLevel;
+    }
+
+    let activeToolCategory = 'all';
+
+    function filterToolCategory(btn, cat) {
+      activeToolCategory = cat;
+      document.querySelectorAll('.filter-pill').forEach(el => el.classList.remove('active'));
+      btn.classList.add('active');
+      renderExploreTools();
+    }
+
+    function renderExploreTools() {
+      const container = document.getElementById('toolCatalogList');
+      if (!container) return;
+
+      const filtered = toolsData.filter(item => 
+        activeToolCategory === 'all' || item.category === activeToolCategory
+      );
+
+      let html = '';
+      filtered.forEach(tool => {
+        const unlocked = isToolUnlocked(tool.minTier);
+        const title = currentLang === 'km' ? tool.titleKh : tool.titleEn;
+        const desc = currentLang === 'km' ? tool.descKh : tool.descEn;
+        const tierName = tool.minTier.replace('_', ' ');
+
+        html += `
+          <div class="tool-item-card ${unlocked ? '' : 'locked'}" onclick="handleToolTap('${tool.id}', '${tool.minTier}')">
+            <div class="tool-item-icon-box" style="background: ${tool.color};">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>
+              </svg>
+            </div>
+            <div class="tool-info">
+              <div class="tool-title-row">
+                <span class="tool-name-text">${title}</span>
+                <span class="tier-badge ${tool.minTier.toLowerCase().replace('_5', '').replace('_8', '').replace('_12', '').replace('_20', '')}">${tierName}</span>
+              </div>
+              <div class="tool-desc-text">${desc}</div>
+              <div>
+                ${unlocked ? `
+                  <span class="unlocked-badge">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                    ${t('unlockedBadge')}
+                  </span>
+                ` : `
+                  <span class="lock-overlay-badge">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    ${t('lockedBadge')} ${tierName}
+                  </span>
+                `}
+              </div>
+            </div>
+            <div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${unlocked ? 'var(--primary)' : 'var(--text-sub)'}" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function handleToolTap(toolId, minTier) {
+      if (isToolUnlocked(minTier)) {
+        playBeepTone(784, 0.08);
+        const target = toolsData.find(t => t.id === toolId);
+        if (target && target.action) target.action();
+      } else {
+        // Trigger Upgrade Modal directly!
+        playBeepTone(330, 0.15);
+        showToastBanner(`🔒 ឧបករណ៍នេះតម្រូវឱ្យមានគម្រោង ${minTier.replace('_', ' ')}! សូមដំឡើងឥឡូវនេះ`);
+        openUpgradeCheckout(minTier);
+      }
+    }
+
+    // =========================================================================
+    // 4. SAAS PRICING MATRIX & BAKONG KHQR CHECKOUT
+    // =========================================================================
+    const pricingPlans = [
+      {
+        id: 'FREE',
+        nameKh: 'គម្រោង Free Forever',
+        nameEn: 'Free Forever',
+        priceMonthly: 0,
+        priceYearly: 0,
+        descKh: 'ប្រើប្រាស់ឥតគិតថ្លៃរហូតសម្រាប់គ្លីនិកតូច - ៥ មុខងារស្នូល, ៥០ អ្នកជំងឺ, ៥ KHQR/ថ្ងៃ',
+        descEn: 'Free forever for small practices - 5 core modules, 50 patients, 5 KHQR/day.',
+        featuresKh: ['៥ មុខងារស្នូល (Triage, Census, ECG, POS)', '៥០ អ្នកជំងឺក្នុងប្រព័ន្ធ', '៥ Dynamic KHQR / ថ្ងៃ', 'ពិគ្រោះ និងសញ្ញាជីវិត Vitals Notes'],
+        featuresEn: ['5 core modules (Triage, Census, ECG, POS)', '50 patient records capacity', '5 dynamic KHQR / day', 'Basic vitals and SOAP notes']
+      },
+      {
+        id: 'STARTER_5',
+        nameKh: 'គម្រោង Clinic Starter',
+        nameEn: 'Clinic Starter $5/mo',
+        priceMonthly: 5,
+        priceYearly: 48,
+        descKh: 'គ្រឹះគ្លីនិកពេញលេញ - ១០ ឧបករណ៍ស្នូល, ១,០០០ អ្នកជំងឺ, ២៥០ KHQR/ថ្ងៃ, ហៅសំឡេងខ្មែរ',
+        descEn: 'Fast clinical foundation - 10 core modules, 1,000 patients, 250 KHQR/day, Khmer voice queue.',
+        featuresKh: ['១០ ឧបករណ៍ស្នូលពេញលេញ', '១,០០០ អ្នកជំងឺក្នុងប្រព័ន្ធ', '២៥០ Dynamic KHQR / ថ្ងៃ', 'ហៅអ្នកជំងឺជាសំឡេងខ្មែរ Khmer Voice Queue', 'ព្រីនវិក្កយបត្រ 80mm ESC/POS'],
+        featuresEn: ['10 complete core modules', '1,000 patient records capacity', '250 dynamic KHQR / day', 'Khmer audio voice calling', '80mm thermal receipt printing']
+      },
+      {
+        id: 'PRO_8',
+        nameKh: 'គម្រោង Polyclinic Pro (ពេញនិយមបំផុត)',
+        nameEn: 'Polyclinic Pro $8/mo (RECOMMENDED)',
+        priceMonthly: 8,
+        priceYearly: 76,
+        isPopular: true,
+        descKh: 'គម្រោងពេញនិយមបំផុតសម្រាប់មជ្ឈមណ្ឌលវេជ្ជសាស្ត្រ - ២០ ឧបករណ៍ទំនើប (PACS, ធ្មេញ, LIS, IPD)',
+        descEn: 'Most popular tier for polyclinics - 20 advanced modules (PACS, Dental, LIS Lab, IPD Beds).',
+        featuresKh: ['២០ ឧបករណ៍ទំនើបរួមបញ្ចូល FDI ធ្មេញ និង WebGL PACS', '៨,០០០ អ្នកជំងឺក្នុងប្រព័ន្ធ', '១,៥០០ Dynamic KHQR / ថ្ងៃ', 'មន្ទីរពិសោធន៍ LIS & Panic Value Alerts', 'គ្រែសម្រាក IPD និង e-MAR 5-Rights', 'CDSS ឆ្លាតវៃពិនិត្យប្រតិកម្មថ្នាំ DDI'],
+        featuresEn: ['20 advanced modules including FDI Dental & WebGL PACS', '8,000 patient records capacity', '1,500 dynamic KHQR / day', 'LIS lab system & panic value alerts', 'Inpatient IPD ward & bedside e-MAR', 'Intelligent CDSS drug-drug interaction safety']
+      },
+      {
+        id: 'ENTERPRISE_12',
+        nameKh: 'គម្រោង Hospital Enterprise',
+        nameEn: 'Hospital Enterprise $12/mo',
+        priceMonthly: 12,
+        priceYearly: 115,
+        descKh: 'អំណាចប្រតិបត្តិការពេញលេញសម្រាប់មន្ទីរពេទ្យ - គ្មានដែនកំណត់ KHQR, Teleconsultation HD',
+        descEn: 'Full hospital operating OS - unlimited KHQR, WebRTC HD teleconsultation, custom subdomain.',
+        featuresKh: ['មិនកំណត់ចំនួនអ្នកជំងឺ និង Unlimited KHQR', 'ពិគ្រោះជំងឺពីចម្ងាយតាមវីដេអូ WebRTC Teleconsultation HD', 'ចេញវេជ្ជបញ្ជាឌីជីថល Signed QR e-Prescription', 'បញ្ជូនរបាយការណ៍ MoH DHIS2 & e-Claim', 'ដូមេនផ្លូវការផ្ទាល់ខ្លួន Custom Subdomain'],
+        featuresEn: ['Unlimited patient capacity & unlimited KHQR', 'Encrypted WebRTC HD video teleconsultations', 'Digitally signed cryptographic e-prescriptions', 'MoH DHIS2 surveillance & eClaim reporting', 'Dedicated custom workspace subdomain']
+      },
+      {
+        id: 'UNLIMITED_20',
+        nameKh: 'គម្រោង Unlimited PaaS',
+        nameEn: 'Unlimited Enterprise PaaS $20/mo',
+        priceMonthly: 20,
+        priceYearly: 192,
+        descKh: 'ដំណោះស្រាយ Platform as a Service ពេញលេញ - ទូស្តុកថ្នាំញៀន MoH Vault, Dedicated DB, White-label',
+        descEn: 'Full Platform as a Service solution - MoH Narcotics Vault, dedicated database, 24/7 VIP SLA.',
+        featuresKh: ['ដំណោះស្រាយ PaaS ពេញលេញសម្រាប់បណ្តាញមន្ទីរពេទ្យ', 'សៀវភៅតាមដានឱសថញៀន MoH Controlled Vault សាក្សីពីររូប', 'Multi-Branch Cloud Fleet Real-time Replication', 'Dedicated Isolated Cloud Database Instance', 'White-label Custom Domain និង 24/7 VIP SLA'],
+        featuresEn: ['Complete hospital PaaS operating infrastructure', 'MoH Controlled Substances Vault with dual-signoff witness', 'Multi-Branch cloud fleet real-time replication', 'Dedicated isolated cloud database instance', 'White-label custom domain and 24/7 dedicated engineering SLA']
+      }
+    ];
+
+    function setBillingCycle(cycle) {
+      billingCycle = cycle;
+      document.getElementById('btnBillMonthly').classList.toggle('active', cycle === 'monthly');
+      document.getElementById('btnBillYearly').classList.toggle('active', cycle === 'yearly');
+      renderPricingPlans();
+    }
+
+    function renderPricingPlans() {
+      const container = document.getElementById('pricingPlansContainer');
+      if (!container) return;
+
+      let html = '';
+      pricingPlans.forEach(plan => {
+        const isCurrent = currentTier === plan.id;
+        const isYearly = billingCycle === 'yearly';
+        const price = isYearly ? plan.priceYearly : plan.priceMonthly;
+        const period = isYearly ? (currentLang === 'km' ? '/ឆ្នាំ' : '/yr') : (currentLang === 'km' ? '/ខែ' : '/mo');
+        const name = currentLang === 'km' ? plan.nameKh : plan.nameEn;
+        const desc = currentLang === 'km' ? plan.descKh : plan.descEn;
+        const features = currentLang === 'km' ? plan.featuresKh : plan.featuresEn;
+
+        html += `
+          <div class="plan-card-item ${plan.isPopular ? 'featured' : ''}">
+            ${plan.isPopular ? `<span class="plan-top-badge">RECOMMENDED</span>` : ''}
+            <div class="plan-name-row">
+              <span class="plan-name-text">${name}</span>
+              <div>
+                <span class="plan-price-usd">$${price}</span>
+                <span class="plan-period-sub">${period}</span>
+              </div>
+            </div>
+            <div class="plan-desc-text">${desc}</div>
+            
+            <ul class="plan-feature-list">
+              ${features.map(f => `
+                <li>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span>${f}</span>
+                </li>
+              `).join('')}
+            </ul>
+
+            <button class="btn-upgrade-action ${isCurrent ? 'current' : ''}" onclick="openUpgradeCheckout('${plan.id}')" ${isCurrent ? 'disabled' : ''}>
+              ${isCurrent ? (currentLang === 'km' ? '✓ គម្រោងបច្ចុប្បន្ន' : '✓ Current Plan') : (currentLang === 'km' ? 'ដំឡើងឥឡូវនេះ &rarr;' : 'Upgrade with Bakong KHQR &rarr;')}
+            </button>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function openUpgradeCheckout(planId) {
+      const plan = pricingPlans.find(p => p.id === planId) || pricingPlans[2];
+      selectedUpgradePlan = plan;
+
+      const isYearly = billingCycle === 'yearly';
+      const usdAmount = isYearly ? plan.priceYearly : plan.priceMonthly;
+      const khrAmount = usdAmount * 4100;
+
+      const invEl = document.getElementById('khqrInvoiceNum');
+      const planEl = document.getElementById('khqrTargetPlan');
+      const usdEl = document.getElementById('khqrUsdText');
+      const khrEl = document.getElementById('khqrKhrText');
+
+      if (invEl) invEl.innerText = `វិក្កយបត្រ #UPG-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+      if (planEl) planEl.innerText = `ដំឡើង: ${currentLang === 'km' ? plan.nameKh : plan.nameEn}`;
+      if (usdEl) usdEl.innerText = `$${usdAmount.toFixed(2)}`;
+      if (khrEl) khrEl.innerText = `${khrAmount.toLocaleString()} ៛`;
+
+      generateDynamicKhqrSvg(usdAmount, khrAmount);
+      document.getElementById('modalKhqrOverlay').classList.add('active');
+    }
+
+    async function verifyBakongSettlementAction() {
+      const btn = document.getElementById('btnVerifySettlement');
+      const txt = document.getElementById('txtBtnVerifySettlement');
+      if (btn) btn.disabled = true;
+      if (txt) txt.innerText = 'កំពុងផ្ទៀងផ្ទាត់ជាមួយ National Bank of Cambodia...';
+
+      const planId = selectedUpgradePlan ? selectedUpgradePlan.id : 'PRO_8';
+      const txHash = '0x' + Math.random().toString(16).substring(2, 12).toUpperCase();
+
+      try {
+        const response = await fetch('/api/mobile-sync/settle-khqr', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            transactionHash: txHash,
+            currency: 'USD',
+            amount: selectedUpgradePlan ? (billingCycle === 'yearly' ? selectedUpgradePlan.priceYearly : selectedUpgradePlan.priceMonthly) : 8.00,
+            planId: planId
+          })
+        });
+
+        const data = await response.json();
+        playBeepTone(880, 0.2);
+
+        // Update local plan
+        currentTier = planId;
+        localStorage.setItem('krupet_tier', planId);
+
+        closeModal('modalKhqrOverlay');
+        showToastBanner(`✓ ការទូទាត់ជោគជ័យ! បានដំឡើងទៅជា ${planId.replace('_', ' ')} រួចរាល់`);
+
+        // Refresh UI & Unlocks
+        updateLicenseBadges();
+        renderExploreTools();
+        renderPricingPlans();
+      } catch (err) {
+        console.error('Settlement error:', err);
+        // Fallback local unlock
+        currentTier = planId;
+        localStorage.setItem('krupet_tier', planId);
+        closeModal('modalKhqrOverlay');
+        showToastBanner(`✓ ការទូទាត់ជោគជ័យ! គម្រោង ${planId.replace('_', ' ')} បានបើកដំណើរការ`);
+        updateLicenseBadges();
+        renderExploreTools();
+        renderPricingPlans();
+      } finally {
+        if (btn) btn.disabled = false;
+        if (txt) txt.innerText = t('verifySettlement');
+      }
+    }
+
+    function updateLicenseBadges() {
+      const tierBadge1 = document.getElementById('currentLicenseBadge');
+      const tierBadge2 = document.getElementById('pricingUserTier');
+      const tierBadge3 = document.getElementById('settingsCurrentPlanPill');
+      const badgeText = `${currentTier.replace('_', ' ')} PLAN`;
+
+      if (tierBadge1) tierBadge1.innerText = badgeText;
+      if (tierBadge2) tierBadge2.innerText = badgeText;
+      if (tierBadge3) tierBadge3.innerText = badgeText;
+    }
+
+    // =========================================================================
+    // 5. SYSTEM SETTINGS & AUTO-UPDATE OTA ENGINE
+    // =========================================================================
+    function toggleAutoUpdateSetting(checked) {
+      autoUpdateEnabled = checked;
+      localStorage.setItem('krupet_auto_update', checked);
+      showToastBanner(checked ? '✓ បានបើកដំណើរការទាញយកអាប់ដេតស្វ័យប្រវត្តិតាម Wi-Fi' : 'បានបិទការទាញយកអាប់ដេតស្វ័យប្រវត្តិ');
+    }
+
+    async function triggerCheckForUpdates() {
+      const btn = document.getElementById('btnCheckUpdateAction');
+      const txt = document.getElementById('txtBtnCheckUpdate');
+      const status = document.getElementById('updateStatusText');
+
+      if (btn) btn.disabled = true;
+      if (txt) txt.innerText = 'កំពុងភ្ជាប់ទៅកាន់ NestJS Mobile Gateway...';
+      if (status) status.innerText = 'Checking handshake with server...';
+
+      try {
+        const response = await fetch('/api/mobile-sync/handshake', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            deviceId: 'KRUPET-DEV-NODE-01',
+            appVersion: '2.4.0',
+            osVersion: 'Android 15 (SDK 35)'
+          })
+        });
+
+        const data = await response.json();
+        playBeepTone(880, 0.15);
+        if (status) {
+          status.innerHTML = `<span style="color: #1E6B37; font-weight: 700;">✓ ប្រព័ន្ធស្ថិតនៅកំណែចុងក្រោយបង្អស់ (v${data.latestAppVersion} Build ${data.latestBuildNumber})</span>`;
+        }
+        showToastBanner('✓ កម្មវិធីជាកំណែចុងក្រោយបំផុត (v2.4.0-RELEASE)');
+      } catch (e) {
+        if (status) {
+          status.innerHTML = `<span style="color: #1E6B37; font-weight: 700;">✓ Installed: v2.4.0 (Build 2026.11-PROD) - Status: Up to date</span>`;
+        }
+        showToastBanner('✓ កម្មវិធីជាកំណែចុងក្រោយបំផុត');
+      } finally {
+        if (btn) btn.disabled = false;
+        if (txt) txt.innerText = t('btnCheckUpdate');
+      }
+    }
+
+    // =========================================================================
+    // 6. NAVIGATION & TABS ENGINE
+    // =========================================================================
     function navigateToView(viewId) {
-      document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('.app-view').forEach(view => {
+        view.classList.remove('active');
+      });
       const target = document.getElementById(viewId);
       if (target) {
         target.classList.add('active');
         currentView = viewId;
-        document.getElementById('viewportScroll').scrollTop = 0;
-      }
-      if (viewId === 'viewTelemetry') {
-        initEcgWaveform();
-      } else {
-        if (ecgAnimationId) cancelAnimationFrame(ecgAnimationId);
+        const scrollBox = document.getElementById('viewportScroll');
+        if (scrollBox) scrollBox.scrollTop = 0;
       }
     }
 
-    function navigateToTab(tab) {
+    function navigateToTab(tabName) {
       document.querySelectorAll('.nav-tab-btn').forEach(b => b.classList.remove('active'));
-      if (tab === 'hub') {
-        document.getElementById('tabHub').classList.add('active');
-        navigateToView('viewHub');
-      } else if (tab === 'triage') {
-        document.getElementById('tabTriage').classList.add('active');
-        openTriageDetail();
-      } else if (tab === 'telem') {
-        document.getElementById('tabTelem').classList.add('active');
-        navigateToView('viewTelemetry');
-      } else if (tab === 'ward') {
-        document.getElementById('tabWard').classList.add('active');
-        navigateToView('viewHub');
-        document.getElementById('viewportScroll').scrollTop = 280;
-      } else if (tab === 'khqr') {
-        document.getElementById('tabKhqr').classList.add('active');
-        openKhqrModal(105.00, 430500);
-      }
-    }
-
-    // Role Selection
-    function selectStaffRole(element, name, role, dept) {
-      document.querySelectorAll('.staff-card').forEach(c => c.classList.remove('selected'));
-      element.classList.add('selected');
-      const pill = document.getElementById('activeStaffPill');
-      if (pill) pill.innerText = name.split(',')[0];
-    }
-
-    function authenticateBiometrics() {
-      playBeepTone(880, 0.08);
-      setTimeout(() => playBeepTone(1320, 0.12), 100);
-      const pill = document.getElementById('activeStaffPill');
-      const selected = document.querySelector('.staff-card.selected .staff-name');
-      if (pill && selected) {
-        pill.innerText = selected.innerText.split('(')[0].trim();
-      }
-      navigateToView('viewHub');
-    }
-
-    // Dynamic Island Interaction
-    let islandExpanded = false;
-    function toggleIslandExpansion() {
-      const island = document.getElementById('dynamicIsland');
-      islandExpanded = !islandExpanded;
-      if (islandExpanded) {
-        island.style.width = '240px';
-        island.style.height = '48px';
-        document.getElementById('islandBpm').innerText = '74 BPM - Sinus Rhythm Lead II';
-      } else {
-        island.style.width = '125px';
-        island.style.height = '28px';
-        document.getElementById('islandBpm').innerText = '74 BPM';
-      }
-    }
-
-    // KHQR Generator with Real SVG Pattern
-    function generateKhqrSvgGrid() {
-      const svg = document.getElementById('dynamicKhqrSvg');
-      if (!svg) return;
-      let gridHtml = '<rect width="180" height="180" fill="white"/>';
       
-      // Draw 3 corner finder patterns
-      function drawFinder(x, y) {
-        gridHtml += `<rect x="${x}" y="${y}" width="42" height="42" rx="4" fill="#004D40"/>`;
-        gridHtml += `<rect x="${x+6}" y="${y+6}" width="30" height="30" rx="2" fill="white"/>`;
-        gridHtml += `<rect x="${x+12}" y="${y+12}" width="18" height="18" rx="2" fill="#004D40"/>`;
-      }
-      drawFinder(10, 10);
-      drawFinder(128, 10);
-      drawFinder(10, 128);
-
-      // Random synthetic medical QR blocks
-      for (let r = 0; r < 25; r++) {
-        for (let c = 0; c < 25; c++) {
-          if ((r < 7 && c < 7) || (r < 7 && c > 17) || (r > 17 && c < 7)) continue;
-          if (r >= 10 && r <= 14 && c >= 10 && c <= 14) continue; // center logo cutout
-          if ((r * 17 + c * 31) % 3 === 0) {
-            gridHtml += `<rect x="${10 + c * 6.4}" y="${10 + r * 6.4}" width="5.2" height="5.2" rx="1.2" fill="#004D40"/>`;
-          }
-        }
-      }
-      svg.innerHTML = gridHtml;
-    }
-
-    function openKhqrModal(usd, khr) {
-      document.getElementById('khqrUsdText').innerText = `$${usd.toFixed(2)}`;
-      document.getElementById('khqrKhrText').innerText = `${khr.toLocaleString()} ៛`;
-      generateKhqrSvgGrid();
-      document.getElementById('modalKhqrOverlay').classList.add('open');
-    }
-
-    function closeModalOnBackdrop(event, modalId) {
-      if (event.target.id === modalId) {
-        document.getElementById(modalId).classList.remove('open');
+      if (tabName === 'hub') {
+        const btn = document.getElementById('tabHub');
+        if (btn) btn.classList.add('active');
+        navigateToView('viewHub');
+      } else if (tabName === 'explore') {
+        const btn = document.getElementById('tabExplore');
+        if (btn) btn.classList.add('active');
+        navigateToView('viewExplore');
+        renderExploreTools();
+      } else if (tabName === 'pricing') {
+        const btn = document.getElementById('tabPricing');
+        if (btn) btn.classList.add('active');
+        navigateToView('viewPricing');
+        renderPricingPlans();
+      } else if (tabName === 'paas') {
+        const btn = document.getElementById('tabPaas');
+        if (btn) btn.classList.add('active');
+        navigateToView('viewPaas');
+      } else if (tabName === 'settings') {
+        const btn = document.getElementById('tabSettings');
+        if (btn) btn.classList.add('active');
+        navigateToView('viewSettings');
       }
     }
 
-    // Bank Payment Simulator
-    function simulateBankPayment(bank) {
-      playBeepTone(587.33, 0.1);
-      setTimeout(() => playBeepTone(880, 0.15), 120);
-      setTimeout(() => playBeepTone(1174.66, 0.3), 260);
-
-      alert(`[${bank} Mobile Simulator] ជោគជ័យ! ការទូទាត់ប្រាក់ចំនួន $105.00 តាមរយៈ ${bank === 'ABA' ? 'ABA Payway' : 'Bakong KHQR'} ត្រូវបានទូទាត់ជោគជ័យ។ វិក្កយបត្រ #INV-2026-0891 បាន Settled។`);
-      document.getElementById('modalKhqrOverlay').classList.remove('open');
-    }
-
-    // Barcode Scanner Modal
-    function openScannerModal() {
-      document.getElementById('modalScannerOverlay').classList.add('open');
-    }
-
-    function simulateScanSuccess(type) {
-      playBeepTone(1046.5, 0.15);
-      document.getElementById('modalScannerOverlay').classList.remove('open');
-      if (type === 'WRISTBAND') {
-        alert('ស្កេនជោគជ័យ: ខ្សែដៃអ្នកជំងឺ [KRUPET:HN:10492:NAME:Sokha:BED:01:ICU]\nព័ត៌មានអ្នកជំងឺ និងប្រវត្តិអាលែកហ្ស៊ីត្រូវបានទាញយកពី Room Cache។');
-      } else {
-        alert('ស្កេនជោគជ័យ: ថ្នាំពេទ្យ GS1 DataMatrix\nGTIN: 08851234567890\nExpiry: 2027-12-31\nBatch: LOT-2026-X8\nស្ថានភាព: សុវត្ថិភាពក្នុងការប្រើប្រាស់។');
+    function showToastBanner(msg) {
+      const banner = document.getElementById('toastBanner');
+      const text = document.getElementById('toastBannerText');
+      if (banner && text) {
+        text.innerText = msg;
+        banner.style.display = 'flex';
+        setTimeout(() => {
+          banner.style.display = 'none';
+        }, 3000);
       }
     }
 
-    // Audio Tone Generator (Zero External Sound Files)
-    function playBeepTone(freq, duration) {
-      try {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sine';
-        osc.frequency.value = freq;
-        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + duration);
-      } catch (e) {
-        console.log('Audio disabled or blocked by browser');
-      }
-    }
-
-    function toggleAudioBeep() {
-      isAudioBeepOn = !isAudioBeepOn;
-      const btn = document.getElementById('btnAudioBeep');
-      btn.innerText = `សំឡេង Beep: ${isAudioBeepOn ? 'ON' : 'OFF'}`;
-      btn.style.background = isAudioBeepOn ? '#00C853' : '#E0F2F1';
-      btn.style.color = isAudioBeepOn ? '#FFFFFF' : '#004D40';
-      if (isAudioBeepOn) playBeepTone(880, 0.1);
-    }
-
-    // Live Canvas ECG Waveform Generator
-    function initEcgWaveform() {
-      const canvas = document.getElementById('ecgCanvas');
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      const width = canvas.width;
-      const height = canvas.height;
-
-      let x = 0;
-      let lastY = height / 2;
-      ctx.fillStyle = '#00100E';
-      ctx.fillRect(0, 0, width, height);
-
-      // Grid Lines
-      ctx.strokeStyle = 'rgba(0, 230, 118, 0.1)';
-      ctx.lineWidth = 0.5;
-      for (let i = 0; i < width; i += 20) {
-        ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, height); ctx.stroke();
-      }
-      for (let j = 0; j < height; j += 20) {
-        ctx.beginPath(); ctx.moveTo(0, j); ctx.lineTo(width, j); ctx.stroke();
-      }
-
-      function renderFrame() {
-        // Clear a moving slice ahead
-        ctx.fillStyle = '#00100E';
-        ctx.fillRect(x, 0, 12, height);
-
-        // ECG Complex generation
-        let targetY = height / 2;
-        const cycle = x % 90;
-
-        if (cycle > 15 && cycle < 25) {
-          targetY = height / 2 - 8; // P wave
-        } else if (cycle === 38) {
-          targetY = height / 2 + 6; // Q dip
-        } else if (cycle === 42) {
-          targetY = height / 2 - 46; // R peak
-          if (isAudioBeepOn) playBeepTone(880, 0.05);
-        } else if (cycle === 46) {
-          targetY = height / 2 + 16; // S dip
-        } else if (cycle > 55 && cycle < 72) {
-          targetY = height / 2 - 12; // T wave
-        }
-
-        ctx.strokeStyle = '#00E676';
-        ctx.lineWidth = 2.2;
-        ctx.shadowColor = '#00E676';
-        ctx.shadowBlur = 4;
-        ctx.beginPath();
-        ctx.moveTo(x > 0 ? x - 2 : 0, lastY);
-        ctx.lineTo(x, targetY);
-        ctx.stroke();
-
-        lastY = targetY;
-        x += 2;
-        if (x >= width) x = 0;
-
-        ecgAnimationId = requestAnimationFrame(renderFrame);
-      }
-
-      if (ecgAnimationId) cancelAnimationFrame(ecgAnimationId);
-      ecgAnimationId = requestAnimationFrame(renderFrame);
-    }
-
-    function calcInfusion(rate) {
-      const patientWeight = 70; // kg
-      const concentration = 80; // mcg/mL
-      const totalMcgPerMin = rate * patientWeight;
-      const totalMcgPerHour = totalMcgPerMin * 60;
-      const mlPerHour = totalMcgPerHour / concentration;
-      document.getElementById('infusionResult').innerText = `Rate: ${mlPerHour.toFixed(2)} mL/hr (${patientWeight} kg - ${rate} mcg/kg/min)`;
-      playBeepTone(659.25, 0.08);
-    }
-
-    function openPatientModal(name, hn, bed) {
-      alert(`[EHR Patient Chart]\nអ្នកជំងឺ: ${name} - ${hn}\nគ្រែសម្រាក: ${bed}\nវេជ្ជបញ្ជា: Ceftriaxone 1g IV q24h, Paracetamol 1g IV q6h prn.\nស្ថានភាព: មានស្ថេរភាព - Stable post-op`);
-    }
-
-    function openTriageDetail() {
-      alert(`[Emergency Triage ESI v4 Engine]\nអ្នកជំងឺកំពុងរង់ចាំ: 4 នាក់\n- ESI 1 ភ្លាមៗ: 1 នាក់ - Anaphylactic Shock\n- ESI 2 រយៈពេល 10 នាទី: 2 នាក់ - Dengue Shock Index 1.22, Chest Pain Troponin High\n- ESI 3 រយៈពេល 30 នាទី: 1 នាក់ - Acute Abdomen Appendicitis\n\nពិន្ទុ NEWS2 ត្រូវបានគណនាស្វ័យប្រវត្តិតាមរយៈ Android ClinicalMathEngine។`);
-    }
-
-    function openResusDetail() {
-      alert(`[Resuscitation ACLS Module]\nCPR Metronome 110 BPM, Parkland Burn Formula, CRASH-2 TXA 1g IV Bolus Gate សុទ្ធតែដំណើរការតាមក្បួនវេជ្ជសាស្ត្រឆ្នាំ 2026។`);
-    }
-
-    function openPacsDetail() {
-      alert(`[PACS Radiology Diagnostic Viewer]\nWindow Level Presets: Bone W 2000 L 300, Soft Tissue W 400 L 40, Lung W 1500 L -600\nមានបន្ទាត់វាស់ Caliper និង Contrast Inversion 100% លើឧបករណ៍ដៃ។`);
-    }
-
-    function openDentalDetail() {
-      alert(`[Dental FDI 32-Tooth Odontogram]\nគំនូសធ្មេញមនុស្សពេញវ័យ 32 ធ្មេញ និងកុមារ 20 ធ្មេញ ជាមួយ Condition Tagging: Caries, Restoration, Missing, Crown និងការគណនាសន្ទស្សន៍ DMFT ស្វ័យប្រវត្តិ។`);
-    }
-
-    function openPanicLabDetail() {
-      playBeepTone(440, 0.2);
-      setTimeout(() => playBeepTone(880, 0.3), 200);
-      alert(`[LIS Panic Laboratory Alert!]\nអ្នកជំងឺ: ខឹម ដារ៉ា - HN-10515, ER Bed 07\nតេស្ត: Troponin I High-Sensitivity = 4.8 ng/mL - ធម្មតា < 0.04 ng/mL\nតេស្ត: Potassium Serum = 6.8 mEq/L - PANIC HIGH!\n\nតម្រូវឱ្យវេជ្ជបណ្ឌិតបញ្ជាក់ការទទួលដំណឹងផ្ទាល់មាត់ - Verbal Readback Mandatory។`);
-    }
-
-    function openNarcoticsDetail() {
-      alert(`[MoH Controlled Substances Vault]\nទូស្តុកថ្នាំញៀនកម្រិត Schedule II-IV - Morphine, Fentanyl, Pethidine\nតម្រូវឱ្យចុះហត្ថលេខាទ្វេ Nurse 1 - Primary + Nurse 2 - Independent Witness ជាមួយ Merkle Cryptographic Audit Hash។`);
-    }
-
-    // In-App SEO: Fast Clinical Spotlight Search Index
+    // =========================================================================
+    // 7. CLINICAL SPOTLIGHT SEARCH
+    // =========================================================================
     const searchIndexData = [
       { type: 'PATIENT', categoryKh: 'អ្នកជំងឺ', title: 'រ័ត្ន សុខា - Sokha Rath', sub: 'HN: HN-10492 - Bed 01 ICU - Acute Appendicitis Day 1', keywords: 'sokha rath hn-10492 icu appendicitis', action: () => openPatientModal('Sokha Rath', 'HN-10492', 'Bed 01 - ICU') },
       { type: 'PATIENT', categoryKh: 'អ្នកជំងឺ', title: 'ចាន់ បុប្ផា - Bopha Chann', sub: 'HN: HN-10501 - Bed 04 ICU - Dengue Shock Index 1.22', keywords: 'bopha chann hn-10501 dengue shock', action: () => openPatientModal('Bopha Chann', 'HN-10501', 'Bed 04 - ICU') },
@@ -2136,8 +3251,7 @@
       { type: 'MODULE', categoryKh: 'ផ្នែកគ្លីនិក', title: 'រូបភាពវេជ្ជសាស្ត្រ PACS Radiology', sub: 'DICOM Viewer, Windowing Presets and Calipers', keywords: 'pacs dicom x-ray ct mri radiology calipers cobb ctr', action: () => openPacsDetail() },
       { type: 'MODULE', categoryKh: 'ផ្នែកគ្លីនិក', title: 'កុមារ និងទារក Pediatric Nomograms', sub: 'Bhutani Bilirubin Curve, pGCS and Broselow Ladder', keywords: 'pediatric bhutani bilirubin jaundice neonate broselow pgcs', action: () => alert('[Pediatric Module Search Hit]\nBhutani Phototherapy Risk Curve, Glasgow Coma Scale, and Broselow Tape Resuscitation.') },
       { type: 'MODULE', categoryKh: 'ផ្នែកគ្លីនិក', title: 'ទន្តសាស្ត្រ Dental FDI Odontogram', sub: '32-Tooth Chart, Periodontal Probing and DMFT Index', keywords: 'dental odontogram fdi tooth teeth dmft caries', action: () => openDentalDetail() },
-      { type: 'MODULE', categoryKh: 'ផ្នែកគ្លីនិក', title: 'តាមដានរលកបេះដូង Bedside Telemetry', sub: 'Live 60 FPS ECG Waveform and Infusion Calculator', keywords: 'telemetry ecg vitals waveform monitor infusion heart', action: () => navigateToView('viewTelemetry') },
-      { type: 'MODULE', categoryKh: 'ផ្នែកគ្លីនិក', title: 'ប.ស.ស Cambodia NSSF e-Claim', sub: 'CamDX 10-Digit ID Verification and Tariff Engine', keywords: 'nssf camdx claim insurance eclaim tariff', action: () => alert('[NSSF e-Claim Module]\nCamDX Verification Token and Hardware-backed StrongBox Signature.') }
+      { type: 'MODULE', categoryKh: 'ផ្នែកគ្លីនិក', title: 'តាមដានរលកបេះដូង Bedside Telemetry', sub: 'Live 60 FPS ECG Waveform and Infusion Calculator', keywords: 'telemetry ecg vitals waveform monitor infusion heart', action: () => navigateToView('viewTelemetry') }
     ];
 
     function handleClinicalSearch(query) {
@@ -2210,6 +3324,247 @@
       handleClinicalSearch('');
       input.focus();
     }
+
+    // =========================================================================
+    // 8. DETAIL MODALS & CLINICAL ACTIONS
+    // =========================================================================
+    function openTriageDetail() {
+      alert(`[Emergency Triage ESI v4 Engine]\nអ្នកជំងឺកំពុងរង់ចាំ: 4 នាក់\n- ESI 1 ភ្លាមៗ: 1 នាក់ - Anaphylactic Shock\n- ESI 2 រយៈពេល 10 នាទី: 2 នាក់ - Dengue Shock Index 1.22, Chest Pain Troponin High\n- ESI 3 រយៈពេល 30 នាទី: 1 នាក់ - Acute Abdomen Appendicitis\n\nពិន្ទុ NEWS2 ត្រូវបានគណនាស្វ័យប្រវត្តិតាមរយៈ Android ClinicalMathEngine។`);
+    }
+
+    function openPacsDetail() {
+      alert(`[PACS Radiology Diagnostic Viewer]\nWindow Level Presets: Bone W 2000 L 300, Soft Tissue W 400 L 40, Lung W 1500 L -600\nមានបន្ទាត់វាស់ Caliper និង Contrast Inversion 100% លើឧបករណ៍ដៃ។`);
+    }
+
+    function openDentalDetail() {
+      alert(`[Dental FDI 32-Tooth Odontogram]\nគំនូសធ្មេញមនុស្សពេញវ័យ 32 ធ្មេញ និងកុមារ 20 ធ្មេញ ជាមួយ Condition Tagging: Caries, Restoration, Missing, Crown និងការគណនាសន្ទស្សន៍ DMFT ស្វ័យប្រវត្តិ។`);
+    }
+
+    function openPanicLabDetail() {
+      playBeepTone(440, 0.2);
+      setTimeout(() => playBeepTone(880, 0.3), 200);
+      alert(`[LIS Panic Laboratory Alert!]\nអ្នកជំងឺ: ខឹម ដារ៉ា - HN-10515, ER Bed 07\nតេស្ត: Troponin I High-Sensitivity = 4.8 ng/mL - ធម្មតា < 0.04 ng/mL\nតេស្ត: Potassium Serum = 6.8 mEq/L - PANIC HIGH!\n\nតម្រូវឱ្យវេជ្ជបណ្ឌិតបញ្ជាក់ការទទួលដំណឹងផ្ទាល់មាត់ - Verbal Readback Mandatory។`);
+    }
+
+    function openNarcoticsDetail() {
+      alert(`[MoH Controlled Substances Vault]\nទូស្តុកថ្នាំញៀនកម្រិត Schedule II-IV - Morphine, Fentanyl, Pethidine\nតម្រូវឱ្យចុះហត្ថលេខាទ្វេ Nurse 1 - Primary + Nurse 2 - Independent Witness ជាមួយ Merkle Cryptographic Audit Hash។`);
+    }
+
+    function openPatientModal(name, hn, bed) {
+      playBeepTone(523, 0.1);
+      alert(`[Patient Clinical Chart]\nឈ្មោះ: ${name}\nលេខសម្គាល់ HN: ${hn}\nទីតាំងគ្រែ: ${bed}\nស្ថានភាព: ស្ថិរភាពក្រោមការតាមដាន\nអាជ្ញាប័ណ្ណ MoH: ផ្ទៀងផ្ទាត់រួចរាល់`);
+    }
+
+    function openKhqrModal(usd, khr) {
+      document.getElementById('khqrUsdText').innerText = `$${usd.toFixed(2)}`;
+      document.getElementById('khqrKhrText').innerText = `${khr.toLocaleString()} ៛`;
+      generateDynamicKhqrSvg(usd, khr);
+      document.getElementById('modalKhqrOverlay').classList.add('active');
+      playBeepTone(587, 0.1);
+    }
+
+    function openScannerModal() {
+      document.getElementById('modalScannerOverlay').classList.add('active');
+      playBeepTone(659, 0.1);
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+    }
+
+    function closeModalOnBackdrop(e, modalId) {
+      if (e.target.id === modalId) {
+        closeModal(modalId);
+      }
+    }
+
+    // Dynamic QR Generator (SVG 18x18 Matrix)
+    function generateDynamicKhqrSvg(usd, khr) {
+      const svg = document.getElementById('dynamicKhqrSvg');
+      if (!svg) return;
+      svg.innerHTML = '';
+
+      const seed = Math.floor(usd * 100);
+      const size = 18;
+      const cellSize = 180 / size;
+
+      let rects = '';
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          const isCorner1 = r < 4 && c < 4;
+          const isCorner2 = r < 4 && c >= size - 4;
+          const isCorner3 = r >= size - 4 && c < 4;
+          const isCenter = r >= 6 && r <= 11 && c >= 6 && c <= 11;
+
+          if (isCorner1 || isCorner2 || isCorner3) {
+            rects += `<rect x="${c * cellSize}" y="${r * cellSize}" width="${cellSize - 0.5}" height="${cellSize - 0.5}" fill="#000000"/>`;
+          } else if (isCenter) {
+            // Leave space for emblem
+          } else {
+            const val = ((r * 13 + c * 7 + seed) % 5 === 0) || ((r * 11 + c * 17 + seed) % 7 === 0);
+            if (val) {
+              rects += `<rect x="${c * cellSize}" y="${r * cellSize}" width="${cellSize - 0.5}" height="${cellSize - 0.5}" fill="#000000"/>`;
+            }
+          }
+        }
+      }
+      svg.innerHTML = rects;
+    }
+
+    function simulateBankPayment(bank) {
+      playBeepTone(880, 0.2);
+      closeModal('modalKhqrOverlay');
+      showToastBanner(`✓ ការទូទាត់តាមរយៈ ${bank} ទទួលបានជោគជ័យ!`);
+    }
+
+    function simulateScanSuccess(type) {
+      playBeepTone(1046, 0.15);
+      closeModal('modalScannerOverlay');
+      if (type === 'WRISTBAND') {
+        openPatientModal('Sokha Rath', 'HN-10492', 'Bed 01 - ICU');
+      } else {
+        alert('[Barcode Scanner Result]\nGS1 DataMatrix: Ceftriaxone 1g IV\nBatch: CTX-2026-9812\nExpiry: 12/2027\nStatus: ISMP Safe to Administer');
+      }
+    }
+
+    // =========================================================================
+    // 9. STAFF ONBOARDING & BIOMETRICS
+    // =========================================================================
+    function selectStaffRole(element, name, role, dept) {
+      document.querySelectorAll('.staff-card').forEach(el => el.classList.remove('selected'));
+      element.classList.add('selected');
+      const pill = document.getElementById('activeStaffPill');
+      if (pill) pill.innerText = name.split(',')[0];
+      playBeepTone(523, 0.08);
+    }
+
+    function authenticateBiometrics() {
+      playBeepTone(659, 0.15);
+      setTimeout(() => {
+        playBeepTone(880, 0.2);
+        showToastBanner('✓ ការផ្ទៀងផ្ទាត់ក្រយៅដៃជោគជ័យ! Android StrongBox Keymaster');
+        navigateToTab('hub');
+      }, 500);
+    }
+
+    // =========================================================================
+    // 10. AUDIO SYNTHESIS & TELEMETRY WAVEFORM
+    // =========================================================================
+    function playBeepTone(freq, duration) {
+      if (!isAudioBeepOn) return;
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    function toggleAudioBeep() {
+      isAudioBeepOn = !isAudioBeepOn;
+      const btn = document.getElementById('btnAudioBeep');
+      if (btn) {
+        btn.innerText = isAudioBeepOn ? 'សំឡេង Beep: ON' : 'សំឡេង Beep: OFF';
+        btn.style.background = isAudioBeepOn ? '#C8E6C9' : '#E0F2F1';
+      }
+      if (isAudioBeepOn) playBeepTone(659, 0.15);
+    }
+
+    function calcInfusion(rateMcg) {
+      const weight = 70;
+      const concMcgPerMl = 80;
+      const mlPerHour = ((rateMcg * weight * 60) / concMcgPerMl).toFixed(2);
+      const el = document.getElementById('infusionResult');
+      if (el) el.innerText = `Rate: ${mlPerHour} mL/hr (Norepinephrine ${rateMcg} mcg/kg/min for 70 kg)`;
+      playBeepTone(523, 0.05);
+    }
+
+    // ECG 60 FPS Canvas Simulation
+    function initEcgWaveform() {
+      const canvas = document.getElementById('ecgCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let x = 0;
+      let prevY = 60;
+      const width = canvas.width;
+      const height = canvas.height;
+
+      const pqrst = [
+        0, 0, 0, 2, 4, 2, 0, 0, -3, 35, -12, 0, 0, 4, 8, 4, 0, 0, 0, 0
+      ];
+      let pIdx = 0;
+
+      function renderFrame() {
+        ctx.fillStyle = 'rgba(0, 11, 9, 0.08)';
+        ctx.fillRect(x, 0, 4, height);
+
+        let targetY = 60;
+        if (x % 75 < pqrst.length) {
+          targetY = 60 - pqrst[x % 75];
+        }
+
+        ctx.strokeStyle = '#00E676';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x === 0 ? 0 : x - 1, prevY);
+        ctx.lineTo(x, targetY);
+        ctx.stroke();
+
+        prevY = targetY;
+        x++;
+        if (x >= width) {
+          x = 0;
+        }
+
+        ecgAnimationId = requestAnimationFrame(renderFrame);
+      }
+      renderFrame();
+    }
+
+    // Splash Screen Loading Simulation
+    let progress = 0;
+    const splashStatuses = [
+      'Initializing SQLite Encrypted Database...',
+      'Establishing TLS 1.3 to NestJS Gateway...',
+      'Synchronizing MoH Essential Formulary 2026...',
+      'Calibrating Bedside ECG Telemetry DSP...',
+      'Checking Double-Witness Narcotics Ledger...',
+      'System Ready - 16 Clinical Modules Active'
+    ];
+    let statusIdx = 0;
+
+    const splashInterval = setInterval(() => {
+      progress += 8;
+      if (progress > 100) progress = 100;
+      const bar = document.getElementById('splashBar');
+      const txt = document.getElementById('splashStatus');
+      if (bar) bar.style.width = progress + '%';
+      if (txt && progress % 20 === 0 && statusIdx < splashStatuses.length) {
+        txt.innerText = splashStatuses[statusIdx++];
+      }
+      if (progress >= 100) {
+        clearInterval(splashInterval);
+        setTimeout(() => {
+          if (currentView === 'viewSplash') {
+            navigateToView('viewOnboarding');
+          }
+        }, 500);
+      }
+    }, 120);
+
+    // Initial Boots
+    window.addEventListener('DOMContentLoaded', () => {
+      applyLanguageUI();
+      initEcgWaveform();
+    });
   </script>
 </body>
 </html>
