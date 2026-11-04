@@ -47,6 +47,14 @@ export const PublicNavbar: React.FC = () => {
             {isKm ? 'គម្រោងតម្លៃ' : 'Pricing Matrix'}
           </Link>
           <Link
+            href="/explore-tools"
+            className={`hover:text-stone-900 transition-colors ${
+              pathname === '/explore-tools' ? 'text-teal-800 font-bold' : ''
+            }`}
+          >
+            {isKm ? 'រុករកឧបករណ៍' : 'Explore Tools'}
+          </Link>
+          <Link
             href="/#security"
             className="hover:text-stone-900 transition-colors"
           >
@@ -135,9 +143,16 @@ export const PublicNavbar: React.FC = () => {
           <Link
             href="/pricing"
             onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 text-xs font-semibold text-teal-800 font-bold"
+            className="block py-2 text-xs font-semibold text-stone-700 hover:text-teal-800"
           >
             {isKm ? 'គម្រោងតម្លៃ' : 'Pricing Matrix'}
+          </Link>
+          <Link
+            href="/explore-tools"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block py-2 text-xs font-semibold text-stone-700 hover:text-teal-800"
+          >
+            {isKm ? 'រុករកឧបករណ៍' : 'Explore Tools'}
           </Link>
           <Link
             href="/#security"

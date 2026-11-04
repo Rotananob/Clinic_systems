@@ -188,7 +188,7 @@ export default function SettingsPage() {
       if (typeof window !== 'undefined') {
         const urlParams = new URLSearchParams(window.location.search);
         const tab = urlParams.get('tab');
-        if (tab && ['profile', 'khqr', 'fees', 'receipt', 'hardware', 'sound', 'telegram', 'security', 'subscription'].includes(tab)) {
+        if (tab && ['profile', 'khqr', 'fees', 'receipt', 'hardware', 'sound', 'telegram', 'security', 'subscription', 'modules', 'updates'].includes(tab)) {
           setActiveTab(tab as any);
         }
       }
@@ -623,6 +623,32 @@ export default function SettingsPage() {
         >
           <CreditCard className="w-4 h-4" />
           <span>{isKm ? 'គម្រោងជាវ & បង់ប្រាក់ KHQR' : 'Subscription & Billing'}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('modules')}
+          className={`px-4 py-2.5 rounded-lg text-xs font-semibold flex items-center gap-2 whitespace-nowrap transition-colors ${
+            activeTab === 'modules'
+              ? 'bg-teal-700 text-white shadow-xs'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+          }`}
+        >
+          <LayoutTemplate className="w-4 h-4" />
+          <span>{isKm ? 'មុខងារប្រព័ន្ធ & ឧបករណ៍' : 'Clinical Modules'}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('updates')}
+          className={`px-4 py-2.5 rounded-lg text-xs font-semibold flex items-center gap-2 whitespace-nowrap transition-colors ${
+            activeTab === 'updates'
+              ? 'bg-teal-700 text-white shadow-xs'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+          }`}
+        >
+          <RefreshCw className="w-4 h-4" />
+          <span>{isKm ? 'បច្ចុប្បន្នភាព & PWA' : 'Auto Updates & PWA'}</span>
         </button>
       </div>
 
@@ -1731,11 +1757,27 @@ export default function SettingsPage() {
           </div>
         )}
 
+        {/* TAB: Module Visibility & Clinical Arsenal */}
+        {activeTab === 'modules' && (
+          <div className="space-y-6">
+            <ModuleVisibilitySettingsPanel />
+          </div>
+        )}
+
+        {/* TAB: System Updates & PWA Versioning */}
+        {activeTab === 'updates' && (
+          <div className="space-y-6">
+            <SystemUpdateSettingsPanel />
+          </div>
+        )}
+
         {/* Action Buttons */}
         {activeTab !== 'hardware' &&
           activeTab !== 'telegram' &&
           activeTab !== 'sound' &&
-          activeTab !== 'subscription' && (
+          activeTab !== 'subscription' &&
+          activeTab !== 'modules' &&
+          activeTab !== 'updates' && (
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
             <button
               type="button"

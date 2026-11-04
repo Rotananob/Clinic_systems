@@ -75,6 +75,13 @@ export default function PricingPage() {
           </div>
 
           <div className="flex items-center gap-2 overflow-x-auto text-[11px] font-bold">
+            <Link
+              href="/explore-tools"
+              className="px-2.5 py-1 rounded-lg bg-teal-50 text-teal-900 border border-teal-200 hover:bg-teal-100 transition-colors whitespace-nowrap flex items-center gap-1 font-bold"
+            >
+              <span>{isKm ? 'រុករកឧបករណ៍ទាំង ៣០+' : 'Explore 30+ Tools'}</span>
+              <ArrowRight className="w-3 h-3" />
+            </Link>
             <a
               href="#pricing"
               className="px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-teal-50 hover:text-teal-900 text-stone-700 transition-colors whitespace-nowrap"
