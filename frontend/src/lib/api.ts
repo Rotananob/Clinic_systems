@@ -5,15 +5,26 @@ export function getApiBaseUrl(): string {
     if (customUrl && customUrl.trim()) {
       return customUrl.trim().replace(/\/+$/, '');
     }
-    if (host && host !== 'localhost' && host !== '127.0.0.1') {
-      if (host.includes('vercel.app') || host.includes('web.app') || host.includes('firebaseapp.com')) {
-        return '/api';
+
+    const isLocalHost = host === 'localhost' || host === '127.0.0.1';
+    const isLocalIp = /^(\d{1,3}\.){3}\d{1,3}$/.test(host);
+
+    // In production cloud environments or custom domains
+    if (!isLocalHost && !isLocalIp) {
+      if (process.env.NEXT_PUBLIC_API_URL && process.env.NEXT_PUBLIC_API_URL.trim()) {
+        return process.env.NEXT_PUBLIC_API_URL.trim().replace(/\/+$/, '');
       }
+      return '/api';
+    }
+
+    // Local hotspot / LAN network IP (e.g. mobile testing on 172.20.10.2)
+    if (isLocalIp) {
       return `http://${host}:4000/api`;
     }
   }
-  if (process.env.NEXT_PUBLIC_API_URL) {
-    return process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '');
+
+  if (process.env.NEXT_PUBLIC_API_URL && process.env.NEXT_PUBLIC_API_URL.trim()) {
+    return process.env.NEXT_PUBLIC_API_URL.trim().replace(/\/+$/, '');
   }
   return 'http://localhost:4000/api';
 }
