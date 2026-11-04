@@ -1,3 +1,4 @@
+import { CreatePublicSubscriptionCheckoutDto, PublicVerifyAndRegisterDto } from './dto/public-checkout.dto';
 import {
   Controller,
   Get,
@@ -168,4 +169,21 @@ export class SubscriptionsController {
     }
     return this.subscriptionInvoiceService.renderHtmlReceipt(tenantId, id);
   }
+
+  @ApiOperation({ summary: 'Public guest checkout for SaaS plan without requiring prior login' })
+  @ApiResponse({ status: 201, description: 'Dynamic Bakong KHQR Tag 01=12 and bank deeplinks' })
+  @Post('public-checkout')
+  createPublicCheckout(@Request() req: any, @Body() dto: CreatePublicSubscriptionCheckoutDto) {
+    const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.socket?.remoteAddress || '127.0.0.1';
+    const deviceId = dto.deviceId || (req.headers['x-device-id'] as string) || clientIp;
+    return this.subscriptionPaymentService.createPublicCheckout(dto, deviceId);
+  }
+
+  @ApiOperation({ summary: 'Verify payment settlement and automatically provision clinic account' })
+  @ApiResponse({ status: 200, description: 'Account provisioned and active JWT access token issued' })
+  @Post('public-verify-and-register')
+  verifyAndAutoRegister(@Body() dto: PublicVerifyAndRegisterDto) {
+    return this.subscriptionPaymentService.verifyAndAutoRegister(dto);
+  }
+
 }

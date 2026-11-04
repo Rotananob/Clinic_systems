@@ -313,11 +313,29 @@ function RegisterContent() {
 
     const pollInterval = setInterval(async () => {
       try {
-        const res = await api.subscriptions.verifySettlement({
-          subscriptionId: checkoutData.subscriptionId || checkoutData.tranId,
-          tranId: checkoutData.tranId,
-          md5: checkoutData.md5,
-        });
+        const token = typeof window !== 'undefined' ? localStorage.getItem('clinic_access_token') : null;
+        let res: any;
+        if (token) {
+          res = await api.subscriptions.verifySettlement({
+            subscriptionId: checkoutData.subscriptionId || checkoutData.tranId,
+            tranId: checkoutData.tranId,
+            md5: checkoutData.md5,
+          });
+        } else if (email.trim()) {
+          res = await api.subscriptions.publicVerifyAndRegister({
+            tranId: checkoutData.tranId,
+            planTier: selectedPlan,
+            billingCycle: isYearly ? 'ANNUAL' : 'MONTHLY',
+            email: email.trim().toLowerCase(),
+            password,
+            clinicNameEn: adminName.trim() ? `${adminName.trim()} Clinic` : 'New Clinic',
+            adminName: adminName.trim(),
+          });
+          if (res && res.accessToken) {
+            localStorage.setItem('clinic_access_token', res.accessToken);
+            localStorage.setItem('clinic_user', JSON.stringify({ ...res.user, tenant: res.tenant }));
+          }
+        }
 
         if (res && res.success && (res.activated || res.alreadySettled)) {
           clearInterval(pollInterval);
@@ -462,12 +480,35 @@ function RegisterContent() {
       }
 
       const deviceId = getOrCreateDeviceId();
-      const res = await api.subscriptions.createCheckout({
-        planTier: plan as any,
-        billingCycle: cycle,
-        deviceId,
-      });
+      const token = typeof window !== 'undefined' ? localStorage.getItem('clinic_access_token') : null;
+      let res: any;
+      if (token) {
+        try {
+          res = await api.subscriptions.createCheckout({
+            planTier: plan as any,
+            billingCycle: cycle,
+            deviceId,
+          });
+        } catch {
+          res = await api.subscriptions.publicCheckout({
+            planTier: plan as any,
+            billingCycle: cycle,
+            deviceId,
+          });
+        }
+      } else {
+        res = await api.subscriptions.publicCheckout({
+          planTier: plan as any,
+          billingCycle: cycle,
+          deviceId,
+        });
+      }
+
       if (res && res.success) {
+        if (!res.deeplinks) res.deeplinks = {};
+        if (!res.deeplinks.aba) {
+          res.deeplinks.aba = 'https://link.payway.com.kh/ABAPAYRs559002R';
+        }
         incrementDailyQrGenerations();
         setCheckoutData(res);
         setPaymentCountdown(res.expiresInSeconds || 180); // Strictly 3 minutes
@@ -585,11 +626,29 @@ function RegisterContent() {
     setVerifyingSettlement(true);
     setPaymentError(null);
     try {
-      const res = await api.subscriptions.verifySettlement({
-        subscriptionId: checkoutData.subscriptionId || checkoutData.tranId,
-        tranId: checkoutData.tranId,
-        md5: checkoutData.md5,
-      });
+      const token = typeof window !== 'undefined' ? localStorage.getItem('clinic_access_token') : null;
+      let res: any;
+      if (token) {
+        res = await api.subscriptions.verifySettlement({
+          subscriptionId: checkoutData.subscriptionId || checkoutData.tranId,
+          tranId: checkoutData.tranId,
+          md5: checkoutData.md5,
+        });
+      } else {
+        res = await api.subscriptions.publicVerifyAndRegister({
+          tranId: checkoutData.tranId,
+          planTier: selectedPlan,
+          billingCycle: isYearly ? 'ANNUAL' : 'MONTHLY',
+          email: email.trim().toLowerCase(),
+          password,
+          clinicNameEn: adminName.trim() ? `${adminName.trim()} Clinic` : 'New Clinic',
+          adminName: adminName.trim(),
+        });
+        if (res && res.accessToken) {
+          localStorage.setItem('clinic_access_token', res.accessToken);
+          localStorage.setItem('clinic_user', JSON.stringify({ ...res.user, tenant: res.tenant }));
+        }
+      }
 
       if (res && res.success && (res.activated || res.alreadySettled)) {
         setActivatedSuccess(true);

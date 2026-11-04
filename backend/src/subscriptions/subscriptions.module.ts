@@ -1,3 +1,4 @@
+import { AuthModule } from '../auth/auth.module';
 import { Module, forwardRef } from '@nestjs/common';
 import { BillingCycleService } from './billing-cycle.service';
 import { SubscriptionPaymentService } from './subscription-payment.service';
@@ -9,7 +10,7 @@ import { TelegramModule } from '../telegram/telegram.module';
 import { PaymentsModule } from '../payments/payments.module';
 
 @Module({
-  imports: [PrismaModule, TelegramModule, forwardRef(() => PaymentsModule)],
+  imports: [PrismaModule, TelegramModule, forwardRef(() => PaymentsModule), forwardRef(() => AuthModule)],
   controllers: [SubscriptionsController],
   providers: [
     BillingCycleService,

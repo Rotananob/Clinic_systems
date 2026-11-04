@@ -1026,6 +1026,68 @@ class ApiClient {
         method: 'POST',
         body: JSON.stringify(data),
       }),
+    publicCheckout: (data: {
+      planTier: string;
+      billingCycle?: 'MONTHLY' | 'ANNUAL' | string;
+      deviceId?: string;
+    }) =>
+      this.request<{
+        success: boolean;
+        subscriptionId: string;
+        invoiceNumber: string;
+        planTier: string;
+        planNameKh: string;
+        planNameEn: string;
+        billingCycle: string;
+        amountUsd: number;
+        currency: string;
+        tranId: string;
+        qrString: string;
+        md5: string;
+        isLiveGateway?: boolean;
+        expiresInSeconds: number;
+        expiresAt: string;
+        deeplinks: {
+          aba: string;
+          bakong: string;
+          paywayUrl?: string;
+        };
+        merchant: {
+          bakongId: string;
+          merchantName: string;
+          merchantCity: string;
+        };
+        support?: {
+          telegramUrl: string;
+          hotline: string;
+        };
+      }>('/subscriptions/public-checkout', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    publicVerifyAndRegister: (data: {
+      tranId: string;
+      planTier: string;
+      billingCycle?: 'MONTHLY' | 'ANNUAL' | string;
+      email: string;
+      password?: string;
+      clinicNameEn?: string;
+      clinicNameKh?: string;
+      adminName?: string;
+      phone?: string;
+    }) =>
+      this.request<{
+        success: boolean;
+        activated: boolean;
+        accessToken: string;
+        targetRoute: string;
+        user: any;
+        tenant: any;
+        message: string;
+      }>('/subscriptions/public-verify-and-register', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
     verifySettlement: (data: {
       subscriptionId: string;
       tranId?: string;

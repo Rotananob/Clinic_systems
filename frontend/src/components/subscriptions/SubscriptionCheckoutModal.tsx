@@ -21,6 +21,10 @@ import {
   PhoneCall,
   Copy,
   AlertCircle,
+  UserCheck,
+  User,
+  Mail,
+  ArrowRight,
 } from 'lucide-react';
 import { AbaPayButton } from '../payments/AbaPayButton';
 import { useTranslation } from '../../context/I18nContext';
@@ -150,7 +154,15 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
   const [activated, setActivated] = useState<boolean>(false);
   const [activationResult, setActivationResult] = useState<any>(null);
   const [errorMsg, setErrorMsg] = useState<string>('');
-  const [secondsRemaining, setSecondsRemaining] = useState<number>(900); // 15 mins
+  const [secondsRemaining, setSecondsRemaining] = useState<number>(180); // 3 mins KHQR TTL
+
+  // User Authentication & Guest Registration State
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [guestEmail, setGuestEmail] = useState<string>('');
+  const [guestPassword, setGuestPassword] = useState<string>('');
+  const [guestClinicName, setGuestClinicName] = useState<string>('');
+  const [guestAdminName, setGuestAdminName] = useState<string>('');
+  const [guestPhone, setGuestPhone] = useState<string>('');
 
   // Support Request Workflow
   const [showSupportModal, setShowSupportModal] = useState<boolean>(false);
@@ -160,6 +172,14 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
   const [copiedTranId, setCopiedTranId] = useState<boolean>(false);
 
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Check login state on mount / open
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('clinic_access_token');
+      setIsLoggedIn(Boolean(token));
+    }
+  }, [isOpen]);
 
   // Initialize checkout session when modal opens or plan/cycle changes
   const initCheckout = async (plan: 'STARTER_5' | 'PRO_8' | 'ENTERPRISE_12' | 'SPECIALIST_15' | 'UNLIMITED_20', cycle: 'MONTHLY' | 'ANNUAL') => {
@@ -177,12 +197,37 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
         }
         deviceId = id;
       }
-      const res = await api.subscriptions.createCheckout({
-        planTier: plan,
-        billingCycle: cycle,
-        deviceId,
-      });
+
+      const token = typeof window !== 'undefined' ? localStorage.getItem('clinic_access_token') : null;
+      let res: any;
+
+      if (token) {
+        try {
+          res = await api.subscriptions.createCheckout({
+            planTier: plan,
+            billingCycle: cycle,
+            deviceId,
+          });
+        } catch {
+          res = await api.subscriptions.publicCheckout({
+            planTier: plan,
+            billingCycle: cycle,
+            deviceId,
+          });
+        }
+      } else {
+        res = await api.subscriptions.publicCheckout({
+          planTier: plan,
+          billingCycle: cycle,
+          deviceId,
+        });
+      }
+
       if (res && res.success) {
+        if (!res.deeplinks) res.deeplinks = {};
+        if (!res.deeplinks.aba) {
+          res.deeplinks.aba = 'https://link.payway.com.kh/ABAPAYRs559002R';
+        }
         setCheckoutData(res);
         setSecondsRemaining(res.expiresInSeconds || 180);
       } else {
@@ -217,18 +262,44 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
 
     const checkSettlement = async () => {
       try {
-        const res = await api.subscriptions.verifySettlement({
-          subscriptionId: checkoutData.subscriptionId || checkoutData.tranId,
-          tranId: checkoutData.tranId,
-          md5: checkoutData.md5,
-        });
+        const token = typeof window !== 'undefined' ? localStorage.getItem('clinic_access_token') : null;
+        if (token) {
+          const res = await api.subscriptions.verifySettlement({
+            subscriptionId: checkoutData.subscriptionId || checkoutData.tranId,
+            tranId: checkoutData.tranId,
+            md5: checkoutData.md5,
+          });
 
-        if (res && res.activated) {
-          if (pollingRef.current) clearInterval(pollingRef.current);
-          setActivated(true);
-          setActivationResult(res);
-          playPaymentSuccessChime();
-          if (onActivated) onActivated();
+          if (res && res.activated) {
+            if (pollingRef.current) clearInterval(pollingRef.current);
+            setActivated(true);
+            setActivationResult(res);
+            playPaymentSuccessChime();
+            if (onActivated) onActivated();
+          }
+        } else if (guestEmail.trim()) {
+          const res = await api.subscriptions.publicVerifyAndRegister({
+            tranId: checkoutData.tranId,
+            planTier: selectedPlanTier,
+            billingCycle,
+            email: guestEmail.trim().toLowerCase(),
+            password: guestPassword.trim() || 'Clinic#2026',
+            clinicNameEn: guestClinicName.trim() || (guestAdminName.trim() ? `${guestAdminName.trim()} Clinic` : 'New Clinic'),
+            clinicNameKh: guestClinicName.trim(),
+            adminName: guestAdminName.trim(),
+            phone: guestPhone.trim(),
+          });
+
+          if (res && res.activated && res.accessToken) {
+            if (pollingRef.current) clearInterval(pollingRef.current);
+            localStorage.setItem('clinic_access_token', res.accessToken);
+            localStorage.setItem('clinic_user', JSON.stringify({ ...res.user, tenant: res.tenant }));
+            setIsLoggedIn(true);
+            setActivated(true);
+            setActivationResult(res);
+            playPaymentSuccessChime();
+            if (onActivated) onActivated();
+          }
         }
       } catch {
         // Continue polling silently without throwing to user UI
@@ -240,7 +311,7 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
     return () => {
       if (pollingRef.current) clearInterval(pollingRef.current);
     };
-  }, [isOpen, checkoutData, activated]);
+  }, [isOpen, checkoutData, activated, guestEmail, guestPassword, guestClinicName, guestAdminName, guestPhone, selectedPlanTier, billingCycle]);
 
   // Countdown timer ticker
   useEffect(() => {
@@ -256,28 +327,72 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
     try {
       setVerifying(true);
       setErrorMsg('');
-      const res = await api.subscriptions.verifySettlement({
-        subscriptionId: checkoutData.subscriptionId || checkoutData.tranId,
-        tranId: checkoutData.tranId,
-        md5: checkoutData.md5,
-      });
-      if (res && res.activated) {
-        setActivated(true);
-        setActivationResult(res);
-        playPaymentSuccessChime();
-        if (onActivated) onActivated();
+      const token = typeof window !== 'undefined' ? localStorage.getItem('clinic_access_token') : null;
+
+      if (token) {
+        const res = await api.subscriptions.verifySettlement({
+          subscriptionId: checkoutData.subscriptionId || checkoutData.tranId,
+          tranId: checkoutData.tranId,
+          md5: checkoutData.md5,
+        });
+        if (res && res.activated) {
+          setActivated(true);
+          setActivationResult(res);
+          playPaymentSuccessChime();
+          if (onActivated) onActivated();
+        } else {
+          setErrorMsg(
+            isKm
+              ? 'មិនទាន់រកឃើញការទូទាត់នៅក្នុងប្រព័ន្ធធនាគារឡើយ។ ប្រសិនបើលោកអ្នកបានកាត់ប្រាក់រួចហើយ សូមចុចប៊ូតុង ជំនួយការទូទាត់ ខាងក្រោម។'
+              : 'Payment settlement not verified in banking system yet. If funds were deducted, please use 24/7 Support below.',
+          );
+        }
       } else {
-        setErrorMsg(
-          isKm
-            ? 'មិនទាន់រកឃើញការទូទាត់នៅក្នុងប្រព័ន្ធធនាគារឡើយ។ ប្រសិនបើលោកអ្នកបានកាត់ប្រាក់រួចហើយ សូមចុចប៊ូតុង "ជំនួយការទូទាត់" ខាងក្រោម។'
-            : 'Payment settlement not verified in banking system yet. If funds were deducted, please use 24/7 Support below.',
-        );
+        const cleanEmail = guestEmail.trim().toLowerCase();
+        if (!cleanEmail) {
+          setErrorMsg(
+            isKm
+              ? 'សូមបញ្ចូល Email របស់អ្នក ដើម្បីបង្កើតគណនី និងភ្ជាប់គម្រោងជាវ។'
+              : 'Please enter your email to create account and activate subscription.',
+          );
+          setVerifying(false);
+          return;
+        }
+
+        const res = await api.subscriptions.publicVerifyAndRegister({
+          tranId: checkoutData.tranId,
+          planTier: selectedPlanTier,
+          billingCycle,
+          email: cleanEmail,
+          password: guestPassword.trim() || 'Clinic#2026',
+          clinicNameEn: guestClinicName.trim() || (guestAdminName.trim() ? `${guestAdminName.trim()} Clinic` : 'New Clinic'),
+          clinicNameKh: guestClinicName.trim(),
+          adminName: guestAdminName.trim(),
+          phone: guestPhone.trim(),
+        });
+
+        if (res && res.activated && res.accessToken) {
+          localStorage.setItem('clinic_access_token', res.accessToken);
+          localStorage.setItem('clinic_user', JSON.stringify({ ...res.user, tenant: res.tenant }));
+          setIsLoggedIn(true);
+          setActivated(true);
+          setActivationResult(res);
+          playPaymentSuccessChime();
+          if (onActivated) onActivated();
+        } else {
+          setErrorMsg(
+            isKm
+              ? 'មិនទាន់រកឃើញការទូទាត់នៅក្នុងប្រព័ន្ធធនាគារឡើយ។ សូមស្កេន KHQR និងបញ្ចប់ការទូទាត់ក្នុង App ធនាគាររបស់អ្នក។'
+              : 'Payment not settled yet. Please complete the scan in your mobile banking app.',
+          );
+        }
       }
     } catch (err: any) {
       setErrorMsg(
-        isKm
+        err.message ||
+        (isKm
           ? 'មិនទាន់រកឃើញការទូទាត់នៅក្នុងប្រព័ន្ធធនាគារឡើយ។ សូមស្កេន KHQR និងបញ្ចប់ការទូទាត់ក្នុង App ធនាគាររបស់អ្នក។'
-          : 'Payment not settled yet. Please complete the scan in your mobile banking app.'
+          : 'Payment not settled yet. Please complete the scan in your mobile banking app.')
       );
     } finally {
       setVerifying(false);
@@ -401,11 +516,18 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
                 </div>
               </div>
 
-              <div className="pt-2">
+              <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
+                <a
+                  href="/dashboard"
+                  className="px-6 py-2.5 rounded-xl bg-teal-800 hover:bg-teal-700 text-white text-xs font-bold transition-all shadow-md active:scale-95 inline-flex items-center gap-2"
+                >
+                  <span>{isKm ? 'ចូលប្រើប្រាស់ផ្ទាំងគ្រប់គ្រងគ្លីនិក' : 'Open Clinic Dashboard'}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </a>
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-6 py-2.5 rounded-xl bg-teal-800 hover:bg-teal-700 text-white text-xs font-bold transition-colors shadow-xs"
+                  className="px-5 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold transition-colors shadow-2xs"
                 >
                   {isKm ? 'បិទផ្ទាំងនេះ' : 'Done & Close'}
                 </button>
@@ -589,6 +711,76 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
                 </div>
               ) : checkoutData ? (
                 <div className="bg-white rounded-2xl border border-stone-200 p-6 space-y-6 shadow-xs">
+                  {/* Guest Account Registration Fields */}
+                  {!isLoggedIn && (
+                    <div className="p-4 bg-teal-50/70 rounded-2xl border border-teal-200/80 space-y-3 text-xs">
+                      <div className="flex items-center justify-between">
+                        <div className="font-bold text-teal-950 flex items-center gap-1.5">
+                          <UserCheck className="w-4 h-4 text-teal-800" />
+                          <span>{isKm ? 'ព័ត៌មានគណនីគ្លីនិក - Clinic Administrator' : 'Clinic Administrator Account'}</span>
+                        </div>
+                        <span className="text-[10px] bg-teal-200 text-teal-900 px-2 py-0.5 rounded-full font-bold">
+                          {isKm ? 'ដោះសោចូល Dashboard ស្វ័យប្រវត្ត' : 'Auto Provision'}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-stone-600">
+                        {isKm
+                          ? 'សូមបញ្ចូល Email និងពាក្យសម្ងាត់របស់អ្នក។ ពេលបង់ប្រាក់រួច ប្រព័ន្ធនឹងបង្កើតគណនី និងដោះសោជូនភ្លាមៗ។'
+                          : 'Please enter your email and password. Once paid, the system automatically creates your account and logs you in.'}
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <div>
+                          <label className="text-[11px] font-bold text-stone-700 block mb-1">
+                            {isKm ? 'អ៊ីមែល Gmail របស់អ្នក *' : 'Gmail / Email *'}
+                          </label>
+                          <input
+                            type="email"
+                            value={guestEmail}
+                            onChange={(e) => setGuestEmail(e.target.value)}
+                            placeholder="doctor@gmail.com"
+                            className="w-full px-3 py-2 bg-white rounded-xl border border-stone-300 text-xs text-stone-900 placeholder-stone-400 focus:outline-hidden focus:border-teal-700 font-medium"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[11px] font-bold text-stone-700 block mb-1">
+                            {isKm ? 'ពាក្យសម្ងាត់ *' : 'Password *'}
+                          </label>
+                          <input
+                            type="password"
+                            value={guestPassword}
+                            onChange={(e) => setGuestPassword(e.target.value)}
+                            placeholder={isKm ? 'យ៉ាងតិច ៦ ខ្ទង់' : 'Min 6 characters'}
+                            className="w-full px-3 py-2 bg-white rounded-xl border border-stone-300 text-xs text-stone-900 placeholder-stone-400 focus:outline-hidden focus:border-teal-700 font-medium"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[11px] font-bold text-stone-700 block mb-1">
+                            {isKm ? 'ឈ្មោះគ្លីនិក' : 'Clinic Name'}
+                          </label>
+                          <input
+                            type="text"
+                            value={guestClinicName}
+                            onChange={(e) => setGuestClinicName(e.target.value)}
+                            placeholder={isKm ? 'មន្ទីរសម្រាកព្យាបាល រតនៈ' : 'Rotana Clinic'}
+                            className="w-full px-3 py-2 bg-white rounded-xl border border-stone-300 text-xs text-stone-900 placeholder-stone-400 focus:outline-hidden focus:border-teal-700 font-medium"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[11px] font-bold text-stone-700 block mb-1">
+                            {isKm ? 'ឈ្មោះលោកគ្រូពេទ្យ' : 'Doctor / Admin Name'}
+                          </label>
+                          <input
+                            type="text"
+                            value={guestAdminName}
+                            onChange={(e) => setGuestAdminName(e.target.value)}
+                            placeholder={isKm ? 'វេជ្ជបណ្ឌិត រតនៈ' : 'Dr. Rotana'}
+                            className="w-full px-3 py-2 bg-white rounded-xl border border-stone-300 text-xs text-stone-900 placeholder-stone-400 focus:outline-hidden focus:border-teal-700 font-medium"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex flex-col sm:flex-row items-center gap-6">
                     {/* QR Display */}
                     <div className="p-4 bg-white rounded-2xl border-2 border-teal-800/60 shadow-md shrink-0 flex flex-col items-center">
@@ -706,10 +898,16 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
                       type="button"
                       disabled={verifying}
                       onClick={handleManualVerify}
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-white border border-stone-300 hover:bg-stone-50 text-stone-800 font-bold text-xs transition-colors shadow-xs"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-teal-800 hover:bg-teal-700 text-white font-bold text-xs transition-colors shadow-xs active:scale-95 cursor-pointer"
                     >
                       <RefreshCw className={`w-3.5 h-3.5 ${verifying ? 'animate-spin' : ''}`} />
-                      <span>{verifying ? (isKm ? 'កំពុងផ្ទៀងផ្ទាត់...' : 'Verifying...') : (isKm ? 'ផ្ទៀងផ្ទាត់លទ្ធផល' : 'Verify Settlement')}</span>
+                      <span>
+                        {verifying
+                          ? (isKm ? 'កំពុងផ្ទៀងផ្ទាត់...' : 'Verifying...')
+                          : !isLoggedIn
+                          ? (isKm ? 'ផ្ទៀងផ្ទាត់ & បង្កើតគណនី' : 'Verify & Create Account')
+                          : (isKm ? 'ផ្ទៀងផ្ទាត់លទ្ធផល' : 'Verify Settlement')}
+                      </span>
                     </button>
 
                     <button

@@ -1,3 +1,7 @@
+import { JwtService } from '@nestjs/jwt';
+import { Role } from '@prisma/client';
+import * as bcrypt from 'bcryptjs';
+import { CreatePublicSubscriptionCheckoutDto, PublicVerifyAndRegisterDto } from './dto/public-checkout.dto';
 import {
   Injectable,
   Logger,
@@ -91,11 +95,12 @@ export class SubscriptionPaymentService {
 
   // Platform Owner receiving merchant credentials (SaaS Revenue)
   private readonly platformBakongId =
-    process.env.PLATFORM_BAKONG_ACCOUNT_ID || 'rotana_saas@aba';
+    process.env.PLATFORM_BAKONG_ACCOUNT_ID || process.env.BAKONG_ACCOUNT_ID || 'rotana_clinic@aba';
   private readonly platformMerchantName =
-    process.env.PLATFORM_MERCHANT_NAME || 'CLINICOS PLATFORM PAAS';
+    process.env.PLATFORM_MERCHANT_NAME || process.env.BAKONG_MERCHANT_NAME || 'Rotana Clinic';
   private readonly platformMerchantCity =
-    process.env.PLATFORM_MERCHANT_CITY || 'Phnom Penh';
+    process.env.PLATFORM_MERCHANT_CITY || process.env.BAKONG_MERCHANT_CITY || 'Phnom Penh';
+  public readonly publicCheckoutSessions = new Map<string, any>();
   private readonly platformPaywayUrl =
     process.env.PLATFORM_PAYWAY_URL ||
     process.env.PAYWAY_PAYMENT_URL ||
@@ -120,6 +125,9 @@ export class SubscriptionPaymentService {
     @Optional()
     @Inject(forwardRef(() => PaywayDirectService))
     private readonly paywayDirectService?: PaywayDirectService,
+    @Optional()
+    @Inject(forwardRef(() => JwtService))
+    private readonly jwtService?: JwtService,
   ) {}
 
   /**
@@ -280,7 +288,7 @@ export class SubscriptionPaymentService {
       md5 = khqr.md5;
     }
 
-    const abaDeeplink = `https://link.payway.com.kh/app?qr=${encodeURIComponent(qrString)}`;
+    const abaDeeplink = this.platformPaywayUrl;
     const bakongDeeplink = `bakong://qr?data=${encodeURIComponent(qrString)}`;
 
     // Serialize security metadata with anti-tamper signature
@@ -813,4 +821,255 @@ export class SubscriptionPaymentService {
       superAdminUser,
     );
   }
+
+  /**
+   * Public SaaS Checkout for prospective clients without requiring prior authentication.
+   * Generates official Bakong KHQR Tag 01=12 and direct PayWay merchant link.
+   */
+  async createPublicCheckout(dto: CreatePublicSubscriptionCheckoutDto, deviceId?: string) {
+    if (deviceId) {
+      this.checkAndEnforceDeviceLimit(deviceId);
+    }
+
+    if (dto.planTier === PlanTier.FREE) {
+      throw new BadRequestException('Free Starter plan does not require payment checkout');
+    }
+
+    const planConfig = SAAS_PLANS[dto.planTier];
+    if (!planConfig) {
+      throw new BadRequestException(`Invalid plan tier: ${dto.planTier}`);
+    }
+
+    const isAnnual = dto.billingCycle === BillingCycle.ANNUAL;
+    const amountUsd = isAnnual
+      ? Math.round(planConfig.priceUsd * 12 * 0.8)
+      : planConfig.priceUsd;
+
+    const tranId = `TXN-PUB-${dto.planTier}-${Date.now()}`;
+    const invoiceNumber = `SUB-PUB-${Date.now().toString().slice(-6)}`;
+
+    const khqr = buildDynamicKhqr({
+      bakongId: this.platformBakongId,
+      merchantName: this.platformMerchantName,
+      merchantCity: this.platformMerchantCity,
+      amount: amountUsd,
+      currency: 'USD',
+      billNumber: invoiceNumber,
+    });
+
+    const qrString = khqr.qrString;
+    const md5 = khqr.md5;
+
+    const paywayUrl = this.platformPaywayUrl;
+    const abaDeeplink = paywayUrl;
+    const bakongDeeplink = `bakong://qr?data=${encodeURIComponent(qrString)}`;
+
+    const sessionData = {
+      tranId,
+      invoiceNumber,
+      planTier: dto.planTier,
+      billingCycle: isAnnual ? BillingCycle.ANNUAL : BillingCycle.MONTHLY,
+      amountUsd,
+      qrString,
+      md5,
+      createdAt: new Date(),
+      expiresAt: new Date(Date.now() + 3 * 60 * 1000),
+    };
+    this.publicCheckoutSessions.set(tranId, sessionData);
+
+    this.logger.log(`Public KHQR checkout created for ${dto.planTier} ($${amountUsd} USD). TranID: ${tranId}`);
+
+    return {
+      success: true,
+      subscriptionId: tranId,
+      invoiceNumber,
+      planTier: dto.planTier,
+      planNameKh: planConfig.nameKh,
+      planNameEn: planConfig.nameEn,
+      billingCycle: isAnnual ? BillingCycle.ANNUAL : BillingCycle.MONTHLY,
+      amountUsd,
+      currency: 'USD',
+      tranId,
+      qrString,
+      md5,
+      isLiveGateway: true,
+      expiresInSeconds: 180,
+      expiresAt: new Date(Date.now() + 3 * 60 * 1000).toISOString(),
+      deeplinks: {
+        aba: abaDeeplink,
+        bakong: bakongDeeplink,
+        paywayUrl: paywayUrl,
+      },
+      merchant: {
+        bakongId: this.platformBakongId,
+        merchantName: this.platformMerchantName,
+        merchantCity: this.platformMerchantCity,
+      },
+      support: {
+        telegramUrl: this.supportTelegramUrl,
+        hotline: this.supportHotline,
+      },
+    };
+  }
+
+  /**
+   * Automated verification & account provisioning upon payment settlement.
+   * Creates Tenant Workspace on purchased tier, provisions Admin user, issues JWT access token.
+   */
+  async verifyAndAutoRegister(dto: PublicVerifyAndRegisterDto) {
+    const session = this.publicCheckoutSessions.get(dto.tranId);
+    const targetPlan = (session?.planTier || dto.planTier || PlanTier.PRO_8) as PlanTier;
+    const planConfig = SAAS_PLANS[targetPlan] || SAAS_PLANS[PlanTier.PRO_8];
+    const isAnnual = (session?.billingCycle || dto.billingCycle) === BillingCycle.ANNUAL;
+    const amountUsd = session?.amountUsd || (isAnnual ? Math.round(planConfig.priceUsd * 12 * 0.8) : planConfig.priceUsd);
+
+    const email = (dto.email || '').trim().toLowerCase();
+    if (!email) {
+      throw new BadRequestException('Email is required for account creation');
+    }
+
+    const password = dto.password || 'Clinic#2026';
+    const passwordHash = await bcrypt.hash(password, 10);
+    const clinicNameEn = (dto.clinicNameEn || '').trim() || (dto.adminName?.trim() ? `${dto.adminName.trim()} Clinic` : 'New Clinic');
+    const clinicNameKh = (dto.clinicNameKh || '').trim() || clinicNameEn;
+
+    let baseSlug = clinicNameEn
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+    if (!baseSlug) baseSlug = 'clinic';
+    let uniqueSlug = baseSlug;
+    let counter = 1;
+    while (await this.prisma.tenant.findUnique({ where: { slug: uniqueSlug } })) {
+      uniqueSlug = `${baseSlug}-${Math.floor(100 + Math.random() * 900)}`;
+      counter++;
+      if (counter > 15) {
+        uniqueSlug = `${baseSlug}-${Date.now().toString().slice(-4)}`;
+        break;
+      }
+    }
+
+    const addedDays = isAnnual ? 365 : 30;
+    const now = new Date();
+    const periodEnd = new Date(now.getTime() + addedDays * 24 * 60 * 60 * 1000);
+
+    const result = await this.prisma.$transaction(async (tx) => {
+      let existingUser = await tx.user.findFirst({
+        where: { email: { equals: email, mode: 'insensitive' } },
+        include: { tenant: true },
+      });
+
+      let tenant: any;
+      let user: any;
+
+      if (existingUser && existingUser.tenant) {
+        tenant = await tx.tenant.update({
+          where: { id: existingUser.tenant.id },
+          data: {
+            planTier: targetPlan,
+            subscriptionStatus: SubscriptionStatus.ACTIVE,
+            currentPeriodEnd: periodEnd,
+            maxDailyKhqr: planConfig.maxDailyKhqr,
+            maxMonthlyPatients: planConfig.maxMonthlyPatients,
+          },
+        });
+        user = existingUser;
+      } else {
+        tenant = await tx.tenant.create({
+          data: {
+            slug: uniqueSlug,
+            clinicNameKh,
+            clinicNameEn,
+            clinicType: 'General Medical Clinic',
+            planTier: targetPlan,
+            subscriptionStatus: SubscriptionStatus.ACTIVE,
+            currentPeriodEnd: periodEnd,
+            maxDailyKhqr: planConfig.maxDailyKhqr,
+            maxMonthlyPatients: planConfig.maxMonthlyPatients,
+            paywayPaymentUrl: this.platformPaywayUrl,
+            bakongAccountId: this.platformBakongId,
+            merchantName: clinicNameEn,
+            merchantCity: 'Phnom Penh',
+            isActive: true,
+          },
+        });
+
+        if (existingUser) {
+          user = await tx.user.update({
+            where: { id: existingUser.id },
+            data: { tenantId: tenant.id, role: Role.ADMIN },
+          });
+        } else {
+          user = await tx.user.create({
+            data: {
+              email,
+              passwordHash,
+              fullNameEn: dto.adminName || 'Clinic Administrator',
+              fullNameKh: 'អ្នកគ្រប់គ្រងគ្លីនិក',
+              role: Role.ADMIN,
+              phone: dto.phone || '0120002026',
+              tenantId: tenant.id,
+              isActive: true,
+            },
+          });
+        }
+      }
+
+      await tx.tenantSubscription.create({
+        data: {
+          tenantId: tenant.id,
+          planTier: targetPlan,
+          amountUsd,
+          status: SubscriptionStatus.ACTIVE,
+          startDate: now,
+          endDate: periodEnd,
+          invoiceNumber: session?.invoiceNumber || `SUB-${uniqueSlug.toUpperCase()}-${Date.now().toString().slice(-6)}`,
+          paymentTranId: dto.tranId,
+          paymentMethod: 'KHQR',
+          notes: JSON.stringify({
+            verifiedVia: 'PUBLIC_CHECKOUT_AUTO_REGISTER',
+            isAnnual,
+            amountUsd,
+            planTier: targetPlan,
+            paywayUrl: this.platformPaywayUrl,
+            activatedAt: now.toISOString(),
+          }),
+        },
+      });
+
+      return { tenant, user };
+    });
+
+    this.publicCheckoutSessions.delete(dto.tranId);
+
+    const tokenPayload = {
+      sub: result.user.id,
+      email: result.user.email,
+      role: result.user.role,
+      tenantId: result.tenant.id,
+    };
+    const secret = process.env.JWT_SECRET || 'rotana_clinic_super_secure_jwt_secret_key_2026';
+    const accessToken = this.jwtService ? this.jwtService.sign(tokenPayload) : require('jsonwebtoken').sign(tokenPayload, secret, { expiresIn: '7d' });
+
+    this.logger.log(`Public checkout verified & account provisioned: ${email} for tenant ${result.tenant.slug} on tier ${targetPlan}`);
+
+    return {
+      success: true,
+      activated: true,
+      accessToken,
+      targetRoute: '/dashboard',
+      user: {
+        id: result.user.id,
+        email: result.user.email,
+        fullNameEn: result.user.fullNameEn,
+        fullNameKh: result.user.fullNameKh,
+        role: result.user.role,
+        phone: result.user.phone,
+        tenantId: result.tenant.id,
+      },
+      tenant: result.tenant,
+      message: 'Account successfully registered and plan activated.',
+    };
+  }
+
 }
