@@ -315,23 +315,41 @@ export const Sidebar: React.FC = () => {
             </div>
 
             {tenantPlanTier !== 'UNLIMITED_20' && (
-              <Link
-                href="/pricing"
-                className="w-full mt-1.5 py-1.5 px-2.5 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-[11px] font-bold shadow-2xs transition-colors flex items-center justify-center gap-1.5"
-              >
-                <SparklesIcon className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-                <span>
-                  {tenantPlanTier === 'FREE'
-                    ? (isKh ? 'ដំឡើងទៅ Starter - $5/mo' : 'Upgrade to Starter ($5/mo)')
-                    : tenantPlanTier === 'STARTER_5'
-                    ? (isKh ? 'ដំឡើងទៅ Pro - $8/mo' : 'Upgrade to Pro ($8/mo)')
-                    : tenantPlanTier === 'PRO_8'
-                    ? (isKh ? 'ដំឡើងទៅ Enterprise - $12/mo' : 'Upgrade to Enterprise ($12/mo)')
-                    : tenantPlanTier === 'ENTERPRISE_12'
-                    ? (isKh ? 'ដំឡើងទៅ Specialist - $15/mo' : 'Upgrade to Specialist ($15/mo)')
-                    : (isKh ? 'ដំឡើងទៅ Unlimited - $20/mo' : 'Upgrade to Unlimited ($20/mo)')}
-                </span>
-              </Link>
+              <div className="space-y-1 mt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const nextTier =
+                      tenantPlanTier === 'FREE' ? 'STARTER_5' :
+                      tenantPlanTier === 'STARTER_5' ? 'PRO_8' :
+                      tenantPlanTier === 'PRO_8' ? 'ENTERPRISE_12' :
+                      tenantPlanTier === 'ENTERPRISE_12' ? 'SPECIALIST_15' : 'UNLIMITED_20';
+                    window.dispatchEvent(new CustomEvent('open-subscription-modal', { detail: { tier: nextTier } }));
+                  }}
+                  className="w-full py-1.5 px-2.5 bg-gradient-to-r from-teal-800 to-teal-900 hover:from-teal-700 hover:to-teal-800 text-white rounded-xl text-[11px] font-bold shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                >
+                  <SparklesIcon className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+                  <span>
+                    {tenantPlanTier === 'FREE'
+                      ? (isKh ? 'ដំឡើងទៅ Starter - $5/mo' : 'Upgrade to Starter ($5/mo)')
+                      : tenantPlanTier === 'STARTER_5'
+                      ? (isKh ? 'ដំឡើងទៅ Pro - $8/mo' : 'Upgrade to Pro ($8/mo)')
+                      : tenantPlanTier === 'PRO_8'
+                      ? (isKh ? 'ដំឡើងទៅ Enterprise - $12/mo' : 'Upgrade to Enterprise ($12/mo)')
+                      : tenantPlanTier === 'ENTERPRISE_12'
+                      ? (isKh ? 'ដំឡើងទៅ Specialist - $15/mo' : 'Upgrade to Specialist ($15/mo)')
+                      : (isKh ? 'ដំឡើងទៅ Unlimited - $20/mo' : 'Upgrade to Unlimited ($20/mo)')}
+                  </span>
+                </button>
+                <div className="text-center">
+                  <Link
+                    href="/explore-tools"
+                    className="text-[10px] text-teal-800 hover:underline font-semibold"
+                  >
+                    {isKh ? 'រុករក & គ្រប់គ្រងឧបករណ៍ ៣០+' : 'Explore 30+ Tools'}
+                  </Link>
+                </div>
+              </div>
             )}
           </div>
         </div>

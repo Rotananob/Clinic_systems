@@ -1237,26 +1237,6 @@ function RegisterContent() {
                   </div>
                 </div>
 
-                {/* 1-Tap Quick Fill Demo Info (Mobile Friendly) */}
-                <div className="flex items-center justify-between p-2.5 bg-stone-50 border border-stone-200 rounded-xl">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-stone-800">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                    <span>{isKm ? 'បំពេញទិន្នន័យគំរូសាកល្បង' : 'Quick Fill Demo Info'}</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const rand = Math.floor(1000 + Math.random() * 9000);
-                      setClinicName('មន្ទីរសម្រាកព្យាបាល រតនៈ');
-                      setAdminName('វេជ្ជបណ្ឌិត សុខ សាន');
-                      setEmail(`rotana.clinic.demo${rand}@gmail.com`);
-                      setPassword('RotanaDemo@2026#');
-                    }}
-                    className="px-2.5 py-1 bg-white border border-stone-300 hover:border-teal-700 text-teal-900 rounded-lg text-[11px] font-bold shadow-xs active:scale-95"
-                  >
-                    {isKm ? 'បំពេញស្វ័យប្រវត្ត' : 'Auto-Fill'}
-                  </button>
-                </div>
 
                 {/* 2. Clinic Name */}
                 <div className="space-y-1">

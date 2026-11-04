@@ -494,6 +494,48 @@ export default function ExploreToolsPage() {
           )}
         </div>
 
+        {/* Fast Upgrade Tool Action Banner */}
+        <div className="bg-gradient-to-r from-teal-950 via-teal-900 to-stone-900 rounded-2xl p-4 sm:p-5 text-white border border-teal-800 shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-400 text-stone-950">
+                <Zap className="w-3 h-3 text-stone-950 fill-stone-950" />
+                <span>{isKm ? 'ដំឡើងគម្រោង & បើកឧបករណ៍' : 'Upgrade Tools Arsenal'}</span>
+              </span>
+              <span className="text-xs text-teal-300 font-bold">
+                {isKm ? 'Bakong KHQR POS Tag 01=12 • 0% Fee' : 'Direct NBC Bakong Settlement'}
+              </span>
+            </div>
+            <h2 className="text-sm sm:text-base font-bold text-white font-sans">
+              {isKm
+                ? 'ដំឡើងគម្រោងភ្លាមៗដើម្បីដោះសោឧបករណ៍គ្លីនិកទាំង ៣០+ ដោយស្វ័យប្រវត្ត'
+                : 'Upgrade Your Tier to Instantly Unlock All 30+ Enterprise Clinical Tools'}
+            </h2>
+            <p className="text-xs text-stone-300 leading-relaxed font-sans">
+              {isKm
+                ? 'ជ្រើសរើសកញ្ចប់ $5 Starter, $8 Pro, $12 Enterprise, $15 Specialist ឬ $20 PaaS តាមតម្រូវការជាក់ស្តែង'
+                : 'Choose $5 Starter, $8 Pro, $12 Enterprise, $15 Specialist or $20 PaaS according to clinical scale.'}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+            <button
+              type="button"
+              onClick={() => handleOpenLock('PRO_8')}
+              className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-stone-950 font-black text-xs transition-all shadow-md active:scale-95 cursor-pointer"
+            >
+              <Zap className="w-3.5 h-3.5 text-stone-950 fill-stone-950" />
+              <span>{isKm ? 'ដំឡើងទៅ Pro ($8/ខែ)' : 'Upgrade to Pro ($8/mo)'}</span>
+            </button>
+            <Link
+              href="/pricing"
+              className="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 text-xs font-bold transition-all text-center"
+            >
+              {isKm ? 'តារាងតម្លៃ' : 'Pricing Matrix'}
+            </Link>
+          </div>
+        </div>
+
         {/* Search & Category Filter Bar */}
         <div className="bg-white rounded-2xl border border-stone-200 p-4 shadow-xs space-y-4">
           <div className="relative">

@@ -633,7 +633,7 @@ export const LandingHero: React.FC = () => {
 
                   <div>
                     <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight font-sans">
-                      {isKm ? 'សាកល្បង KHQR ពិតប្រាកដ និងកែប្រែឈ្មោះគ្លីនិកផ្ទាល់' : 'Interactive KHQR Live Generator & Custom Clinic Demo'}
+                      {isKm ? 'បង្កើត KHQR ពិតប្រាកដ និងកែប្រែឈ្មោះគ្លីនិកផ្ទាល់' : 'Interactive KHQR Live Generator & Custom Clinic Terminal'}
                     </h3>
                     <p className="text-xs text-stone-300 mt-1 leading-relaxed font-sans">
                       {isKm

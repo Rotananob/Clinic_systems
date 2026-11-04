@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { User, LogOut, QrCode, Monitor, Search, Menu } from 'lucide-react';
+import { User, LogOut, QrCode, Monitor, Search, Menu, Zap } from 'lucide-react';
 import { MobileMenuDrawer } from './MobileMenuDrawer';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from '../../context/I18nContext';
@@ -118,6 +118,26 @@ export const Navbar: React.FC = () => {
                 <span className="sm:hidden">KHQR</span>
               </Link>
             </RestrictedActionGuard>
+          )}
+
+          {mounted && user && user.tenant?.planTier !== 'UNLIMITED_20' && (
+            <button
+              type="button"
+              onClick={() => {
+                const currentTier = user.tenant?.planTier || 'FREE';
+                const nextTier =
+                  currentTier === 'FREE' ? 'STARTER_5' :
+                  currentTier === 'STARTER_5' ? 'PRO_8' :
+                  currentTier === 'PRO_8' ? 'ENTERPRISE_12' :
+                  currentTier === 'ENTERPRISE_12' ? 'SPECIALIST_15' : 'UNLIMITED_20';
+                window.dispatchEvent(new CustomEvent('open-subscription-modal', { detail: { tier: nextTier } }));
+              }}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 text-xs font-black transition-all shadow-xs active:scale-95 cursor-pointer"
+              title={locale === 'km' ? 'ដំឡើងកញ្ចប់ឧបករណ៍គ្លីនិក' : 'Upgrade Clinical Tools'}
+            >
+              <Zap className="w-3.5 h-3.5 text-stone-950 fill-stone-950" />
+              <span className="hidden md:inline">{locale === 'km' ? 'Upgrade Tool' : 'Upgrade Tools'}</span>
+            </button>
           )}
 
           <LanguageSwitcher />

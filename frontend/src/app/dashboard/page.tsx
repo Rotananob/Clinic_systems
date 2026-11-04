@@ -36,6 +36,7 @@ import {
   ChevronRight,
   Search,
   Wallet,
+  Zap,
 } from 'lucide-react';
 import { RegisterPatientDrawer } from '../../components/patients/RegisterPatientDrawer';
 import { ExploreModulesModal } from '../../components/dashboard/ExploreModulesModal';
@@ -408,6 +409,62 @@ function DashboardView() {
           >
             {isKm ? 'បិទ' : 'Dismiss'}
           </button>
+        </div>
+      )}
+
+      {/* Clinical Arsenal & Tool Upgrade Hub */}
+      {user?.tenant?.planTier !== 'UNLIMITED_20' && (
+        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#0D2825] via-[#091D1A] to-[#041412] text-white border border-teal-700/50 shadow-md relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-80 h-80 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="space-y-1.5 max-w-2xl">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-teal-800 text-teal-200 border border-teal-600">
+                  <Sparkles className="w-3 h-3 text-amber-300" />
+                  <span>{isKm ? `គម្រោងបច្ចុប្បន្ន: ${user?.tenant?.planTier || 'FREE'}` : `Current Plan: ${user?.tenant?.planTier || 'FREE'}`}</span>
+                </span>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                  <Zap className="w-3 h-3 text-amber-400 fill-amber-400" />
+                  <span>{isKm ? 'ដំឡើងកញ្ចប់ឧបករណ៍គ្លីនិក ២០២៦' : 'Upgrade Clinical Tools 2026'}</span>
+                </span>
+              </div>
+              <h3 className="text-sm sm:text-base font-bold text-white font-sans">
+                {isKm
+                  ? 'ដោះសោឧបករណ៍វេជ្ជសាស្ត្រកម្រិតខ្ពស់: Odontogram, FEFO Pharmacy, PACS DICOM, IPD Beds, LIS Lab'
+                  : 'Unlock Advanced Clinical Modules: Odontogram, FEFO Warehouse, WebGL PACS, IPD Beds & LIS'}
+              </h3>
+              <p className="text-xs text-stone-300 leading-relaxed font-sans">
+                {isKm
+                  ? 'ដំឡើងគម្រោងគ្លីនិកភ្លាមៗជាមួយ Dynamic Bakong KHQR ចាក់សោទឹកប្រាក់ និង ABA PayWay Deeplink ហូរចូលគណនីផ្ទាល់ 0% Commission'
+                  : 'Upgrade subscription instantly via Tag 01=12 Bakong KHQR and ABA PayWay direct deeplink with 0% platform commission'}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2.5 shrink-0 w-full sm:w-auto">
+              <Link
+                href="/explore-tools"
+                className="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white border border-white/20 text-xs font-bold transition-all text-center"
+              >
+                {isKm ? 'ពិនិត្យឧបករណ៍ទាំងអស់' : 'Explore Arsenal'}
+              </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  const currentTier = user?.tenant?.planTier || 'FREE';
+                  const nextTier =
+                    currentTier === 'FREE' ? 'STARTER_5' :
+                    currentTier === 'STARTER_5' ? 'PRO_8' :
+                    currentTier === 'PRO_8' ? 'ENTERPRISE_12' :
+                    currentTier === 'ENTERPRISE_12' ? 'SPECIALIST_15' : 'UNLIMITED_20';
+                  window.dispatchEvent(new CustomEvent('open-subscription-modal', { detail: { tier: nextTier } }));
+                }}
+                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-stone-950 font-black text-xs transition-all shadow-md active:scale-95 cursor-pointer"
+              >
+                <Zap className="w-3.5 h-3.5 text-stone-950 fill-stone-950" />
+                <span>{isKm ? 'Upgrade Tool ឥឡូវនេះ' : 'Upgrade Tool Now'}</span>
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

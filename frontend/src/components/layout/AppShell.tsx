@@ -14,9 +14,10 @@ import { PwaRegister } from '../common/PwaRegister';
 import { PwaUpdatePrompt } from '../common/PwaUpdatePrompt';
 import { CommandPalette } from '../common/CommandPalette';
 import { ExploreModulesModal } from '../dashboard/ExploreModulesModal';
+import { SubscriptionCheckoutModal } from '../subscriptions/SubscriptionCheckoutModal';
 import { ClinicLogo } from '../common/ClinicLogo';
 import { FirstTimeClinicSetupModal } from '../onboarding/FirstTimeClinicSetupModal';
-import { ShieldCheck, Loader2, Sparkles, ArrowRight } from 'lucide-react';
+import { ShieldCheck, Loader2, Sparkles, ArrowRight, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { isRouteAllowed, getRoleDisplayName, isRouteAllowedForPlan, getRequiredPlanForRoute } from '../../lib/rbac';
 import { trackPageView, trackUserAction } from '../../lib/tracker';
@@ -34,6 +35,18 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
   const [mounted, setMounted] = React.useState(false);
   const [isExploreOpen, setIsExploreOpen] = React.useState<boolean>(false);
   const [setupDismissed, setSetupDismissed] = React.useState<boolean>(false);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = React.useState(false);
+  const [upgradeModalTier, setUpgradeModalTier] = React.useState<any>('PRO_8');
+
+  useEffect(() => {
+    const handleOpenUpgrade = (e: any) => {
+      const tier = e?.detail?.tier || 'PRO_8';
+      setUpgradeModalTier(tier);
+      setIsUpgradeModalOpen(true);
+    };
+    window.addEventListener('open-subscription-modal', handleOpenUpgrade);
+    return () => window.removeEventListener('open-subscription-modal', handleOpenUpgrade);
+  }, []);
 
   useEffect(() => {
     const handleOpenExplore = () => setIsExploreOpen(true);
@@ -272,17 +285,28 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
                     : `Your clinic is currently on ${user?.tenant?.planTier || 'FREE'}. This feature is unlocked starting from ${requiredPlanInfo.nameEn} ($${requiredPlanInfo.priceUsd}/mo) and above.`}
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full sm:w-auto">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUpgradeModalTier(requiredPlanInfo.tier);
+                      setIsUpgradeModalOpen(true);
+                    }}
+                    className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-teal-800 to-teal-900 hover:from-teal-700 hover:to-teal-800 text-white rounded-xl text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                  >
+                    <Zap className="w-4 h-4 text-amber-300 fill-amber-300" />
+                    <span>{isKm ? `ដំឡើងគម្រោងឥឡូវនេះ ($${requiredPlanInfo.priceUsd}/ខែ)` : `Upgrade Now with Bakong ($${requiredPlanInfo.priceUsd}/mo)`}</span>
+                  </button>
                   <Link
                     href={`/pricing?upgrade=${requiredPlanInfo.tier}`}
-                    className="w-full sm:w-auto px-6 py-2.5 bg-teal-800 hover:bg-teal-900 text-white rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center justify-center gap-2"
+                    className="w-full sm:w-auto px-4 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-semibold border border-stone-300 transition-colors flex items-center justify-center gap-1.5"
                   >
-                    <span>{isKm ? `ដំឡើងទៅ ${requiredPlanInfo.nameKh}` : `Upgrade to ${requiredPlanInfo.nameEn}`}</span>
-                    <ArrowRight className="w-4 h-4" />
+                    <span>{isKm ? 'ប្រៀបធៀបគម្រោងទាំងអស់' : 'Compare Plans'}</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                   <button
                     type="button"
                     onClick={() => router.push('/dashboard')}
-                    className="w-full sm:w-auto px-4 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-semibold border border-stone-300 transition-colors"
+                    className="w-full sm:w-auto px-4 py-2.5 bg-white hover:bg-stone-50 text-stone-700 rounded-xl text-xs font-semibold border border-stone-200 transition-colors"
                   >
                     {isKm ? 'ត្រឡប់ទៅផ្ទាំងដើម' : 'Back to Dashboard'}
                   </button>
@@ -298,6 +322,15 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
         <PwaUpdatePrompt />
         <CommandPalette />
         <ExploreModulesModal isOpen={isExploreOpen} onClose={() => setIsExploreOpen(false)} />
+        <SubscriptionCheckoutModal
+          isOpen={isUpgradeModalOpen}
+          onClose={() => setIsUpgradeModalOpen(false)}
+          initialPlanTier={upgradeModalTier}
+          onActivated={() => {
+            setIsUpgradeModalOpen(false);
+            window.location.reload();
+          }}
+        />
         <FirstTimeClinicSetupModal
           isOpen={Boolean(
             mounted &&

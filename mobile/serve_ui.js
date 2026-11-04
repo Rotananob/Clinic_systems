@@ -146,3 +146,29 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log(`  Local PC:   http://localhost:${PORT}/`);
   console.log(`  iPhone URL: http://172.20.10.2:${PORT}/ -> Redirecting to http://172.20.10.2:3000/`);
 });
+
+// Also attempt to listen on Port 80 for direct Safari navigation without port number
+try {
+  const port80Server = http.createServer((req, res) => {
+    const clientHost = req.headers.host ? req.headers.host.split(':')[0] : '172.20.10.2';
+    let targetUrl = req.url;
+    if (targetUrl === '/simulator' || targetUrl === '/simulator.html' || targetUrl.startsWith('/simulator?')) {
+      targetUrl = '/';
+    }
+    res.writeHead(302, {
+      'Location': `http://${clientHost}:3000${targetUrl}`,
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    });
+    res.end();
+  });
+  port80Server.on('error', (err) => {
+    console.log(`Port 80 redirector optional note: ${err.message}`);
+  });
+  port80Server.listen(80, '0.0.0.0', () => {
+    console.log(`Port 80 HTTP direct forwarder running on 0.0.0.0:80 -> Port 3000`);
+  });
+} catch (e) {
+  console.log('Port 80 optional forwarder skipped');
+}
