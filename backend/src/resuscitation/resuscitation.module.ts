@@ -1,8 +1,8 @@
 // Nest module declaration for Emergency Sepsis & Trauma Resuscitation Protocol Engine
 // Conforms to Node.js 24 type stripping
 
-import { ResuscitationService } from './resuscitation.service.ts';
-import { ResuscitationController } from './resuscitation.controller.ts';
+import { ResuscitationService } from './resuscitation.service';
+import { ResuscitationController } from './resuscitation.controller';
 
 export class ResuscitationModule {
   public static getProviders() {

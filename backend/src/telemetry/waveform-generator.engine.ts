@@ -10,7 +10,7 @@ import {
   ArrhythmiaType,
   BedTelemetryAlarm,
   AlarmSeverity
-} from './vital-signs.library.ts';
+} from './vital-signs.library';
 
 export interface WaveformPoint {
   timeMs: number;

@@ -12,7 +12,7 @@ import {
   DEFAULT_RURAL_CHUNK_SIZE,
   MAX_RURAL_CHUNK_SIZE,
   DEFAULT_HEARTBEAT_INTERVAL_MS,
-} from './mobile-sync.types.ts';
+} from './mobile-sync.types';
 import type {
   HandshakeRequestDto,
   HandshakeResponseDto,
@@ -44,7 +44,7 @@ import type {
   NssfClaimSubmissionDto,
   NssfClaimSubmissionResponseDto,
   NssfAdjudicatedItemResultDto,
-} from './mobile-sync.types.ts';
+} from './mobile-sync.types';
 
 /**
  * Vector Clock Causality Engine for Distributed Clinical State Sync

@@ -10,8 +10,8 @@ import {
   BadRequestException,
   NotFoundException
 } from '@nestjs/common';
-import { BedsideMonitorService } from './bedside-monitor.service.ts';
-import type { BedsideMonitorVitals, ArrhythmiaType } from './vital-signs.library.ts';
+import { BedsideMonitorService } from './bedside-monitor.service';
+import type { BedsideMonitorVitals, ArrhythmiaType } from './vital-signs.library';
 
 @Controller('telemetry')
 export class BedsideMonitorController {

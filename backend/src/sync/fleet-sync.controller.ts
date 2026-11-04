@@ -9,7 +9,7 @@ import {
   UnauthorizedException,
   BadRequestException,
 } from '@nestjs/common';
-import { EdgeFleetSyncService, PushDeltaBatchDto, PushDeltaBatchResponse } from './fleet-sync.service.ts';
+import { EdgeFleetSyncService, PushDeltaBatchDto, PushDeltaBatchResponse } from './fleet-sync.service';
 
 @Controller('sync')
 export class EdgeFleetSyncController {

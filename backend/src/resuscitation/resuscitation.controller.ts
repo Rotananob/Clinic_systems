@@ -1,7 +1,7 @@
 // Controller for Emergency Sepsis & Trauma Resuscitation Protocol Engine
 // Strictly ZERO emojis in code and text. Strictly NO parentheses in Khmer text.
 
-import { ResuscitationService } from './resuscitation.service.ts';
+import { ResuscitationService } from './resuscitation.service';
 
 export class ResuscitationController {
   private service: ResuscitationService;

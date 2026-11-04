@@ -14,7 +14,7 @@ export class DentalController {
   constructor(private readonly dentalService: DentalService) {}
 
   @ApiOperation({ summary: 'Get dental procedures catalog' })
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.STAFF, Role.RECEPTIONIST, Role.CASHIER)
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.RECEPTIONIST, Role.CASHIER)
   @Get('procedures')
   getProcedures() {
     return {
@@ -24,7 +24,7 @@ export class DentalController {
   }
 
   @ApiOperation({ summary: 'Get patient dental chart' })
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.STAFF)
+  @Roles(Role.ADMIN, Role.DOCTOR)
   @Get('patients/:patientId/chart')
   getDentalChart(@Param('patientId') patientId: string, @Req() req: any) {
     const tenantId = req.user?.tenantId;
@@ -67,7 +67,7 @@ export class DentalController {
   }
 
   @ApiOperation({ summary: 'Get patient treatment plans' })
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.STAFF, Role.CASHIER)
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.CASHIER)
   @Get('patients/:patientId/plans')
   getTreatmentPlans(@Param('patientId') patientId: string, @Req() req: any) {
     const tenantId = req.user?.tenantId;
@@ -88,12 +88,12 @@ export class DentalController {
     const tenantId = req.user?.tenantId;
     return {
       success: true,
-      data: this.dentalService.createTreatmentPlan(patientId, data, tenantId)
+      data: this.dentalService.createTreatmentPlan(patientId, data)
     };
   }
 
   @ApiOperation({ summary: 'Update treatment item status' })
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.STAFF, Role.CASHIER)
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.CASHIER)
   @Put('plans/:planId/items/:itemId')
   updateTreatmentItemStatus(
     @Param('planId') planId: string,
@@ -104,7 +104,7 @@ export class DentalController {
     const tenantId = req.user?.tenantId;
     return {
       success: true,
-      data: this.dentalService.updateTreatmentItemStatus(planId, itemId, status, tenantId)
+      data: this.dentalService.updateTreatmentItemStatus(planId, itemId, status)
     };
   }
 }

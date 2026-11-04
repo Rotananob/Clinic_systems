@@ -12,7 +12,7 @@ import {
   BroselowColorCode,
   ShockIndexAssessment,
   MassiveTransfusionProtocolAssessment,
-} from './resuscitation.types.ts';
+} from './resuscitation.types';
 
 export class ResuscitationMathEngine {
   /**

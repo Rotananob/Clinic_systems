@@ -1,7 +1,7 @@
 // REST Controller for Automated Antimicrobial Stewardship Program (ASP) Engine
 // Strictly ZERO emojis in code and text. Strictly NO parentheses in Khmer text.
 
-import { AspService } from './asp.service.ts';
+import { AspService } from './asp.service';
 
 export class AspController {
   private readonly aspService: AspService;

@@ -6,7 +6,7 @@ import {
   PhototherapyNomogramAssessment,
   PhototherapyRiskCategory,
   PhototherapyAction
-} from './pediatric.types.ts';
+} from './pediatric.types';
 
 export class PediatricMathEngine {
   /**

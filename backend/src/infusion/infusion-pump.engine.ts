@@ -10,7 +10,7 @@ import {
   DersConcentration,
   VascularRoute,
   GuardrailSeverity,
-} from './ders-guardrails.library.ts';
+} from './ders-guardrails.library';
 
 export type DropFactor = 10 | 15 | 20 | 60; // gtt/ml tubing sets
 export const DropFactor = {};

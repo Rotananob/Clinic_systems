@@ -9,8 +9,8 @@ import {
   BadRequestException,
   NotFoundException
 } from '@nestjs/common';
-import { PkPdService } from './pkpd.service.ts';
-import type { PatientAnthropometrics, TdmDrugCode, MeasuredSerumLevel } from './pkpd.types.ts';
+import { PkPdService } from './pkpd.service';
+import type { PatientAnthropometrics, TdmDrugCode, MeasuredSerumLevel } from './pkpd.types';
 
 @Controller('pkpd')
 export class PkPdController {

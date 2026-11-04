@@ -18,6 +18,21 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  const clientHost = req.headers.host ? req.headers.host.split(':')[0] : '172.20.10.2';
+
+  // Direct Shortcut to Full Web Portal
+  if (req.url === '/app' || req.url === '/web' || req.url === '/portal' || req.url === '/login') {
+    res.writeHead(302, { Location: `http://${clientHost}:3000/login` });
+    res.end();
+    return;
+  }
+
+  if (req.url === '/register') {
+    res.writeHead(302, { Location: `http://${clientHost}:3000/register` });
+    res.end();
+    return;
+  }
+
   // Simulator Web Interface
   if (req.url === '/' || req.url === '/simulator.html' || req.url.startsWith('/?')) {
     fs.readFile(HTML_FILE, (err, content) => {
@@ -55,7 +70,7 @@ const server = http.createServer((req, res) => {
         latestAppVersion: '2.4.0',
         latestBuildNumber: 20261104,
         isUpdateMandatory: false,
-        updateDownloadUrl: 'http://localhost:8089/apk',
+        updateDownloadUrl: `http://${clientHost}:8089/apk`,
         heartbeatIntervalSeconds: 15,
         registeredDeviceId: 'KRUPET-DEV-NODE-01',
         deviceSessionToken: 'sess_live_' + Date.now(),
@@ -110,6 +125,8 @@ const server = http.createServer((req, res) => {
   }
 });
 
-server.listen(PORT, '127.0.0.1', () => {
-  console.log(`KruPet Mobile UI Simulator running at http://localhost:${PORT}/`);
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`KruPet Mobile UI Station is running:`);
+  console.log(`  Local PC:   http://localhost:${PORT}/`);
+  console.log(`  iPhone URL: http://172.20.10.2:${PORT}/`);
 });

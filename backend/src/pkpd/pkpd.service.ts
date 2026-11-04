@@ -13,8 +13,8 @@ import {
   MeasuredSerumLevel,
   DosingRegimenOption,
   TdmConsultationRecord
-} from './pkpd.types.ts';
-import { PkPdMathEngine } from './pkpd-math.engine.ts';
+} from './pkpd.types';
+import { PkPdMathEngine } from './pkpd-math.engine';
 
 export const MASTER_TDM_DRUGS: TdmDrugModel[] = [
   {

@@ -9,7 +9,7 @@ import {
   IvToOralCandidate,
   BugDrugMismatchAlert,
   AntimicrobialAdministrationDay
-} from './asp.types.ts';
+} from './asp.types';
 
 export class AspMathEngine {
   /**

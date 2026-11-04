@@ -8,8 +8,8 @@ import {
   HttpStatus,
   BadRequestException,
 } from '@nestjs/common';
-import { BedsideInfusionService } from './infusion.service.ts';
-import type { VascularRoute } from './ders-guardrails.library.ts';
+import { BedsideInfusionService } from './infusion.service';
+import type { VascularRoute } from './ders-guardrails.library';
 
 @Controller('infusion')
 export class BedsideInfusionController {

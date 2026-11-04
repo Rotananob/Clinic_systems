@@ -1,7 +1,7 @@
 // REST Controller for Pediatric & Neonatal Precision Pharmacotherapy Engine
 // Strictly ZERO emojis in code and text. Strictly NO parentheses in Khmer text.
 
-import { PediatricService } from './pediatric.service.ts';
+import { PediatricService } from './pediatric.service';
 
 export class PediatricController {
   private readonly pediatricService: PediatricService;

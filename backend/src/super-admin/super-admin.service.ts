@@ -172,6 +172,8 @@ export class SuperAdminService {
       [PlanTier.STARTER_5]: 5,
       [PlanTier.PRO_8]: 8,
       [PlanTier.ENTERPRISE_12]: 12,
+      [PlanTier.SPECIALIST_15]: 15,
+      [PlanTier.UNLIMITED_20]: 20,
     };
 
     const mrrUsd = allTenants.reduce(

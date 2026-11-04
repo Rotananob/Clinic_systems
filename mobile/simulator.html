@@ -159,6 +159,46 @@
       flex-direction: column;
     }
 
+    /* Native Mobile Viewport for iPhone and Mobile Devices */
+    @media (max-width: 600px) {
+      body {
+        padding: 0 !important;
+        background: #F7FAF9 !important;
+        height: 100vh;
+        height: 100dvh;
+        overflow: hidden;
+      }
+      .studio-bg, .studio-header, .module-jump-bar {
+        display: none !important;
+      }
+      .phone-wrapper {
+        max-width: 100vw !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+      }
+      .phone-chassis {
+        width: 100vw !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        border-radius: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        background: transparent !important;
+      }
+      .phone-screen {
+        border-radius: 0 !important;
+        height: 100% !important;
+      }
+      .status-bar {
+        padding-top: max(env(safe-area-inset-top, 0px), 6px);
+        height: calc(38px + max(env(safe-area-inset-top, 0px), 0px));
+      }
+      .bottom-nav {
+        padding-bottom: max(env(safe-area-inset-bottom, 12px), 12px);
+      }
+    }
+
     /* Top Notch Dynamic Island & System Status Bar */
     .status-bar {
       height: 38px;
@@ -335,7 +375,16 @@
     .splash-view {
       background: linear-gradient(165deg, #021C19 0%, #063832 50%, #011412 100%);
       color: #FFFFFF;
-      display: flex;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px 24px;
+      height: 100%;
+    }
+    .splash-view.active {
+      display: flex !important;
       flex-direction: column;
       align-items: center;
       justify-content: center;
@@ -1670,9 +1719,17 @@
               <div class="splash-status-text" id="splashStatus">Initializing TLS 1.3 Gateway...</div>
             </div>
 
-            <button class="btn-splash-enter" onclick="navigateToView('viewOnboarding')" id="btnSplashEnter">
-              ចាប់ផ្តើមចូលប្រើប្រាស់
-            </button>
+            <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 290px; margin-top: 10px;">
+              <a href="http://172.20.10.2:3000/login" style="display: block; background: #FFFFFF; color: #047857; text-decoration: none; font-size: 14px; font-weight: 700; padding: 13px 20px; border-radius: 999px; text-align: center; box-shadow: 0 4px 16px rgba(0,0,0,0.3); transition: transform 0.15s;">
+                ចូលប្រើប្រព័ន្ធគ្រប់គ្រងគ្លីនិកពេញលេញ (Login Web Portal)
+              </a>
+              <a href="http://172.20.10.2:3000/register" style="display: block; background: rgba(255, 255, 255, 0.12); color: #5EEAD4; border: 1px solid rgba(94, 234, 212, 0.4); text-decoration: none; font-size: 13px; font-weight: 700; padding: 11px 18px; border-radius: 999px; text-align: center;">
+                ចុះឈ្មោះគ្លីនិកថ្មី (Register Clinic)
+              </a>
+              <button class="btn-splash-enter" onclick="navigateToView('viewHub'); navigateToTab('hub');" id="btnSplashEnter" style="width: 100%; padding: 11px 20px; font-size: 13px;">
+                បើកផ្ទាំង Mobile Clinical Station
+              </button>
+            </div>
           </div>
 
           <!-- =============================================================

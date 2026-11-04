@@ -149,17 +149,15 @@ function extractTenantSubdomain(rawHost: string | null | undefined): string | nu
 }
 
 function getApiBaseUrl(): string {
-  if (typeof process !== 'undefined' && process.env && process.env.NEXT_PUBLIC_API_URL) {
-    return process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '');
-  }
   if (typeof window !== 'undefined') {
     const host = window.location.hostname;
-    if (host.includes('vercel.app')) {
-      return '/api';
-    }
     if (host && host !== 'localhost' && host !== '127.0.0.1') {
+      if (host.includes('vercel.app')) return '/api';
       return `http://${host}:4000/api`;
     }
+  }
+  if (typeof process !== 'undefined' && process.env && process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '');
   }
   return 'http://localhost:4000/api';
 }

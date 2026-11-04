@@ -346,7 +346,6 @@ export class SubscriptionPaymentService {
         telegramUrl: this.supportTelegramUrl,
         hotline: this.supportHotline,
       },
-      expiresAt,
       targetEndDate: targetEndDate.toISOString(),
       targetEndDateFormattedKh: targetEndDate.toLocaleDateString('km-KH'),
       targetEndDateFormattedEn: targetEndDate.toLocaleDateString('en-US'),

@@ -9,13 +9,13 @@ import {
   DERS_DRUG_LIBRARY,
   DersDrugProfile,
   VascularRoute,
-} from './ders-guardrails.library.ts';
+} from './ders-guardrails.library';
 import {
   InfusionPumpEngine,
   DoseCalculationResult,
   PcaBolusValidationResult,
   PumpTelemetryAnalysis,
-} from './infusion-pump.engine.ts';
+} from './infusion-pump.engine';
 
 export interface BedsidePumpSession {
   pumpId: string;

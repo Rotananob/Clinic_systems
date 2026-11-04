@@ -6,7 +6,7 @@ import {
   CalvertDosingResult,
   AnthracyclineCumulativeExposure,
   LabSafetyCheckResult
-} from './chemo.types.ts';
+} from './chemo.types';
 
 export class ChemoMathEngine {
   /**

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { BedsideInfusionController } from './infusion.controller.ts';
-import { BedsideInfusionService } from './infusion.service.ts';
+import { BedsideInfusionController } from './infusion.controller';
+import { BedsideInfusionService } from './infusion.service';
 
 @Module({
   controllers: [BedsideInfusionController],

@@ -9,8 +9,8 @@ import {
   CalvertDosingResult,
   AnthracyclineCumulativeExposure,
   LabSafetyCheckResult
-} from './chemo.types.ts';
-import { ChemoMathEngine } from './chemo-math.engine.ts';
+} from './chemo.types';
+import { ChemoMathEngine } from './chemo-math.engine';
 
 export class ChemoService {
   private static instance: ChemoService;

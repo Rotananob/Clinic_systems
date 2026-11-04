@@ -14,7 +14,7 @@ import {
   MeasuredSerumLevel,
   DosingRegimenOption,
   TherapeuticWindowStatus
-} from './pkpd.types.ts';
+} from './pkpd.types';
 
 export class PkPdMathEngine {
   /**

@@ -1,7 +1,7 @@
 // Service layer for Emergency Sepsis & Trauma Resuscitation Protocol Engine
 // Strictly ZERO emojis in code and text. Strictly NO parentheses in Khmer text.
 
-import { ResuscitationMathEngine } from './resuscitation-math.engine.ts';
+import { ResuscitationMathEngine } from './resuscitation-math.engine';
 import {
   QsofaAssessment,
   SofaOrganScores,
@@ -12,7 +12,7 @@ import {
   PediatricResuscitationCard,
   ShockIndexAssessment,
   MassiveTransfusionProtocolAssessment,
-} from './resuscitation.types.ts';
+} from './resuscitation.types';
 
 export class ResuscitationService {
   /**

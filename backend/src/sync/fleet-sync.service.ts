@@ -1,6 +1,6 @@
 import * as crypto from 'crypto';
 import * as zlib from 'zlib';
-import { VectorClockEngine } from './vector-clock.engine.ts';
+import { VectorClockEngine } from './vector-clock.engine';
 
 export type SyncEntityType = 'PATIENT' | 'ENCOUNTER' | 'PRESCRIPTION' | 'STOCK_DELTA';
 export type SyncMutationType = 'INSERT' | 'UPDATE' | 'DELETE_TOMBSTONE';
@@ -291,7 +291,7 @@ export class EdgeFleetSyncService {
       branches.push({ ...mutation.payload, vectorClock: mutation.vectorClock, branchSource: mutation.sourceNodeId });
       this.encountersStore.set(mutation.entityId, branches);
     } else if (mutation.entityType === 'STOCK_DELTA') {
-      this.applyStockDelta(mutation.entityId, mutation.payload);
+      this.applyStockDelta(mutation.entityId, mutation.payload as any);
     }
   }
 
@@ -439,7 +439,7 @@ export class EdgeFleetSyncService {
       this.encountersStore.set(mutation.entityId, branches);
     } else if (mutation.entityType === 'STOCK_DELTA') {
       // 3. Pharmacy Stock Delta: Commutative PN-Counter CRDT
-      this.applyStockDelta(mutation.entityId, mutation.payload);
+      this.applyStockDelta(mutation.entityId, mutation.payload as any);
     }
   }
 
@@ -460,7 +460,7 @@ export class EdgeFleetSyncService {
       });
       this.encountersStore.set(mutation.entityId, branches);
     } else if (mutation.entityType === 'STOCK_DELTA') {
-      this.applyStockDelta(mutation.entityId, mutation.payload);
+      this.applyStockDelta(mutation.entityId, mutation.payload as any);
     }
   }
 

@@ -12,8 +12,8 @@ import {
   DEFAULT_NEONATAL_THRESHOLDS,
   ArrhythmiaType,
   BedTelemetryAlarm
-} from './vital-signs.library.ts';
-import { WaveformGeneratorEngine, WaveformPoint } from './waveform-generator.engine.ts';
+} from './vital-signs.library';
+import { WaveformGeneratorEngine, WaveformPoint } from './waveform-generator.engine';
 
 export class BedsideMonitorService {
   private beds: Map<string, BedsideMonitorDevice> = new Map();

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { EdgeFleetSyncService } from './fleet-sync.service.ts';
-import { EdgeFleetSyncController } from './fleet-sync.controller.ts';
+import { EdgeFleetSyncService } from './fleet-sync.service';
+import { EdgeFleetSyncController } from './fleet-sync.controller';
 
 @Module({
   controllers: [EdgeFleetSyncController],

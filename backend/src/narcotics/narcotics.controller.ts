@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, Param, Query, Res, UseGuards } from '@nestjs/common';
-import { NarcoticsService, ControlledWastageMethod } from './narcotics.service';
+import { NarcoticsService, WastageDestructionMethod } from './narcotics.service';
 import { Response } from 'express';
 
 @Controller('narcotics')
@@ -84,7 +84,7 @@ export class NarcoticsController {
       prescribedDoseMg: number;
       administeredDoseMg: number;
       wastedDoseMg: number;
-      wastageDestructionMethod?: ControlledWastageMethod;
+      wastageDestructionMethod?: WastageDestructionMethod;
       wastageClinicalReason?: string;
     },
   ) {

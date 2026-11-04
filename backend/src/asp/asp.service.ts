@@ -12,8 +12,8 @@ import {
   BugDrugMismatchAlert,
   AntibiogramOrganismRecord,
   RestrictedApprovalRequest
-} from './asp.types.ts';
-import { AspMathEngine } from './asp-math.engine.ts';
+} from './asp.types';
+import { AspMathEngine } from './asp-math.engine';
 
 export class AspService {
   private static instance: AspService;

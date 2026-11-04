@@ -14,7 +14,7 @@ import {
   Headers,
 } from '@nestjs/common';
 import type { Observable } from 'rxjs';
-import { MobileSyncService } from './mobile-sync.service.ts';
+import { MobileSyncService } from './mobile-sync.service';
 import type {
   HandshakeRequestDto,
   HandshakeResponseDto,
@@ -33,7 +33,7 @@ import type {
   NssfEligibilityResponseDto,
   NssfClaimSubmissionDto,
   NssfClaimSubmissionResponseDto,
-} from './mobile-sync.types.ts';
+} from './mobile-sync.types';
 
 @Controller('mobile-sync')
 export class MobileSyncController {

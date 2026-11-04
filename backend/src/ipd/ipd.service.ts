@@ -19,6 +19,7 @@ export type MedAdminStatus = 'SCHEDULED' | 'GIVEN' | 'MISSED' | 'REFUSED' | 'HEL
 
 export interface Bed {
   id: string;
+  tenantId?: string;
   bedNumber: string;
   ward: WardCode;
   wardNameKh: string;

@@ -1,19 +1,19 @@
 export function getApiBaseUrl(): string {
-  if (process.env.NEXT_PUBLIC_API_URL) {
-    return process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '');
-  }
   if (typeof window !== 'undefined') {
     const host = window.location.hostname;
     const customUrl = localStorage.getItem('clinic_api_url');
     if (customUrl && customUrl.trim()) {
       return customUrl.trim().replace(/\/+$/, '');
     }
-    if (host.includes('vercel.app') || host.includes('web.app') || host.includes('firebaseapp.com')) {
-      return '/api';
-    }
     if (host && host !== 'localhost' && host !== '127.0.0.1') {
+      if (host.includes('vercel.app') || host.includes('web.app') || host.includes('firebaseapp.com')) {
+        return '/api';
+      }
       return `http://${host}:4000/api`;
     }
+  }
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '');
   }
   return 'http://localhost:4000/api';
 }

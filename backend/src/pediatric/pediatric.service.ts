@@ -7,8 +7,8 @@ import {
   PediatricDosingCalculation,
   NeonatalAminoglycosideDosing,
   PhototherapyNomogramAssessment
-} from './pediatric.types.ts';
-import { PediatricMathEngine } from './pediatric-math.engine.ts';
+} from './pediatric.types';
+import { PediatricMathEngine } from './pediatric-math.engine';
 
 export class PediatricService {
   private static instance: PediatricService;

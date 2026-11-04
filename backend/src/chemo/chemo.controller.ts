@@ -1,7 +1,7 @@
 // REST Controller for Chemotherapy Oncology Precision Dosing Engine
 // Strictly ZERO emojis in code and text. Strictly NO parentheses in Khmer text.
 
-import { ChemoService } from './chemo.service.ts';
+import { ChemoService } from './chemo.service';
 
 export class ChemoController {
   private readonly chemoService: ChemoService;

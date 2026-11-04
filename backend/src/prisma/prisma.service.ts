@@ -41,7 +41,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
     try {
       const tableCheck: any[] = await this.$queryRawUnsafe(
-        `SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'User'`
+        `SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND (table_name = 'users' OR table_name = 'User')`
       );
 
       if (!tableCheck || tableCheck.length === 0) {
