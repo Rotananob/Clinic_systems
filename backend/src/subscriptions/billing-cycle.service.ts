@@ -380,6 +380,41 @@ export class BillingCycleService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
+   * Public SaaS plan tiers with dynamic pricing and quotas for guest visitors.
+   */
+  getPublicPlans() {
+    const plans = Object.values(SAAS_PLANS).map((p) => {
+      const rank = PLAN_TIER_RANK[p.tier] ?? 0;
+      const annualPriceUsd = p.priceUsd > 0 ? Math.round(p.priceUsd * 12 * 0.8) : 0;
+      const originalAnnualUsd = p.priceUsd * 12;
+      const annualSavingsUsd = originalAnnualUsd - annualPriceUsd;
+
+      return {
+        tier: p.tier,
+        nameKh: p.nameKh,
+        nameEn: p.nameEn,
+        priceUsd: p.priceUsd,
+        annualPriceUsd,
+        originalAnnualUsd,
+        annualSavingsUsd,
+        annualDiscountPercent: p.priceUsd > 0 ? 20 : 0,
+        maxMonthlyPatients: p.maxMonthlyPatients,
+        maxDailyKhqr: p.maxDailyKhqr,
+        maxStaffAccounts: p.maxStaffAccounts,
+        telegramTopicsAllowed: p.telegramTopicsAllowed,
+        voiceCallAllowed: p.voiceCallAllowed,
+        inventoryFullAllowed: p.inventoryFullAllowed,
+        rank,
+      };
+    });
+
+    return {
+      success: true,
+      plans,
+    };
+  }
+
+  /**
    * Fetches past billing invoice records for the current tenant.
    */
   async getSubscriptionHistory(tenantId: string) {

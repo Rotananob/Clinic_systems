@@ -25,6 +25,10 @@ import {
   Home,
   CreditCard,
   KeyRound,
+  Building2,
+  Sparkles,
+  Clipboard,
+  ClipboardCheck,
 } from 'lucide-react';
 
 const FORGOT_PASSWORD_SESSION_KEY = 'krupet_forgot_password_session_v1';
@@ -515,6 +519,47 @@ export default function LoginPage() {
                 </span>
               </div>
             )}
+
+            {/* 1-Tap Quick Fill Demo Clinic Credentials (Mobile Optimized) */}
+            <div className="mb-4 p-3 bg-stone-50 border border-stone-200/80 rounded-2xl">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-stone-800">
+                  <Building2 className="w-3.5 h-3.5 text-teal-800" />
+                  <span>{isKm ? 'គណនីគ្លីនិកសាកល្បង (1-Tap Login)' : '1-Tap Demo Credentials'}</span>
+                </div>
+                <span className="text-[10px] text-teal-800 font-bold bg-teal-50 px-2 py-0.5 rounded-full border border-teal-200/50">
+                  Rotana Clinic
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmail('owner@clinic.com');
+                    setPassword('Owner@DemoClinic#2026');
+                  }}
+                  className="p-2 text-left bg-white border border-stone-200 hover:border-teal-700 hover:bg-teal-50/50 rounded-xl transition-all text-stone-800 active:scale-95 shadow-xs"
+                >
+                  <div className="text-[11px] font-bold text-teal-900 truncate">
+                    {isKm ? 'ម្ចាស់គ្លីនិក (Owner)' : 'Clinic Owner'}
+                  </div>
+                  <div className="text-[9px] text-stone-500 font-mono truncate">owner@clinic.com</div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmail('doctor.sok@clinic.com');
+                    setPassword('Doctor@DemoClinic#2026');
+                  }}
+                  className="p-2 text-left bg-white border border-stone-200 hover:border-teal-700 hover:bg-teal-50/50 rounded-xl transition-all text-stone-800 active:scale-95 shadow-xs"
+                >
+                  <div className="text-[11px] font-bold text-teal-900 truncate">
+                    {isKm ? 'វេជ្ជបណ្ឌិត (Doctor)' : 'Dr. Sokha Rath'}
+                  </div>
+                  <div className="text-[9px] text-stone-500 font-mono truncate">doctor.sok@clinic.com</div>
+                </button>
+              </div>
+            </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>

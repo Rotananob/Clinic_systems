@@ -1088,6 +1088,39 @@ class ApiClient {
         method: 'POST',
         body: JSON.stringify(data),
       }),
+    getPublicPlans: () =>
+      this.request<{
+        success: boolean;
+        plans: Array<{
+          tier: string;
+          nameKh: string;
+          nameEn: string;
+          priceUsd: number;
+          annualPriceUsd: number;
+          originalAnnualUsd: number;
+          annualSavingsUsd: number;
+          annualDiscountPercent: number;
+          maxMonthlyPatients: number;
+          maxDailyKhqr: number;
+          maxStaffAccounts: number;
+          telegramTopicsAllowed: boolean;
+          voiceCallAllowed: boolean;
+          inventoryFullAllowed: boolean;
+          rank: number;
+        }>;
+      }>('/subscriptions/public-plans'),
+    getPublicStatus: (tranId: string) =>
+      this.request<{
+        found: boolean;
+        active?: boolean;
+        tranId?: string;
+        invoiceNumber?: string;
+        planTier?: string;
+        billingCycle?: string;
+        amountUsd?: number;
+        isExpired?: boolean;
+        expiresAt?: string;
+      }>(`/subscriptions/public-status/${tranId}`),
     verifySettlement: (data: {
       subscriptionId: string;
       tranId?: string;

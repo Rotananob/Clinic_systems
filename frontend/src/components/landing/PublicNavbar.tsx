@@ -7,7 +7,7 @@ import { useTranslation } from '../../context/I18nContext';
 import { useAuth } from '../../context/AuthContext';
 import { LanguageSwitcher } from '../common/LanguageSwitcher';
 import { ClinicLogo } from '../common/ClinicLogo';
-import { ArrowRight, Menu, X, LayoutDashboard } from 'lucide-react';
+import { ArrowRight, Menu, X, LayoutDashboard, Sparkles, Cloud, Wrench } from 'lucide-react';
 
 export const PublicNavbar: React.FC = () => {
   const { locale } = useTranslation();
@@ -48,11 +48,21 @@ export const PublicNavbar: React.FC = () => {
           </Link>
           <Link
             href="/explore-tools"
-            className={`hover:text-stone-900 transition-colors ${
+            className={`hover:text-stone-900 transition-colors flex items-center gap-1.5 ${
               pathname === '/explore-tools' ? 'text-teal-800 font-bold' : ''
             }`}
           >
-            {isKm ? 'រុករកឧបករណ៍' : 'Explore Tools'}
+            <Wrench className="w-3.5 h-3.5 text-teal-700" />
+            <span>{isKm ? 'រុករកឧបករណ៍' : 'Explore Tools'}</span>
+          </Link>
+          <Link
+            href="/paas"
+            className={`hover:text-stone-900 transition-colors flex items-center gap-1.5 ${
+              pathname === '/paas' ? 'text-teal-800 font-bold' : ''
+            }`}
+          >
+            <Cloud className="w-3.5 h-3.5 text-teal-700" />
+            <span>{isKm ? 'PaaS សហគ្រាស' : 'Enterprise PaaS'}</span>
           </Link>
           <Link
             href="/#security"
@@ -76,8 +86,8 @@ export const PublicNavbar: React.FC = () => {
           </Link>
         </nav>
 
-        {/* Right CTA Actions: Separated Desktop vs Clean Mobile Menu Only */}
-        <div className="flex items-center gap-3">
+        {/* Right CTA Actions: Separated Desktop vs Mobile */}
+        <div className="flex items-center gap-2 sm:gap-3">
           {/* Desktop Only Actions */}
           <div className="hidden md:flex items-center gap-3">
             <LanguageSwitcher />
@@ -110,11 +120,38 @@ export const PublicNavbar: React.FC = () => {
             )}
           </div>
 
-          {/* Mobile Site Header Bar: Clean Menu Icon ONLY */}
-          <div className="flex md:hidden items-center">
+          {/* Mobile Site Header Bar: Instant Action Buttons + Menu Icon */}
+          <div className="flex md:hidden items-center gap-1.5">
+            <LanguageSwitcher />
+
+            {user ? (
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-teal-800 text-white rounded-lg text-[11px] font-bold shadow-xs active:scale-95"
+              >
+                <LayoutDashboard className="w-3 h-3" />
+                <span>{isKm ? 'ផ្ទាំងគ្រប់គ្រង' : 'Dashboard'}</span>
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="px-2.5 py-1.5 text-[11px] font-semibold text-stone-700 bg-stone-100 hover:bg-stone-200 border border-stone-200 rounded-lg active:scale-95"
+                >
+                  {isKm ? 'ចូល' : 'Sign In'}
+                </Link>
+                <Link
+                  href="/register"
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-teal-800 text-white rounded-lg text-[11px] font-bold shadow-xs active:scale-95"
+                >
+                  <span>{isKm ? 'ចុះឈ្មោះ' : 'Register'}</span>
+                </Link>
+              </>
+            )}
+
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 text-stone-700 hover:text-stone-900 rounded-xl hover:bg-stone-100 border border-stone-200"
+              className="p-1.5 text-stone-700 hover:text-stone-900 rounded-lg hover:bg-stone-100 border border-stone-200 ml-1"
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -125,63 +162,76 @@ export const PublicNavbar: React.FC = () => {
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-[#E7E1D4] bg-[#FAF7F2] px-4 py-4 space-y-3">
-          <Link
-            href="/#features"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 text-xs font-semibold text-stone-700 hover:text-teal-800"
-          >
-            {isKm ? 'លក្ខណៈពិសេស' : 'Features'}
-          </Link>
-          <Link
-            href="/#how-it-works"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 text-xs font-semibold text-stone-700 hover:text-teal-800"
-          >
-            {isKm ? 'របៀបដំណើរការ' : 'How It Works'}
-          </Link>
-          <Link
-            href="/pricing"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 text-xs font-semibold text-stone-700 hover:text-teal-800"
-          >
-            {isKm ? 'គម្រោងតម្លៃ' : 'Pricing Matrix'}
-          </Link>
+        <div className="md:hidden border-t border-[#E7E1D4] bg-[#FAF7F2] px-4 py-4 space-y-2.5 shadow-lg">
           <Link
             href="/explore-tools"
             onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 text-xs font-semibold text-stone-700 hover:text-teal-800"
+            className="flex items-center justify-between py-2 text-xs font-bold text-teal-900 bg-teal-50/70 border border-teal-200/60 rounded-xl px-3"
           >
-            {isKm ? 'រុករកឧបករណ៍' : 'Explore Tools'}
+            <div className="flex items-center gap-2">
+              <Wrench className="w-4 h-4 text-teal-700" />
+              <span>{isKm ? 'រុករកឧបករណ៍គ្លីនិក ៣០+ មុខងារ' : 'Explore 30+ Clinical Tools'}</span>
+            </div>
+            <ArrowRight className="w-3.5 h-3.5 text-teal-700" />
           </Link>
+
+          <Link
+            href="/pricing"
+            onClick={() => setMobileMenuOpen(false)}
+            className="flex items-center justify-between py-2 text-xs font-semibold text-stone-800 rounded-xl px-3 hover:bg-stone-100"
+          >
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-amber-600" />
+              <span>{isKm ? 'គម្រោងតម្លៃសេវាកម្ម SaaS ($0, $5, $8, $12...)' : 'Pricing Matrix ($0, $5, $8, $12...)'}</span>
+            </div>
+            <ArrowRight className="w-3.5 h-3.5 text-stone-400" />
+          </Link>
+
+          <Link
+            href="/paas"
+            onClick={() => setMobileMenuOpen(false)}
+            className="flex items-center justify-between py-2 text-xs font-semibold text-stone-800 rounded-xl px-3 hover:bg-stone-100"
+          >
+            <div className="flex items-center gap-2">
+              <Cloud className="w-4 h-4 text-teal-700" />
+              <span>{isKm ? 'ហេដ្ឋារចនាសម្ព័ន្ធ Cloud PaaS សហគ្រាស' : 'Cloud PaaS Enterprise Grid'}</span>
+            </div>
+            <ArrowRight className="w-3.5 h-3.5 text-stone-400" />
+          </Link>
+
+          <Link
+            href="/#features"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block py-2 text-xs font-semibold text-stone-700 hover:text-teal-800 px-3"
+          >
+            {isKm ? 'លក្ខណៈពិសេស' : 'Features'}
+          </Link>
+
+          <Link
+            href="/#how-it-works"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block py-2 text-xs font-semibold text-stone-700 hover:text-teal-800 px-3"
+          >
+            {isKm ? 'របៀបដំណើរការ' : 'How It Works'}
+          </Link>
+
           <Link
             href="/#security"
             onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 text-xs font-semibold text-stone-700 hover:text-teal-800"
+            className="block py-2 text-xs font-semibold text-stone-700 hover:text-teal-800 px-3"
           >
             {isKm ? 'សន្តិសុខទិន្នន័យ' : 'Security'}
           </Link>
+
           <Link
             href="/#faq"
             onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 text-xs font-semibold text-stone-700 hover:text-teal-800"
+            className="block py-2 text-xs font-semibold text-stone-700 hover:text-teal-800 px-3"
           >
             {isKm ? 'សំណួរញឹកញាប់' : 'FAQ'}
           </Link>
-          <Link
-            href="/help"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 text-xs font-semibold text-stone-700 hover:text-teal-800"
-          >
-            {isKm ? 'មជ្ឈមណ្ឌលជំនួយ' : 'Help Center'}
-          </Link>
 
-          <div className="pt-2 flex items-center justify-between border-t border-[#E7E1D4]">
-            <span className="text-xs text-stone-500 font-medium">{isKm ? 'ភាសា:' : 'Language:'}</span>
-            <LanguageSwitcher />
-          </div>
-
-          <div className="pt-2 border-t border-[#E7E1D4] space-y-2">
+          <div className="pt-3 border-t border-[#E7E1D4] space-y-2">
             {user ? (
               <Link
                 href="/dashboard"
@@ -191,22 +241,22 @@ export const PublicNavbar: React.FC = () => {
                 {isKm ? 'ចូលទៅកាន់ Dashboard គ្លីនិក' : 'Open Clinic Dashboard'}
               </Link>
             ) : (
-              <>
+              <div className="grid grid-cols-2 gap-2">
                 <Link
                   href="/login"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="w-full py-2 bg-stone-100 text-stone-800 text-xs font-semibold rounded-xl text-center block"
+                  className="py-2.5 bg-stone-100 text-stone-800 text-xs font-bold rounded-xl text-center block border border-stone-200"
                 >
                   {isKm ? 'ចូលប្រើប្រាស់' : 'Sign In'}
                 </Link>
                 <Link
                   href="/register"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="w-full py-2.5 bg-teal-800 text-white text-xs font-bold rounded-xl text-center block shadow-xs"
+                  className="py-2.5 bg-teal-800 text-white text-xs font-bold rounded-xl text-center block shadow-xs"
                 >
-                  {isKm ? 'ឥតគិតថ្លៃរហូត' : 'Start Free Forever'}
+                  {isKm ? 'ចុះឈ្មោះឥតគិតថ្លៃ' : 'Start Free'}
                 </Link>
-              </>
+              </div>
             )}
           </div>
         </div>

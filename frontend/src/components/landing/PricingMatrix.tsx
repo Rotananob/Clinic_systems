@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useTranslation } from '../../context/I18nContext';
 import { useAuth } from '../../context/AuthContext';
+import { api } from '../../lib/api';
 import { SubscriptionCheckoutModal } from '../subscriptions/SubscriptionCheckoutModal';
 import {
   Check,
@@ -97,7 +98,7 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
     'STARTER_5' | 'PRO_8' | 'ENTERPRISE_12' | 'SPECIALIST_15' | 'UNLIMITED_20'
   >('PRO_8');
 
-  const plans: PricingPlan[] = [
+  const basePlans: PricingPlan[] = [
     {
       id: 'FREE',
       nameKh: 'គម្រោង Free Forever - ឥតគិតថ្លៃរហូត',
@@ -376,6 +377,38 @@ export const PricingMatrix: React.FC<{ compact?: boolean }> = ({ compact = false
       ],
     },
   ];
+
+  const [livePlans, setLivePlans] = useState<any[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    api.subscriptions.getPublicPlans()
+      .then((res: any) => {
+        if (active && res?.success && Array.isArray(res.plans)) {
+          setLivePlans(res.plans);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const plans: PricingPlan[] = useMemo(() => {
+    if (!livePlans.length) return basePlans;
+    return basePlans.map((bp) => {
+      const match = livePlans.find((lp: any) => lp.tier === bp.id);
+      if (!match) return bp;
+      return {
+        ...bp,
+        monthlyUsd: match.priceUsd,
+        yearlyUsd: match.annualPriceUsd,
+        originalYearlyUsd: match.priceUsd * 12,
+        yearlySavingsUsd: match.priceUsd * 12 - match.annualPriceUsd,
+        equivalentMonthlyUsd: (match.annualPriceUsd / 12).toFixed(2),
+      };
+    });
+  }, [livePlans, basePlans]);
 
   // 26 Real System Tools and Modules
   const systemTools: SystemToolItem[] = [

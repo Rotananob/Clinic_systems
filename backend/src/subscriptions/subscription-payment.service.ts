@@ -1072,4 +1072,25 @@ export class SubscriptionPaymentService {
     };
   }
 
+  /**
+   * Query status of an in-flight public checkout session.
+   */
+  getPublicCheckoutStatus(tranId: string) {
+    const session = this.publicCheckoutSessions.get(tranId);
+    if (!session) {
+      return { found: false, active: false };
+    }
+    const isExpired = session.expiresAt && new Date() > session.expiresAt;
+    return {
+      found: true,
+      tranId: session.tranId,
+      invoiceNumber: session.invoiceNumber,
+      planTier: session.planTier,
+      billingCycle: session.billingCycle,
+      amountUsd: session.amountUsd,
+      isExpired,
+      expiresAt: session.expiresAt?.toISOString(),
+    };
+  }
+
 }

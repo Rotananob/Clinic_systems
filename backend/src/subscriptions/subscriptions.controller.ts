@@ -186,4 +186,16 @@ export class SubscriptionsController {
     return this.subscriptionPaymentService.verifyAndAutoRegister(dto);
   }
 
+  @ApiOperation({ summary: 'Get all public subscription plan tiers with real backend pricing and quotas' })
+  @Get('public-plans')
+  getPublicPlans() {
+    return this.billingCycleService.getPublicPlans();
+  }
+
+  @ApiOperation({ summary: 'Check live status of public checkout session' })
+  @Get('public-status/:tranId')
+  getPublicStatus(@Param('tranId') tranId: string) {
+    return this.subscriptionPaymentService.getPublicCheckoutStatus(tranId);
+  }
+
 }

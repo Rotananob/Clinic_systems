@@ -1720,14 +1720,14 @@
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 290px; margin-top: 10px;">
-              <a href="http://172.20.10.2:3000/login" style="display: block; background: #FFFFFF; color: #047857; text-decoration: none; font-size: 14px; font-weight: 700; padding: 13px 20px; border-radius: 999px; text-align: center; box-shadow: 0 4px 16px rgba(0,0,0,0.3); transition: transform 0.15s;">
-                ចូលប្រើប្រព័ន្ធគ្រប់គ្រងគ្លីនិកពេញលេញ (Login Web Portal)
-              </a>
-              <a href="http://172.20.10.2:3000/register" style="display: block; background: rgba(255, 255, 255, 0.12); color: #5EEAD4; border: 1px solid rgba(94, 234, 212, 0.4); text-decoration: none; font-size: 13px; font-weight: 700; padding: 11px 18px; border-radius: 999px; text-align: center;">
+              <button onclick="openRealApp('/login')" style="display: block; width: 100%; background: #FFFFFF; color: #047857; border: none; font-size: 14px; font-weight: 700; padding: 13px 20px; border-radius: 999px; text-align: center; box-shadow: 0 4px 16px rgba(0,0,0,0.3); cursor: pointer; transition: transform 0.15s;">
+                ចូលប្រើប្រព័ន្ធគ្រប់គ្រងគ្លីនិក (Login Web Portal)
+              </button>
+              <button onclick="openRealApp('/register')" style="display: block; width: 100%; background: rgba(255, 255, 255, 0.15); color: #5EEAD4; border: 1px solid rgba(94, 234, 212, 0.5); font-size: 13px; font-weight: 700; padding: 11px 18px; border-radius: 999px; text-align: center; cursor: pointer;">
                 ចុះឈ្មោះគ្លីនិកថ្មី (Register Clinic)
-              </a>
-              <button class="btn-splash-enter" onclick="navigateToView('viewHub'); navigateToTab('hub');" id="btnSplashEnter" style="width: 100%; padding: 11px 20px; font-size: 13px;">
-                បើកផ្ទាំង Mobile Clinical Station
+              </button>
+              <button class="btn-splash-enter" onclick="openRealApp('/')" id="btnSplashEnter" style="width: 100%; padding: 11px 20px; font-size: 13px; cursor: pointer;">
+                ចាប់ផ្តើមចូលប្រើប្រាស់ (Launch Real App)
               </button>
             </div>
           </div>
@@ -2531,6 +2531,11 @@
     let ecgAnimationId = null;
     let autoUpdateEnabled = localStorage.getItem('krupet_auto_update') !== 'false';
     let selectedUpgradePlan = null;
+
+    function openRealApp(path = '') {
+      const host = window.location.hostname || '172.20.10.2';
+      window.location.href = 'http://' + host + ':3000' + path;
+    }
 
     // Clock
     function updateClock() {

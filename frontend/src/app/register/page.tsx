@@ -148,6 +148,7 @@ function saveVerificationSession(data: {
   email: string;
   password: string;
   adminName: string;
+  clinicName?: string;
   selectedPlan: string;
   expiresAt: number;
 }) {
@@ -209,6 +210,7 @@ function RegisterContent() {
     }
   }, [searchParams]);
 
+  const [clinicName, setClinicName] = useState('');
   const [adminName, setAdminName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -254,6 +256,7 @@ function RegisterContent() {
         if (data.email) setEmail(data.email);
         if (data.password) setPassword(data.password);
         if (data.adminName) setAdminName(data.adminName);
+        if (data.clinicName) setClinicName(data.clinicName);
         if (data.selectedPlan) setSelectedPlan(data.selectedPlan);
         setStep('VERIFY_CODE');
         const remaining = Math.max(1, Math.round((data.expiresAt - now) / 1000));
@@ -328,7 +331,7 @@ function RegisterContent() {
             billingCycle: isYearly ? 'ANNUAL' : 'MONTHLY',
             email: email.trim().toLowerCase(),
             password,
-            clinicNameEn: adminName.trim() ? `${adminName.trim()} Clinic` : 'New Clinic',
+            clinicNameEn: clinicName.trim() || (adminName.trim() ? `${adminName.trim()} Clinic` : 'New Clinic'),
             adminName: adminName.trim(),
           });
           if (res && res.accessToken) {
@@ -436,6 +439,7 @@ function RegisterContent() {
           email: cleanEmail,
           password,
           adminName,
+          clinicName,
           selectedPlan,
           expiresAt,
         });
@@ -641,7 +645,7 @@ function RegisterContent() {
           billingCycle: isYearly ? 'ANNUAL' : 'MONTHLY',
           email: email.trim().toLowerCase(),
           password,
-          clinicNameEn: adminName.trim() ? `${adminName.trim()} Clinic` : 'New Clinic',
+          clinicNameEn: clinicName.trim() || (adminName.trim() ? `${adminName.trim()} Clinic` : 'New Clinic'),
           adminName: adminName.trim(),
         });
         if (res && res.accessToken) {
@@ -717,6 +721,7 @@ function RegisterContent() {
           email: email.trim().toLowerCase(),
           password,
           adminName,
+          clinicName,
           selectedPlan,
           expiresAt,
         });
@@ -1082,6 +1087,25 @@ function RegisterContent() {
                   <p className="text-[11px] text-center text-stone-500 pt-1">
                     {isKm ? 'លេខកូដសម្ងាត់ ៦ ខ្ទង់ដែលបានផ្ញើទៅ Gmail' : '6-digit security code dispatched to Gmail'}
                   </p>
+                  <div className="flex justify-center pt-1">
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          const txt = await navigator.clipboard.readText();
+                          const clean = txt.replace(/\D/g, '').slice(0, 6);
+                          if (clean) {
+                            setVerificationCode(clean);
+                            if (clean.length === 6) handleVerifyAndRegister(undefined, clean);
+                          }
+                        } catch {}
+                      }}
+                      className="px-3 py-1.5 bg-stone-100 hover:bg-stone-200 text-teal-900 border border-stone-200 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors shadow-2xs active:scale-95"
+                    >
+                      <Copy className="w-3.5 h-3.5 text-teal-700" />
+                      <span>{isKm ? 'បិទភ្ជាប់លេខកូដ ៦ ខ្ទង់ (Paste Code)' : 'Paste 6-digit Code'}</span>
+                    </button>
+                  </div>
                 </div>
 
                 <div className="space-y-3">
@@ -1213,11 +1237,80 @@ function RegisterContent() {
                   </div>
                 </div>
 
-                {/* 2. Admin Name */}
+                {/* 1-Tap Quick Fill Demo Info (Mobile Friendly) */}
+                <div className="flex items-center justify-between p-2.5 bg-stone-50 border border-stone-200 rounded-xl">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-stone-800">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                    <span>{isKm ? 'បំពេញទិន្នន័យគំរូសាកល្បង' : 'Quick Fill Demo Info'}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const rand = Math.floor(1000 + Math.random() * 9000);
+                      setClinicName('មន្ទីរសម្រាកព្យាបាល រតនៈ');
+                      setAdminName('វេជ្ជបណ្ឌិត សុខ សាន');
+                      setEmail(`rotana.clinic.demo${rand}@gmail.com`);
+                      setPassword('RotanaDemo@2026#');
+                    }}
+                    className="px-2.5 py-1 bg-white border border-stone-300 hover:border-teal-700 text-teal-900 rounded-lg text-[11px] font-bold shadow-xs active:scale-95"
+                  >
+                    {isKm ? 'បំពេញស្វ័យប្រវត្ត' : 'Auto-Fill'}
+                  </button>
+                </div>
+
+                {/* 2. Clinic Name */}
                 <div className="space-y-1">
-                  <label className="block text-xs font-bold text-stone-700">
-                    {isKm ? '២. ឈ្មោះអ្នកគ្រប់គ្រងគ្លីនិក - អាចបំពេញពេលក្រោយ' : '2. Administrator Name (Optional)'}
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-bold text-stone-700">
+                      {isKm ? '២. ឈ្មោះគ្លីនិក ឬមន្ទីរសម្រាកព្យាបាល' : '2. Clinic or Hospital Name'} <span className="text-rose-500">*</span>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          const txt = await navigator.clipboard.readText();
+                          if (txt) setClinicName(txt.trim());
+                        } catch {}
+                      }}
+                      className="text-[10px] text-teal-800 hover:underline font-semibold flex items-center gap-0.5"
+                    >
+                      <Copy className="w-3 h-3" />
+                      <span>{isKm ? 'បិទភ្ជាប់ (Paste)' : 'Paste'}</span>
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <Building2 className="w-4 h-4 text-stone-400 absolute left-3.5 top-3" />
+                    <input
+                      type="text"
+                      required
+                      value={clinicName}
+                      onChange={(e) => setClinicName(e.target.value)}
+                      placeholder={isKm ? 'ឧទាហរណ៍៖ មន្ទីរសម្រាកព្យាបាល រតនៈ' : 'Rotana Medical Center'}
+                      className="w-full pl-10 pr-4 py-2.5 bg-[#FAF7F2] border border-[#DDD5C5] rounded-xl text-xs sm:text-sm text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-teal-700 transition"
+                    />
+                  </div>
+                </div>
+
+                {/* 3. Admin / Doctor Name */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-bold text-stone-700">
+                      {isKm ? '៣. ឈ្មោះវេជ្ជបណ្ឌិត ឬអ្នកគ្រប់គ្រង' : '3. Doctor or Administrator Name'}
+                    </label>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          const txt = await navigator.clipboard.readText();
+                          if (txt) setAdminName(txt.trim());
+                        } catch {}
+                      }}
+                      className="text-[10px] text-teal-800 hover:underline font-semibold flex items-center gap-0.5"
+                    >
+                      <Copy className="w-3 h-3" />
+                      <span>{isKm ? 'បិទភ្ជាប់ (Paste)' : 'Paste'}</span>
+                    </button>
+                  </div>
                   <div className="relative">
                     <User className="w-4 h-4 text-stone-400 absolute left-3.5 top-3" />
                     <input
@@ -1230,11 +1323,26 @@ function RegisterContent() {
                   </div>
                 </div>
 
-                {/* 3. Gmail Address */}
+                {/* 4. Gmail Address */}
                 <div className="space-y-1">
-                  <label className="block text-xs font-bold text-stone-700">
-                    {isKm ? '៣. អាសយដ្ឋាន Gmail ផ្លូវការ' : '3. Official Gmail Address'} <span className="text-rose-500">*</span>
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-bold text-stone-700">
+                      {isKm ? '៤. អាសយដ្ឋាន Gmail ផ្លូវការ' : '4. Official Gmail Address'} <span className="text-rose-500">*</span>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          const txt = await navigator.clipboard.readText();
+                          if (txt) setEmail(txt.trim());
+                        } catch {}
+                      }}
+                      className="text-[10px] text-teal-800 hover:underline font-semibold flex items-center gap-0.5"
+                    >
+                      <Copy className="w-3 h-3" />
+                      <span>{isKm ? 'បិទភ្ជាប់ (Paste)' : 'Paste'}</span>
+                    </button>
+                  </div>
                   <div className="relative">
                     <Mail className="w-4 h-4 text-stone-400 absolute left-3.5 top-3" />
                     <input
@@ -1253,10 +1361,10 @@ function RegisterContent() {
                   </p>
                 </div>
 
-                {/* 4. Password */}
+                {/* 5. Password */}
                 <div className="space-y-1">
                   <label className="block text-xs font-bold text-stone-700">
-                    {isKm ? '៤. ពាក្យសម្ងាត់' : '4. Secure Password'} <span className="text-rose-500">*</span>
+                    {isKm ? '៥. ពាក្យសម្ងាត់' : '5. Secure Password'} <span className="text-rose-500">*</span>
                   </label>
                   <div className="relative">
                     <Lock className="w-4 h-4 text-stone-400 absolute left-3.5 top-3" />

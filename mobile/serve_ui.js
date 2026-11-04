@@ -20,21 +20,31 @@ const server = http.createServer((req, res) => {
 
   const clientHost = req.headers.host ? req.headers.host.split(':')[0] : '172.20.10.2';
 
-  // Direct Shortcut to Full Web Portal
-  if (req.url === '/app' || req.url === '/web' || req.url === '/portal' || req.url === '/login') {
-    res.writeHead(302, { Location: `http://${clientHost}:3000/login` });
+  // Direct Redirect to Real Clinical Platform (Frontend on port 3000)
+  if (req.url === '/' || req.url === '/app' || req.url === '/web' || req.url === '/portal' || req.url === '/home') {
+    res.writeHead(302, { Location: `http://${clientHost}:3000/` });
     res.end();
     return;
   }
 
-  if (req.url === '/register') {
-    res.writeHead(302, { Location: `http://${clientHost}:3000/register` });
+  if (
+    req.url === '/login' ||
+    req.url === '/register' ||
+    req.url === '/dashboard' ||
+    req.url === '/explore-tools' ||
+    req.url === '/pricing' ||
+    req.url === '/paas' ||
+    req.url === '/settings' ||
+    req.url.startsWith('/dashboard') ||
+    req.url.startsWith('/register?')
+  ) {
+    res.writeHead(302, { Location: `http://${clientHost}:3000${req.url}` });
     res.end();
     return;
   }
 
-  // Simulator Web Interface
-  if (req.url === '/' || req.url === '/simulator.html' || req.url.startsWith('/?')) {
+  // Simulator Web Interface (Only when explicitly navigating to /simulator)
+  if (req.url === '/simulator' || req.url === '/simulator.html' || req.url.startsWith('/simulator?')) {
     fs.readFile(HTML_FILE, (err, content) => {
       if (err) {
         res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
