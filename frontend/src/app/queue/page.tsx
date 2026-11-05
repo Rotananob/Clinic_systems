@@ -378,7 +378,7 @@ export default function QueuePage() {
               {waitingCount > 0
                 ? t.queue.callNext
                 : isKm
-                ? 'ហៅវេនបន្ទាប់ (ជួរទទេ)'
+                ? 'ហៅវេនបន្ទាប់ - ជួរទទេ'
                 : 'Call Next (Empty)'}
             </span>
           </button>

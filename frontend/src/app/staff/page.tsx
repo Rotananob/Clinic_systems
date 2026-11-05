@@ -240,11 +240,11 @@ export default function StaffManagementPage() {
                 Expert Workspace Mode
               </span>
               <h2 className="text-xs sm:text-sm font-bold text-stone-900">
-                ប្រព័ន្ធកំណត់សិទ្ធិស្វ័យប្រវត្តិតាមជំនាញ (Expert-Only Focus)
+                ប្រព័ន្ធកំណត់សិទ្ធិស្វ័យប្រវត្តិតាមជំនាញ - Expert-Only Focus
               </h2>
             </div>
             <p className="text-xs text-stone-600 leading-relaxed max-w-3xl">
-              គណនីបុគ្គលិកដែលបានបង្កើតនៅទីនេះ ពេល Login ចូលប្រើប្រាស់នឹងទទួលបានតែឧបករណ៍ចំគោលដៅការងាររបស់ខ្លួន (Doctor: ពិគ្រោះ & ព្យាបាល, Pharmacist: ឱសថ & ស្តុក, Cashier: គិតលុយ & KHQR, Receptionist: ចុះឈ្មោះ & Queue) ដោយលាក់ប៊ូតុងមិនចាំបាច់ដើម្បីការពារការវង្វេង។
+              គណនីបុគ្គលិកដែលបានបង្កើតនៅទីនេះ ពេល Login ចូលប្រើប្រាស់នឹងទទួលបានតែឧបករណ៍ចំគោលដៅការងាររបស់ខ្លួន ដូចជា Doctor: ពិគ្រោះ & ព្យាបាល, Pharmacist: ឱសថ & ស្តុក, Cashier: គិតលុយ & KHQR, Receptionist: ចុះឈ្មោះ & Queue ដោយលាក់ប៊ូតុងមិនចាំបាច់ដើម្បីការពារការវង្វេង។
             </p>
           </div>
           <div className="text-[11px] font-semibold text-teal-900 bg-white/80 border border-teal-200 px-3 py-1.5 rounded-xl shrink-0">

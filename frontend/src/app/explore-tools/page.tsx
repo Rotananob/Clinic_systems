@@ -375,7 +375,7 @@ export default function ExploreToolsPage() {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
   const categories = [
-    { id: 'all', labelKh: 'ឧបករណ៍ទាំងអស់ (៣០+)', labelEn: 'All Arsenal (30+)' },
+    { id: 'all', labelKh: 'ឧបករណ៍ទាំងអស់ - ៣០ មុខងារ', labelEn: 'All Arsenal (30+)' },
     { id: 'outpatient', labelKh: 'ពិគ្រោះក្រៅ & ជួររង់ចាំ', labelEn: 'Outpatient & Queue' },
     { id: 'pharmacy', labelKh: 'ឱសថស្ថាន & ឃ្លាំងស្តុក', labelEn: 'Pharmacy & Stock' },
     { id: 'diagnostic', labelKh: 'PACS & មន្ទីរពិសោធន៍', labelEn: 'PACS & Laboratory' },
@@ -525,7 +525,7 @@ export default function ExploreToolsPage() {
               className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-stone-950 font-black text-xs transition-all shadow-md active:scale-95 cursor-pointer"
             >
               <Zap className="w-3.5 h-3.5 text-stone-950 fill-stone-950" />
-              <span>{isKm ? 'ដំឡើងទៅ Pro ($8/ខែ)' : 'Upgrade to Pro ($8/mo)'}</span>
+              <span>{isKm ? 'ដំឡើងទៅ Pro - $8 ក្នុងមួយខែ' : 'Upgrade to Pro ($8/mo)'}</span>
             </button>
             <Link
               href="/pricing"

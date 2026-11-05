@@ -70,7 +70,7 @@ export default function BillingPage() {
     phone: '',
     amount: '',
     currency: 'USD',
-    reason: 'សេវាពិនិត្យ និងព្យាបាល (Consultation & Care)',
+    reason: 'សេវាពិនិត្យ និងព្យាបាល - Consultation & Care',
   });
 
   // KHQR modal
@@ -186,7 +186,7 @@ export default function BillingPage() {
   const canGenerateKhqr = isBillingStaff && !isKhqrQuotaExhausted;
   const khqrRestrictedMsg = isKhqrQuotaExhausted
     ? (isKm
-        ? 'គណនីវាយតម្លៃប្រព័ន្ធ (Test Account) បានប្រើប្រាស់កូតាបង្កើត KHQR ចំនួន ៥ ដងក្នុងមួយថ្ងៃអស់ហើយ ដើម្បីការពារការ Spam។ សូមរង់ចាំថ្ងៃស្អែក ឬទូទាត់ជាប្រាក់សុទ្ធ។'
+        ? 'គណនីវាយតម្លៃប្រព័ន្ធ - Test Account បានប្រើប្រាស់កូតាបង្កើត KHQR ចំនួន ៥ ដងក្នុងមួយថ្ងៃអស់ហើយ ដើម្បីការពារការ Spam។ សូមរង់ចាំថ្ងៃស្អែក ឬទូទាត់ជាប្រាក់សុទ្ធ។'
         : 'Daily KHQR limit (5/day) has been reached for this test account to prevent spam abuse. Please wait until tomorrow or collect cash.')
     : (!isBillingStaff
         ? (isKm ? 'អ្នកមិនមានសិទ្ធិបង្កើត ឬដំណើរការការទូទាត់ KHQR ឡើយ។' : 'Your role does not have permission to process KHQR billing.')
@@ -252,7 +252,7 @@ export default function BillingPage() {
         phone: '',
         amount: '',
         currency: 'USD',
-        reason: 'សេវាពិនិត្យ និងព្យាបាល (Consultation & Care)',
+        reason: 'សេវាពិនិត្យ និងព្យាបាល - Consultation & Care',
       });
       setIsQuickModalOpen(false);
       fetchInvoices();
@@ -352,7 +352,7 @@ export default function BillingPage() {
         <div className="flex items-center gap-2">
           <RestrictedActionGuard
             isAllowed={canCreateInvoice}
-            actionNameKh="បង្កើតវិក្កយបត្រថ្មី (Add & Pay)"
+            actionNameKh="បង្កើតវិក្កយបត្រថ្មី - Add & Pay"
             actionNameEn="Create Invoice & Scan"
             customMessage={createInvoiceRestrictedMsg}
           >
@@ -362,7 +362,7 @@ export default function BillingPage() {
               className="px-3.5 py-2 bg-teal-700 hover:bg-teal-800 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5"
             >
               <Plus className="w-4 h-4" />
-              <span>{isKm ? 'បង្កើតវិក្កយបត្រថ្មី (Add & Pay)' : 'Create Invoice & Scan'}</span>
+              <span>{isKm ? 'បង្កើតវិក្កយបត្រថ្មី - Add & Pay' : 'Create Invoice & Scan'}</span>
             </button>
           </RestrictedActionGuard>
           <button
@@ -395,7 +395,7 @@ export default function BillingPage() {
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-bold text-amber-950">
-                  {isKm ? 'គណនីវាយតម្លៃប្រព័ន្ធ (Test Account Quota)' : 'System Evaluation Account Quota'}
+                  {isKm ? 'គណនីវាយតម្លៃប្រព័ន្ធ - Test Account Quota' : 'System Evaluation Account Quota'}
                 </span>
                 <span className="px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 text-[10px] font-bold">
                   {isKm ? 'ផុតកំណត់ 31/12/2026' : 'Expires 31/12/2026'}
@@ -414,7 +414,7 @@ export default function BillingPage() {
                 ? 'bg-amber-100/90 border-amber-300 text-amber-900'
                 : 'bg-rose-100 border-rose-300 text-rose-800'
             }`}>
-              {isKm ? 'KHQR ថ្ងៃនេះ:' : 'KHQR Today:'} {quotaStatus.khqr?.used || 0}/5 ({isKm ? 'នៅសល់' : 'left'}: {quotaStatus.khqr?.remaining ?? 5})
+              {isKm ? 'KHQR ថ្ងៃនេះ:' : 'KHQR Today:'} {quotaStatus.khqr?.used || 0}/5, {isKm ? 'នៅសល់' : 'left'}: {quotaStatus.khqr?.remaining ?? 5}
             </span>
           </div>
         </div>
@@ -443,7 +443,7 @@ export default function BillingPage() {
         <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-sm card-hover relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-slate-500">
-              {isKm ? 'ចំណូលថ្ងៃនេះ (Today)' : "Today's Settled"}
+              {isKm ? 'ចំណូលថ្ងៃនេះ - Today' : "Today's Settled"}
             </span>
             <div className="w-7 h-7 rounded-lg bg-teal-50 text-teal-700 flex items-center justify-center">
               <DollarSign className="w-4 h-4" />
@@ -461,7 +461,7 @@ export default function BillingPage() {
         <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-sm card-hover relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-slate-500">
-              {isKm ? 'រង់ចាំទូទាត់ (Pending)' : 'Unsettled / Pending'}
+              {isKm ? 'រង់ចាំទូទាត់ - Pending' : 'Unsettled / Pending'}
             </span>
             <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
               <Clock className="w-4 h-4" />
@@ -758,7 +758,7 @@ export default function BillingPage() {
                         type="button"
                         onClick={() => handleOpenEdit(inv)}
                         className="px-2.5 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 rounded-lg text-xs font-medium transition-colors flex items-center gap-1"
-                        title={isKm ? 'កែប្រែស្ថានភាព (កែពី Paid មកវិញ)' : 'Edit / Revert Invoice'}
+                        title={isKm ? 'កែប្រែស្ថានភាព - កែពី Paid មកវិញ' : 'Edit / Revert Invoice'}
                       >
                         <Edit3 className="w-3.5 h-3.5 text-slate-500" />
                         <span>{isKm ? 'កែប្រែ' : 'Edit'}</span>
@@ -806,7 +806,7 @@ export default function BillingPage() {
             <form onSubmit={handleCreateQuickInvoice} className="p-6 space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {isKm ? 'ឈ្មោះអ្នកជំងឺ (ជាអក្សរឡាតាំង) *' : 'Patient Name (English) *'}
+                  {isKm ? 'ឈ្មោះអ្នកជំងឺ - ជាអក្សរឡាតាំង *' : 'Patient Name (English) *'}
                 </label>
                 <input
                   type="text"
@@ -821,7 +821,7 @@ export default function BillingPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    {isKm ? 'ឈ្មោះជាភាសាខ្មែរ (បើមាន)' : 'Name (Khmer, Optional)'}
+                    {isKm ? 'ឈ្មោះជាភាសាខ្មែរ - បើមាន' : 'Name (Khmer, Optional)'}
                   </label>
                   <input
                     type="text"
@@ -833,7 +833,7 @@ export default function BillingPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    {isKm ? 'លេខទូរស័ព្ទ (បើមាន)' : 'Phone Number (Optional)'}
+                    {isKm ? 'លេខទូរស័ព្ទ - បើមាន' : 'Phone Number (Optional)'}
                   </label>
                   <input
                     type="text"
@@ -849,7 +849,7 @@ export default function BillingPage() {
               <div>
                 <label className="block text-[11px] font-semibold text-slate-500 mb-1.5 flex items-center gap-1">
                   <Sparkles className="w-3.5 h-3.5 text-teal-600" />
-                  <span>{isKm ? 'កញ្ចប់សេវារហ័ស (Quick Presets):' : 'Quick Service Presets:'}</span>
+                  <span>{isKm ? 'កញ្ចប់សេវារហ័ស - Quick Presets:' : 'Quick Service Presets:'}</span>
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
                   {servicePresets.map((p, idx) => (
@@ -943,7 +943,7 @@ export default function BillingPage() {
                   className="w-full sm:w-auto px-3.5 py-2 bg-slate-800 hover:bg-slate-900 disabled:opacity-50 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors flex items-center justify-center gap-1.5 order-2 sm:order-2"
                 >
                   <FileText className="w-3.5 h-3.5 text-slate-300" />
-                  <span>{isKm ? 'បង្កើតវិក្កយបត្រទុកសិន (មិនទាន់ស្កេន)' : 'Create Invoice Only (Pay Later)'}</span>
+                  <span>{isKm ? 'បង្កើតវិក្កយបត្រទុកសិន - មិនទាន់ស្កេន' : 'Create Invoice Only (Pay Later)'}</span>
                 </button>
 
                 {/* Option 2: Create & show KHQR immediately for patient to scan */}
@@ -1096,16 +1096,16 @@ export default function BillingPage() {
             <form onSubmit={handleSaveEdit} className="p-6 space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {isKm ? 'ស្ថានភាពវិក្កយបត្រ (Invoice Status)' : 'Invoice Status'}
+                  {isKm ? 'ស្ថានភាពវិក្កយបត្រ - Invoice Status' : 'Invoice Status'}
                 </label>
                 <select
                   value={editForm.status}
                   onChange={(e) => setEditForm((prev) => ({ ...prev, status: e.target.value }))}
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-teal-700 focus:bg-white"
                 >
-                  <option value="PENDING">{isKm ? 'PENDING (រង់ចាំការទូទាត់)' : 'PENDING (Awaiting Payment)'}</option>
-                  <option value="UNPAID">{isKm ? 'UNPAID (មិនទាន់បង់)' : 'UNPAID (Unpaid)'}</option>
-                  <option value="PAID">{isKm ? 'PAID (បានទូទាត់រួច)' : 'PAID (Settled)'}</option>
+                  <option value="PENDING">{isKm ? 'PENDING - រង់ចាំការទូទាត់' : 'PENDING (Awaiting Payment)'}</option>
+                  <option value="UNPAID">{isKm ? 'UNPAID - មិនទាន់បង់' : 'UNPAID (Unpaid)'}</option>
+                  <option value="PAID">{isKm ? 'PAID - បានទូទាត់រួច' : 'PAID (Settled)'}</option>
                 </select>
                 {editingInvoice.status === 'PAID' && editForm.status !== 'PAID' && (
                   <div className="mt-2 p-2.5 bg-amber-50 border border-amber-200 rounded-lg text-[11px] text-amber-800 flex items-start gap-2">

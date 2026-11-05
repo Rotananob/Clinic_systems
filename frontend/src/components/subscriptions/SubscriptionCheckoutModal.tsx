@@ -275,6 +275,20 @@ export const SubscriptionCheckoutModal: React.FC<SubscriptionCheckoutModalProps>
             setActivated(true);
             setActivationResult(res);
             playPaymentSuccessChime();
+
+            // Immediately synchronize local user tenant planTier to unlock all clinical tools
+            try {
+              const userRaw = localStorage.getItem('clinic_user');
+              if (userRaw) {
+                const parsed = JSON.parse(userRaw);
+                if (parsed && parsed.tenant) {
+                  parsed.tenant.planTier = res.planTier || selectedPlanTier;
+                  parsed.tenant.currentPeriodEnd = res.endDate;
+                  localStorage.setItem('clinic_user', JSON.stringify(parsed));
+                }
+              }
+            } catch {}
+
             if (onActivated) onActivated();
           }
         } else if (guestEmail.trim()) {

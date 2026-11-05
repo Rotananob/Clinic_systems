@@ -281,7 +281,7 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
                 </h2>
                 <p className="text-xs text-stone-600 mb-6 leading-relaxed">
                   {isKm
-                    ? `គ្លីនិករបស់លោកអ្នកបច្ចុប្បន្នស្ថិតលើគម្រោង "${user?.tenant?.planTier || 'FREE'}"។ មុខងារនេះអាចដំណើរការបានចាប់ពីគម្រោង ${requiredPlanInfo.nameKh} ($${requiredPlanInfo.priceUsd}/ខែ) ឡើងទៅ។`
+                    ? `គ្លីនិករបស់លោកអ្នកបច្ចុប្បន្នស្ថិតលើគម្រោង "${user?.tenant?.planTier || 'FREE'}"។ មុខងារនេះអាចដំណើរការបានចាប់ពីគម្រោង ${requiredPlanInfo.nameKh} - $${requiredPlanInfo.priceUsd} ក្នុងមួយខែ ឡើងទៅ។`
                     : `Your clinic is currently on ${user?.tenant?.planTier || 'FREE'}. This feature is unlocked starting from ${requiredPlanInfo.nameEn} ($${requiredPlanInfo.priceUsd}/mo) and above.`}
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full sm:w-auto">
@@ -294,7 +294,7 @@ const AppShellContent: React.FC<{ children: React.ReactNode }> = ({ children }) 
                     className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-teal-800 to-teal-900 hover:from-teal-700 hover:to-teal-800 text-white rounded-xl text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
                   >
                     <Zap className="w-4 h-4 text-amber-300 fill-amber-300" />
-                    <span>{isKm ? `ដំឡើងគម្រោងឥឡូវនេះ ($${requiredPlanInfo.priceUsd}/ខែ)` : `Upgrade Now with Bakong ($${requiredPlanInfo.priceUsd}/mo)`}</span>
+                    <span>{isKm ? `ដំឡើងគម្រោងឥឡូវនេះ - $${requiredPlanInfo.priceUsd} ក្នុងមួយខែ` : `Upgrade Now with Bakong ($${requiredPlanInfo.priceUsd}/mo)`}</span>
                   </button>
                   <Link
                     href={`/pricing?upgrade=${requiredPlanInfo.tier}`}

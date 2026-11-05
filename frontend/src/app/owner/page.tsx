@@ -150,7 +150,7 @@ export default function OwnerConsolePage() {
           </h2>
           <p className="text-xs text-stone-600">
             {isKm
-              ? 'ទំព័រនេះតម្រូវឱ្យមានសិទ្ធិកម្រិត SUPER_ADMIN (ម្ចាស់ប្រព័ន្ធ) ជាដាច់ខាត។'
+              ? 'ទំព័រនេះតម្រូវឱ្យមានសិទ្ធិកម្រិត SUPER_ADMIN - ម្ចាស់ប្រព័ន្ធ ជាដាច់ខាត។'
               : 'This console requires SUPER_ADMIN authority.'}
           </p>
         </div>

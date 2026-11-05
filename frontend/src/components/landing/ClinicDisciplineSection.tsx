@@ -680,10 +680,10 @@ export const ClinicDisciplineSection: React.FC = () => {
 
                   <tr className="hover:bg-stone-50/50">
                     <td className="p-3.5 sm:p-4 font-semibold text-stone-900">
-                      ប្រព័ន្ធដំណឹងស្វ័យប្រវត្ត (Automated Alerts)
+                      ប្រព័ន្ធដំណឹងស្វ័យប្រវត្ត - Automated Alerts
                     </td>
                     <td className="p-3.5 sm:p-4 bg-teal-50/40 border-x border-teal-200/40 font-medium text-teal-900">
-                      Telegram Dual-Bot បាញ់ដំណឹងចូល Topic (ទូទាត់, ជួរ, ស្តុក, សន្តិសុខ)
+                      Telegram Dual-Bot បាញ់ដំណឹងចូល Topic - ទូទាត់, ជួរ, ស្តុក, សន្តិសុខ
                     </td>
                     <td className="p-3.5 sm:p-4 text-stone-500">
                       គ្មានប្រព័ន្ធដំណឹង ឬគិតថ្លៃផ្ញើសារ SMS បន្ថែមប្រចាំខែ

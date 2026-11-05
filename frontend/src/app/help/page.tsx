@@ -58,17 +58,17 @@ const GUIDES: GuideItem[] = [
     stepsKh: [
       {
         step: '01',
-        title: 'តភ្ជាប់ខ្សែរឹង (Hardware Connection)',
+        title: 'តភ្ជាប់ខ្សែរឹង - Hardware Connection',
         desc: 'ដោតខ្សែ USB ប្រភេទ Type-B ពីម៉ាស៊ីនព្រីនចូលកុំព្យូទ័របេឡា ឬដោតខ្សែបណ្ដាញ Ethernet RJ45 ចូល Switch/Router ប្រចាំគ្លីនិក។ ពិនិត្យមើលភ្លើង Power LED ពណ៌ខៀវត្រូវភ្លឺថេរ។',
       },
       {
         step: '02',
         title: 'ដំឡើង Driver និងកំណត់ទំហំក្រដាស 80mm',
-        desc: 'ទាញយក Driver ម៉ាស៊ីនព្រីនម៉ូដែលរបស់អ្នក (ឧ. Xprinter, Epson TM-T82, Rongta)។ នៅក្នុង Control Panel -> Devices and Printers សូមជ្រើសរើស Paper Size: 80mm x Receipt (Printable Area 72mm)។',
+        desc: 'ទាញយក Driver ម៉ាស៊ីនព្រីនម៉ូដែលរបស់អ្នក ដូចជា Xprinter, Epson TM-T82, Rongta។ នៅក្នុង Control Panel -> Devices and Printers សូមជ្រើសរើស Paper Size: 80mm x Receipt - Printable Area 72mm។',
       },
       {
         step: '03',
-        title: 'ការកំណត់កេះថតប្រាក់ស្វ័យប្រវត្ត (RJ11 Cash Drawer)',
+        title: 'ការកំណត់កេះថតប្រាក់ស្វ័យប្រវត្ត - RJ11 Cash Drawer',
         desc: 'ដោតខ្សែ RJ11 ពីកេះថតប្រាក់ចូលរន្ធ Cash Drawer នៅខាងក្រោយម៉ាស៊ីនព្រីន។ ប្រព័ន្ធ ClinicOS នឹងបញ្ជូនពាក្យបញ្ជា ESC/POS Pulse ដោយស្វ័យប្រវត្តរាល់ពេលបញ្ចប់ការទូទាត់ប្រាក់។',
         code: 'ESC p 0 25 250 (Hex: 1B 70 00 19 FA)',
         tip: 'នៅក្នុង Printer Properties -> Device Settings សូមបើកជម្រើស Cash Drawer: Open Before Printing ឬ Open After Printing។',
@@ -78,7 +78,7 @@ const GUIDES: GuideItem[] = [
         title: 'កំណត់ Silent Printing លើ Browser',
         desc: 'ដើម្បីកុំឱ្យ Browser លោតផ្ទាំង Print Preview មកទាមទារចុច Enter រាល់ពេលចេញវិក្កយបត្រ សូមដំណើរការ Browser ជាមួយ flag --kiosk-printing។',
         code: 'chrome.exe --kiosk-printing --app=http://localhost:3000/billing',
-        tip: 'ដំណើរការនេះអនុញ្ញាតឱ្យម៉ាស៊ីនព្រីនកាត់ក្រដាសស្វ័យប្រវត្ត (Auto-cutter) ត្រឹមតែ ០.៥ វិនាទីប៉ុណ្ណោះ។',
+        tip: 'ដំណើរការនេះអនុញ្ញាតឱ្យម៉ាស៊ីនព្រីនកាត់ក្រដាសស្វ័យប្រវត្ត Auto-cutter ត្រឹមតែ ០.៥ វិនាទីប៉ុណ្ណោះ។',
       },
     ],
     stepsEn: [
@@ -108,9 +108,9 @@ const GUIDES: GuideItem[] = [
       },
     ],
     troubleshootingKh: [
-      'ក្រដាសព្រីនចេញមកសស្អាតគ្មានអក្សរ៖ សូមពិនិត្យមើលថាតើអ្នកបានដាក់ក្រដាសកម្ដៅបញ្ច្រាសមុខដែរឬទេ (Thermal coating ត្រូវនៅខាងមុខ)។',
+      'ក្រដាសព្រីនចេញមកសស្អាតគ្មានអក្សរ៖ សូមពិនិត្យមើលថាតើអ្នកបានដាក់ក្រដាសកម្ដៅបញ្ច្រាសមុខដែរឬទេ - Thermal coating ត្រូវនៅខាងមុខ។',
       'ភ្លើង Error ពណ៌ក្រហមលោតញាប់ៗ៖ ម៉ាស៊ីនអាចអស់ក្រដាស ឬគម្របខាងលើមិនទាន់បានបិទស៊ប់។',
-      'ព្រីនតាមបណ្ដាញ IP មិនដំណើរការ៖ ពិនិត្យមើល IP Address របស់ម៉ាស៊ីនព្រីន ត្រូវស្ថិតក្នុង Subnet ដូចគ្នានឹងកុំព្យូទ័របេឡា (ឧ. 192.168.1.xxx)។',
+      'ព្រីនតាមបណ្ដាញ IP មិនដំណើរការ៖ ពិនិត្យមើល IP Address របស់ម៉ាស៊ីនព្រីន ត្រូវស្ថិតក្នុង Subnet ដូចគ្នានឹងកុំព្យូទ័របេឡា ដូចជា 192.168.1.xxx។',
     ],
     troubleshootingEn: [
       'Blank paper feed without text: Ensure the thermal roll is inserted with the coated thermal side facing the print head.',
@@ -141,7 +141,7 @@ const GUIDES: GuideItem[] = [
       {
         step: '03',
         title: 'បង្កើត ៤ Topics ដាច់ដោយឡែកពីគ្នា',
-        desc: 'នៅក្នុង Supergroup បង្កើត Topic ចំនួន ៤៖ (១) Security - ដំណឹងសុវត្ថិភាពនិងការ Login, (២) Finance - ដំណឹងទូទាត់ប្រាក់ KHQR និងបិទបញ្ជី, (៣) Operations - ដំណឹងហៅលេខនិងអ្នកជំងឺ, (៤) System - ដំណឹងបម្រុងទុកនិង Error។',
+        desc: 'នៅក្នុង Supergroup បង្កើត Topic ចំនួន ៤៖ ១. Security - ដំណឹងសុវត្ថិភាពនិងការ Login, ២. Finance - ដំណឹងទូទាត់ប្រាក់ KHQR និងបិទបញ្ជី, ៣. Operations - ដំណឹងហៅលេខនិងអ្នកជំងឺ, ៤. System - ដំណឹងបម្រុងទុកនិង Error។',
       },
       {
         step: '04',
@@ -186,7 +186,7 @@ const GUIDES: GuideItem[] = [
     troubleshootingKh: [
       'Bot មិនអាចផ្ញើសារចូល Topic បាន៖ សូមពិនិត្យមើលថាតើ Bot ត្រូវបានផ្ដល់សិទ្ធិ Administrator ពេញលេញ និងមានសិទ្ធិ Manage Topics ដែរឬទេ។',
       'មិនស្គាល់ Chat ID ឬ Thread ID៖ បញ្ជូនសារតេស្តមួយចូល Topic រួចប្រើ Endpoint getUpdates របស់ Telegram ដើម្បីមើល message.message_thread_id។',
-      'សារលោតចូលតែ General Topic៖ ពិនិត្យមើលតម្លៃ Thread ID ត្រូវតែជាលេខសុទ្ធ (ឧ. 2, 4, 15) មិនត្រូវទុកទំនេរឡើយ។',
+      'សារលោតចូលតែ General Topic៖ ពិនិត្យមើលតម្លៃ Thread ID ត្រូវតែជាលេខសុទ្ធ ដូចជា 2, 4, 15 មិនត្រូវទុកទំនេរឡើយ។',
     ],
     troubleshootingEn: [
       'Bot cannot post into topic: Verify that the bot is an Administrator with explicit Manage Topics permission granted.',
@@ -197,7 +197,7 @@ const GUIDES: GuideItem[] = [
   {
     id: 'khqr-deeplinks',
     category: 'khqr',
-    titleKh: 'ប្រព័ន្ធទូទាត់ Dynamic KHQR PayWay & Bank Deeplinks (Paste & Go)',
+    titleKh: 'ប្រព័ន្ធទូទាត់ Dynamic KHQR PayWay & Bank Deeplinks - Paste & Go',
     titleEn: 'Dynamic KHQR PayWay & Bank Deeplinks (Paste & Go Setup)',
     summaryKh: 'ការរៀបចំ Bakong Account ID ត្រឹមតែ ៣០ វិនាទី, ការបង្កើត Dynamic KHQR ចាក់សោទឹកប្រាក់ ឥតគិតកម្រៃជើងសារ និងការបញ្ជាក់លទ្ធផលស្វ័យប្រវត្តក្នុង ២ វិនាទី។',
     summaryEn: '30-second merchant onboarding, Dynamic KHQR payment with locked amount, zero intermediary transaction fees, and automated 2-second settlement detection.',
@@ -205,12 +205,12 @@ const GUIDES: GuideItem[] = [
       {
         step: '01',
         title: 'ស្វែងរក Bakong Account ID ពី ABA Mobile',
-        desc: 'បើក App ABA Mobile -> ចុចលើ Services -> ជ្រើសរើស ABA Merchant។ ចម្លង Bakong Account ID របស់លោកអ្នក (ឧទាហរណ៍៖ clinic_angkor@aba) ឬតំណភ្ជាប់ Merchant Link ឥតគិតថ្លៃ។',
+        desc: 'បើក App ABA Mobile -> ចុចលើ Services -> ជ្រើសរើស ABA Merchant។ ចម្លង Bakong Account ID របស់លោកអ្នក ដូចជា clinic_angkor@aba ឬតំណភ្ជាប់ Merchant Link ឥតគិតថ្លៃ។',
       },
       {
         step: '02',
         title: 'បញ្ចូលក្នុងផ្ទាំង Paste & Go Merchant Setup',
-        desc: 'នៅពេលចុះឈ្មោះរួច ឬក្នុង Clinic Settings សូមបើកផ្ទាំង "Paste & Go Merchant Setup"។ បិទភ្ជាប់ (Paste) Bakong Account ID និងឈ្មោះគ្លីនិកផ្លូវការដែលត្រូវបង្ហាញលើ KHQR។',
+        desc: 'នៅពេលចុះឈ្មោះរួច ឬក្នុង Clinic Settings សូមបើកផ្ទាំង "Paste & Go Merchant Setup"។ បិទភ្ជាប់ Paste Bakong Account ID និងឈ្មោះគ្លីនិកផ្លូវការដែលត្រូវបង្ហាញលើ KHQR។',
       },
       {
         step: '03',
@@ -220,7 +220,7 @@ const GUIDES: GuideItem[] = [
       },
       {
         step: '04',
-        title: 'ការទូទាត់ និងដឹងលទ្ធផលភ្លាមៗ (Real-Time Settlement)',
+        title: 'ការទូទាត់ និងដឹងលទ្ធផលភ្លាមៗ - Real-Time Settlement',
         desc: 'នៅពេលអ្នកជំងឺស្កេនទូទាត់ ប្រព័ន្ធទទួលបានការបញ្ជាក់តាម Webhook ក្នុងរយៈពេលត្រឹម ២ វិនាទី។ ផ្ទាំងបេឡានឹងបង្ហាញសញ្ញាជោគជ័យ និងបញ្ជាម៉ាស៊ីនព្រីនវិក្កយបត្រស្វ័យប្រវត្ត។',
       },
     ],
@@ -248,9 +248,9 @@ const GUIDES: GuideItem[] = [
       },
     ],
     troubleshootingKh: [
-      'ស្កេនហើយ App ធនាគារប្រាប់ថា Merchant មិនត្រឹមត្រូវ៖ ពិនិត្យមើល Bakong Account ID ត្រូវមានកន្ទុយធនាគារត្រឹមត្រូវ (ឧ. @aba, @acleda, @canadia)។',
+      'ស្កេនហើយ App ធនាគារប្រាប់ថា Merchant មិនត្រឹមត្រូវ៖ ពិនិត្យមើល Bakong Account ID ត្រូវមានកន្ទុយធនាគារត្រឹមត្រូវ ដូចជា @aba, @acleda, @canadia។',
       'ប្រាក់កាត់ពីគណនីអ្នកជំងឺហើយ តែអេក្រង់បេឡាមិនលោតជោគជ័យ៖ បេឡាអាចចុចប៊ូតុង "Verify Settlement" ដោយដៃ ឬពិនិត្យមើលការតភ្ជាប់អ៊ីនធឺណិតរបស់កុំព្យូទ័រ។',
-      'តើប្រព័ន្ធកាត់កម្រៃជើងសារប៉ុន្មាន? ប្រព័ន្ធ KHQR របស់ ClinicOS មិនកាត់កម្រៃជើងសារលើប្រតិបត្តិការទូទាត់របស់គ្លីនិកឡើយ (0% Transaction Fee)។',
+      'តើប្រព័ន្ធកាត់កម្រៃជើងសារប៉ុន្មាន? ប្រព័ន្ធ KHQR របស់ ClinicOS មិនកាត់កម្រៃជើងសារលើប្រតិបត្តិការទូទាត់របស់គ្លីនិកឡើយ - 0% Transaction Fee។',
     ],
     troubleshootingEn: [
       'Banking app reports Invalid Merchant: Verify your Bakong ID contains the correct bank domain suffix (e.g. @aba, @acleda, @canadia).',
@@ -268,27 +268,27 @@ const GUIDES: GuideItem[] = [
     stepsKh: [
       {
         step: '01',
-        title: 'ចុះឈ្មោះអ្នកជំងឺ និងទទួលលេខរង់ចាំ (Intake & Ticket)',
-        desc: 'បុគ្គលិកទទួលភ្ញៀវស្វែងរកលេខទូរស័ព្ទ ឬបង្កើតព័ត៌មានអ្នកជំងឺថ្មីក្នុងរយៈពេល ៦០ វិនាទី។ ប្រព័ន្ធបង្កើតលេខរង់ចាំ (Queue Ticket ឧ. A012) ដោយស្វ័យប្រវត្ត។',
+        title: 'ចុះឈ្មោះអ្នកជំងឺ និងទទួលលេខរង់ចាំ - Intake & Ticket',
+        desc: 'បុគ្គលិកទទួលភ្ញៀវស្វែងរកលេខទូរស័ព្ទ ឬបង្កើតព័ត៌មានអ្នកជំងឺថ្មីក្នុងរយៈពេល ៦០ វិនាទី។ ប្រព័ន្ធបង្កើតលេខរង់ចាំ Queue Ticket ឧទាហរណ៍ A012 ដោយស្វ័យប្រវត្ត។',
       },
       {
         step: '02',
-        title: 'ហៅអ្នកជំងឺជាសំឡេងខ្មែរ (Native Khmer Voice)',
+        title: 'ហៅអ្នកជំងឺជាសំឡេងខ្មែរ - Native Khmer Voice',
         desc: 'វេជ្ជបណ្ឌិត ឬគិលានុបដ្ឋាយិកាចុចប៊ូតុង "ហៅអ្នកជំងឺ"។ ប្រព័ន្ធបន្លឺសំឡេងជាភាសាខ្មែរច្បាស់ៗតាមរយៈ Speaker៖ "សូមអញ្ជើញលេខ A012 ចូលបន្ទប់ពិគ្រោះលេខ ១"។',
       },
       {
         step: '03',
-        title: 'កត់ត្រារោគវិនិច្ឆ័យ និងចេញវេជ្ជបញ្ជា (EMR & Prescription)',
+        title: 'កត់ត្រារោគវិនិច្ឆ័យ និងចេញវេជ្ជបញ្ជា - EMR & Prescription',
         desc: 'វេជ្ជបណ្ឌិតកត់ត្រារោគសញ្ញា សម្ពាធឈាម ទម្ងន់ និងជ្រើសរើសថ្នាំពីបញ្ជីឱសថស្ថានគ្លីនិក។ ប្រព័ន្ធបង្ហាញតម្លៃថ្នាំ និងការណែនាំប្រើប្រាស់ជាភាសាខ្មែរ។',
       },
       {
         step: '04',
         title: 'ឱសថស្ថានកាត់ស្តុកស្វ័យប្រវត្តតាម Batch & Expiry',
-        desc: 'នៅពេលចេញថ្នាំ ប្រព័ន្ធកាត់បន្ថយបរិមាណស្តុកតាមគោលការណ៍ FIFO (First In First Out) ដោយស្វ័យប្រវត្ត ដោយផ្អែកលើកាលបរិច្ឆេទផុតកំណត់នៃ Batch នីមួយៗ។',
+        desc: 'នៅពេលចេញថ្នាំ ប្រព័ន្ធកាត់បន្ថយបរិមាណស្តុកតាមគោលការណ៍ FIFO - First In First Out ដោយស្វ័យប្រវត្ត ដោយផ្អែកលើកាលបរិច្ឆេទផុតកំណត់នៃ Batch នីមួយៗ។',
       },
       {
         step: '05',
-        title: 'ចេញវិក្កយបត្រ និងទូទាត់ប្រាក់នៅបេឡា (Billing & KHQR)',
+        title: 'ចេញវិក្កយបត្រ និងទូទាត់ប្រាក់នៅបេឡា - Billing & KHQR',
         desc: 'បេឡាពិនិត្យមើលថ្លៃពិនិត្យនិងថ្លៃថ្នាំ រួចចុច "KHQR Dynamic" ដើម្បីបង្ហាញ QR លើអេក្រង់។ អ្នកជំងឺស្កេនទូទាត់ចប់ ម៉ាស៊ីនព្រីនចេញវិក្កយបត្រ 80mm ភ្លាម។',
       },
     ],
@@ -707,7 +707,7 @@ export default function HelpCenterPage() {
               href="/register"
               className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-white text-xs font-bold transition-colors ml-auto"
             >
-              <span>{isKm ? 'ចុះឈ្មោះបង្កើត Workspace (៦០ វិ)' : 'Register Clinic (60 Seconds)'}</span>
+              <span>{isKm ? 'ចុះឈ្មោះបង្កើត Workspace ត្រឹម ៦០ វិនាទី' : 'Register Clinic (60 Seconds)'}</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </Link>
           </div>

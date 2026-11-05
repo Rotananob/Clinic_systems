@@ -358,12 +358,12 @@ export function CheckinModal({
           >
             <option value="">
               {isKm
-                ? '-- ជួរទូទៅ (វេជ្ជបណ្ឌិត ឬបន្ទប់ណាមួយទំនេរ) --'
+                ? '-- ជួរទូទៅ: វេជ្ជបណ្ឌិត ឬបន្ទប់ណាមួយទំនេរ --'
                 : '-- General Queue (Any Available Physician) --'}
             </option>
             {doctors.map((doc) => (
               <option key={doc.id} value={doc.id}>
-                Dr. {doc.fullNameEn} {doc.fullNameKh ? `(${doc.fullNameKh})` : ''}
+                Dr. {doc.fullNameEn} {doc.fullNameKh ? ` - ${doc.fullNameKh}` : ''}
               </option>
             ))}
           </select>
@@ -392,7 +392,7 @@ export function CheckinModal({
         {/* Symptoms */}
         <div>
           <label className="block text-xs font-semibold text-slate-700 mb-1">
-            {isKm ? 'រោគសញ្ញាសម្គាល់បន្ថែម (មិនបង្ខំ)' : 'Observed Symptoms (Optional)'}
+            {isKm ? 'រោគសញ្ញាសម្គាល់បន្ថែម - មិនបង្ខំ' : 'Observed Symptoms (Optional)'}
           </label>
           <textarea
             rows={2}

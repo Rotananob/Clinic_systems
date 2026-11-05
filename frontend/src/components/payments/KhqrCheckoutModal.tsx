@@ -780,7 +780,7 @@ export function KhqrCheckoutModal({
                 {/* Desktop Advisory Banner */}
                 {!isMobile && (
                   <div className="p-2 bg-slate-100 border border-slate-200 rounded-lg text-[11px] text-slate-600 text-center leading-relaxed">
-                    <strong>កុំព្យូទ័រ Laptop / Desktop:</strong> សូមស្កេនរូប QR ខាងក្រោមតាម App ធនាគារលើទូរស័ព្ទដៃរបស់លោកអ្នក (Deeplinks ត្រូវបានចាក់សោរលើ Desktop)
+                    <strong>កុំព្យូទ័រ Laptop / Desktop:</strong> សូមស្កេនរូប QR ខាងក្រោមតាម App ធនាគារលើទូរស័ព្ទដៃរបស់លោកអ្នក - Deeplinks ត្រូវបានចាក់សោរលើ Desktop
                   </div>
                 )}
 
@@ -907,7 +907,7 @@ export function KhqrCheckoutModal({
                     <div className="absolute inset-0 bg-white/95 backdrop-blur-xs flex flex-col items-center justify-center p-3 rounded-xl text-center space-y-2">
                       <Clock className="w-8 h-8 text-rose-500 animate-pulse" />
                       <div className="text-xs font-bold text-rose-700">
-                        {isKm ? 'កូដ QR ផុតកំណត់ (3 នាទី)' : 'QR Expired (3-min rule)'}
+                        {isKm ? 'កូដ QR ផុតកំណត់ - ៣ នាទី' : 'QR Expired (3-min rule)'}
                       </div>
                       <p className="text-[10px] text-slate-500 max-w-[140px] leading-tight">
                         {isKm ? 'ដើម្បីសុវត្ថិភាព សូមបង្កើតកូដទូទាត់ថ្មី' : 'For security, please generate a new QR'}
@@ -948,7 +948,7 @@ export function KhqrCheckoutModal({
 
                 {/* Bottom Strip */}
                 <div className="bg-slate-900 text-white py-1 px-2 text-center text-[9px] tracking-wide font-medium">
-                  ស្កេនទូទាត់ជាមួយ App ធនាគារគ្រប់ប្រភេទ (ABA, Bakong)
+                  ស្កេនទូទាត់ជាមួយ App ធនាគារគ្រប់ប្រភេទ - ABA, Bakong
                 </div>
               </div>
 
@@ -985,7 +985,7 @@ export function KhqrCheckoutModal({
               {/* CRITICAL NOTE: Inter-bank settlement latency (3-4 seconds) */}
               <div className="p-2.5 bg-amber-50/70 border border-amber-200/80 rounded-xl text-center text-[11px] text-amber-900 leading-relaxed max-w-sm mx-auto">
                 <p>
-                  * <strong>ចំណាំ៖</strong> ប្រសិនបើលោកអ្នកស្កេនតាមធនាគារផ្សេងក្រៅពី ABA (ដូចជា ACLEDA, Canadia, Wing...) ការទូទាត់អាចចំណាយពេលយូរជាងបន្តិច (ប្រហែល ៣ ទៅ ៤ វិនាទី) ដើម្បីផ្ទៀងផ្ទាត់។
+                  * <strong>ចំណាំ៖</strong> ប្រសិនបើលោកអ្នកស្កេនតាមធនាគារផ្សេងក្រៅពី ABA ដូចជា ACLEDA, Canadia, Wing... ការទូទាត់អាចចំណាយពេលយូរជាងបន្តិច ប្រហែល ៣ ទៅ ៤ វិនាទី ដើម្បីផ្ទៀងផ្ទាត់។
                 </p>
                 <p className="text-[10px] text-amber-700/90 mt-0.5">
                   * Note: Settlement verification via other banks may take 3-4 seconds longer than ABA.

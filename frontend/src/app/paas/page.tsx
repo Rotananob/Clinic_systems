@@ -136,7 +136,7 @@ export default function PaasEnterprisePage() {
             </h3>
             <p className="text-xs text-stone-600 leading-relaxed">
               {isKm
-                ? 'ប្រើប្រាស់ឈ្មោះ Domain ផ្ទាល់ខ្លួនរបស់មន្ទីរពេទ្យ (ឧ. emr.yourhospital.com.kh) ជាមួយវិញ្ញាបនបត្រ SSL និងផ្ទាំងគ្រប់គ្រងម៉ាកយីហោផ្ទាល់ខ្លួន។'
+                ? 'ប្រើប្រាស់ឈ្មោះ Domain ផ្ទាល់ខ្លួនរបស់មន្ទីរពេទ្យ ដូចជា emr.yourhospital.com.kh ជាមួយវិញ្ញាបនបត្រ SSL និងផ្ទាំងគ្រប់គ្រងម៉ាកយីហោផ្ទាល់ខ្លួន។'
                 : 'Run on your own branded domain with automated Let\'s Encrypt SSL certificates and hospital logo customization.'}
             </p>
           </div>

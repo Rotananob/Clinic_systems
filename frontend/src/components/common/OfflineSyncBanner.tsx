@@ -93,11 +93,11 @@ export const OfflineSyncBanner: React.FC = () => {
         <span>
           {!status.isOnline ? (
             isKm
-              ? `របៀបក្រៅបណ្តាញ (Offline) - ទិន្នន័យត្រូវបានរក្សាទុកក្នុងឧបករណ៍ (${status.pendingCount} ការផ្លាស់ប្តូរ)`
+              ? `របៀបក្រៅបណ្តាញ - Offline: ទិន្នន័យត្រូវបានរក្សាទុកក្នុងឧបករណ៍ - ${status.pendingCount} ការផ្លាស់ប្តូរ`
               : `Offline Mode - Local-first active (${status.pendingCount} local changes pending)`
           ) : status.conflictCount > 0 || status.state === 'CONFLICT' ? (
             isKm
-              ? `មានការប៉ះទង្គិចទិន្នន័យ (${status.conflictCount} Conflict) ត្រូវការការផ្ទៀងផ្ទាត់`
+              ? `មានការប៉ះទង្គិចទិន្នន័យ - ${status.conflictCount} Conflict: ត្រូវការការផ្ទៀងផ្ទាត់`
               : `Concurrency conflict detected (${status.conflictCount} items). Manual review available.`
           ) : status.state === 'SYNCING' || isManualSyncing ? (
             isKm ? 'កំពុងធ្វើសមកាលកម្មទិន្នន័យទៅម៉ាស៊ីនបម្រើ...' : 'Synchronizing local changes to server...'

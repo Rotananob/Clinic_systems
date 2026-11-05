@@ -1001,7 +1001,7 @@ export default function InventoryWarehousePage() {
                   className="rounded text-gray-900 cursor-pointer"
                 />
                 <label htmlFor="autoDispatch" className="text-xs text-gray-700 cursor-pointer">
-                  {isKh ? 'បញ្ជូនចេញភ្លាមៗ (កាត់ស្តុកប្រភព និងដាក់ក្នុងស្ថានភាពកំពុងដឹក)' : 'Auto-dispatch immediately (mark In-Transit)'}
+                  {isKh ? 'បញ្ជូនចេញភ្លាមៗ - កាត់ស្តុកប្រភព និងដាក់ក្នុងស្ថានភាពកំពុងដឹក' : 'Auto-dispatch immediately (mark In-Transit)'}
                 </label>
               </div>
 

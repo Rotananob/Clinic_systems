@@ -56,7 +56,7 @@ export const MerchantSetupModal: React.FC<MerchantSetupModalProps> = ({
     if (!paywayPaymentUrl.trim() && !bakongAccountId.trim()) {
       setErrorMessage(
         isKm
-          ? 'សូមបញ្ចូល Merchant ABA PayWay Link ជាមុនសិន (មិនបាច់មាន Bakong ID ឡើយ)។'
+          ? 'សូមបញ្ចូល Merchant ABA PayWay Link ជាមុនសិន - មិនបាច់មាន Bakong ID ឡើយ។'
           : 'Please enter your Merchant ABA PayWay Link first (no Bakong ID needed).'
       );
       return;
@@ -163,7 +163,7 @@ export const MerchantSetupModal: React.FC<MerchantSetupModalProps> = ({
               <Smartphone className="w-4 h-4 text-teal-700 shrink-0" />
               <span>
                 {isKm
-                  ? 'ការណែនាំ ៣០ វិនាទីពី ABA Mobile (ឥតគិតថ្លៃ ១០០%)'
+                  ? 'ការណែនាំ ៣០ វិនាទីពី ABA Mobile - ឥតគិតថ្លៃ ១០០%'
                   : '30-Second ABA Mobile Guide (100% Free)'}
               </span>
             </div>
@@ -221,8 +221,8 @@ export const MerchantSetupModal: React.FC<MerchantSetupModalProps> = ({
             <div className="space-y-4">
               <div>
                 <label className="block text-xs font-bold text-teal-900 mb-1 flex items-center justify-between">
-                  <span>{isKm ? 'តំណភ្ជាប់ Merchant ABA PayWay Link (សំខាន់បំផុត *)' : 'Merchant ABA PayWay Link (Required *)'}</span>
-                  <span className="text-[11px] text-teal-700 font-normal">{isKm ? 'ដំណើរការតាម pay-helper (មិនបាច់មាន Bakong ID)' : 'Powered by pay-helper (Zero Bakong ID required)'}</span>
+                  <span>{isKm ? 'តំណភ្ជាប់ Merchant ABA PayWay Link - សំខាន់បំផុត *' : 'Merchant ABA PayWay Link (Required *)'}</span>
+                  <span className="text-[11px] text-teal-700 font-normal">{isKm ? 'ដំណើរការតាម pay-helper - មិនបាច់មាន Bakong ID' : 'Powered by pay-helper (Zero Bakong ID required)'}</span>
                 </label>
                 <input
                   type="url"
@@ -332,7 +332,7 @@ export const MerchantSetupModal: React.FC<MerchantSetupModalProps> = ({
                     {testResult.liveGateway ? (
                       <div className="text-[11px] text-teal-800 font-semibold flex items-center gap-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-teal-600 animate-pulse" />
-                        <span>{isKm ? 'ប្រភព: ABA PayWay Live Production Gateway (ស្កេនបានពិតៗ)' : 'Source: ABA PayWay Production Gateway (100% Scannable)'}</span>
+                        <span>{isKm ? 'ប្រភព: ABA PayWay Live Production Gateway - ស្កេនបានពិតៗ' : 'Source: ABA PayWay Production Gateway (100% Scannable)'}</span>
                       </div>
                     ) : testResult.bakongId && testResult.bakongId !== 'aba_payway@aba' ? (
                       <div>

@@ -937,7 +937,7 @@ export default function TeleconsultPage() {
                     onChange={(e) => setClinicalNotes(e.target.value)}
                     placeholder={
                       isKh
-                        ? 'បញ្ចូលកំណត់ត្រាវេជ្ជសាស្ត្រ... (ឧទាហរណ៍៖ អ្នកជំងឺមានអាការៈក្អកស្ងួត ២ ថ្ងៃ គ្មានគ្រុនក្តៅខ្លាំង...)'
+                        ? 'បញ្ចូលកំណត់ត្រាវេជ្ជសាស្ត្រ... ឧទាហរណ៍៖ អ្នកជំងឺមានអាការៈក្អកស្ងួត ២ ថ្ងៃ គ្មានគ្រុនក្តៅខ្លាំង...'
                         : 'Enter clinical consultation notes...'
                     }
                     className="flex-1 w-full text-xs p-3 border border-stone-300 rounded-xl focus:outline-none focus:ring-1 focus:ring-teal-500 bg-stone-50/60 leading-relaxed font-sans"

@@ -86,7 +86,7 @@ function VerificationContent() {
               <Search className="w-5 h-5 absolute left-3 top-3 text-gray-400" />
               <input
                 type="text"
-                placeholder={isKh ? 'បញ្ចូលលេខសម្គាល់លិខិត (ឧ. MC-2026-0042)...' : 'Enter Certificate Number (e.g. MC-2026-0042)...'}
+                placeholder={isKh ? 'បញ្ចូលលេខសម្គាល់លិខិត ឧទាហរណ៍ MC-2026-0042...' : 'Enter Certificate Number (e.g. MC-2026-0042)...'}
                 value={certInput}
                 onChange={(e) => setCertInput(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 border border-[#E7E1D4] rounded-xl text-sm font-mono focus:outline-hidden focus:ring-1 focus:ring-gray-900 bg-[#FDFBF7]"
@@ -216,7 +216,7 @@ function VerificationContent() {
                       {t.compliance.authorizedLeave}
                     </span>
                     <div className="text-sm font-bold text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200 inline-block mt-1">
-                      {result.certificateDetails.daysOff} {isKh ? 'ថ្ងៃ' : 'Days'} ({result.certificateDetails.startDate} {isKh ? 'ដល់' : 'to'} {result.certificateDetails.endDate})
+                      {result.certificateDetails.daysOff} {isKh ? 'ថ្ងៃ' : 'Days'} - {result.certificateDetails.startDate} {isKh ? 'ដល់' : 'to'} {result.certificateDetails.endDate}
                     </div>
                   </div>
 
