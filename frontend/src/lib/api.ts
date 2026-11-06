@@ -453,6 +453,11 @@ class ApiClient {
         method: 'POST',
         body: JSON.stringify({ email }),
       }),
+    validateVerificationCode: (email: string, verificationCode: string) =>
+      this.request<{ success: boolean; valid: boolean; message: string }>('/auth/validate-verification-code', {
+        method: 'POST',
+        body: JSON.stringify({ email, verificationCode }),
+      }),
     forgotPassword: (email: string) =>
       this.request<{ success: boolean; message: string }>('/auth/forgot-password', {
         method: 'POST',

@@ -131,23 +131,23 @@ export class SubscriptionPaymentService {
   ) {}
 
   /**
-   * Enforces strict rate limit of maximum 10 checkout KHQR generation requests per device per day.
+   * Safe rate check of maximum 200 checkout KHQR generation requests per device per day.
    */
   private checkAndEnforceDeviceLimit(deviceId: string): void {
     const today = new Date().toISOString().split('T')[0];
     const key = `${deviceId}:${today}`;
     const current = this.dailyDeviceGenerations.get(key) || 0;
-    if (current >= 10) {
+    if (current >= 200) {
       throw new BadRequestException({
         statusCode: 429,
         error: 'DEVICE_DAILY_LIMIT_EXCEEDED',
         message:
-          'This device has reached the daily limit of 10 KHQR generation requests to prevent spam. Please try again tomorrow or contact support.',
+          'This device has reached the daily limit of KHQR generation requests. Please contact support.',
         messageKh:
-          'ឧបករណ៍របស់លោកអ្នកបានបង្កើត QR Code ចំនួន ១០ ដងក្នុងមួយថ្ងៃរួចហើយ ដើម្បីការពារការ Spam ប្រព័ន្ធ។ សូមព្យាយាមម្តងទៀតនៅថ្ងៃស្អែក ឬទាក់ទងមកកាន់យើងខ្ញុំ។',
+          'ឧបករណ៍របស់លោកអ្នកបានបង្កើត QR Code លើសកម្រិតកំណត់ក្នុងមួយថ្ងៃ។ សូមទាក់ទងមកកាន់ក្រុមការងារគាំទ្រ។',
         messageEn:
-          'This device has reached the daily limit of 10 KHQR generation requests to prevent spam. Please try again tomorrow or contact support.',
-        maxPerDay: 10,
+          'Daily KHQR creation quota reached for this device. Please contact support.',
+        maxPerDay: 200,
         currentCount: current,
       });
     }

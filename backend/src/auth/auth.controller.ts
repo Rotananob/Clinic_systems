@@ -7,6 +7,7 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { RegisterClinicDto } from './dto/register-clinic.dto';
 import { SendVerificationCodeDto } from './dto/send-code.dto';
 import { RegisterWithCodeDto } from './dto/register-with-code.dto';
+import { ValidateCodeDto } from './dto/validate-code.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordWithCodeDto } from './dto/reset-password-with-code.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -52,6 +53,14 @@ export class AuthController {
     const result = await this.authService.resetPasswordWithVerifiedCode(dto.email, dto.newPassword);
     this.emailVerificationService.consumeCode(dto.email);
     return result;
+  }
+
+  @ApiOperation({ summary: 'Validate 6-digit verification code without consuming' })
+  @ApiResponse({ status: 200, description: 'Code is valid' })
+  @Post('validate-verification-code')
+  validateVerificationCode(@Body() dto: ValidateCodeDto) {
+    const isValid = this.emailVerificationService.verifyCode(dto.email, dto.verificationCode, false);
+    return { success: isValid, valid: isValid, message: 'លេខកូដផ្ទៀងផ្ទាត់ត្រឹមត្រូវ' };
   }
 
   @ApiOperation({ summary: 'Verify 6-digit code and create clinic workspace' })

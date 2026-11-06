@@ -216,39 +216,6 @@ export default function QueuePage() {
     }
   };
 
-  // Populate Demo Queue Tokens if Empty
-  const handleAddDemoPatients = () => {
-    const freshDemo: QueueItem[] = [
-      {
-        id: `q-demo-${Date.now()}-1`,
-        token: `A-${Math.floor(100 + Math.random() * 899)}`,
-        patientName: isKm ? 'ចាន់ ដារ៉ា (Chan Dara)' : 'Chan Dara',
-        patientCode: 'P-0012',
-        department: 'Consultation Room 1',
-        doctorName: 'Dr. Houn Vannak',
-        room: 'Room 1',
-        status: 'WAITING',
-        waitTimeMinutes: 2,
-        chiefComplaint: isKm ? 'ក្ដៅខ្លួន និងក្អក ៣ថ្ងៃ' : 'Acute Fever & Cough',
-        isBackendVisit: false,
-      },
-      {
-        id: `q-demo-${Date.now()}-2`,
-        token: `B-${Math.floor(100 + Math.random() * 899)}`,
-        patientName: isKm ? 'សុខ មាន (Sok Mean)' : 'Sok Mean',
-        patientCode: 'P-0015',
-        department: 'Consultation Room 2',
-        doctorName: 'Dr. Sok Chantha',
-        room: 'Room 2',
-        status: 'WAITING',
-        waitTimeMinutes: 5,
-        chiefComplaint: isKm ? 'លើសសម្ពាធឈាម' : 'Hypertension Checkup',
-        isBackendVisit: false,
-      },
-    ];
-    setQueueItems((prev) => [...freshDemo, ...prev]);
-  };
-
   const toggleFullscreen = () => {
     if (typeof document === 'undefined') return;
     try {
@@ -652,14 +619,6 @@ export default function QueuePage() {
               >
                 <PlayCircle className="w-4 h-4 text-slate-500" />
                 <span>{isKm ? 'តេស្តសំឡេងកណ្ដឹង & ហៅជាសំឡេង' : 'Test Call Audio'}</span>
-              </button>
-              <button
-                type="button"
-                onClick={handleAddDemoPatients}
-                className="px-3 py-2 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-xs font-medium transition-colors flex items-center gap-1"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-teal-600" />
-                <span>{isKm ? 'បញ្ចូលទិន្នន័យតេស្ត' : 'Add Test Queue'}</span>
               </button>
             </div>
           </div>

@@ -2,82 +2,16 @@
 <html lang="km">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=http://172.20.10.2:3000/">
+  <meta http-equiv="refresh" content="0; url=/">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>KruPet Enterprise Medical Station</title>
   <script>
     (function() {
-      var host = window.location.hostname || '172.20.10.2';
-      var path = window.location.pathname;
-      if (path === '/simulator' || path === '/simulator.html' || path === '/') {
-        path = '/';
-      }
-      window.location.replace('http://' + host + ':3000' + path);
+      window.location.replace('/');
     })();
   </script>
-  <style>
-    body {
-      background: #041514;
-      color: #E1E3E1;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      margin: 0;
-      padding: 24px;
-      text-align: center;
-      box-sizing: border-box;
-    }
-    .spinner {
-      width: 48px;
-      height: 48px;
-      border: 4px solid rgba(16, 185, 129, 0.2);
-      border-top-color: #10b981;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin-bottom: 24px;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    h1 {
-      font-size: 20px;
-      font-weight: 700;
-      color: #10b981;
-      margin-bottom: 8px;
-    }
-    p {
-      color: #94a3b8;
-      font-size: 14px;
-      margin-bottom: 24px;
-      line-height: 1.5;
-    }
-    a.btn {
-      display: inline-block;
-      background: #059669;
-      color: #ffffff;
-      padding: 14px 28px;
-      border-radius: 12px;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 15px;
-      box-shadow: 0 4px 14px rgba(5, 150, 105, 0.4);
-    }
-  </style>
 </head>
-<body>
-  <div class="spinner"></div>
-  <h1>មន្ទីរពេទ្យ គ្រូពេទ្យ - KruPet Live Web Platform</h1>
-  <p>កំពុងបញ្ជូនអ្នកទៅកាន់ផ្ទាំងគ្រប់គ្រងគ្លីនិកពិត...</p>
-  <a class="btn" id="directLink" href="http://172.20.10.2:3000/">ចូលទៅកាន់ប្រព័ន្ធគ្រប់គ្រងគ្លីនិក</a>
-  <script>
-    var host = window.location.hostname || '172.20.10.2';
-    var link = document.getElementById('directLink');
-    if (link) {
-      link.href = 'http://' + host + ':3000/';
-    }
-  </script>
+<body style="background:#041514; color:#E1E3E1; font-family:sans-serif; text-align:center; padding-top:20vh;">
+  <p>កំពុងបញ្ជូនទៅកាន់ប្រព័ន្ធគ្រប់គ្រងគ្លីនិកពេញលេញ...</p>
 </body>
 </html>

@@ -30,6 +30,7 @@ import {
   Copy,
   ExternalLink,
   Zap,
+  Download,
 } from 'lucide-react';
 
 const PLAN_CARDS = [
@@ -178,20 +179,7 @@ function getOrCreateDeviceId(): string {
   return id;
 }
 
-function getDailyQrGenerations(): number {
-  if (typeof window === 'undefined') return 0;
-  const today = new Date().toISOString().split('T')[0];
-  const raw = localStorage.getItem(`clinic_qr_daily_${today}`);
-  return raw ? parseInt(raw, 10) : 0;
-}
-
-function incrementDailyQrGenerations(): number {
-  if (typeof window === 'undefined') return 0;
-  const today = new Date().toISOString().split('T')[0];
-  const count = getDailyQrGenerations() + 1;
-  localStorage.setItem(`clinic_qr_daily_${today}`, count.toString());
-  return count;
-}
+// Daily rate limits managed safely by backend
 
 function RegisterContent() {
   const router = useRouter();
@@ -232,6 +220,51 @@ function RegisterContent() {
   const [activatedSuccess, setActivatedSuccess] = useState<boolean>(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [copiedTranId, setCopiedTranId] = useState<boolean>(false);
+  const [copiedKhqr, setCopiedKhqr] = useState<boolean>(false);
+
+  const handleDownloadQrImage = () => {
+    const svgElement = document.getElementById('krupet-registration-khqr-svg');
+    if (!svgElement) return;
+
+    try {
+      const svgString = new XMLSerializer().serializeToString(svgElement);
+      const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+      const blobURL = URL.createObjectURL(svgBlob);
+      const image = new Image();
+      image.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 600;
+        canvas.height = 600;
+        const context = canvas.getContext('2d');
+        if (context) {
+          context.fillStyle = '#ffffff';
+          context.fillRect(0, 0, canvas.width, canvas.height);
+          context.drawImage(image, 50, 50, 500, 500);
+
+          const png = canvas.toDataURL('image/png');
+          const downloadLink = document.createElement('a');
+          downloadLink.download = `krupet-khqr-${selectedPlan.toLowerCase()}-${Date.now()}.png`;
+          downloadLink.href = png;
+          document.body.appendChild(downloadLink);
+          downloadLink.click();
+          document.body.removeChild(downloadLink);
+          URL.revokeObjectURL(blobURL);
+        }
+      };
+      image.src = blobURL;
+    } catch (err) {
+      console.error('Failed to download QR image:', err);
+    }
+  };
+
+  const handleCopyKhqrData = async () => {
+    if (!checkoutData?.qrString) return;
+    try {
+      await navigator.clipboard.writeText(checkoutData.qrString);
+      setCopiedKhqr(true);
+      setTimeout(() => setCopiedKhqr(false), 2500);
+    } catch {}
+  };
 
   // Redirect if already authenticated and not in payment step
   useEffect(() => {
@@ -472,17 +505,6 @@ function RegisterContent() {
       setPaymentError(null);
       setActivatedSuccess(false);
 
-      // Enforce 10-times daily spam protection per device
-      const dailyCount = getDailyQrGenerations();
-      if (dailyCount >= 10) {
-        setPaymentError(
-          isKm
-            ? 'ឧបករណ៍របស់លោកអ្នកបានបង្កើត QR Code ចំនួន ១០ ដងក្នុងមួយថ្ងៃរួចហើយ ដើម្បីការពារការ Spam ប្រព័ន្ធ។ សូមព្យាយាមម្តងទៀតនៅថ្ងៃស្អែក ឬទាក់ទងមកកាន់យើងខ្ញុំ។'
-            : 'This device has reached the daily limit of 10 KHQR generation requests to prevent spam. Please try again tomorrow or contact support.'
-        );
-        return;
-      }
-
       const deviceId = getOrCreateDeviceId();
       const token = typeof window !== 'undefined' ? localStorage.getItem('clinic_access_token') : null;
       let res: any;
@@ -513,13 +535,12 @@ function RegisterContent() {
         if (!res.deeplinks.aba) {
           res.deeplinks.aba = 'https://link.payway.com.kh/ABAPAYRs559002R';
         }
-        incrementDailyQrGenerations();
         setCheckoutData(res);
         setPaymentCountdown(res.expiresInSeconds || 180); // Strictly 3 minutes
       } else {
         setPaymentError(
           isKm
-            ? 'មិនអាចបង្កើត QR Code សម្រាប់បង់ប្រាក់បានទេ។ សូមចុចបង្កើតឡើងវិញ។'
+            ? 'មិនអាចបង្កើត QR Code សម្រាប់បង់ប្រាក់បានទេ។ សូមចុចបង្កើតឡើងវិញ'
             : 'Failed to generate payment QR code. Please try again.'
         );
       }
@@ -527,7 +548,7 @@ function RegisterContent() {
       setPaymentError(
         err.message ||
           (isKm
-            ? 'មានបញ្ហាក្នុងការបង្កើត KHQR សូមចុចបង្កើតឡើងវិញ។'
+            ? 'មានបញ្ហាក្នុងការបង្កើត KHQR សូមចុចបង្កើតឡើងវិញ'
             : 'Error generating KHQR checkout session.')
       );
     } finally {
@@ -535,7 +556,7 @@ function RegisterContent() {
     }
   };
 
-  // Step 2: Verify code and register account
+  // Step 2: Verify code and handle plan flow
   const handleVerifyAndRegister = async (e?: React.FormEvent, directCode?: string) => {
     if (e) e.preventDefault();
     setErrorMessage(null);
@@ -544,7 +565,7 @@ function RegisterContent() {
     if (!targetCode || targetCode.length !== 6) {
       setErrorMessage(
         isKm
-          ? 'សូមបញ្ចូលលេខកូដបញ្ជាក់ ៦ ខ្ទង់ឱ្យបានត្រឹមត្រូវ។'
+          ? 'សូមបញ្ចូលលេខកូដបញ្ជាក់ ៦ ខ្ទង់ឱ្យបានត្រឹមត្រូវ'
           : 'Please enter a valid 6-digit confirmation code.'
       );
       return;
@@ -553,34 +574,50 @@ function RegisterContent() {
     setLoading(true);
 
     try {
-      const res = await api.auth.registerWithCode({
-        email: email.trim().toLowerCase(),
-        password,
-        adminName: adminName.trim() || undefined,
-        planTier: selectedPlan,
-        verificationCode: targetCode,
-      });
+      // 1. If Free Plan ($0): Register immediately and enter Dashboard
+      if (selectedPlan === 'FREE') {
+        const res = await api.auth.registerWithCode({
+          email: email.trim().toLowerCase(),
+          password,
+          adminName: adminName.trim() || undefined,
+          planTier: selectedPlan,
+          verificationCode: targetCode,
+        });
 
-      if (res.success && res.accessToken) {
-        clearVerificationSession();
-        const fullUser = {
-          ...res.user,
-          tenant: res.tenant,
-          targetRoute: (res as any).targetRoute || '/dashboard',
-        };
-        localStorage.setItem('clinic_access_token', res.accessToken);
-        localStorage.setItem('clinic_user', JSON.stringify(fullUser));
+        if (res.success && res.accessToken) {
+          clearVerificationSession();
+          const fullUser = {
+            ...res.user,
+            tenant: res.tenant,
+            targetRoute: (res as any).targetRoute || '/dashboard',
+          };
+          localStorage.setItem('clinic_access_token', res.accessToken);
+          localStorage.setItem('clinic_user', JSON.stringify(fullUser));
 
-        // SECURITY CHECK: If user selected a paid tier, transition to PAYMENT step!
-        if (selectedPlan && selectedPlan !== 'FREE') {
-          setStep('PAYMENT');
-          initPaymentCheckout(selectedPlan, isYearly ? 'ANNUAL' : 'MONTHLY');
-        } else {
-          // Free tier: proceed directly to dashboard
           if (typeof window !== 'undefined') {
             window.history.replaceState(null, '', '/dashboard');
           }
           router.replace('/dashboard');
+          return;
+        }
+      } else {
+        // 2. If Paid Plan ($5, $8, $12, $15, $20): Validate confirmation code first, then show KHQR!
+        const validateRes = await api.auth.validateVerificationCode(
+          email.trim().toLowerCase(),
+          targetCode
+        );
+
+        if (validateRes && (validateRes.success || validateRes.valid)) {
+          // Transition to Payment step and launch dynamic KHQR checkout
+          setStep('PAYMENT');
+          initPaymentCheckout(selectedPlan, isYearly ? 'ANNUAL' : 'MONTHLY');
+          return;
+        } else {
+          setErrorMessage(
+            isKm
+              ? 'លេខកូដបញ្ជាក់មិនត្រឹមត្រូវឡើយ សូមពិនិត្យមើលម្តងទៀត'
+              : 'Invalid confirmation code. Please check again.'
+          );
         }
       }
     } catch (err: any) {
@@ -616,7 +653,7 @@ function RegisterContent() {
       setErrorMessage(
         msg ||
           (isKm
-            ? 'ការផ្ទៀងផ្ទាត់មិនទាន់បានជោគជ័យ សូមពិនិត្យលេខកូដ និងព្យាយាមម្តងទៀត។'
+            ? 'ការផ្ទៀងផ្ទាត់មិនទាន់បានជោគជ័យ សូមពិនិត្យលេខកូដ និងព្យាយាមម្តងទៀត'
             : 'Verification failed. Please check the code and try again.')
       );
     } finally {
@@ -849,6 +886,7 @@ function RegisterContent() {
                         {/* QR Code Display */}
                         <div className="p-4 bg-white rounded-2xl border-2 border-[#055E7C] shadow-md shrink-0 flex flex-col items-center">
                           <QRCodeSVG
+                            id="krupet-registration-khqr-svg"
                             value={checkoutData.qrString}
                             size={180}
                             level="M"
@@ -956,6 +994,30 @@ function RegisterContent() {
                             />
                           )}
 
+                          {/* ACLEDA Mobile Deeplink Button */}
+                          {checkoutData.qrString && (
+                            <a
+                              href={`cld://qr?data=${encodeURIComponent(checkoutData.qrString)}`}
+                              target="_self"
+                              className="w-full py-2.5 px-3.5 rounded-xl bg-[#004785] hover:bg-[#003B6F] active:bg-[#00305A] text-white shadow-xs hover:shadow-md border border-[#003B6F] transition-all flex items-center justify-between group select-none cursor-pointer"
+                            >
+                              <div className="flex items-center gap-2.5">
+                                <div className="shrink-0 flex items-center justify-center px-1.5 py-0.5 rounded-md bg-white/20 border border-white/30 text-[10px] font-black tracking-wider text-white">
+                                  ACLEDA
+                                </div>
+                                <div className="text-left overflow-hidden">
+                                  <div className="text-xs font-bold leading-tight truncate text-white">
+                                    {isKm ? 'ទូទាត់តាម App ACLEDA Mobile' : 'Pay via ACLEDA Mobile'}
+                                  </div>
+                                  <div className="text-[10px] text-blue-100 leading-tight font-medium truncate mt-0.5">
+                                    {isKm ? 'ស្កេន ឬបើកកម្មវិធី ACLEDA Mobile ផ្ទាល់' : 'Instant KHQR ACLEDA Payment'}
+                                  </div>
+                                </div>
+                              </div>
+                              <ExternalLink className="w-3.5 h-3.5 text-blue-100 opacity-80 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+                            </a>
+                          )}
+
                           {/* Bakong App Deeplink Button */}
                           {checkoutData.deeplinks?.bakong && (
                             <a
@@ -979,6 +1041,35 @@ function RegisterContent() {
                               <ExternalLink className="w-3.5 h-3.5 text-red-100 opacity-80 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
                             </a>
                           )}
+
+                          {/* Save QR Image & Copy KHQR String Buttons */}
+                          <div className="grid grid-cols-2 gap-2 pt-1">
+                            <button
+                              type="button"
+                              onClick={handleDownloadQrImage}
+                              className="py-2.5 px-3 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 border border-stone-300 shadow-2xs cursor-pointer active:scale-95"
+                            >
+                              <Download className="w-4 h-4 text-teal-800" />
+                              <span>{isKm ? 'រក្សាទុករូប KHQR' : 'Save QR Image'}</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleCopyKhqrData}
+                              className="py-2.5 px-3 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 border border-stone-300 shadow-2xs cursor-pointer active:scale-95"
+                            >
+                              {copiedKhqr ? (
+                                <>
+                                  <Check className="w-4 h-4 text-teal-700" />
+                                  <span>{isKm ? 'បានចម្លង' : 'Copied'}</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="w-4 h-4 text-stone-600" />
+                                  <span>{isKm ? 'ចម្លងកូដ KHQR' : 'Copy KHQR'}</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
 
                           {/* Manual Verify Button */}
                           <button
@@ -1103,7 +1194,7 @@ function RegisterContent() {
                       className="px-3 py-1.5 bg-stone-100 hover:bg-stone-200 text-teal-900 border border-stone-200 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors shadow-2xs active:scale-95"
                     >
                       <Copy className="w-3.5 h-3.5 text-teal-700" />
-                      <span>{isKm ? 'បិទភ្ជាប់លេខកូដ ៦ ខ្ទង់ (Paste Code)' : 'Paste 6-digit Code'}</span>
+                      <span>{isKm ? 'បិទភ្ជាប់លេខកូដ ៦ ខ្ទង់ - Paste Code' : 'Paste 6-digit Code'}</span>
                     </button>
                   </div>
                 </div>
@@ -1255,7 +1346,7 @@ function RegisterContent() {
                       className="text-[10px] text-teal-800 hover:underline font-semibold flex items-center gap-0.5"
                     >
                       <Copy className="w-3 h-3" />
-                      <span>{isKm ? 'បិទភ្ជាប់ (Paste)' : 'Paste'}</span>
+                      <span>{isKm ? 'បិទភ្ជាប់ - Paste' : 'Paste'}</span>
                     </button>
                   </div>
                   <div className="relative">
@@ -1288,7 +1379,7 @@ function RegisterContent() {
                       className="text-[10px] text-teal-800 hover:underline font-semibold flex items-center gap-0.5"
                     >
                       <Copy className="w-3 h-3" />
-                      <span>{isKm ? 'បិទភ្ជាប់ (Paste)' : 'Paste'}</span>
+                      <span>{isKm ? 'បិទភ្ជាប់ - Paste' : 'Paste'}</span>
                     </button>
                   </div>
                   <div className="relative">
@@ -1320,7 +1411,7 @@ function RegisterContent() {
                       className="text-[10px] text-teal-800 hover:underline font-semibold flex items-center gap-0.5"
                     >
                       <Copy className="w-3 h-3" />
-                      <span>{isKm ? 'បិទភ្ជាប់ (Paste)' : 'Paste'}</span>
+                      <span>{isKm ? 'បិទភ្ជាប់ - Paste' : 'Paste'}</span>
                     </button>
                   </div>
                   <div className="relative">
